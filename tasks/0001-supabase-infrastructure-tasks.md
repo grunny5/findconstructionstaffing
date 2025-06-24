@@ -64,13 +64,15 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * FSD Technical Requirements - SQL schema
 * **Key Patterns to Follow:**
   * Use UUID for all primary keys
-  * Include created_at/updated_at timestamps
+  * Include created_at/updated_at timestamps with automatic update trigger
   * Follow PostgreSQL naming conventions
+  * Use NUMERIC(3,2) for rating to support values up to 10.00
 * **Acceptance Criteria:**
   * [ ] Agencies table created with all fields
   * [ ] Trades table created with unique constraints
   * [ ] Regions table created with state codes
   * [ ] All data types match TypeScript interfaces
+  * [ ] Updated_at trigger function created and applied
 * **Definition of Done:**
   * [ ] Tables visible in Supabase dashboard
   * [ ] Schema matches FSD specifications exactly

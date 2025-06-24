@@ -94,7 +94,7 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
     founded_year INTEGER,
     employee_count TEXT,
     headquarters TEXT,
-    rating DECIMAL(2,1),
+    rating NUMERIC(3,2),
     review_count INTEGER DEFAULT 0,
     project_count INTEGER DEFAULT 0,
     verified BOOLEAN DEFAULT false,
@@ -136,6 +136,18 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
   CREATE INDEX idx_agencies_active ON agencies(is_active);
   CREATE INDEX idx_trades_name ON trades(name);
   CREATE INDEX idx_regions_state ON regions(state_code);
+
+  -- Trigger for automatic updated_at timestamp
+  CREATE OR REPLACE FUNCTION update_updated_at_column()
+  RETURNS TRIGGER AS $$
+  BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+  END;
+  $$ language 'plpgsql';
+
+  CREATE TRIGGER update_agencies_updated_at BEFORE UPDATE
+    ON agencies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
   ```
 
 * **API Endpoints:** None in this phase - API implementation is Task 3
