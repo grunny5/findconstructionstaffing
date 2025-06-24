@@ -157,6 +157,26 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * [ ] All relationships properly accessible
   * [ ] Write operations properly blocked
 
+#### Task 3.3: Create RLS Policies for Junction Tables
+* **Role:** Security Engineer / Backend Developer
+* **Objective:** Implement Row Level Security on junction tables to ensure proper relationship access
+* **Context:** Junction tables must only expose relationships for active agencies
+* **Key Patterns to Follow:**
+  * Junction table policies must check parent agency status
+  * Use joins or subqueries to verify agency.is_active
+  * Maintain referential integrity in security policies
+* **Acceptance Criteria:**
+  * [ ] RLS policy on agency_trades allows SELECT only when agency.is_active = true
+  * [ ] RLS policy on agency_regions allows SELECT only when agency.is_active = true
+  * [ ] No INSERT, UPDATE, or DELETE allowed for anonymous users
+  * [ ] Inactive agencies' relationships are not exposed
+  * [ ] Queries joining agencies with trades/regions work correctly
+* **Definition of Done:**
+  * [ ] Junction table queries return only active agency relationships
+  * [ ] Test confirms inactive agency relationships are hidden
+  * [ ] Directory queries with filters work correctly
+  * [ ] Performance impact is minimal (<10ms added)
+
 ---
 
 ### Story 4: Data Migration Readiness
@@ -264,12 +284,13 @@ This document translates the FSD into actionable engineering tasks. Our primary 
 | 2.3 | Add Performance Indexes | - | 0.5 | Not Started |
 | 3.1 | Enable RLS on All Tables | - | 0.5 | Not Started |
 | 3.2 | Create Public Read Policies | - | 1.0 | Not Started |
+| 3.3 | Create RLS Policies for Junction Tables | - | 1.0 | Not Started |
 | 4.1 | Validate Schema Compatibility | - | 0.5 | Not Started |
 | 4.2 | Create Verification Queries | - | 0.5 | Not Started |
 | 5.1 | Connection Testing | - | 1.0 | Not Started |
 | 5.2 | Security Testing | - | 1.0 | Not Started |
 | 6.1 | Setup Documentation | - | 1.0 | Not Started |
-| **Total** | | | **9.5** | |
+| **Total** | | | **10.5** | |
 
 ---
 

@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:gitingest.com)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(ls:*)",
+      "Bash(mv:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+      "Bash(chgrp:*)",
+      "Bash(dd:*)",
+      "Bash(mkfs:*)",
+      "Bash(mount:*)",
+      "Bash(umount:*)",
+      "Bash(fdisk:*)",
+      "Bash(parted:*)",
+      "Bash(shutdown:*)",
+      "Bash(reboot:*)",
+      "Bash(poweroff:*)",
+      "Bash(passwd:*)",
+      "Bash(useradd:*)",
+      "Bash(userdel:*)",
+      "Bash(usermod:*)",
+      "Bash(groupadd:*)",
+      "Bash(groupdel:*)",
+      "Bash(su:*)",
+      "Bash(visudo:*)",
+      "Bash(systemctl:*)",
+      "Bash(service:*)",
+      "Bash(kill:*)",
+      "Bash(killall:*)",
+      "Bash(pkill:*)",
+      "Bash(nc:*)",
+      "Bash(netcat:*)",
+      "Bash(iptables:*)",
+      "Bash(format:*)"
+    ]
+  }
+}

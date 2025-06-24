@@ -148,6 +148,26 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 
   CREATE TRIGGER update_agencies_updated_at BEFORE UPDATE
     ON agencies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+  -- RLS Policies (examples)
+  -- Junction table policies that check parent agency status
+  CREATE POLICY "Public can view active agency trades" ON agency_trades
+    FOR SELECT USING (
+      EXISTS (
+        SELECT 1 FROM agencies 
+        WHERE agencies.id = agency_trades.agency_id 
+        AND agencies.is_active = true
+      )
+    );
+
+  CREATE POLICY "Public can view active agency regions" ON agency_regions
+    FOR SELECT USING (
+      EXISTS (
+        SELECT 1 FROM agencies 
+        WHERE agencies.id = agency_regions.agency_id 
+        AND agencies.is_active = true
+      )
+    );
   ```
 
 * **API Endpoints:** None in this phase - API implementation is Task 3
