@@ -17,7 +17,7 @@ Act as an experienced Senior Tech Lead and Scrum Master. Your job is to translat
 4.  **Propose Foundational Epics:** Based on the PKD's architecture, propose a list of high-level *Foundational Epics* required to support the project (e.g., `Project Setup & Tooling`, `Cloud Infrastructure`, `Backend API Core`, `Web Client Core`, `CI/CD Pipeline`). Get user confirmation before proceeding.
 5.  **Generate "Sprint 0" Plan:** Create a top-priority epic named **"Sprint 0: Build the First Feature Slice."** Populate it with a prioritized list of the *absolute minimum* stories from all other foundational epics required to make the selected "Tracer Bullet" story work, end-to-end.
 6.  **Generate Full MVP Backlog:** Generate the remaining stories for all foundational epics required to complete the rest of the **`Must Have`** MVP stories from the PKD.
-7.  **Generate Final Output:** Save the complete plan as `tasks/kickoff-plan.md`.
+7.  **Generate Final Output:** Save the complete kick-off plan as **`PROJECT-PKD-tasks.md`** in the project's root directory, alongside the PKD itself.
 
 ## Task Backlog Template (The Output)
 
