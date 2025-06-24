@@ -1,1 +1,256 @@
-findconstructionstaffing
+# FindConstructionStaffing
+
+A modern web directory platform connecting construction companies with specialized staffing agencies across North America.
+
+## Project Overview
+
+FindConstructionStaffing is a Next.js-based directory application designed to streamline the process of finding qualified construction staffing partners. The platform serves two primary audiences:
+- **Construction Companies**: Looking for reliable staffing agencies to fill skilled labor positions
+- **Staffing Agencies**: Seeking to showcase their services and connect with potential clients
+
+## Current State of the Project
+
+### Technology Stack
+
+#### Core Framework
+- **Next.js 13.5.1** - Using App Router for modern React development
+- **React 18.2.0** - Component-based UI architecture
+- **TypeScript 5.2.2** - Type-safe development with strict configuration
+
+#### UI & Styling
+- **Tailwind CSS 3.3.3** - Utility-first CSS framework
+- **Shadcn/ui** - Comprehensive component library built on Radix UI
+- **Lucide React** - Modern icon library
+- **CSS Variables** - Dynamic theming support
+
+#### Data & State Management
+- **Supabase** - PostgreSQL database (configured, not yet implemented)
+- **React Hook Form 7.53.0** - Form state management
+- **Zod 3.23.8** - Schema validation
+
+### Current Features
+
+1. **Agency Directory**
+   - Display of construction staffing agencies with filtering capabilities
+   - Search functionality across agency names, descriptions, trades, and locations
+   - Filtering by trades, states, per diem offerings, and union status
+   - Sorting options (rating, reviews, projects, establishment date)
+   - Featured agency highlighting
+
+2. **Agency Profiles**
+   - Individual pages for each agency (currently basic implementation)
+   - Dynamic routing using Next.js slug-based routes
+
+3. **Lead Generation Forms**
+   - Request labor form for construction companies
+   - Claim listing form for agencies
+
+4. **Responsive Design**
+   - Mobile-first approach with adaptive layouts
+   - Glass morphism effects and modern gradients
+   - Professional UI with consistent component styling
+
+### Project Structure
+
+```
+findconstructionstaffing/
+├── app/                      # Next.js App Router pages
+│   ├── page.tsx             # Home page with agency directory
+│   ├── claim-listing/       # Agency claim form page
+│   ├── request-labor/       # Labor request form page
+│   └── recruiters/
+│       └── [slug]/          # Dynamic agency profile pages
+├── components/              # React components
+│   ├── ui/                 # Shadcn/ui components (47 total)
+│   ├── Header.tsx          # Navigation header
+│   ├── Footer.tsx          # Site footer
+│   ├── AgencyCard.tsx      # Agency listing card
+│   └── DirectoryFilters.tsx # Filter controls
+├── lib/                    # Utilities and data
+│   ├── mock-data.ts       # Mock agency data
+│   ├── supabase.ts        # Database configuration
+│   └── utils.ts           # Helper functions
+└── hooks/                 # Custom React hooks
+```
+
+### Data Architecture
+
+Currently using mock data with plans for Supabase integration:
+
+- **Agencies**: Staffing company profiles with trades, regions, and attributes
+- **Trades**: 45+ construction specialties (electrician, welder, etc.)
+- **Regions**: All US states for geographical filtering
+- **Leads**: Labor requests from construction companies
+
+## Future Development Guidelines
+
+### Architecture Principles
+
+1. **Component-Based Architecture**
+   - Maintain separation between business logic and UI components
+   - Use Shadcn/ui pattern for consistent, reusable components
+   - Implement composition over inheritance
+
+2. **Type Safety**
+   - Leverage TypeScript for all new code
+   - Define interfaces for all data structures
+   - Use Zod for runtime validation
+
+3. **Performance First**
+   - Utilize Next.js static generation where possible
+   - Implement lazy loading for heavy components
+   - Optimize images and assets
+
+4. **Database Integration**
+   - Transition from mock data to Supabase
+   - Implement Row Level Security (RLS) policies
+   - Create proper indexes for search functionality
+
+### Development Standards
+
+#### Code Style
+- Use functional components with hooks
+- Implement proper error boundaries
+- Follow ESLint configuration
+- No unnecessary comments in production code
+
+#### Component Guidelines
+- All new components should follow existing patterns
+- Use Tailwind classes for styling
+- Implement responsive design from the start
+- Ensure accessibility (ARIA labels, keyboard navigation)
+
+#### State Management
+- Use React Hook Form for all forms
+- Implement proper loading and error states
+- Validate data on both client and server
+
+### Planned Features & Roadmap
+
+#### Phase 1: Core Functionality (Current)
+- ✅ Basic directory listing
+- ✅ Search and filtering
+- ✅ Agency profiles (basic)
+- ⏳ Form submissions
+- ⏳ Database integration
+
+#### Phase 2: Enhanced Features
+- [ ] User authentication (agencies)
+- [ ] Agency dashboard for profile management
+- [ ] Advanced agency profiles with portfolios
+- [ ] Review and rating system
+- [ ] Lead distribution system
+- [ ] Email notifications
+
+#### Phase 3: Advanced Capabilities
+- [ ] API for third-party integrations
+- [ ] Mobile app development
+- [ ] Analytics dashboard
+- [ ] Subscription/payment system
+- [ ] Automated matching algorithm
+
+### Security Considerations
+
+1. **Authentication & Authorization**
+   - Implement Supabase Auth for agency accounts
+   - Role-based access control (agencies vs. contractors)
+   - Secure API endpoints
+
+2. **Data Protection**
+   - Validate all user inputs
+   - Implement rate limiting
+   - Secure file uploads
+   - GDPR compliance for user data
+
+3. **Best Practices**
+   - Environment variables for sensitive data
+   - HTTPS enforcement
+   - Regular security audits
+   - Input sanitization
+
+### Performance Optimization
+
+1. **Frontend**
+   - Implement React.lazy for code splitting
+   - Use next/image for optimized images
+   - Minimize bundle size
+   - Implement proper caching strategies
+
+2. **Backend**
+   - Database query optimization
+   - Implement Redis caching layer
+   - CDN for static assets
+   - API response compression
+
+### Testing Strategy
+
+1. **Unit Testing**
+   - Jest for component testing
+   - React Testing Library for UI tests
+   - Test utilities and helpers
+
+2. **Integration Testing**
+   - API endpoint testing
+   - Database transaction tests
+   - Form submission flows
+
+3. **E2E Testing**
+   - Playwright for user journey tests
+   - Cross-browser compatibility
+   - Mobile responsiveness
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Supabase account (for database)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/findconstructionstaffing.git
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Run development server
+npm run dev
+```
+
+### Environment Variables
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Development Commands
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+npm run type-check # Run TypeScript compiler
+```
+
+## Contributing
+
+1. Follow the established code patterns
+2. Write meaningful commit messages
+3. Create feature branches for new work
+4. Submit pull requests with clear descriptions
+5. Ensure all tests pass before submitting
+
+## License
+
+[Your chosen license]
+
+## Support
+
+For questions or issues, please contact [your contact information]
