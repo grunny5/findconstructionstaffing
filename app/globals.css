@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 222 84% 35%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 222 84% 35%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 222 84% 35%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 222 84% 35%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Modern gradient backgrounds */
+.modern-gradient-bg {
+  background: linear-gradient(to bottom right, rgb(248, 250, 252), rgb(255, 255, 255), rgb(248, 250, 252));
+}
+
+.modern-hero-bg {
+  background: linear-gradient(to bottom right, rgb(15, 23, 42), rgb(30, 41, 59), rgb(15, 23, 42));
+}
+
+.modern-footer-bg {
+  background: linear-gradient(to bottom right, rgb(15, 23, 42), rgb(30, 41, 59), rgb(15, 23, 42));
+}
+
+/* Glass morphism effects */
+.glass-card {
+  @apply bg-white/80 backdrop-blur-sm border-0 shadow-2xl shadow-slate-900/10;
+}
+
+.glass-header {
+  @apply backdrop-blur-xl bg-white/80 border-b border-slate-200/60;
+}
+
+.glass-button {
+  @apply bg-white/80 backdrop-blur-sm border-slate-300/60 hover:bg-white;
+}
+
+/* Modern card hover effects */
+.modern-card {
+  @apply transition-all duration-500 hover:shadow-2xl hover:shadow-slate-900/10 hover:-translate-y-1;
+}
+
+/* Gradient text effects */
+.gradient-text-primary {
+  @apply bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent;
+}
+
+.gradient-text-hero {
+  @apply bg-gradient-to-r from-white via-white to-slate-300 bg-clip-text text-transparent;
+}
+
+.gradient-text-accent {
+  @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
+}
+
+/* Modern button styles */
+.modern-button-primary {
+  @apply bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white shadow-lg shadow-slate-900/25 rounded-2xl;
+}
+
+.modern-button-secondary {
+  @apply bg-white/80 text-slate-700 border-slate-300/60 hover:bg-white backdrop-blur-sm rounded-xl;
+}
+
+/* Modern input styles */
+.modern-input {
+  @apply bg-slate-50/50 border-slate-200/60 rounded-2xl text-slate-900 placeholder:text-slate-400;
+}
+
+/* Modern select styles */
+.modern-select {
+  @apply bg-slate-50/50 border-slate-200/60 rounded-2xl;
+}
+
+/* Agency card gradient colors */
+.agency-gradient-1 { @apply bg-gradient-to-br from-blue-500 to-cyan-500; }
+.agency-gradient-2 { @apply bg-gradient-to-br from-purple-500 to-pink-500; }
+.agency-gradient-3 { @apply bg-gradient-to-br from-emerald-500 to-teal-500; }
+.agency-gradient-4 { @apply bg-gradient-to-br from-orange-500 to-red-500; }
+.agency-gradient-5 { @apply bg-gradient-to-br from-indigo-500 to-purple-500; }
+.agency-gradient-6 { @apply bg-gradient-to-br from-amber-500 to-orange-500; }
+
+/* Hero section decorative elements */
+.hero-decoration {
+  @apply absolute inset-0 opacity-30;
+}
+
+.hero-decoration::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-y-12;
+}
+
+.hero-decoration::after {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-l from-transparent via-white/5 to-transparent transform skew-y-12;
+}
+
+/* Verification badge styles */
+.verification-badge {
+  @apply inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.verification-dot {
+  @apply w-2 h-2 bg-emerald-500 rounded-full;
+}
+
+/* Rating badge styles */
+.rating-badge {
+  @apply flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full;
+}
+
+/* Icon container styles */
+.icon-container {
+  @apply w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center;
+}
+
+/* Modern logo styles */
+.modern-logo {
+  @apply w-20 h-20 rounded-3xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-slate-900/20 group-hover:scale-105 transition-transform duration-300;
+}
+
+/* Trust indicator styles */
+.trust-indicator {
+  @apply inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2;
+}
+
+/* Search bar styles */
+.modern-search-container {
+  @apply bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl shadow-slate-900/25 border border-white/20;
+}
+
+/* Specialty badge styles */
+.specialty-badge {
+  @apply bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 rounded-lg font-medium transition-colors;
+}
+
+/* Action button hover effects */
+.action-button-hover {
+  @apply group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform;
+}
+
+/* Stats section styles */
+.stats-grid {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-8 border-t border-slate-600;
+}
+
+.stat-item {
+  @apply text-center;
+}
+
+.stat-number {
+  @apply text-2xl font-bold text-cyan-400;
+}
+
+.stat-label {
+  @apply text-sm text-slate-300;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .modern-search-container {
+    @apply p-4 rounded-2xl;
+  }
+  
+  .modern-logo {
+    @apply w-16 h-16 text-lg;
+  }
+}
