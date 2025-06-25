@@ -22,14 +22,14 @@ export const AgenciesQuerySchema = z.object({
   trades: z
     .union([z.string(), z.array(z.string())])
     .transform((val) => Array.isArray(val) ? val : [val])
-    .pipe(z.array(z.string().trim().min(1)).max(10, 'Too many trade filters'))
+    .pipe(z.array(z.string().trim().min(1)).max(API_CONSTANTS.MAX_TRADE_FILTERS, 'Too many trade filters'))
     .optional(),
 
   // State filters - array of 2-letter state codes  
   states: z
     .union([z.string(), z.array(z.string())])
     .transform((val) => Array.isArray(val) ? val : [val])
-    .pipe(z.array(z.string().trim().length(2, 'State code must be 2 letters')).max(10, 'Too many state filters'))
+    .pipe(z.array(z.string().trim().length(2, 'State code must be 2 letters')).max(API_CONSTANTS.MAX_STATE_FILTERS, 'Too many state filters'))
     .optional(),
 
   // Pagination parameters

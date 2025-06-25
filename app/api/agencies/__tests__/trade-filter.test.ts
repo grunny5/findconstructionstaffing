@@ -195,7 +195,7 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
   describe('Trade Filter Validation', () => {
     it('should limit number of trade filters to prevent abuse', async () => {
-      const tooManyTrades = Array(15).fill('electricians');
+      const tooManyTrades = Array(API_CONSTANTS.MAX_TRADE_FILTERS + 1).fill('electricians');
       
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',

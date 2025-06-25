@@ -167,6 +167,10 @@ export const API_CONSTANTS = {
   DEFAULT_OFFSET: 0,
   /** Cache duration in seconds (5 minutes) */
   CACHE_MAX_AGE: 300,
+  /** Maximum number of trade filters allowed in a single request */
+  MAX_TRADE_FILTERS: 10,
+  /** Maximum number of state filters allowed in a single request */
+  MAX_STATE_FILTERS: 10,
 } as const;
 
 /**
