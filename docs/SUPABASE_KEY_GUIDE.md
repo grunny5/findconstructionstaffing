@@ -22,7 +22,7 @@
 ## What the Keys Look Like
 
 - **Anon/Public Key**: Safe for client-side use
-  - Example format: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoeWFxdWFsamJoa3lrZ29mY292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwODMwNTAsImV4cCI6MjA1MDY1OTA1MH0.tAE_qXXL_60lp3cUWtJRN3OgjRN2oYn0Mku65sVgp6I`
+  - Example format: `eyJhbGci…<redacted>…gp6I`
 
 - **Service Role Key**: NEVER use client-side
   - Similar format but with "service_role" in the payload
