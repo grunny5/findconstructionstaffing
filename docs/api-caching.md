@@ -20,6 +20,8 @@ The agencies API endpoint implements HTTP caching to improve performance and red
 
 ETags are generated using MD5 hash of the JSON response:
 ```typescript
+import { createHash } from 'crypto';
+
 const etag = createHash('md5').update(responseString).digest('hex');
 ```
 
