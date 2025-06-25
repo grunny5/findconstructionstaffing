@@ -287,11 +287,13 @@ components:
         trades:
           type: array
           description: Trade specialties offered by agency
+          maxItems: 50
           items:
             $ref: '#/components/schemas/Trade'
         regions:
           type: array
           description: Geographic regions served by agency
+          maxItems: 50
           items:
             $ref: '#/components/schemas/Region'
     
