@@ -21,6 +21,12 @@ if (fs.existsSync(envPath)) {
 async function runVerificationQueries() {
   console.log('🔍 Data Migration Verification Queries\n');
   
+  // Note: Supabase count aggregates can return in different formats depending on the query:
+  // - Array format: [{ count: 5 }] - most common
+  // - Direct number: 5 - when using specific aggregations
+  // - Object format: { count: 5 } - in some edge cases
+  // This script handles all three formats for robustness
+  
   const { createClient } = require('@supabase/supabase-js');
   
   const supabase = createClient(
@@ -95,14 +101,37 @@ async function runVerificationQueries() {
     if (!error && agenciesWithTrades) {
       console.log('   Agencies with trade counts:');
       agenciesWithTrades.forEach(agency => {
-        const tradeCount = agency.agency_trades?.[0]?.count || 0;
+        // Safely extract count from agency_trades
+        let tradeCount = 0;
+        if (agency.agency_trades) {
+          if (Array.isArray(agency.agency_trades) && agency.agency_trades.length > 0) {
+            // Handle array format
+            tradeCount = agency.agency_trades[0]?.count || 0;
+          } else if (typeof agency.agency_trades === 'number') {
+            // Handle direct count format
+            tradeCount = agency.agency_trades;
+          } else if (agency.agency_trades.count !== undefined) {
+            // Handle object format
+            tradeCount = agency.agency_trades.count;
+          }
+        }
         console.log(`   - ${agency.name}: ${tradeCount} trades`);
       });
       
       // Check for agencies without trades
-      const agenciesWithoutTrades = agenciesWithTrades.filter(a => 
-        !a.agency_trades || a.agency_trades[0]?.count === 0
-      );
+      const agenciesWithoutTrades = agenciesWithTrades.filter(a => {
+        if (!a.agency_trades) return true;
+        if (Array.isArray(a.agency_trades) && a.agency_trades.length > 0) {
+          return a.agency_trades[0]?.count === 0;
+        }
+        if (typeof a.agency_trades === 'number') {
+          return a.agency_trades === 0;
+        }
+        if (a.agency_trades.count !== undefined) {
+          return a.agency_trades.count === 0;
+        }
+        return true;
+      });
       
       if (agenciesWithoutTrades.length > 0) {
         console.log(`\n   ⚠️  ${agenciesWithoutTrades.length} agencies without trades`);
@@ -131,14 +160,37 @@ async function runVerificationQueries() {
     if (!error && agenciesWithRegions) {
       console.log('   Agencies with region counts:');
       agenciesWithRegions.forEach(agency => {
-        const regionCount = agency.agency_regions?.[0]?.count || 0;
+        // Safely extract count from agency_regions
+        let regionCount = 0;
+        if (agency.agency_regions) {
+          if (Array.isArray(agency.agency_regions) && agency.agency_regions.length > 0) {
+            // Handle array format
+            regionCount = agency.agency_regions[0]?.count || 0;
+          } else if (typeof agency.agency_regions === 'number') {
+            // Handle direct count format
+            regionCount = agency.agency_regions;
+          } else if (agency.agency_regions.count !== undefined) {
+            // Handle object format
+            regionCount = agency.agency_regions.count;
+          }
+        }
         console.log(`   - ${agency.name}: ${regionCount} regions`);
       });
       
       // Check for agencies without regions
-      const agenciesWithoutRegions = agenciesWithRegions.filter(a => 
-        !a.agency_regions || a.agency_regions[0]?.count === 0
-      );
+      const agenciesWithoutRegions = agenciesWithRegions.filter(a => {
+        if (!a.agency_regions) return true;
+        if (Array.isArray(a.agency_regions) && a.agency_regions.length > 0) {
+          return a.agency_regions[0]?.count === 0;
+        }
+        if (typeof a.agency_regions === 'number') {
+          return a.agency_regions === 0;
+        }
+        if (a.agency_regions.count !== undefined) {
+          return a.agency_regions.count === 0;
+        }
+        return true;
+      });
       
       if (agenciesWithoutRegions.length > 0) {
         console.log(`\n   ⚠️  ${agenciesWithoutRegions.length} agencies without regions`);
@@ -333,8 +385,28 @@ async function runVerificationQueries() {
     sqlContent += `-- ${name.replace(/([A-Z])/g, ' $1').trim()}\n${query.trim()}\n\n`;
   });
   
-  fs.writeFileSync(queriesPath, sqlContent);
-  console.log(`\n✅ Verification queries saved to: ${queriesPath}`);
+  try {
+    fs.writeFileSync(queriesPath, sqlContent);
+    console.log(`\n✅ Verification queries saved to: ${queriesPath}`);
+  } catch (error) {
+    console.error(`\n❌ Failed to save verification queries to ${queriesPath}`);
+    console.error(`   Error: ${error.message}`);
+    
+    // Attempt to create directory if it doesn't exist
+    if (error.code === 'ENOENT') {
+      try {
+        const docsDir = path.dirname(queriesPath);
+        fs.mkdirSync(docsDir, { recursive: true });
+        fs.writeFileSync(queriesPath, sqlContent);
+        console.log(`\n✅ Created directory and saved queries to: ${queriesPath}`);
+      } catch (retryError) {
+        console.error(`\n❌ Retry failed: ${retryError.message}`);
+        process.exit(1);
+      }
+    } else {
+      process.exit(1);
+    }
+  }
 }
 
 runVerificationQueries();
