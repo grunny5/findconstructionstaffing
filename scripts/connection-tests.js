@@ -102,7 +102,7 @@ async function runConnectionTests() {
       .select('id')
       .limit(1);
     
-    if (error && error.message.includes('Invalid API key')) {
+    if (error?.message?.includes('Invalid API key')) {
       console.log(`✅ PASS - Properly rejected invalid API key`);
       results.passed++;
       results.tests.push({ name: 'Invalid API Key Handling', status: 'PASS' });

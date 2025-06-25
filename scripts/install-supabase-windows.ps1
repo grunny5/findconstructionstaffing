@@ -10,6 +10,7 @@ if (Get-Command scoop -ErrorAction SilentlyContinue) {
     # Add Supabase bucket
     Write-Host "Adding Supabase bucket..." -ForegroundColor Yellow
     try {
+        $LASTEXITCODE = 0
         scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to add Supabase bucket"
@@ -26,9 +27,10 @@ if (Get-Command scoop -ErrorAction SilentlyContinue) {
     }
     
     # Verify bucket was added
-    $buckets = scoop bucket list
-    if ($buckets -notcontains "supabase") {
+    $bucketCheck = scoop bucket list | Select-String "supabase"
+    if (-not $bucketCheck) {
         Write-Host "❌ Supabase bucket was not added properly" -ForegroundColor Red
+        $buckets = scoop bucket list
         Write-Host "Current buckets: $buckets" -ForegroundColor Yellow
         exit 1
     }
@@ -37,6 +39,7 @@ if (Get-Command scoop -ErrorAction SilentlyContinue) {
     # Install Supabase
     Write-Host "Installing Supabase CLI..." -ForegroundColor Yellow
     try {
+        $LASTEXITCODE = 0
         scoop install supabase
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to install Supabase CLI"
@@ -58,8 +61,12 @@ if (Get-Command scoop -ErrorAction SilentlyContinue) {
     if (Get-Command supabase -ErrorAction SilentlyContinue) {
         Write-Host "✅ Supabase CLI installed successfully!" -ForegroundColor Green
         Write-Host ""
-        $version = supabase --version
-        Write-Host "Installed version: $version" -ForegroundColor Cyan
+        try {
+            $version = supabase --version
+            Write-Host "Installed version: $version" -ForegroundColor Cyan
+        } catch {
+            Write-Host "⚠️ Supabase CLI installed but version check failed: $_" -ForegroundColor Yellow
+        }
     } else {
         Write-Host "❌ Supabase CLI installation failed - command not found" -ForegroundColor Red
         Write-Host "Try restarting your terminal or running: scoop reset supabase" -ForegroundColor Yellow

@@ -300,7 +300,7 @@ The Supabase Infrastructure Setup feature is complete when:
 
 - [x] All tasks marked as complete
 - [x] Database accessible from application
-- [ ] All tests passing in CI/CD pipeline
+- [ ] All tests passing in CI/CD pipeline *(Note: Tests created and passing locally, CI/CD pipeline integration pending)*
 - [x] Performance meets <100ms requirement
 - [x] Security audit passed
 - [x] Documentation reviewed and approved

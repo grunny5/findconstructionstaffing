@@ -1,8 +1,11 @@
+-- Enable pgcrypto extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updated_at = timezone('utc', now());
     RETURN NEW;
 END;
 $$ language 'plpgsql';
@@ -24,7 +27,7 @@ CREATE TABLE IF NOT EXISTS agencies (
     founded_year INTEGER,
     employee_count TEXT,
     headquarters TEXT,
-    rating NUMERIC(3,2) CHECK (rating >= 0 AND rating <= 10),
+    rating NUMERIC(4,2) CHECK (rating >= 0 AND rating <= 10),
     review_count INTEGER DEFAULT 0,
     project_count INTEGER DEFAULT 0,
     verified BOOLEAN DEFAULT false,
