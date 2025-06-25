@@ -1,0 +1,3 @@
+@echo off
+echo Testing Supabase CLI...
+"C:\Users\tedgr\Downloads\supabase_windows_arm64\supabase.exe" --version
