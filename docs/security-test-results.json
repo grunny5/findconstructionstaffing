@@ -1,0 +1,67 @@
+{
+  "passed": 14,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "Anonymous Read Access",
+      "status": "PASS"
+    },
+    {
+      "name": "Block INSERT on agencies",
+      "status": "PASS"
+    },
+    {
+      "name": "Block INSERT on trades",
+      "status": "PASS"
+    },
+    {
+      "name": "Block INSERT on regions",
+      "status": "PASS"
+    },
+    {
+      "name": "Block UPDATE operations",
+      "status": "PASS"
+    },
+    {
+      "name": "Block DELETE operations",
+      "status": "PASS"
+    },
+    {
+      "name": "SQL Injection Prevention: '; DROP TABLE agenci...",
+      "status": "PASS"
+    },
+    {
+      "name": "SQL Injection Prevention: 1' OR '1'='1...",
+      "status": "PASS"
+    },
+    {
+      "name": "SQL Injection Prevention: admin'--...",
+      "status": "PASS"
+    },
+    {
+      "name": "SQL Injection Prevention: 1; DELETE FROM agenc...",
+      "status": "PASS"
+    },
+    {
+      "name": "RLS hides inactive agencies",
+      "status": "PASS"
+    },
+    {
+      "name": "Junction table security",
+      "status": "PASS"
+    },
+    {
+      "name": "Service role key not exposed",
+      "status": "PASS"
+    },
+    {
+      "name": "System tables protected",
+      "status": "PASS"
+    },
+    {
+      "name": "Rate limiting check",
+      "status": "INFO",
+      "note": "Consider implementing rate limiting for production"
+    }
+  ]
+}

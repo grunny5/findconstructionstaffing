@@ -20,14 +20,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Select appropriate region for lowest latency
   * Enable email confirmations for security
 * **Acceptance Criteria:**
-  * [ ] Supabase account created/accessed
-  * [ ] Project named "findconstructionstaffing" created
-  * [ ] Project URL and anon key obtained
-  * [ ] Project settings reviewed and optimized
+  * [x] Supabase account created/accessed
+  * [x] Project named "findconstructionstaffing" created
+  * [x] Project URL and anon key obtained
+  * [x] Project settings reviewed and optimized
 * **Definition of Done:**
-  * [ ] Project accessible via Supabase dashboard
-  * [ ] Credentials documented securely
-  * [ ] Team members granted appropriate access
+  * [x] Project accessible via Supabase dashboard
+  * [x] Credentials documented securely
+  * [x] Team members granted appropriate access
 
 #### Task 1.2: Configure Environment Variables
 * **Role:** Backend Developer
@@ -41,14 +41,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Use descriptive variable names
   * Include all necessary configuration
 * **Acceptance Criteria:**
-  * [ ] `.env.local` created with Supabase credentials
-  * [ ] `.env.example` created with placeholder values
-  * [ ] Environment variables match expected names in code
-  * [ ] Connection test script created
+  * [x] `.env.local` created with Supabase credentials
+  * [x] `.env.example` created with placeholder values
+  * [x] Environment variables match expected names in code
+  * [x] Connection test script created
 * **Definition of Done:**
-  * [ ] Local environment connects successfully
-  * [ ] Example file documents all required variables
-  * [ ] No secrets exposed in version control
+  * [x] Local environment connects successfully
+  * [x] Example file documents all required variables
+  * [x] No secrets exposed in version control
 
 ---
 
@@ -68,15 +68,15 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Follow PostgreSQL naming conventions
   * Use NUMERIC(3,2) for rating to support values up to 10.00
 * **Acceptance Criteria:**
-  * [ ] Agencies table created with all fields
-  * [ ] Trades table created with unique constraints
-  * [ ] Regions table created with state codes
-  * [ ] All data types match TypeScript interfaces
-  * [ ] Updated_at trigger function created and applied
+  * [x] Agencies table created with all fields
+  * [x] Trades table created with unique constraints
+  * [x] Regions table created with state codes
+  * [x] All data types match TypeScript interfaces
+  * [x] Updated_at trigger function created and applied
 * **Definition of Done:**
-  * [ ] Tables visible in Supabase dashboard
-  * [ ] Schema matches FSD specifications exactly
-  * [ ] No errors when inserting test data
+  * [x] Tables visible in Supabase dashboard
+  * [x] Schema matches FSD specifications exactly
+  * [x] No errors when inserting test data
 
 #### Task 2.2: Implement Relationships
 * **Role:** Backend Developer / Database Engineer
@@ -87,14 +87,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Implement CASCADE deletes for referential integrity
   * No additional fields in junction tables (pure relationships)
 * **Acceptance Criteria:**
-  * [ ] agency_trades junction table created
-  * [ ] agency_regions junction table created
-  * [ ] Foreign key constraints properly set
-  * [ ] Cascade deletes tested and working
+  * [x] agency_trades junction table created
+  * [x] agency_regions junction table created
+  * [x] Foreign key constraints properly set
+  * [x] Cascade deletes tested and working
 * **Definition of Done:**
-  * [ ] Relationships can be created via Supabase dashboard
-  * [ ] Deleting an agency removes related records
-  * [ ] No orphaned records possible
+  * [x] Relationships can be created via Supabase dashboard
+  * [x] Deleting an agency removes related records
+  * [x] No orphaned records possible
 
 #### Task 2.3: Add Performance Indexes
 * **Role:** Backend Developer / Database Engineer
@@ -105,14 +105,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Consider composite indexes for common query patterns
   * Monitor index usage and effectiveness
 * **Acceptance Criteria:**
-  * [ ] Index on agencies.name for text search
-  * [ ] Index on agencies.slug for URL lookups
-  * [ ] Index on agencies.is_active for filtering
-  * [ ] Indexes on trade and region lookup fields
+  * [x] Index on agencies.name for text search
+  * [x] Index on agencies.slug for URL lookups
+  * [x] Index on agencies.is_active for filtering
+  * [x] Indexes on trade and region lookup fields
 * **Definition of Done:**
-  * [ ] All indexes created as specified
-  * [ ] Query plans show index usage
-  * [ ] No negative impact on write performance
+  * [x] All indexes created as specified
+  * [x] Query plans show index usage
+  * [x] No negative impact on write performance
 
 ---
 
@@ -128,15 +128,15 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Document the security model clearly
   * Test both positive and negative cases
 * **Acceptance Criteria:**
-  * [ ] RLS enabled on agencies table
-  * [ ] RLS enabled on trades table
-  * [ ] RLS enabled on regions table
-  * [ ] RLS enabled on junction tables
-  * [ ] Direct table access blocked by default
+  * [x] RLS enabled on agencies table
+  * [x] RLS enabled on trades table
+  * [x] RLS enabled on regions table
+  * [x] RLS enabled on junction tables
+  * [x] Direct table access blocked by default
 * **Definition of Done:**
-  * [ ] Cannot query tables without policies
-  * [ ] Supabase dashboard shows RLS active
-  * [ ] Security model documented
+  * [x] Cannot query tables without policies
+  * [x] Supabase dashboard shows RLS active
+  * [x] Security model documented
 
 #### Task 3.2: Create Public Read Policies
 * **Role:** Security Engineer / Backend Developer
@@ -147,17 +147,17 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Keep policies simple and auditable
   * Consider future authenticated access
 * **Acceptance Criteria:**
-  * [ ] Public read policy for agencies (active only)
-  * [ ] Public read policy for trades
-  * [ ] Public read policy for regions
-  * [ ] Public read policy for relationships
-  * [ ] No write access for anonymous users
+  * [x] Public read policy for agencies (active only)
+  * [x] Public read policy for trades
+  * [x] Public read policy for regions
+  * [x] Public read policy for relationships
+  * [x] No write access for anonymous users
 * **Definition of Done:**
-  * [ ] Anonymous users can read active agencies
-  * [ ] All relationships properly accessible
-  * [ ] Write operations properly blocked
+  * [x] Anonymous users can read active agencies
+  * [x] All relationships properly accessible
+  * [x] Write operations properly blocked
 
-#### Task 3.3: Create RLS Policies for Junction Tables
+#### Task 3.3: Create RLS read policies on agency_trades & agency_regions
 * **Role:** Security Engineer / Backend Developer
 * **Objective:** Implement Row Level Security on junction tables to ensure proper relationship access
 * **Context:** Junction tables must only expose relationships for active agencies
@@ -166,16 +166,16 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Use joins or subqueries to verify agency.is_active
   * Maintain referential integrity in security policies
 * **Acceptance Criteria:**
-  * [ ] RLS policy on agency_trades allows SELECT only when agency.is_active = true
-  * [ ] RLS policy on agency_regions allows SELECT only when agency.is_active = true
-  * [ ] No INSERT, UPDATE, or DELETE allowed for anonymous users
-  * [ ] Inactive agencies' relationships are not exposed
-  * [ ] Queries joining agencies with trades/regions work correctly
+  * [x] RLS policy on agency_trades allows SELECT only when agency.is_active = true
+  * [x] RLS policy on agency_regions allows SELECT only when agency.is_active = true
+  * [x] No INSERT, UPDATE, or DELETE allowed for anonymous users
+  * [x] Inactive agencies' relationships are not exposed
+  * [x] Queries joining agencies with trades/regions work correctly
 * **Definition of Done:**
-  * [ ] Junction table queries return only active agency relationships
-  * [ ] Test confirms inactive agency relationships are hidden
-  * [ ] Directory queries with filters work correctly
-  * [ ] Performance impact is minimal (<10ms added)
+  * [x] Junction table queries return only active agency relationships
+  * [x] Test confirms inactive agency relationships are hidden
+  * [x] Directory queries with filters work correctly
+  * [x] Performance impact is minimal (<10ms added)
 
 ---
 
@@ -194,14 +194,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Handle data type conversions
   * Document any transformations needed
 * **Acceptance Criteria:**
-  * [ ] All mock agency fields map to columns
-  * [ ] Trade names match expected values
-  * [ ] State names convert to region records
-  * [ ] Test insert of one complete agency succeeds
+  * [x] All mock agency fields map to columns
+  * [x] Trade names match expected values
+  * [x] State names convert to region records
+  * [x] Test insert of one complete agency succeeds
 * **Definition of Done:**
-  * [ ] Compatibility matrix documented
-  * [ ] Sample data inserts successfully
-  * [ ] No data truncation or type errors
+  * [x] Compatibility matrix documented
+  * [x] Sample data inserts successfully
+  * [x] No data truncation or type errors
 
 #### Task 4.2: Create Verification Queries
 * **Role:** Backend Developer / QA Engineer
@@ -212,14 +212,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Verify data completeness
   * Check for data corruption
 * **Acceptance Criteria:**
-  * [ ] Query to count agencies and related data
-  * [ ] Query to verify all trades are linked
-  * [ ] Query to check region assignments
-  * [ ] Query to find orphaned records
+  * [x] Query to count agencies and related data
+  * [x] Query to verify all trades are linked
+  * [x] Query to check region assignments
+  * [x] Query to find orphaned records
 * **Definition of Done:**
-  * [ ] All queries documented
-  * [ ] Expected results defined
-  * [ ] Queries saved for migration validation
+  * [x] All queries documented
+  * [x] Expected results defined
+  * [x] Queries saved for migration validation
 
 ---
 
@@ -230,28 +230,28 @@ This document translates the FSD into actionable engineering tasks. Our primary 
 * **Objective:** Verify reliable database connectivity
 * **Context:** Foundation for all database operations
 * **Acceptance Criteria:**
-  * [ ] Connection test script created
-  * [ ] Success/failure cases handled
-  * [ ] Connection pooling verified
-  * [ ] Timeout scenarios tested
+  * [x] Connection test script created
+  * [x] Success/failure cases handled
+  * [x] Connection pooling verified
+  * [x] Timeout scenarios tested
 * **Definition of Done:**
-  * [ ] 100% connection success rate
-  * [ ] Proper error messages for failures
-  * [ ] Performance within requirements
+  * [x] 100% connection success rate
+  * [x] Proper error messages for failures
+  * [x] Performance within requirements
 
 ### Task 5.2: Security Testing
 * **Role:** Security Engineer / QA Engineer
 * **Objective:** Validate RLS policies work as intended
 * **Context:** Critical for data protection
 * **Acceptance Criteria:**
-  * [ ] Anonymous read access verified
-  * [ ] Write operations blocked confirmed
-  * [ ] SQL injection attempts prevented
-  * [ ] Policy bypass attempts failed
+  * [x] Anonymous read access verified
+  * [x] Write operations blocked confirmed
+  * [x] SQL injection attempts prevented
+  * [x] Policy bypass attempts failed
 * **Definition of Done:**
-  * [ ] Security test suite complete
-  * [ ] All tests passing
-  * [ ] No vulnerabilities found
+  * [x] Security test suite complete
+  * [x] All tests passing
+  * [x] No vulnerabilities found
 
 ---
 
@@ -267,9 +267,9 @@ This document translates the FSD into actionable engineering tasks. Our primary 
   * Troubleshooting guide
   * Architecture decisions record
 * **Definition of Done:**
-  * [ ] New developer can set up in <30 minutes
-  * [ ] All steps clearly documented
-  * [ ] Common issues addressed
+  * [x] New developer can set up in <30 minutes
+  * [x] All steps clearly documented
+  * [x] Common issues addressed
 
 ---
 
@@ -277,19 +277,19 @@ This document translates the FSD into actionable engineering tasks. Our primary 
 
 | Task ID | Description | Assignee | Estimated Hours | Status |
 |---------|-------------|----------|-----------------|---------|
-| 1.1 | Create Supabase Project | - | 0.5 | Not Started |
-| 1.2 | Configure Environment Variables | - | 0.5 | Not Started |
-| 2.1 | Create Core Tables | - | 1.5 | Not Started |
-| 2.2 | Implement Relationships | - | 1.0 | Not Started |
-| 2.3 | Add Performance Indexes | - | 0.5 | Not Started |
-| 3.1 | Enable RLS on All Tables | - | 0.5 | Not Started |
-| 3.2 | Create Public Read Policies | - | 1.0 | Not Started |
-| 3.3 | Create RLS Policies for Junction Tables | - | 1.0 | Not Started |
-| 4.1 | Validate Schema Compatibility | - | 0.5 | Not Started |
-| 4.2 | Create Verification Queries | - | 0.5 | Not Started |
-| 5.1 | Connection Testing | - | 1.0 | Not Started |
-| 5.2 | Security Testing | - | 1.0 | Not Started |
-| 6.1 | Setup Documentation | - | 1.0 | Not Started |
+| 1.1 | Create Supabase Project | - | 0.5 | ✅ Completed |
+| 1.2 | Configure Environment Variables | - | 0.5 | ✅ Completed |
+| 2.1 | Create Core Tables | - | 1.5 | ✅ Completed |
+| 2.2 | Implement Relationships | - | 1.0 | ✅ Completed |
+| 2.3 | Add Performance Indexes | - | 0.5 | ✅ Completed |
+| 3.1 | Enable RLS on All Tables | - | 0.5 | ✅ Completed |
+| 3.2 | Create Public Read Policies | - | 1.0 | ✅ Completed |
+| 3.3 | Create RLS Policies for Junction Tables | - | 1.0 | ✅ Completed |
+| 4.1 | Validate Schema Compatibility | - | 0.5 | ✅ Completed |
+| 4.2 | Create Verification Queries | - | 0.5 | ✅ Completed |
+| 5.1 | Connection Testing | - | 1.0 | ✅ Completed |
+| 5.2 | Security Testing | - | 1.0 | ✅ Completed |
+| 6.1 | Setup Documentation | - | 1.0 | ✅ Completed |
 | **Total** | | | **10.5** | |
 
 ---
@@ -298,14 +298,14 @@ This document translates the FSD into actionable engineering tasks. Our primary 
 
 The Supabase Infrastructure Setup feature is complete when:
 
-- [ ] All tasks marked as complete
-- [ ] Database accessible from application
+- [x] All tasks marked as complete
+- [x] Database accessible from application
 - [ ] All tests passing in CI/CD pipeline
-- [ ] Performance meets <100ms requirement
-- [ ] Security audit passed
-- [ ] Documentation reviewed and approved
-- [ ] Team successfully connected locally
-- [ ] Ready for data migration
+- [x] Performance meets <100ms requirement
+- [x] Security audit passed
+- [x] Documentation reviewed and approved
+- [x] Team successfully connected locally
+- [x] Ready for data migration
 
 ---
 
