@@ -1,29 +1,24 @@
 const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { loadEnvironmentVariables, extractProjectReference } = require('./utils/env-loader');
 
-// Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
-}
+// Load environment variables using the centralized utility
+loadEnvironmentVariables();
 
-// Extract project reference from Supabase URL
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || 'your-project-ref';
+// Get project reference using the utility function
+const projectRef = process.env.SUPABASE_PROJECT_REF || 
+                  extractProjectReference(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+                  'your-project-ref';
 
 console.log('🔄 Applying Supabase Migrations\n');
+
+// Display project reference info
+if (projectRef === 'your-project-ref') {
+  console.log('⚠️  Project reference not found in environment');
+  console.log('   Please set SUPABASE_PROJECT_REF in your .env.local file');
+  console.log('   or ensure NEXT_PUBLIC_SUPABASE_URL is set correctly\n');
+} else {
+  console.log(`📌 Project Reference: ${projectRef}\n`);
+}
 
 // Check if Supabase CLI is available
 try {

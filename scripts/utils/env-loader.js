@@ -19,7 +19,19 @@ function loadEnvironmentVariables(envFileName = '.env.local') {
       const equalIndex = line.indexOf('=');
       if (equalIndex > 0) {
         const key = line.substring(0, equalIndex).trim();
-        const value = line.substring(equalIndex + 1).trim();
+        let value = line.substring(equalIndex + 1).trim();
+        
+        // Handle quoted values - remove surrounding quotes if they match
+        if (value.length >= 2) {
+          const firstChar = value[0];
+          const lastChar = value[value.length - 1];
+          if ((firstChar === '"' && lastChar === '"') || 
+              (firstChar === "'" && lastChar === "'")) {
+            // Remove the surrounding quotes
+            value = value.substring(1, value.length - 1);
+          }
+        }
+        
         process.env[key] = value;
         loadedVars[key] = value;
       }
