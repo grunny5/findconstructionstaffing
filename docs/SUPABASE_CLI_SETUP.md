@@ -39,8 +39,14 @@ supabase --version
 
 3. **Link to Your Project**
    ```bash
-   supabase link --project-ref chyaqualjbhkykgofcov
+   supabase link --project-ref YOUR_PROJECT_REF
    ```
+   
+   > **Note:** Replace `YOUR_PROJECT_REF` with your actual project reference. You can find this in your Supabase dashboard:
+   > - Go to your project in the [Supabase Dashboard](https://app.supabase.com)
+   > - Navigate to Settings → General
+   > - Look for "Reference ID" (it will be a string like `abcdefghijklmnopqrst`)
+   
    You'll need your database password (from when you created the project).
 
 ## Benefits of Using CLI

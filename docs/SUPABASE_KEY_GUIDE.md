@@ -7,7 +7,7 @@
    - Log in to your account
 
 2. **Select Your Project**
-   - Click on your project: `chyaqualjbhkykgofcov`
+   - Click on your project from the dashboard
 
 3. **Navigate to API Settings**
    - Click on "Settings" in the left sidebar

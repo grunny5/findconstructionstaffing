@@ -32,11 +32,11 @@
 supabase login
 
 # Initialize in your project folder
-cd C:\Users\tedgr\findconstructionstaffing-1
+cd YOUR_PROJECT_DIRECTORY
 supabase init
 
-# Link to your project
-supabase link --project-ref chyaqualjbhkykgofcov
+# Link to your project (find your reference ID in Supabase Dashboard > Settings > General)
+supabase link --project-ref YOUR_PROJECT_REF
 
 # Push the migration
 supabase db push

@@ -34,7 +34,7 @@ try {
 }
 
 console.log('📋 Please run this SQL in your Supabase dashboard:\n');
-console.log('1. Go to: https://supabase.com/dashboard/project/chyaqualjbhkykgofcov');
+console.log('1. Go to your Supabase project dashboard');
 console.log('2. Navigate to SQL Editor');
 console.log('3. Copy and paste the following SQL:\n');
 console.log('='.repeat(60));

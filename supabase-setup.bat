@@ -44,8 +44,11 @@ echo.
 
 echo Step 3: Link to your project
 echo ---------------------------
-echo Linking to project: chyaqualjbhkykgofcov
-"%SUPABASE_CMD%" link --project-ref chyaqualjbhkykgofcov
+echo You need to provide your project reference ID.
+echo Find it in Supabase Dashboard: Settings - General - Reference ID
+echo.
+set /p PROJECT_REF="Enter your Supabase project reference ID: "
+"%SUPABASE_CMD%" link --project-ref %PROJECT_REF%
 echo.
 
 echo Step 4: Push migrations

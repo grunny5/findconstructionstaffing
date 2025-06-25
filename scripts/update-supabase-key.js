@@ -46,8 +46,14 @@ rl.question('Paste your anon public key here: ', (anonKey) => {
     console.error('\n⚠️  Warning: Could not decode JWT token. It may be malformed.');
   }
 
+  console.log('\n⚠️  Note: This script is outdated. Please update your .env.local manually.');
+  console.log('   Copy .env.local.template to .env.local and add your Supabase credentials.');
+  rl.close();
+  process.exit(0);
+  
+  // The code below is kept for reference but should not be used
   const envPath = path.join(__dirname, '..', '.env.local');
-  const envContent = `NEXT_PUBLIC_SUPABASE_URL=https://chyaqualjbhkykgofcov.supabase.co
+  const envContent = `NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${trimmedKey}`;
 
   try {
