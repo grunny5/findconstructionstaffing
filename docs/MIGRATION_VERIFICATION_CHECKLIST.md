@@ -4,13 +4,15 @@
 
 This checklist ensures data migration from mock data to Supabase is complete and accurate.
 
+> **Note:** For detailed task definitions and implementation steps, see [`tasks/0001-supabase-infrastructure-tasks.md`](../tasks/0001-supabase-infrastructure-tasks.md)
+
 ## Pre-Migration Checklist
 
-- [ ] Database schema created (Task 2.1)
-- [ ] Junction tables created (Task 2.2)
-- [ ] Indexes applied (Task 2.3)
-- [ ] RLS policies configured (Tasks 3.1-3.3)
-- [ ] Schema compatibility validated (Task 4.1)
+- [ ] Database schema created
+- [ ] Junction tables created
+- [ ] Indexes applied
+- [ ] RLS policies configured
+- [ ] Schema compatibility validated
 
 ## Post-Migration Verification
 
