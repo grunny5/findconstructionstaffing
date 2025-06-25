@@ -137,6 +137,33 @@ describe('parseAgenciesQuery', () => {
     }
   });
 
+  it('should handle multiple values for same key without brackets', () => {
+    const params = new URLSearchParams();
+    params.append('trades', 'electricians');
+    params.append('trades', 'plumbers');
+    params.append('trades', 'carpenters');
+
+    const result = parseAgenciesQuery(params);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.trades).toEqual(['electricians', 'plumbers', 'carpenters']);
+    }
+  });
+
+  it('should handle mixed array notation', () => {
+    const params = new URLSearchParams();
+    // Some frameworks send first value without brackets, then subsequent with brackets
+    params.append('trades', 'electricians');
+    params.append('trades[]', 'plumbers');
+
+    const result = parseAgenciesQuery(params);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      // Both should be treated as the same parameter
+      expect(result.data.trades).toEqual(['electricians', 'plumbers']);
+    }
+  });
+
   it('should validate search length', () => {
     const params = new URLSearchParams({
       search: 'a'.repeat(101)

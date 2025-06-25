@@ -62,29 +62,35 @@ export function parseAgenciesQuery(searchParams: URLSearchParams): {
     // Convert URLSearchParams to object for Zod validation
     const params: Record<string, string | string[]> = {};
     
-    searchParams.forEach((value, key) => {
-      // Handle array parameters (trades[], states[])
-      if (key.endsWith('[]')) {
-        const baseKey = key.slice(0, -2);
-        if (!params[baseKey]) {
-          params[baseKey] = [];
-        }
-        if (Array.isArray(params[baseKey])) {
-          (params[baseKey] as string[]).push(value);
-        }
-      } else {
-        // Handle single parameters
-        if (params[key]) {
-          // Convert to array if we see the same key multiple times
-          if (!Array.isArray(params[key])) {
-            params[key] = [params[key] as string];
-          }
-          (params[key] as string[]).push(value);
-        } else {
-          params[key] = value;
-        }
+    // Parse URLSearchParams with support for array notation (key[])
+    // First pass: collect all values, tracking which keys use array notation
+    const values = new Map<string, string[]>();
+    const hasArrayNotation = new Set<string>();
+    
+    for (const [key, value] of searchParams.entries()) {
+      const isArrayNotation = key.endsWith('[]');
+      const cleanKey = isArrayNotation ? key.slice(0, -2) : key;
+      
+      if (isArrayNotation) {
+        hasArrayNotation.add(cleanKey);
       }
-    });
+      
+      if (!values.has(cleanKey)) {
+        values.set(cleanKey, []);
+      }
+      values.get(cleanKey)!.push(value);
+    }
+    
+    // Second pass: build params object
+    for (const [key, valueArray] of values.entries()) {
+      if (valueArray.length === 1 && !hasArrayNotation.has(key)) {
+        // Single value without array notation
+        params[key] = valueArray[0];
+      } else {
+        // Multiple values or uses array notation
+        params[key] = valueArray;
+      }
+    }
 
     const result = AgenciesQuerySchema.parse(params);
     return { success: true, data: result };
