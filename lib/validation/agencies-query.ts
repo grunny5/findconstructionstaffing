@@ -98,14 +98,55 @@ export function parseAgenciesQuery(searchParams: URLSearchParams): {
 
 /**
  * Sanitize search input to prevent injection attacks
+ * 
+ * This function removes potentially dangerous characters while preserving
+ * valid search terms. It protects against:
+ * - SQL injection attempts
+ * - XSS attacks
+ * - Command injection
+ * - Path traversal
  */
 export function sanitizeSearchInput(input: string): string {
-  return input
-    .trim()
-    // Remove potentially dangerous characters
-    .replace(/[<>\"'&]/g, '')
-    // Replace multiple spaces with single space
-    .replace(/\s+/g, ' ')
-    // Remove leading/trailing whitespace again
-    .trim();
+  // First trim whitespace
+  let sanitized = input.trim();
+  
+  // Remove null bytes and other control characters
+  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  
+  // Remove SQL comment indicators before other processing
+  sanitized = sanitized.replace(/--/g, '');
+  sanitized = sanitized.replace(/\/\*/g, '');
+  sanitized = sanitized.replace(/\*\//g, '');
+  
+  // Remove common SQL/XSS keywords if they appear as whole words
+  // This is done BEFORE removing special characters so we can catch
+  // patterns like <script> before the brackets are removed
+  const dangerousKeywords = [
+    'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'UNION',
+    'EXEC', 'EXECUTE', 'SCRIPT', 'JAVASCRIPT', 'VBSCRIPT',
+    'ONLOAD', 'ONERROR', 'ONCLICK', 'ALERT'
+  ];
+  
+  const keywordRegex = new RegExp(
+    `\\b(${dangerousKeywords.join('|')})\\b`,
+    'gi'
+  );
+  sanitized = sanitized.replace(keywordRegex, '');
+  
+  // Remove characters commonly used in SQL injection and XSS
+  // Keep alphanumeric, spaces, and common punctuation used in business names
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-_.,'&]/g, '');
+  
+  // Replace multiple spaces with single space
+  sanitized = sanitized.replace(/\s+/g, ' ');
+  
+  // Final trim
+  sanitized = sanitized.trim();
+  
+  // Limit length to prevent DoS
+  if (sanitized.length > 100) {
+    sanitized = sanitized.substring(0, 100).trim();
+  }
+  
+  return sanitized;
 }
