@@ -1,21 +1,19 @@
 const fs = require('fs');
 const path = require('path');
+const { loadEnvironmentVariables, verifyRequiredVariables } = require('./utils/env-loader');
 
 // Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
+loadEnvironmentVariables();
+
+// Verify required variables
+try {
+  verifyRequiredVariables([
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  ]);
+} catch (error) {
+  console.error(`❌ ${error.message}`);
+  process.exit(1);
 }
 
 async function runConnectionTests() {

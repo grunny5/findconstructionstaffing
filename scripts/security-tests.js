@@ -1,21 +1,19 @@
 const fs = require('fs');
 const path = require('path');
+const { loadEnvironmentVariables, verifyRequiredVariables } = require('./utils/env-loader');
 
 // Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
+loadEnvironmentVariables();
+
+// Verify required variables
+try {
+  verifyRequiredVariables([
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  ]);
+} catch (error) {
+  console.error(`❌ ${error.message}`);
+  process.exit(1);
 }
 
 async function runSecurityTests() {
@@ -343,26 +341,55 @@ async function runSecurityTests() {
   
   // Security Status
   console.log('\n📊 Security Status:');
-  const criticalTests = [
-    'Anonymous Read Access',
-    'Block INSERT on agencies',
-    'Block UPDATE operations',
-    'Block DELETE operations',
-    'SQL Injection Prevention',
-    'RLS hides inactive agencies',
-    'Junction table security'
-  ];
   
-  const criticalPassed = results.tests.filter(t => 
-    criticalTests.some(ct => t.name.includes(ct)) && t.status === 'PASS'
-  ).length;
+  // Define critical tests with their exact names as they appear in results
+  const criticalTestsMapping = {
+    'Anonymous Read Access': 'Anonymous Read Access',
+    'Block INSERT on agencies': 'Block INSERT on agencies',
+    'Block INSERT on trades': 'Block INSERT on trades',
+    'Block INSERT on regions': 'Block INSERT on regions',
+    'Block UPDATE operations': 'Block UPDATE operations',
+    'Block DELETE operations': 'Block DELETE operations',
+    'RLS hides inactive agencies': 'RLS hides inactive agencies',
+    'Junction table security': 'Junction table security'
+  };
   
-  if (criticalPassed === criticalTests.length) {
+  // Get list of critical test names
+  const criticalTestNames = Object.values(criticalTestsMapping);
+  
+  // Find critical tests that passed using exact name matching
+  const criticalTestResults = results.tests.filter(t => 
+    criticalTestNames.includes(t.name)
+  );
+  
+  const criticalPassed = criticalTestResults.filter(t => t.status === 'PASS').length;
+  const sqlInjectionTests = results.tests.filter(t => 
+    t.name.startsWith('SQL Injection Prevention:')
+  );
+  const sqlInjectionPassed = sqlInjectionTests.filter(t => t.status === 'PASS').length;
+  
+  // Check if all critical tests passed
+  const totalCriticalTests = criticalTestResults.length + sqlInjectionTests.length;
+  const totalCriticalPassed = criticalPassed + sqlInjectionPassed;
+  
+  if (totalCriticalPassed === totalCriticalTests && totalCriticalTests > 0) {
     console.log('✅ All critical security tests passed');
+    console.log(`   - Core security tests: ${criticalPassed}/${criticalTestResults.length}`);
+    console.log(`   - SQL injection tests: ${sqlInjectionPassed}/${sqlInjectionTests.length}`);
     console.log('🛡️  The database is properly secured');
   } else {
-    console.log(`⚠️  Only ${criticalPassed}/${criticalTests.length} critical tests passed`);
+    console.log(`⚠️  Only ${totalCriticalPassed}/${totalCriticalTests} critical tests passed`);
+    console.log(`   - Core security tests: ${criticalPassed}/${criticalTestResults.length}`);
+    console.log(`   - SQL injection tests: ${sqlInjectionPassed}/${sqlInjectionTests.length}`);
     console.log('🔴 Security vulnerabilities detected!');
+    
+    // Show which critical tests failed
+    const failedTests = [...criticalTestResults, ...sqlInjectionTests]
+      .filter(t => t.status !== 'PASS');
+    if (failedTests.length > 0) {
+      console.log('\n   Failed critical tests:');
+      failedTests.forEach(t => console.log(`   - ${t.name}`));
+    }
   }
   
   // Save test results
