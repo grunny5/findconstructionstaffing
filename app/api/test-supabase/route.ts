@@ -33,7 +33,7 @@ export async function GET() {
         error: error.message,
         code: error.code,
         details: error
-      }, { status: 401 });
+      }, { status: 500 });
     }
 
     return NextResponse.json({ 
