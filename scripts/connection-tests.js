@@ -130,11 +130,11 @@ async function runConnectionTests() {
       supabase.from('agencies').select('id').limit(1)
     );
     
-    const results4 = await Promise.all(promises);
+    const concurrentResults = await Promise.all(promises);
     const duration = Date.now() - start;
     const avgTime = duration / 10;
     
-    const allSuccessful = results4.every(r => !r.error);
+    const allSuccessful = concurrentResults.every(r => !r.error);
     
     if (allSuccessful) {
       console.log(`✅ PASS - All 10 requests completed`);

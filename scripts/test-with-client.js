@@ -1,22 +1,8 @@
-// Manually load environment variables
-const fs = require('fs');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+const { loadEnvironmentVariables } = require('./utils/env-loader');
 
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
-}
+// Load environment variables
+loadEnvironmentVariables();
 
 async function testSupabaseClient() {
   console.log('🔍 Testing Supabase with client library...\n');
@@ -29,8 +15,6 @@ async function testSupabaseClient() {
   console.log(`Key: ${key ? key.substring(0, 50) + '...' : 'NOT SET'}\n`);
   
   try {
-    const { createClient } = require('@supabase/supabase-js');
-    
     console.log('✅ Supabase client library loaded\n');
     
     // Create client

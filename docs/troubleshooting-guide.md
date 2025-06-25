@@ -310,28 +310,182 @@ async function debugSchema() {
 ## Emergency Procedures
 
 ### Database Corruption
-1. Stop all write operations
-2. Contact Supabase support
-3. Restore from backup
+1. **Stop all write operations immediately**
+   ```bash
+   # Set your app to maintenance mode
+   npm run maintenance:enable
+   
+   # Or manually disable write endpoints in your API
+   ```
+
+2. **Check database status in Supabase Dashboard**
+   - Go to: https://supabase.com/dashboard/project/[YOUR_PROJECT_REF]/database/backups
+   - Check latest backup timestamp
+   - Note the backup ID for potential restore
+
+3. **Contact Supabase support urgently**
+   - **Email**: support@supabase.io
+   - **Dashboard**: Click "Support" button in your project dashboard
+   - **Discord**: https://discord.supabase.com (for immediate community help)
+   - Include: Project ref, time of corruption, last known good state
+
+4. **Restore from backup**
+   ```sql
+   -- Via Supabase Dashboard: Database > Backups > Restore
+   -- Or contact support with backup ID for assistance
+   ```
+
+5. **Verify data integrity after restore**
+   ```sql
+   -- Check row counts
+   SELECT 'agencies' as table_name, COUNT(*) as row_count FROM agencies
+   UNION ALL
+   SELECT 'trades', COUNT(*) FROM trades
+   UNION ALL
+   SELECT 'regions', COUNT(*) FROM regions;
+   ```
 
 ### Security Breach
-1. Rotate all API keys immediately
-2. Review access logs
-3. Enable additional RLS policies
-4. Audit recent changes
+1. **Rotate all API keys immediately**
+   ```bash
+   # 1. Generate new keys in Supabase Dashboard
+   # Settings > API > Regenerate anon key
+   # Settings > API > Regenerate service role key
+   
+   # 2. Update .env.local immediately
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_new_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_new_service_key
+   
+   # 3. Deploy changes
+   npm run build && npm run deploy
+   ```
+
+2. **Review access logs**
+   ```sql
+   -- Check recent authentication attempts
+   SELECT 
+     created_at,
+     ip,
+     user_agent,
+     email
+   FROM auth.audit_log_entries
+   WHERE created_at > NOW() - INTERVAL '24 hours'
+   ORDER BY created_at DESC;
+   
+   -- Check for suspicious API usage
+   SELECT 
+     path,
+     method,
+     ip,
+     created_at
+   FROM storage.api_logs  -- if logging is enabled
+   WHERE created_at > NOW() - INTERVAL '24 hours'
+   AND status_code NOT IN (200, 201, 204);
+   ```
+
+3. **Enable emergency RLS policies**
+   ```sql
+   -- Temporarily block all anonymous access
+   ALTER TABLE agencies ENABLE ROW LEVEL SECURITY;
+   ALTER TABLE agencies FORCE ROW LEVEL SECURITY;
+   
+   -- Create emergency lockdown policy
+   CREATE POLICY "emergency_lockdown" ON agencies
+     FOR ALL
+     TO authenticated
+     USING (false);
+   ```
+
+4. **Audit recent changes**
+   ```bash
+   # Check git history for unauthorized commits
+   git log --oneline -20
+   
+   # Check for modified files
+   git status
+   git diff
+   ```
+
+5. **Report the breach**
+   - **Supabase Security**: security@supabase.io
+   - Document: Time of discovery, affected systems, actions taken
 
 ### Performance Crisis
-1. Check current connections:
+1. **Check current connections and active queries**
    ```sql
+   -- Current connection count
+   SELECT count(*) as total_connections,
+          count(*) FILTER (WHERE state = 'active') as active_connections,
+          count(*) FILTER (WHERE state = 'idle') as idle_connections
+   FROM pg_stat_activity;
+   
+   -- Long-running queries
+   SELECT 
+     pid,
+     now() - pg_stat_activity.query_start AS duration,
+     query,
+     state
+   FROM pg_stat_activity
+   WHERE (now() - pg_stat_activity.query_start) > interval '2 minutes'
+   AND state = 'active'
+   ORDER BY duration DESC;
+   ```
+
+2. **Kill problematic queries**
+   ```sql
+   -- Kill specific query by PID
+   SELECT pg_terminate_backend(12345); -- replace with actual PID
+   
+   -- Kill all queries running longer than 5 minutes
+   SELECT pg_terminate_backend(pid)
+   FROM pg_stat_activity
+   WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes'
+   AND state = 'active'
+   AND pid <> pg_backend_pid();
+   
+   -- Kill all connections from a specific IP
+   SELECT pg_terminate_backend(pid)
+   FROM pg_stat_activity
+   WHERE client_addr = '1.2.3.4'::inet;
+   ```
+
+3. **Emergency performance optimizations**
+   ```sql
+   -- Disable expensive views temporarily
+   ALTER VIEW expensive_view RENAME TO expensive_view_disabled;
+   
+   -- Create emergency simplified view
+   CREATE VIEW expensive_view AS
+   SELECT id, name FROM agencies WHERE is_active = true;
+   
+   -- Analyze tables to update statistics
+   ANALYZE agencies;
+   ANALYZE trades;
+   ANALYZE regions;
+   ```
+
+4. **Scale up resources (if needed)**
+   - Go to: https://supabase.com/dashboard/project/[YOUR_PROJECT_REF]/settings/billing
+   - Upgrade compute resources temporarily
+   - Contact support for immediate scaling: support@supabase.io
+
+5. **Monitor recovery**
+   ```sql
+   -- Monitor connection recovery
    SELECT count(*) FROM pg_stat_activity;
+   
+   -- Check query performance
+   SELECT * FROM pg_stat_statements 
+   ORDER BY total_time DESC 
+   LIMIT 10;
    ```
-2. Kill long-running queries:
-   ```sql
-   SELECT pg_terminate_backend(pid) 
-   FROM pg_stat_activity 
-   WHERE query_time > interval '5 minutes';
-   ```
-3. Temporarily disable complex queries
+
+### Emergency Contacts
+- **Supabase Support Email**: support@supabase.io
+- **Supabase Status Page**: https://status.supabase.com
+- **Discord Community**: https://discord.supabase.com
+- **Enterprise Support** (if applicable): Check your support agreement
+- **Project Dashboard Support**: Click "Support" button in dashboard
 
 ---
 

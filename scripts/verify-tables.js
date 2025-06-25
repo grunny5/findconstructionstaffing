@@ -1,25 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+const { loadEnvironmentVariables, verifyRequiredVariables } = require('./utils/env-loader');
 
 // Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
-}
+loadEnvironmentVariables();
 
 async function verifyTables() {
   console.log('🔍 Verifying Supabase tables...\n');
+  
+  // Verify required environment variables
+  try {
+    verifyRequiredVariables(['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']);
+  } catch (error) {
+    console.error('❌ ' + error.message);
+    console.error('\n📋 Please ensure your .env.local file contains these variables.');
+    console.error('   See .env.example for the required format.');
+    process.exit(1);
+  }
   
   const { createClient } = require('@supabase/supabase-js');
   
@@ -86,10 +81,17 @@ async function verifyTables() {
         console.log('✅ Successfully inserted test trade');
         
         // Clean up test data
-        await supabase
+        const { error: deleteError } = await supabase
           .from('trades')
           .delete()
           .eq('id', trade.id);
+        
+        if (deleteError) {
+          console.log(`⚠️  Failed to clean up test data: ${deleteError.message}`);
+          console.log('   Test data may remain in the database.');
+        } else {
+          console.log('✅ Test data cleaned up successfully');
+        }
       }
     } catch (err) {
       console.log(`⚠️  Test insertion skipped: ${err.message}`);

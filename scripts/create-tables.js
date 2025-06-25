@@ -1,36 +1,64 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
+// Load environment variables using dotenv if available, otherwise fall back to manual parsing
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
+} catch (error) {
+  // dotenv not available, fall back to manual parsing
+  const envPath = path.join(__dirname, '..', '.env.local');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split('\n').forEach(line => {
+      line = line.trim();
+      if (!line || line.startsWith('#')) return;
+      
+      const equalIndex = line.indexOf('=');
+      if (equalIndex > 0) {
+        const key = line.substring(0, equalIndex).trim();
+        const value = line.substring(equalIndex + 1).trim();
+        process.env[key] = value;
+      }
+    });
+  }
 }
 
 async function createTables() {
   console.log('🏗️  Creating Supabase tables...\n');
   
+  // Validate required environment variables
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('❌ Missing required environment variables:');
+    if (!supabaseUrl) {
+      console.error('   - NEXT_PUBLIC_SUPABASE_URL is not set');
+    }
+    if (!supabaseAnonKey) {
+      console.error('   - NEXT_PUBLIC_SUPABASE_ANON_KEY is not set');
+    }
+    console.error('\n📋 Please ensure your .env.local file contains these variables.');
+    console.error('   See .env.example for the required format.');
+    process.exit(1);
+  }
+  
   const { createClient } = require('@supabase/supabase-js');
   
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
   
   // Read SQL file
   const sqlPath = path.join(__dirname, '..', 'supabase', 'migrations', '001_create_core_tables.sql');
-  const sql = fs.readFileSync(sqlPath, 'utf8');
+  let sql;
+  
+  try {
+    sql = fs.readFileSync(sqlPath, 'utf8');
+  } catch (error) {
+    console.error('❌ Error reading SQL migration file:', error.message);
+    console.error(`   File path: ${sqlPath}`);
+    console.error('   Please ensure the migration file exists.');
+    process.exit(1);
+  }
   
   console.log('📄 Executing SQL migration...');
   console.log(`File: ${sqlPath}\n`);

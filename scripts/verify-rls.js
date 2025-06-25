@@ -51,13 +51,21 @@ async function verifyRLS() {
         .limit(1);
       
       if (error) {
-        if (error.message.includes('permission denied') || 
-            error.message.includes('new row violates row-level security policy')) {
+        // Check for RLS violations using error code or message patterns (consistent with test-rls-insert.js)
+        const isRLSViolation = error.code === '42501' || // PostgreSQL insufficient_privilege error
+                              error.code === 'PGRST301' || // PostgREST RLS violation
+                              (error.message && error.message.toLowerCase().includes('row-level security')) ||
+                              (error.message && error.message.toLowerCase().includes('policy')) ||
+                              (error.message && error.message.toLowerCase().includes('permission denied'));
+        
+        if (isRLSViolation) {
           console.log(`✅ RLS is ENABLED - Access denied as expected`);
+          console.log(`   Error code: ${error.code || 'N/A'}`);
           rlsEnabled++;
           accessDenied++;
         } else {
           console.log(`⚠️  Unexpected error: ${error.message}`);
+          console.log(`   Error code: ${error.code || 'N/A'}`);
         }
       } else {
         console.log(`❌ RLS might be DISABLED - Query succeeded without policies`);

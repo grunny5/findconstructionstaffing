@@ -1,25 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+const { loadEnvironmentVariables, verifyRequiredVariables } = require('./utils/env-loader');
 
 // Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
-}
+loadEnvironmentVariables();
 
 async function verifyReadPolicies() {
   console.log('📖 Verifying public read policies...\n');
+  
+  // Verify required environment variables
+  try {
+    verifyRequiredVariables(['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']);
+  } catch (error) {
+    console.error('❌ ' + error.message);
+    console.error('\n📋 Please ensure your .env.local file contains these variables.');
+    console.error('   See .env.example for the required format.');
+    process.exit(1);
+  }
   
   const { createClient } = require('@supabase/supabase-js');
   
@@ -84,10 +79,27 @@ async function verifyReadPolicies() {
       slug: 'test-trade-policy'
     });
   
-  if (writeError && writeError.message.includes('new row violates row-level security policy')) {
-    console.log('✅ Write access properly blocked');
+  if (writeError) {
+    // Check for various error indicators that signify blocked write access
+    const isWriteBlocked = 
+      writeError.code === '42501' || // PostgreSQL insufficient_privilege error
+      writeError.code === 'PGRST301' || // PostgREST RLS violation
+      (writeError.message && writeError.message.toLowerCase().includes('row-level security')) ||
+      (writeError.message && writeError.message.toLowerCase().includes('policy')) ||
+      (writeError.message && writeError.message.toLowerCase().includes('permission denied')) ||
+      (writeError.message && writeError.message.toLowerCase().includes('unauthorized'));
+    
+    if (isWriteBlocked) {
+      console.log('✅ Write access properly blocked');
+      console.log(`   Error code: ${writeError.code || 'N/A'}`);
+      console.log(`   Error message: ${writeError.message}`);
+    } else {
+      console.log('⚠️  Unexpected write error:', writeError);
+      console.log('   This may still indicate blocked access, but with an unexpected error format.');
+    }
   } else {
-    console.log('❌ WARNING: Write access may not be properly blocked!');
+    console.log('❌ WARNING: Write access is NOT properly blocked!');
+    console.log('   The insert operation succeeded when it should have failed.');
   }
   
   // Test 5: Test complex query with joins

@@ -36,7 +36,8 @@ if (fs.existsSync(envPath)) {
       const cleanValue = value.replace(/^["']|["']$/g, '');
       
       process.env[key] = cleanValue;
-      console.log(`✓ Set ${key} = ${cleanValue.substring(0, 20)}...`);
+      // Log only the key name for security, not the value
+      console.log(`✓ Set ${key}`);
     }
   });
   console.log('');
@@ -86,7 +87,27 @@ async function testConnection() {
     const url = require('url');
     
     const startTime = Date.now();
-    const parsedUrl = new URL(supabaseUrl);
+    
+    // Validate URL format and protocol
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(supabaseUrl);
+    } catch (error) {
+      console.error('❌ Invalid URL format!');
+      console.error(`   Provided URL: ${supabaseUrl}`);
+      console.error('   Please ensure the URL is properly formatted.');
+      console.error('   Example: https://your-project.supabase.co');
+      process.exit(1);
+    }
+    
+    // Ensure HTTPS protocol for security
+    if (parsedUrl.protocol !== 'https:') {
+      console.error('❌ Security Error: URL must use HTTPS protocol!');
+      console.error(`   Current protocol: ${parsedUrl.protocol}`);
+      console.error('   Supabase requires HTTPS for secure connections.');
+      console.error('   Please update your NEXT_PUBLIC_SUPABASE_URL to use https://');
+      process.exit(1);
+    }
     
     // Make a simple request to the Supabase REST API
     const options = {

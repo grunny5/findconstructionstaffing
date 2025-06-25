@@ -1,8 +1,26 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { loadEnvironmentVariables, extractProjectReference } = require('./utils/env-loader');
+
+// Load environment variables
+loadEnvironmentVariables();
+
+// Get project reference from environment or extract from URL
+const projectRef = process.env.SUPABASE_PROJECT_REF || 
+                  extractProjectReference(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+                  'your-project-ref';
 
 console.log('🚀 Supabase CLI Setup\n');
+
+// Display project reference info
+if (projectRef === 'your-project-ref') {
+  console.log('⚠️  Project reference not found in environment');
+  console.log('   Please set SUPABASE_PROJECT_REF in your .env.local file');
+  console.log('   or ensure NEXT_PUBLIC_SUPABASE_URL is set correctly\n');
+} else {
+  console.log(`📌 Project Reference: ${projectRef}\n`);
+}
 
 // Check if supabase CLI is installed
 try {
@@ -39,7 +57,7 @@ if (fs.existsSync(path.join(__dirname, '..', 'supabase', 'config.toml'))) {
     console.log('\n⚠️  Project is not linked yet');
     console.log('\nTo link your project, run:');
     console.log('```bash');
-    console.log('supabase link --project-ref chyaqualjbhkykgofcov');
+    console.log(`supabase link --project-ref ${projectRef}`);
     console.log('```');
   }
 } else {
@@ -52,7 +70,7 @@ if (fs.existsSync(path.join(__dirname, '..', 'supabase', 'config.toml'))) {
   console.log('   supabase init\n');
   
   console.log('3. Link to your remote project:');
-  console.log('   supabase link --project-ref chyaqualjbhkykgofcov\n');
+  console.log(`   supabase link --project-ref ${projectRef}\n`);
   
   console.log('4. Push the migration:');
   console.log('   supabase db push\n');

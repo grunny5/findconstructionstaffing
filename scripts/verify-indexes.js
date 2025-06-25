@@ -1,25 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+const { loadEnvironmentVariables, verifyRequiredVariables } = require('./utils/env-loader');
 
 // Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
-}
+loadEnvironmentVariables();
 
 async function verifyIndexes() {
   console.log('🔍 Verifying performance indexes...\n');
+  
+  // Verify required environment variables
+  try {
+    verifyRequiredVariables(['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']);
+  } catch (error) {
+    console.error('❌ ' + error.message);
+    console.error('\n📋 Please ensure your .env.local file contains these variables.');
+    console.error('   See .env.example for the required format.');
+    process.exit(1);
+  }
   
   const { createClient } = require('@supabase/supabase-js');
   
@@ -46,8 +41,39 @@ async function verifyIndexes() {
     }).single();
     
     if (error) {
-      // If RPC doesn't exist, we'll check indirectly
-      console.log('📊 Testing index performance with sample queries...\n');
+      // Differentiate between error types
+      let errorType = 'unknown';
+      let errorMessage = error.message || 'Unknown error';
+      
+      if (error.code === 'PGRST202' || errorMessage.includes('could not find the function')) {
+        errorType = 'rpc_not_found';
+        console.log('ℹ️  RPC function not available (expected for anon users)');
+      } else if (error.code === '42501' || errorMessage.includes('permission denied')) {
+        errorType = 'permission_denied';
+        console.log('ℹ️  Permission denied to execute RPC (expected for anon users)');
+      } else if (errorMessage.includes('Invalid API key')) {
+        // This often means the RPC exists but requires service role key
+        errorType = 'insufficient_permissions';
+        console.log('ℹ️  RPC requires elevated permissions (service role key)');
+      } else if (error.code === 'PGRST301' || errorMessage.includes('JWT')) {
+        errorType = 'auth_error';
+        console.log('❌ Authentication error:', errorMessage);
+        console.log('   Please check your anon key is valid');
+        process.exit(1);
+      } else if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT' || errorMessage.includes('network')) {
+        errorType = 'network_error';
+        console.log('❌ Network error:', errorMessage);
+        console.log('   Please check your internet connection and Supabase URL');
+        process.exit(1);
+      }
+      
+      // If RPC doesn't exist or permission denied, we'll check indirectly
+      if (errorType === 'rpc_not_found' || errorType === 'permission_denied' || errorType === 'insufficient_permissions') {
+        console.log('📊 Testing index performance with sample queries instead...\n');
+      } else {
+        console.log(`❌ Unexpected error (${error.code || 'no code'}):`, errorMessage);
+        console.log('📊 Attempting to test index performance with sample queries...\n');
+      }
       
       // Test 1: Name search
       console.log('Test 1: Case-insensitive name search');

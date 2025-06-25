@@ -1,25 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+const { loadEnvironmentVariables, verifyRequiredVariables } = require('./utils/env-loader');
 
 // Load environment variables
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line || line.startsWith('#')) return;
-    
-    const equalIndex = line.indexOf('=');
-    if (equalIndex > 0) {
-      const key = line.substring(0, equalIndex).trim();
-      const value = line.substring(equalIndex + 1).trim();
-      process.env[key] = value;
-    }
-  });
-}
+loadEnvironmentVariables();
 
 async function testRLSInsert() {
   console.log('🔒 Testing RLS by attempting inserts...\n');
+  
+  // Verify required environment variables
+  try {
+    verifyRequiredVariables(['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']);
+  } catch (error) {
+    console.error('❌ ' + error.message);
+    console.error('\n📋 Please ensure your .env.local file contains these variables.');
+    console.error('   See .env.example for the required format.');
+    process.exit(1);
+  }
   
   const { createClient } = require('@supabase/supabase-js');
   
@@ -39,11 +34,18 @@ async function testRLSInsert() {
     .select();
   
   if (agencyError) {
-    if (agencyError.message.includes('new row violates row-level security policy')) {
+    // Check for RLS violations using error code or message patterns
+    const isRLSViolation = agencyError.code === '42501' || // PostgreSQL insufficient_privilege error
+                          agencyError.code === 'PGRST301' || // PostgREST RLS violation
+                          (agencyError.message && agencyError.message.toLowerCase().includes('row-level security')) ||
+                          (agencyError.message && agencyError.message.toLowerCase().includes('policy'));
+    
+    if (isRLSViolation) {
       console.log('✅ RLS WORKING: Insert blocked as expected');
+      console.log(`   Error code: ${agencyError.code || 'N/A'}`);
       console.log(`   Error: ${agencyError.message}`);
     } else {
-      console.log(`⚠️  Unexpected error: ${agencyError.message}`);
+      console.log(`⚠️  Unexpected error:`, agencyError);
     }
   } else {
     console.log('❌ RLS NOT WORKING: Insert succeeded (should have been blocked)');
@@ -60,11 +62,18 @@ async function testRLSInsert() {
     .select();
   
   if (tradeError) {
-    if (tradeError.message.includes('new row violates row-level security policy')) {
+    // Check for RLS violations using error code or message patterns
+    const isRLSViolation = tradeError.code === '42501' || // PostgreSQL insufficient_privilege error
+                          tradeError.code === 'PGRST301' || // PostgREST RLS violation
+                          (tradeError.message && tradeError.message.toLowerCase().includes('row-level security')) ||
+                          (tradeError.message && tradeError.message.toLowerCase().includes('policy'));
+    
+    if (isRLSViolation) {
       console.log('✅ RLS WORKING: Insert blocked as expected');
+      console.log(`   Error code: ${tradeError.code || 'N/A'}`);
       console.log(`   Error: ${tradeError.message}`);
     } else {
-      console.log(`⚠️  Unexpected error: ${tradeError.message}`);
+      console.log(`⚠️  Unexpected error:`, tradeError);
     }
   } else {
     console.log('❌ RLS NOT WORKING: Insert succeeded (should have been blocked)');
