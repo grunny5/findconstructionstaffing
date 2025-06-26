@@ -1,0 +1,63 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+      - develop
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    # Only run on merged PRs or direct pushes to staging/develop
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Deploy to Staging
+        run: |
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > deployment-url.txt
+          echo "DEPLOYMENT_URL=$(cat deployment-url.txt)" >> $GITHUB_ENV
+      
+      - name: Alias to Staging URL
+        run: |
+          vercel alias set $(cat deployment-url.txt) staging.findconstructionstaffing.com --token=${{ secrets.VERCEL_TOKEN }} || true
+      
+      - name: Add Deployment Summary
+        run: |
+          echo "## 🚀 Staging Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Deployed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ env.DEPLOYMENT_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 Staging Deployment Complete\n\nYour changes have been deployed to staging!\n\n**URL:** ${{ env.DEPLOYMENT_URL }}\n\nPlease verify your changes in the staging environment.`
+            })

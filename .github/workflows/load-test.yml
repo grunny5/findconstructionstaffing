@@ -1,0 +1,135 @@
+name: Load Testing
+
+on:
+  # Run on pull requests to main
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/api/agencies/**'
+      - 'lib/supabase.ts'
+      - 'lib/validation/**'
+      - 'tests/load/**'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      concurrent_users:
+        description: 'Number of concurrent users'
+        required: false
+        default: '50'
+      test_duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '60'
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    
+    # Only run if the PR has the 'performance' label or is manually triggered
+    if: contains(github.event.pull_request.labels.*.name, 'performance') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      
+      - name: Start application
+        run: |
+          npm start &
+          echo $! > .pid
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:3000/api/agencies > /dev/null; then
+              echo "API is ready!"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+      
+      - name: Run load test
+        run: |
+          CONCURRENT_USERS="${{ github.event.inputs.concurrent_users || '50' }}"
+          TEST_DURATION="${{ github.event.inputs.test_duration || '60' }}"
+          
+          echo "Running load test with $CONCURRENT_USERS users for $TEST_DURATION seconds"
+          
+          CONCURRENT_USERS=$CONCURRENT_USERS \
+          TEST_DURATION=$TEST_DURATION \
+          node tests/load/simple-load-test.js
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results
+          path: tests/load/results/
+          retention-days: 30
+      
+      - name: Check performance targets
+        run: |
+          # Read the latest summary file
+          SUMMARY=$(ls -t tests/load/results/simple-load-test-summary_*.md | head -1)
+          
+          echo "## Load Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if targets were met
+          if grep -q "❌" "$SUMMARY"; then
+            echo "::error::Performance targets not met. See summary for details."
+            exit 1
+          else
+            echo "::notice::All performance targets met!"
+          fi
+      
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f .pid ]; then
+            kill $(cat .pid) || true
+          fi
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summaryFiles = fs.readdirSync('tests/load/results')
+              .filter(f => f.startsWith('simple-load-test-summary_'))
+              .sort()
+              .reverse();
+            
+            if (summaryFiles.length > 0) {
+              const summary = fs.readFileSync(`tests/load/results/${summaryFiles[0]}`, 'utf8');
+              
+              const comment = `## 🚀 Load Test Results\n\n${summary}`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }

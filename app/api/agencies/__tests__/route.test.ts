@@ -8,6 +8,24 @@ import {
 import { 
   createMockNextRequest 
 } from '@/__tests__/utils/api-mocks';
+import { PerformanceMonitor, ErrorRateTracker } from '@/lib/monitoring/performance';
+
+// Mock performance monitoring
+jest.mock('@/lib/monitoring/performance', () => ({
+  PerformanceMonitor: jest.fn().mockImplementation(() => ({
+    startQuery: jest.fn(),
+    endQuery: jest.fn(),
+    complete: jest.fn().mockReturnValue({
+      responseTime: 50,
+      queryTime: 30
+    })
+  })),
+  ErrorRateTracker: {
+    getInstance: jest.fn().mockReturnValue({
+      recordRequest: jest.fn()
+    })
+  }
+}));
 
 // Mock NextResponse
 jest.mock('next/server', () => ({
@@ -307,6 +325,213 @@ describe('GET /api/agencies', () => {
       await GET(mockRequest);
 
       expect(mockSupabase.order).toHaveBeenCalledWith('name', { ascending: true });
+    });
+  });
+
+  describe('Performance Monitoring', () => {
+    let mockMonitor: any;
+    let mockErrorTracker: any;
+
+    beforeEach(() => {
+      mockMonitor = {
+        startQuery: jest.fn(),
+        endQuery: jest.fn(),
+        complete: jest.fn().mockReturnValue({
+          responseTime: 50,
+          queryTime: 30
+        })
+      };
+      mockErrorTracker = {
+        recordRequest: jest.fn()
+      };
+
+      (PerformanceMonitor as jest.Mock).mockImplementation(() => mockMonitor);
+      (ErrorRateTracker.getInstance as jest.Mock).mockReturnValue(mockErrorTracker);
+    });
+
+    it('should initialize performance monitoring', async () => {
+      mockSupabase.order.mockResolvedValueOnce({
+        data: [],
+        error: null,
+        count: 0
+      });
+
+      // Mock the count query chain
+      let fromCallCount = 0;
+      mockSupabase.from.mockImplementation(() => {
+        fromCallCount++;
+        if (fromCallCount === 2) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockResolvedValue({
+                count: 0,
+                error: null
+              })
+            })
+          };
+        }
+        return mockSupabase;
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies'
+      });
+
+      await GET(mockRequest);
+
+      expect(PerformanceMonitor).toHaveBeenCalledWith('/api/agencies', 'GET');
+      expect(ErrorRateTracker.getInstance).toHaveBeenCalled();
+    });
+
+    it('should track query performance', async () => {
+      mockSupabase.order.mockResolvedValueOnce({
+        data: [],
+        error: null,
+        count: 0
+      });
+
+      // Mock the count query chain
+      let fromCallCount = 0;
+      mockSupabase.from.mockImplementation(() => {
+        fromCallCount++;
+        if (fromCallCount === 2) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockResolvedValue({
+                count: 0,
+                error: null
+              })
+            })
+          };
+        }
+        return mockSupabase;
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies'
+      });
+
+      await GET(mockRequest);
+
+      // Should track both main query and count query
+      expect(mockMonitor.startQuery).toHaveBeenCalledTimes(2);
+      expect(mockMonitor.endQuery).toHaveBeenCalledTimes(2);
+    });
+
+    it('should complete monitoring with success metrics', async () => {
+      const mockAgencies = [
+        {
+          id: '1',
+          name: 'Test Agency',
+          trades: [],
+          regions: []
+        }
+      ];
+
+      mockSupabase.order.mockResolvedValueOnce({
+        data: mockAgencies,
+        error: null,
+        count: 1
+      });
+
+      // Mock the count query chain
+      let fromCallCount = 0;
+      mockSupabase.from.mockImplementation(() => {
+        fromCallCount++;
+        if (fromCallCount === 2) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockResolvedValue({
+                count: 1,
+                error: null
+              })
+            })
+          };
+        }
+        return mockSupabase;
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?search=test'
+      });
+
+      await GET(mockRequest);
+
+      expect(mockMonitor.complete).toHaveBeenCalledWith(
+        HTTP_STATUS.OK,
+        undefined,
+        expect.objectContaining({
+          resultCount: 1,
+          totalCount: 1,
+          hasFilters: true
+        })
+      );
+      expect(mockErrorTracker.recordRequest).toHaveBeenCalledWith('/api/agencies', false);
+    });
+
+    it('should track errors in monitoring', async () => {
+      mockSupabase.order.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Database error', code: 'TEST_ERROR' },
+        count: null
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies'
+      });
+
+      await GET(mockRequest);
+
+      expect(mockMonitor.complete).toHaveBeenCalledWith(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        'Failed to fetch agencies'
+      );
+      expect(mockErrorTracker.recordRequest).toHaveBeenCalledWith('/api/agencies', true);
+    });
+
+    it('should log performance warning when approaching target', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      mockMonitor.complete.mockReturnValue({
+        responseTime: 85,
+        queryTime: 30
+      });
+
+      mockSupabase.order.mockResolvedValueOnce({
+        data: [],
+        error: null,
+        count: 0
+      });
+
+      // Mock the count query chain
+      let fromCallCount = 0;
+      mockSupabase.from.mockImplementation(() => {
+        fromCallCount++;
+        if (fromCallCount === 2) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockResolvedValue({
+                count: 0,
+                error: null
+              })
+            })
+          };
+        }
+        return mockSupabase;
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies'
+      });
+
+      await GET(mockRequest);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[Performance Warning]'),
+        expect.stringContaining('85ms')
+      );
+
+      consoleSpy.mockRestore();
     });
   });
 });

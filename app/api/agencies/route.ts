@@ -9,6 +9,7 @@ import {
 } from '@/types/api';
 import { createHash } from 'crypto';
 import { parseAgenciesQuery, sanitizeSearchInput } from '@/lib/validation/agencies-query';
+import { PerformanceMonitor, ErrorRateTracker } from '@/lib/monitoring/performance';
 
 // This route uses request-time data, so it will be dynamic by default
 
@@ -18,6 +19,9 @@ import { parseAgenciesQuery, sanitizeSearchInput } from '@/lib/validation/agenci
  * Retrieves a list of active agencies with optional filtering
  */
 export async function GET(request: NextRequest) {
+  const monitor = new PerformanceMonitor('/api/agencies', 'GET');
+  const errorTracker = ErrorRateTracker.getInstance();
+  
   try {
     // Check if Supabase client is initialized
     if (!supabase) {
@@ -33,14 +37,19 @@ export async function GET(request: NextRequest) {
           }
         }
       };
-      return NextResponse.json(errorResponse, { 
-      status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
+      const response = NextResponse.json(errorResponse, { 
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      monitor.complete(HTTP_STATUS.INTERNAL_SERVER_ERROR, errorResponse.error.message);
+      errorTracker.recordRequest('/api/agencies', true);
+      
+      return response;
     }
 
     // Parse and validate query parameters
@@ -60,7 +69,7 @@ export async function GET(request: NextRequest) {
           }
         }
       };
-      return NextResponse.json(errorResponse, { 
+      const response = NextResponse.json(errorResponse, { 
         status: HTTP_STATUS.BAD_REQUEST,
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -68,6 +77,11 @@ export async function GET(request: NextRequest) {
           'Expires': '0'
         }
       });
+      
+      monitor.complete(HTTP_STATUS.BAD_REQUEST, 'Invalid query parameters');
+      errorTracker.recordRequest('/api/agencies', true);
+      
+      return response;
     }
 
     const { search, trades, states, limit, offset } = queryParseResult.data;
@@ -106,38 +120,88 @@ export async function GET(request: NextRequest) {
     
     // Apply trade filter if provided
     if (trades && trades.length > 0) {
-      // Filter agencies that have ANY of the specified trades (OR logic)
-      // We need to use a subquery to filter agencies that have at least one matching trade
-      query = query.in(
-        'id',
-        supabase
+      // First, get the trade IDs for the given slugs
+      monitor.startQuery();
+      const { data: tradeData, error: tradeError } = await supabase
+        .from('trades')
+        .select('id')
+        .in('slug', trades);
+      monitor.endQuery();
+      
+      if (tradeError || !tradeData) {
+        throw new Error('Failed to fetch trade data');
+      }
+      
+      const tradeIds = tradeData.map(t => t.id);
+      
+      if (tradeIds.length > 0) {
+        // Get agency IDs that have these trades
+        monitor.startQuery();
+        const { data: agencyTradeData, error: agencyTradeError } = await supabase
           .from('agency_trades')
           .select('agency_id')
-          .in('trade_id', 
-            supabase
-              .from('trades')
-              .select('id')
-              .in('slug', trades)
-          )
-      );
+          .in('trade_id', tradeIds);
+        monitor.endQuery();
+        
+        if (agencyTradeError || !agencyTradeData) {
+          throw new Error('Failed to fetch agency trade data');
+        }
+        
+        const agencyIds = [...new Set(agencyTradeData.map(at => at.agency_id))];
+        
+        if (agencyIds.length > 0) {
+          query = query.in('id', agencyIds);
+        } else {
+          // No agencies match the trade filter
+          query = query.in('id', []);
+        }
+      }
     }
     
     // Apply state filter if provided
     if (states && states.length > 0) {
-      // Filter agencies that service ANY of the specified states (OR logic)
-      // Join through agency_regions to regions table filtered by state codes
-      query = query.in(
-        'id',
-        supabase
+      // First, get the region IDs for the given state codes
+      monitor.startQuery();
+      const { data: regionData, error: regionError } = await supabase
+        .from('regions')
+        .select('id')
+        .in('state_code', states);
+      monitor.endQuery();
+      
+      if (regionError || !regionData) {
+        throw new Error('Failed to fetch region data');
+      }
+      
+      const regionIds = regionData.map(r => r.id);
+      
+      if (regionIds.length > 0) {
+        // Get agency IDs that service these regions
+        monitor.startQuery();
+        const { data: agencyRegionData, error: agencyRegionError } = await supabase
           .from('agency_regions')
           .select('agency_id')
-          .in('region_id',
-            supabase
-              .from('regions')
-              .select('id')
-              .in('state_code', states)
-          )
-      );
+          .in('region_id', regionIds);
+        monitor.endQuery();
+        
+        if (agencyRegionError || !agencyRegionData) {
+          throw new Error('Failed to fetch agency region data');
+        }
+        
+        const agencyIds = [...new Set(agencyRegionData.map(ar => ar.agency_id))];
+        
+        if (agencyIds.length > 0) {
+          // If we already have a trade filter, we need to intersect the results
+          if (trades && trades.length > 0) {
+            // This will automatically intersect with the previous filter
+            query = query.in('id', agencyIds);
+          } else {
+            query = query.in('id', agencyIds);
+          }
+        } else {
+          // No agencies match the state filter
+          query = query.in('id', []);
+        }
+      }
     }
     
     // Apply pagination using validated parameters
@@ -145,8 +209,10 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1)
       .order('name', { ascending: true });
 
-    // Execute the query
+    // Execute the query with performance tracking
+    monitor.startQuery();
     const { data: agencies, error, count } = await query;
+    monitor.endQuery();
 
     if (error) {
       const errorResponse: ErrorResponse = {
@@ -159,14 +225,19 @@ export async function GET(request: NextRequest) {
           }
         }
       };
-      return NextResponse.json(errorResponse, { 
-      status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
+      const response = NextResponse.json(errorResponse, { 
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      monitor.complete(HTTP_STATUS.INTERNAL_SERVER_ERROR, errorResponse.error.message);
+      errorTracker.recordRequest('/api/agencies', true);
+      
+      return response;
     }
 
     // Transform the data to match our API response format
@@ -196,6 +267,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get total count for pagination with same filters applied
+    monitor.startQuery();
     let countQuery = supabase
       .from('agencies')
       .select('id', { count: 'exact', head: true })
@@ -206,39 +278,63 @@ export async function GET(request: NextRequest) {
       countQuery = countQuery.or(`name.fts.${sanitizedSearch},description.fts.${sanitizedSearch},name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
     }
     
+    // For count query with filters, we need to apply the same agency ID filters
+    let countAgencyIds: string[] | null = null;
+    
     // Apply same trade filter to count query
     if (trades && trades.length > 0) {
-      countQuery = countQuery.in(
-        'id',
-        supabase
+      const { data: tradeData } = await supabase
+        .from('trades')
+        .select('id')
+        .in('slug', trades);
+      
+      if (tradeData && tradeData.length > 0) {
+        const tradeIds = tradeData.map(t => t.id);
+        const { data: agencyTradeData } = await supabase
           .from('agency_trades')
           .select('agency_id')
-          .in('trade_id', 
-            supabase
-              .from('trades')
-              .select('id')
-              .in('slug', trades)
-          )
-      );
+          .in('trade_id', tradeIds);
+        
+        if (agencyTradeData) {
+          countAgencyIds = [...new Set(agencyTradeData.map(at => at.agency_id))];
+        }
+      }
     }
     
     // Apply same state filter to count query
     if (states && states.length > 0) {
-      countQuery = countQuery.in(
-        'id',
-        supabase
+      const { data: regionData } = await supabase
+        .from('regions')
+        .select('id')
+        .in('state_code', states);
+      
+      if (regionData && regionData.length > 0) {
+        const regionIds = regionData.map(r => r.id);
+        const { data: agencyRegionData } = await supabase
           .from('agency_regions')
           .select('agency_id')
-          .in('region_id',
-            supabase
-              .from('regions')
-              .select('id')
-              .in('state_code', states)
-          )
-      );
+          .in('region_id', regionIds);
+        
+        if (agencyRegionData) {
+          const stateAgencyIds = [...new Set(agencyRegionData.map(ar => ar.agency_id))];
+          
+          // If we have trade filters too, intersect the results
+          if (countAgencyIds !== null) {
+            countAgencyIds = countAgencyIds.filter(id => stateAgencyIds.includes(id));
+          } else {
+            countAgencyIds = stateAgencyIds;
+          }
+        }
+      }
+    }
+    
+    // Apply the agency ID filter to count query if we have filters
+    if (countAgencyIds !== null) {
+      countQuery = countQuery.in('id', countAgencyIds.length > 0 ? countAgencyIds : []);
     }
 
     const { count: totalCount } = await countQuery;
+    monitor.endQuery();
 
     // Build the response
     const response: AgenciesApiResponse = {
@@ -259,13 +355,18 @@ export async function GET(request: NextRequest) {
     const clientETag = request.headers.get('if-none-match');
     if (clientETag === etag) {
       // Return 304 Not Modified if content hasn't changed
-      return new NextResponse(null, { 
+      const notModifiedResponse = new NextResponse(null, { 
         status: 304,
         headers: {
           'ETag': etag,
           'Cache-Control': `public, max-age=${API_CONSTANTS.CACHE_MAX_AGE}, must-revalidate`
         }
       });
+      
+      monitor.complete(304);
+      errorTracker.recordRequest('/api/agencies', false);
+      
+      return notModifiedResponse;
     }
 
     // Set caching headers for successful response
@@ -276,6 +377,19 @@ export async function GET(request: NextRequest) {
       'Vary': 'Accept-Encoding'
     });
 
+    // Complete monitoring with success metrics
+    const metrics = monitor.complete(HTTP_STATUS.OK, undefined, {
+      resultCount: transformedAgencies.length,
+      totalCount: totalCount || 0,
+      hasFilters: !!(sanitizedSearch || trades?.length || states?.length)
+    });
+    errorTracker.recordRequest('/api/agencies', false);
+    
+    // Log performance warning if approaching target
+    if (metrics.responseTime > 80) {
+      console.warn(`[Performance Warning] /api/agencies approaching 100ms target: ${metrics.responseTime}ms`);
+    }
+    
     return NextResponse.json(response, { 
       status: HTTP_STATUS.OK,
       headers 
@@ -292,7 +406,7 @@ export async function GET(request: NextRequest) {
         }
       }
     };
-    return NextResponse.json(errorResponse, { 
+    const response = NextResponse.json(errorResponse, { 
       status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -300,5 +414,10 @@ export async function GET(request: NextRequest) {
         'Expires': '0'
       }
     });
+    
+    monitor.complete(HTTP_STATUS.INTERNAL_SERVER_ERROR, errorResponse.error.message);
+    errorTracker.recordRequest('/api/agencies', true);
+    
+    return response;
   }
 }

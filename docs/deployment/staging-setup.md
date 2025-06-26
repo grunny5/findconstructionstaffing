@@ -1,0 +1,176 @@
+# Staging Deployment Setup
+
+This guide walks through setting up staging deployment for the FindConstructionStaffing project.
+
+## Prerequisites
+
+1. Vercel account (sign up at vercel.com)
+2. GitHub repository connected
+3. Supabase project for staging/development
+
+## Initial Vercel Setup
+
+### 1. Import Project to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import your GitHub repository
+3. Configure project settings:
+   - **Framework Preset**: Next.js
+   - **Build Command**: `npm run build`
+   - **Install Command**: `npm install`
+
+### 2. Set Environment Variables
+
+In Vercel Dashboard > Settings > Environment Variables, add:
+
+#### For All Environments:
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+#### For Staging/Preview Only:
+```
+NEXT_PUBLIC_ENVIRONMENT=staging
+NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
+```
+
+### 3. Configure Git Branches
+
+In Vercel Dashboard > Settings > Git:
+
+- **Production Branch**: `main`
+- **Preview Branches**: `staging`, `develop`, and all PR branches
+
+## GitHub Secrets Setup
+
+For automated deployments, add these secrets to your GitHub repository:
+
+1. Go to Settings > Secrets and variables > Actions
+2. Add the following secrets:
+
+```
+VERCEL_TOKEN          # Get from: https://vercel.com/account/tokens
+VERCEL_ORG_ID         # Found in: .vercel/project.json after first deploy
+VERCEL_PROJECT_ID     # Found in: .vercel/project.json after first deploy
+```
+
+### Getting Vercel IDs:
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Run `vercel link` in your project
+3. Check `.vercel/project.json` for the IDs
+
+## Deployment Workflows
+
+### Automatic Deployments
+
+- **Production**: Merges to `main` branch
+- **Staging**: Pushes to `staging` or `develop` branches
+- **Preview**: All pull requests
+
+### Manual Deployment
+
+```bash
+# Deploy to staging
+vercel --prod --env staging
+
+# Deploy preview
+vercel
+```
+
+## Environment-Specific Configuration
+
+### Staging Database
+
+Use a separate Supabase project for staging:
+
+1. Create a new Supabase project for staging
+2. Run migrations: `npm run migrate:staging`
+3. Seed test data: `npm run seed`
+
+### Feature Flags
+
+Use environment variables to control features:
+
+```typescript
+const isStaging = process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging';
+
+if (isStaging) {
+  // Enable debug features
+  // Show test banners
+  // Use mock payment processor
+}
+```
+
+## Staging URL Management
+
+### Default Vercel URLs:
+- Production: `your-project.vercel.app`
+- Staging: `your-project-git-staging.vercel.app`
+- Preview: `your-project-pr-123.vercel.app`
+
+### Custom Domain (Optional):
+1. Add domain in Vercel Dashboard > Domains
+2. Configure DNS:
+   - `staging.yourdomain.com` → Staging deployment
+   - `preview.yourdomain.com` → Latest preview
+
+## Monitoring Staging
+
+### Health Checks
+
+Add a health check endpoint:
+
+```typescript
+// app/api/health/route.ts
+export async function GET() {
+  return Response.json({
+    status: 'healthy',
+    environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
+    timestamp: new Date().toISOString()
+  });
+}
+```
+
+### Deployment Notifications
+
+The GitHub Action will:
+- Comment on PRs with deployment URLs
+- Add deployment summaries to workflow runs
+- Send notifications on failures
+
+## Best Practices
+
+1. **Data Isolation**: Never use production data in staging
+2. **Secret Management**: Use different API keys for staging
+3. **Testing**: Run E2E tests against staging before production
+4. **Monitoring**: Set up alerts for staging errors
+5. **Access Control**: Restrict staging access if needed
+
+## Troubleshooting
+
+### Build Failures
+
+1. Check build logs in Vercel Dashboard
+2. Verify environment variables are set
+3. Ensure dependencies are installed
+
+### Environment Variables Not Working
+
+1. Rebuild deployment after adding variables
+2. Check variable names match exactly
+3. Verify variables are set for correct environment
+
+### Database Connection Issues
+
+1. Check Supabase URL is correct
+2. Verify anon key has proper permissions
+3. Ensure staging database is running
+
+## Next Steps
+
+1. Set up production deployment workflow
+2. Configure custom domains
+3. Add E2E tests for staging
+4. Set up monitoring and alerts
