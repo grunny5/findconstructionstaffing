@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
           throw new Error('Failed to fetch agency trade data');
         }
         
-        const agencyIds = [...new Set(agencyTradeData.map(at => at.agency_id))];
+        const agencyIds = Array.from(new Set(agencyTradeData.map(at => at.agency_id)));
         
         if (agencyIds.length > 0) {
           query = query.in('id', agencyIds);
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
           throw new Error('Failed to fetch agency region data');
         }
         
-        const agencyIds = [...new Set(agencyRegionData.map(ar => ar.agency_id))];
+        const agencyIds = Array.from(new Set(agencyRegionData.map(ar => ar.agency_id)));
         
         if (agencyIds.length > 0) {
           // If we already have a trade filter, we need to intersect the results
@@ -297,7 +297,7 @@ export async function GET(request: NextRequest) {
           .in('trade_id', tradeIds);
         
         if (agencyTradeData) {
-          countAgencyIds = [...new Set(agencyTradeData.map(at => at.agency_id))];
+          countAgencyIds = Array.from(new Set(agencyTradeData.map(at => at.agency_id)));
         }
       }
     }
@@ -317,7 +317,7 @@ export async function GET(request: NextRequest) {
           .in('region_id', regionIds);
         
         if (agencyRegionData) {
-          const stateAgencyIds = [...new Set(agencyRegionData.map(ar => ar.agency_id))];
+          const stateAgencyIds = Array.from(new Set(agencyRegionData.map(ar => ar.agency_id)));
           
           // If we have trade filters too, intersect the results
           if (countAgencyIds !== null) {
