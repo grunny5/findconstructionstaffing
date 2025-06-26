@@ -2,6 +2,63 @@ import { extractUniqueStates, createStateMapping, seedRegions } from '../seed-da
 import { mockAgencies, allStates } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
 
+// Helper function to create a mock with custom agencies data
+function createMockedSeedRegions(customAgencies: any[], customStates: any[]) {
+  // Store the original allStates to restore later
+  const originalAllStates = [...allStates];
+  
+  jest.resetModules();
+  
+  // Mock the mock-data module with custom data
+  jest.doMock('../../lib/mock-data', () => ({
+    mockAgencies: customAgencies,
+    allStates: customStates
+  }));
+  
+  // Import the module with mocked data
+  const { seedRegions: mockSeedRegions } = require('../seed-database');
+  
+  // Return both the mocked function and a cleanup function
+  return {
+    seedRegions: mockSeedRegions,
+    cleanup: () => {
+      jest.resetModules();
+      jest.unmock('../../lib/mock-data');
+      // Restore original allStates
+      allStates.splice(0, allStates.length, ...originalAllStates);
+    }
+  };
+}
+
+// Helper function to create a mock Supabase client for regions
+function createMockSupabaseClient(options: {
+  existingData?: any[],
+  insertError?: any,
+  selectError?: any,
+  customInMock?: (field: string, values: string[]) => Promise<any>
+} = {}) {
+  const insertMock = jest.fn((data: any[]) => ({
+    select: jest.fn(() => Promise.resolve({
+      data: options.insertError ? null : data.map(d => ({ ...d, id: `id-${d.state_code}` })),
+      error: options.insertError || null
+    }))
+  }));
+  
+  const mockClient = {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        in: options.customInMock ? jest.fn(options.customInMock) : jest.fn(() => Promise.resolve({ 
+          data: options.selectError ? null : (options.existingData || []), 
+          error: options.selectError || null 
+        }))
+      })),
+      insert: insertMock
+    }))
+  };
+  
+  return { mockClient, insertMock };
+}
+
 describe('Region Seeding Functions', () => {
   describe('extractUniqueStates', () => {
     it('should extract all unique states from mock data', () => {
@@ -71,19 +128,7 @@ describe('Region Seeding Functions', () => {
 
   describe('seedRegions', () => {
     it('should insert all regions when none exist', async () => {
-      const mockClient = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            in: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          insert: jest.fn((data: any[]) => ({
-            select: jest.fn(() => Promise.resolve({
-              data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-              error: null
-            }))
-          }))
-        }))
-      };
+      const { mockClient } = createMockSupabaseClient();
 
       const result = await seedRegions(mockClient as any);
       const expectedStates = extractUniqueStates();
@@ -98,22 +143,12 @@ describe('Region Seeding Functions', () => {
         { id: 'existing-2', name: 'California', state_code: 'CA' }
       ];
 
-      const mockClient = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            in: jest.fn((field: string, values: string[]) => {
-              const matching = existingRegions.filter(r => values.includes(r.state_code));
-              return Promise.resolve({ data: matching, error: null });
-            })
-          })),
-          insert: jest.fn((data: any[]) => ({
-            select: jest.fn(() => Promise.resolve({
-              data: data.map(d => ({ ...d, id: `new-${d.state_code}` })),
-              error: null
-            }))
-          }))
-        }))
-      };
+      const { mockClient } = createMockSupabaseClient({
+        customInMock: (field: string, values: string[]) => {
+          const matching = existingRegions.filter(r => values.includes(r.state_code));
+          return Promise.resolve({ data: matching, error: null });
+        }
+      });
 
       const result = await seedRegions(mockClient as any);
       
@@ -123,94 +158,56 @@ describe('Region Seeding Functions', () => {
     });
 
     it('should handle invalid state names gracefully', async () => {
-      // Test the seedRegions function directly by mocking the data it uses
-      // We'll mock the seed-database module to control what extractUniqueStates returns
+      // Create mocked seedRegions with custom data
+      const testAgencies = [{
+        name: 'Test Agency',
+        regions: ['InvalidState', 'Texas'], // InvalidState won't be in allStates
+        trades: [],
+        description: 'Test',
+        logo_url: 'test.png',
+        website: 'https://test.com',
+        offers_per_diem: false,
+        is_union: false,
+        founded_year: 2020,
+        employee_count: '1-10',
+        headquarters: 'Test City, TX'
+      }];
       
-      // First, we need to re-import the module with mocked data
-      jest.resetModules();
+      const testStates = [
+        { name: 'Texas', code: 'TX' }
+        // InvalidState is not included
+      ];
       
-      // Mock the mock-data module before importing seed-database
-      jest.doMock('../../lib/mock-data', () => ({
-        mockAgencies: [
-          {
-            name: 'Test Agency',
-            regions: ['InvalidState', 'Texas'], // InvalidState won't be in allStates
-            trades: [],
-            description: 'Test',
-            logo_url: 'test.png',
-            website: 'https://test.com',
-            offers_per_diem: false,
-            is_union: false,
-            founded_year: 2020,
-            employee_count: '1-10',
-            headquarters: 'Test City, TX'
-          }
-        ],
-        allStates: [
-          { name: 'Texas', code: 'TX' }
-          // InvalidState is not included
-        ]
-      }));
-      
-      // Now import the seed-database module with mocked data
-      const { seedRegions: mockSeedRegions } = require('../seed-database');
-      
-      const insertMock = jest.fn((data: any[]) => ({
-        select: jest.fn(() => Promise.resolve({
-          data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-          error: null
-        }))
-      }));
-      
-      const mockClient = {
-        from: jest.fn((table: string) => ({
-          select: jest.fn(() => ({
-            in: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          insert: insertMock
-        }))
-      };
+      const { seedRegions: mockSeedRegions, cleanup } = createMockedSeedRegions(testAgencies, testStates);
+      const { mockClient, insertMock } = createMockSupabaseClient();
 
       // Mock console.log to capture warning
       const originalLog = console.log;
       const logSpy = jest.fn();
       console.log = logSpy;
 
-      await mockSeedRegions(mockClient as any);
+      try {
+        await mockSeedRegions(mockClient as any);
 
-      // Check that warning was logged
-      const warningCalls = logSpy.mock.calls.filter(call => 
-        call[0] && call[0].includes('Unknown state name') && call[0].includes('InvalidState')
-      );
-      expect(warningCalls.length).toBe(1);
+        // Check that warning was logged
+        const warningCalls = logSpy.mock.calls.filter(call => 
+          call[0] && call[0].includes('Unknown state name') && call[0].includes('InvalidState')
+        );
+        expect(warningCalls.length).toBe(1);
 
-      // Check that only valid states were processed
-      expect(insertMock).toHaveBeenCalledTimes(1);
-      expect(insertMock.mock.calls[0][0]).toHaveLength(1);
-      expect(insertMock.mock.calls[0][0][0].state_code).toBe('TX');
-
-      // Restore
-      console.log = originalLog;
-      jest.resetModules();
-      jest.unmock('../../lib/mock-data');
+        // Check that only valid states were processed
+        expect(insertMock).toHaveBeenCalledTimes(1);
+        expect(insertMock.mock.calls[0][0]).toHaveLength(1);
+        expect(insertMock.mock.calls[0][0][0].state_code).toBe('TX');
+      } finally {
+        // Restore
+        console.log = originalLog;
+        cleanup();
+      }
     });
 
     it('should generate proper slugs for regions', async () => {
-      const insertMock = jest.fn((data: any[]) => ({
-        select: jest.fn(() => Promise.resolve({
-          data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-          error: null
-        }))
-      }));
-
-      const mockClient = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            in: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          insert: insertMock
-        }))
-      };
+      const { mockClient, insertMock } = createMockSupabaseClient();
 
       await seedRegions(mockClient as any);
       
@@ -225,44 +222,23 @@ describe('Region Seeding Functions', () => {
     });
 
     it('should validate state codes are 2-letter format', async () => {
-      const mockClient = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            in: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          insert: jest.fn((data: any[]) => ({
-            select: jest.fn(() => Promise.resolve({
-              data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-              error: null
-            }))
-          }))
-        }))
-      };
+      const { mockClient, insertMock } = createMockSupabaseClient();
 
       await seedRegions(mockClient as any);
       
       // Get all insert calls
-      const insertCalls = (mockClient.from as jest.Mock).mock.results
-        .flatMap(r => (r.value.insert as jest.Mock).mock.calls)
-        .flatMap(call => call[0]);
+      const allInsertedData = insertMock.mock.calls.flatMap(call => call[0]);
       
       // All state codes should be exactly 2 uppercase letters
-      insertCalls.forEach((region: any) => {
+      allInsertedData.forEach((region: any) => {
         expect(region.state_code).toMatch(/^[A-Z]{2}$/);
       });
     });
 
     it('should handle database errors gracefully', async () => {
-      const mockClient = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            in: jest.fn(() => Promise.resolve({ 
-              data: null, 
-              error: { message: 'Database connection failed' } 
-            }))
-          }))
-        }))
-      };
+      const { mockClient } = createMockSupabaseClient({
+        selectError: { message: 'Database connection failed' }
+      });
 
       await expect(seedRegions(mockClient as any)).rejects.toThrow(
         'Failed to fetch existing regions: Database connection failed'
@@ -270,19 +246,7 @@ describe('Region Seeding Functions', () => {
     });
 
     it('should complete within performance target', async () => {
-      const mockClient = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            in: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          insert: jest.fn((data: any[]) => ({
-            select: jest.fn(() => Promise.resolve({
-              data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-              error: null
-            }))
-          }))
-        }))
-      };
+      const { mockClient } = createMockSupabaseClient();
 
       const startTime = Date.now();
       await seedRegions(mockClient as any);
