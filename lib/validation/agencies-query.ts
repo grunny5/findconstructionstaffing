@@ -67,7 +67,7 @@ export function parseAgenciesQuery(searchParams: URLSearchParams): {
     const values = new Map<string, string[]>();
     const hasArrayNotation = new Set<string>();
     
-    for (const [key, value] of searchParams.entries()) {
+    for (const [key, value] of Array.from(searchParams.entries())) {
       const isArrayNotation = key.endsWith('[]');
       const cleanKey = isArrayNotation ? key.slice(0, -2) : key;
       
