@@ -26,6 +26,14 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       
+      - name: Debug Environment Variables
+        run: |
+          echo "VERCEL_ORG_ID length: ${#VERCEL_ORG_ID}"
+          echo "VERCEL_PROJECT_ID length: ${#VERCEL_PROJECT_ID}"
+          echo "VERCEL_TOKEN length: ${#VERCEL_TOKEN:0:10}..."
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       
