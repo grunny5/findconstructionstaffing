@@ -82,7 +82,7 @@ export function parseAgenciesQuery(searchParams: URLSearchParams): {
     }
     
     // Second pass: build params object
-    for (const [key, valueArray] of values.entries()) {
+    for (const [key, valueArray] of Array.from(values.entries())) {
       if (valueArray.length === 1 && !hasArrayNotation.has(key)) {
         // Single value without array notation
         params[key] = valueArray[0];
