@@ -97,7 +97,7 @@ npm run seed:verify  // Runs verification queries
 
 ### Production Safety Guidelines
 
-#### Data Namespacing Decision
+#### Data Namespacing
 **Decision:** No prefixing for development environments, clear warnings for staging
 - Development databases should use realistic data without prefixes for authentic testing
 - The seed script includes prominent warnings when running with `--reset` flag
