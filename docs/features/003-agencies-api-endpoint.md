@@ -158,12 +158,21 @@ if (search) {
 
 // Apply trade filter with subquery
 if (trades?.length) {
-  const { data: tradeIds } = await supabase
+  const { data: tradeData } = await supabase
     .from('trades')
     .select('id')
     .in('slug', trades);
   
-  query = query.in('id', subquery);
+  const tradeIds = tradeData.map(t => t.id);
+  
+  const { data: agencyTradeData } = await supabase
+    .from('agency_trades')
+    .select('agency_id')
+    .in('trade_id', tradeIds);
+  
+  const agencyIds = [...new Set(agencyTradeData.map(at => at.agency_id))];
+  
+  query = query.in('id', agencyIds);
 }
 ```
 
