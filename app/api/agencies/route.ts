@@ -11,7 +11,8 @@ import { createHash } from 'crypto';
 import { parseAgenciesQuery, sanitizeSearchInput } from '@/lib/validation/agencies-query';
 import { PerformanceMonitor, ErrorRateTracker } from '@/lib/monitoring/performance';
 
-// This route uses request-time data, so it will be dynamic by default
+// Force dynamic rendering since we use searchParams
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/agencies
