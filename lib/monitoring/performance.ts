@@ -234,7 +234,7 @@ export class ErrorRateTracker {
   getAllErrorRates(): Record<string, { errorRate: number; totalRequests: number }> {
     const rates: Record<string, { errorRate: number; totalRequests: number }> = {};
     
-    for (const [endpoint, requests] of this.requestCounts.entries()) {
+    for (const [endpoint, requests] of Array.from(this.requestCounts.entries())) {
       const errors = this.errorCounts.get(endpoint) || 0;
       rates[endpoint] = {
         errorRate: requests > 0 ? (errors / requests) * 100 : 0,
