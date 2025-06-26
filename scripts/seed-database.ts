@@ -359,7 +359,7 @@ async function seedAgencies(
   
   try {
     // Process agencies in batches for better performance
-    const batchSize = 5;
+    const batchSize = 20;
     for (let i = 0; i < mockAgencies.length; i += batchSize) {
       const batch = mockAgencies.slice(i, i + batchSize);
       
@@ -937,16 +937,6 @@ async function main() {
     
     // Create Supabase client
     const supabase = createSupabaseClient(url, key);
-    
-    // Validate mock data after client creation
-    if (!mockAgencies || !Array.isArray(mockAgencies) || mockAgencies.length === 0) {
-      log.error('Mock agencies data is not available or empty');
-      process.exit(1);
-    }
-    if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
-      log.error('All states data is not available or empty');
-      process.exit(1);
-    }
     
     // Test connection
     const connected = await testConnection(supabase);

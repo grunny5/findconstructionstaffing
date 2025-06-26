@@ -179,8 +179,8 @@ describe('Agency Seeding Functions', () => {
 
       await seedAgencies(mockClient as any);
       
-      // With batch size of 5 and 12 agencies, we should have 3 batches
-      const expectedBatches = Math.ceil(mockAgencies.length / 5);
+      // With batch size of 20 and 12 agencies, we should have 1 batch
+      const expectedBatches = Math.ceil(mockAgencies.length / 20);
       expect(selectMock).toHaveBeenCalledTimes(expectedBatches);
     });
 
