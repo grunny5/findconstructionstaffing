@@ -147,8 +147,8 @@ function calculatePercentile(arr, percentile) {
 
 function calculateStats() {
   const duration = (metrics.endTime - metrics.startTime) / 1000;
-  const throughput = metrics.totalRequests / duration;
-  const errorRate = metrics.failedRequests / metrics.totalRequests;
+  const throughput = duration > 0 ? metrics.totalRequests / duration : 0;
+  const errorRate = metrics.totalRequests > 0 ? metrics.failedRequests / metrics.totalRequests : 0;
   
   return {
     duration,
@@ -158,9 +158,11 @@ function calculateStats() {
     throughput: throughput.toFixed(2),
     errorRate: (errorRate * 100).toFixed(2),
     responseTimes: {
-      min: Math.min(...metrics.responseTimes),
-      max: Math.max(...metrics.responseTimes),
-      avg: (metrics.responseTimes.reduce((a, b) => a + b, 0) / metrics.responseTimes.length).toFixed(2),
+      min: metrics.responseTimes.length > 0 ? Math.min(...metrics.responseTimes) : 0,
+      max: metrics.responseTimes.length > 0 ? Math.max(...metrics.responseTimes) : 0,
+      avg: metrics.responseTimes.length > 0 
+        ? (metrics.responseTimes.reduce((a, b) => a + b, 0) / metrics.responseTimes.length).toFixed(2)
+        : '0',
       p50: calculatePercentile(metrics.responseTimes, 50),
       p90: calculatePercentile(metrics.responseTimes, 90),
       p95: calculatePercentile(metrics.responseTimes, 95),
