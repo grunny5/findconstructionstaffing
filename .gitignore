@@ -40,3 +40,8 @@ docs/*-test-results.json
 
 # Supabase CLI executable
 supabase.exe
+
+# Temporary test files
+test-sanitize*.js
+test-sanitize*.mjs
+test-sanitize*.ts

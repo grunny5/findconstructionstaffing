@@ -227,6 +227,7 @@ npm run dev
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # Required for seeding
 ```
 
 ### Development Commands
@@ -237,7 +238,50 @@ npm run build    # Build for production
 npm run start    # Start production server
 npm run lint     # Run ESLint
 npm run type-check # Run TypeScript compiler
+
+# Database seeding commands
+npm run seed         # Seed database with mock data
+npm run seed:reset   # Clear existing data and re-seed
+npm run seed:verify  # Verify seeded data integrity
 ```
+
+### Database Seeding
+
+The project includes a comprehensive database seeding script for development and testing:
+
+#### Features
+- **Idempotent Operations**: Run multiple times without creating duplicates
+- **Foreign Key Respect**: Proper deletion order when resetting
+- **Progress Tracking**: Clear logging of operations and counts
+- **Data Verification**: Built-in verification to ensure data integrity
+- **Performance Optimized**: Batch operations for fast seeding
+
+#### Usage
+
+1. **Initial Seeding**
+   ```bash
+   npm run seed
+   ```
+   Seeds the database with all mock agency data, trades, and regions.
+
+2. **Reset and Re-seed**
+   ```bash
+   npm run seed:reset
+   ```
+   Clears all existing data and performs a fresh seed. Includes a 3-second safety delay.
+
+3. **Verify Data**
+   ```bash
+   npm run seed:verify
+   ```
+   Runs verification queries to ensure all data was seeded correctly.
+
+#### Seeded Data
+- **12 Agencies**: Complete staffing company profiles
+- **48 Trades**: All construction specialties
+- **35 Regions**: US states with agencies
+- **60 Agency-Trade Relationships**: Specialization mappings
+- **58 Agency-Region Relationships**: Service area mappings
 
 ## Contributing
 
