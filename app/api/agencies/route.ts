@@ -15,6 +15,100 @@ import { PerformanceMonitor, ErrorRateTracker } from '@/lib/monitoring/performan
 export const dynamic = 'force-dynamic';
 
 /**
+ * Apply trade and state filters to get matching agency IDs
+ * @returns Array of agency IDs that match the filters, or null if no filters applied
+ */
+async function applyFilters(
+  monitor: PerformanceMonitor,
+  trades?: string[],
+  states?: string[]
+): Promise<string[] | null> {
+  let agencyIds: string[] | null = null;
+  
+  // Apply trade filter
+  if (trades && trades.length > 0) {
+    monitor.startQuery();
+    const { data: tradeData, error: tradeError } = await supabase
+      .from('trades')
+      .select('id')
+      .in('slug', trades);
+    monitor.endQuery();
+    
+    if (tradeError || !tradeData) {
+      throw new Error('Failed to fetch trade data');
+    }
+    
+    const tradeIds = tradeData.map(t => t.id);
+    
+    if (tradeIds.length > 0) {
+      monitor.startQuery();
+      const { data: agencyTradeData, error: agencyTradeError } = await supabase
+        .from('agency_trades')
+        .select('agency_id')
+        .in('trade_id', tradeIds);
+      monitor.endQuery();
+      
+      if (agencyTradeError || !agencyTradeData) {
+        throw new Error('Failed to fetch agency trade data');
+      }
+      
+      agencyIds = Array.from(new Set(agencyTradeData.map(at => at.agency_id)));
+    } else {
+      // No matching trades, return empty array
+      agencyIds = [];
+    }
+  }
+  
+  // Apply state filter
+  if (states && states.length > 0) {
+    monitor.startQuery();
+    const { data: regionData, error: regionError } = await supabase
+      .from('regions')
+      .select('id')
+      .in('state_code', states);
+    monitor.endQuery();
+    
+    if (regionError || !regionData) {
+      throw new Error('Failed to fetch region data');
+    }
+    
+    const regionIds = regionData.map(r => r.id);
+    
+    if (regionIds.length > 0) {
+      monitor.startQuery();
+      const { data: agencyRegionData, error: agencyRegionError } = await supabase
+        .from('agency_regions')
+        .select('agency_id')
+        .in('region_id', regionIds);
+      monitor.endQuery();
+      
+      if (agencyRegionError || !agencyRegionData) {
+        throw new Error('Failed to fetch agency region data');
+      }
+      
+      const stateAgencyIds = Array.from(new Set(agencyRegionData.map(ar => ar.agency_id)));
+      
+      // Intersect with existing filter if needed
+      if (agencyIds !== null) {
+        agencyIds = agencyIds.filter(id => stateAgencyIds.includes(id));
+      } else {
+        agencyIds = stateAgencyIds;
+      }
+    } else {
+      // No matching regions
+      if (agencyIds === null) {
+        agencyIds = [];
+      } else {
+        // If we already have trade filters, this intersection results in empty set
+        agencyIds = [];
+      }
+    }
+  }
+  
+  return agencyIds;
+}
+
+/**
  * GET /api/agencies
  * 
  * Retrieves a list of active agencies with optional filtering
@@ -119,90 +213,12 @@ export async function GET(request: NextRequest) {
       query = query.or(`name.fts.${sanitizedSearch},description.fts.${sanitizedSearch},name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
     }
     
-    // Apply trade filter if provided
-    if (trades && trades.length > 0) {
-      // First, get the trade IDs for the given slugs
-      monitor.startQuery();
-      const { data: tradeData, error: tradeError } = await supabase
-        .from('trades')
-        .select('id')
-        .in('slug', trades);
-      monitor.endQuery();
-      
-      if (tradeError || !tradeData) {
-        throw new Error('Failed to fetch trade data');
-      }
-      
-      const tradeIds = tradeData.map(t => t.id);
-      
-      if (tradeIds.length > 0) {
-        // Get agency IDs that have these trades
-        monitor.startQuery();
-        const { data: agencyTradeData, error: agencyTradeError } = await supabase
-          .from('agency_trades')
-          .select('agency_id')
-          .in('trade_id', tradeIds);
-        monitor.endQuery();
-        
-        if (agencyTradeError || !agencyTradeData) {
-          throw new Error('Failed to fetch agency trade data');
-        }
-        
-        const agencyIds = Array.from(new Set(agencyTradeData.map(at => at.agency_id)));
-        
-        if (agencyIds.length > 0) {
-          query = query.in('id', agencyIds);
-        } else {
-          // No agencies match the trade filter
-          query = query.in('id', []);
-        }
-      }
-    }
+    // Apply trade and state filters
+    const filteredAgencyIds = await applyFilters(monitor, trades, states);
     
-    // Apply state filter if provided
-    if (states && states.length > 0) {
-      // First, get the region IDs for the given state codes
-      monitor.startQuery();
-      const { data: regionData, error: regionError } = await supabase
-        .from('regions')
-        .select('id')
-        .in('state_code', states);
-      monitor.endQuery();
-      
-      if (regionError || !regionData) {
-        throw new Error('Failed to fetch region data');
-      }
-      
-      const regionIds = regionData.map(r => r.id);
-      
-      if (regionIds.length > 0) {
-        // Get agency IDs that service these regions
-        monitor.startQuery();
-        const { data: agencyRegionData, error: agencyRegionError } = await supabase
-          .from('agency_regions')
-          .select('agency_id')
-          .in('region_id', regionIds);
-        monitor.endQuery();
-        
-        if (agencyRegionError || !agencyRegionData) {
-          throw new Error('Failed to fetch agency region data');
-        }
-        
-        const agencyIds = Array.from(new Set(agencyRegionData.map(ar => ar.agency_id)));
-        
-        if (agencyIds.length > 0) {
-          // If we already have a trade filter, we need to intersect the results
-          if (trades && trades.length > 0) {
-            // This will automatically intersect with the previous filter
-            query = query.in('id', agencyIds);
-          } else {
-            query = query.in('id', agencyIds);
-          }
-        } else {
-          // No agencies match the state filter
-          query = query.in('id', []);
-        }
-      }
+    if (filteredAgencyIds !== null) {
+      // Apply the filter to the query
+      query = query.in('id', filteredAgencyIds.length > 0 ? filteredAgencyIds : []);
     }
     
     // Apply pagination using validated parameters
@@ -279,59 +295,9 @@ export async function GET(request: NextRequest) {
       countQuery = countQuery.or(`name.fts.${sanitizedSearch},description.fts.${sanitizedSearch},name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
     }
     
-    // For count query with filters, we need to apply the same agency ID filters
-    let countAgencyIds: string[] | null = null;
-    
-    // Apply same trade filter to count query
-    if (trades && trades.length > 0) {
-      const { data: tradeData } = await supabase
-        .from('trades')
-        .select('id')
-        .in('slug', trades);
-      
-      if (tradeData && tradeData.length > 0) {
-        const tradeIds = tradeData.map(t => t.id);
-        const { data: agencyTradeData } = await supabase
-          .from('agency_trades')
-          .select('agency_id')
-          .in('trade_id', tradeIds);
-        
-        if (agencyTradeData) {
-          countAgencyIds = Array.from(new Set(agencyTradeData.map(at => at.agency_id)));
-        }
-      }
-    }
-    
-    // Apply same state filter to count query
-    if (states && states.length > 0) {
-      const { data: regionData } = await supabase
-        .from('regions')
-        .select('id')
-        .in('state_code', states);
-      
-      if (regionData && regionData.length > 0) {
-        const regionIds = regionData.map(r => r.id);
-        const { data: agencyRegionData } = await supabase
-          .from('agency_regions')
-          .select('agency_id')
-          .in('region_id', regionIds);
-        
-        if (agencyRegionData) {
-          const stateAgencyIds = Array.from(new Set(agencyRegionData.map(ar => ar.agency_id)));
-          
-          // If we have trade filters too, intersect the results
-          if (countAgencyIds !== null) {
-            countAgencyIds = countAgencyIds.filter(id => stateAgencyIds.includes(id));
-          } else {
-            countAgencyIds = stateAgencyIds;
-          }
-        }
-      }
-    }
-    
-    // Apply the agency ID filter to count query if we have filters
-    if (countAgencyIds !== null) {
-      countQuery = countQuery.in('id', countAgencyIds.length > 0 ? countAgencyIds : []);
+    // Apply same filters to count query - reuse the filtered agency IDs
+    if (filteredAgencyIds !== null) {
+      countQuery = countQuery.in('id', filteredAgencyIds.length > 0 ? filteredAgencyIds : []);
     }
 
     const { count: totalCount } = await countQuery;
