@@ -11,7 +11,10 @@ import { HTTP_STATUS } from '@/types/api';
 export async function GET(request: NextRequest) {
   // In production, add authentication check here
   // For now, only allow in development
-  if (process.env.NODE_ENV === 'production' && !request.headers.get('x-monitoring-key')) {
+  const monitoringKey = process.env.MONITORING_API_KEY;
+  const providedKey = request.headers.get('x-monitoring-key');
+  
+  if (process.env.NODE_ENV === 'production' && (!monitoringKey || providedKey !== monitoringKey)) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
