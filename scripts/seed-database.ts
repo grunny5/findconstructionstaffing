@@ -15,6 +15,14 @@
 import { createClient } from '@supabase/supabase-js';
 import { mockAgencies, allStates } from '../lib/mock-data';
 import { createSlug } from '../lib/supabase';
+
+// Validate mock data is available
+if (!mockAgencies || !Array.isArray(mockAgencies) || mockAgencies.length === 0) {
+  throw new Error('Mock agencies data is not available or empty');
+}
+if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
+  throw new Error('All states data is not available or empty');
+}
 import type { Agency, Trade, Region } from '../lib/supabase';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -97,7 +105,7 @@ async function testConnection(supabase: ReturnType<typeof createSupabaseClient>)
     // Try a simple query to test connectivity
     const { error } = await supabase
       .from('agencies')
-      .select('count')
+      .select('id')
       .limit(1);
 
     if (error) {
@@ -381,8 +389,8 @@ async function seedAgencies(
           description: agency.description,
           logo_url: agency.logo_url,
           website: agency.website,
-          phone: agency.phone || null,
-          email: agency.email || null,
+          phone: null, // Not available in mock data
+          email: null, // Not available in mock data
           is_claimed: false, // Default per FSD
           is_active: true,   // Default per FSD
           offers_per_diem: agency.offers_per_diem,
@@ -478,7 +486,7 @@ async function createAgencyTradeRelationships(
       const batch = relationships.slice(i, i + batchSize);
       
       // Check existing relationships
-      const agencyIds = [...new Set(batch.map(r => r.agency_id))];
+      const agencyIds = Array.from(new Set(batch.map(r => r.agency_id)));
       const { data: existingRelations, error: fetchError } = await supabase
         .from('agency_trades')
         .select('agency_id, trade_id')
@@ -583,7 +591,7 @@ async function createAgencyRegionRelationships(
       const batch = relationships.slice(i, i + batchSize);
       
       // Check existing relationships
-      const agencyIds = [...new Set(batch.map(r => r.agency_id))];
+      const agencyIds = Array.from(new Set(batch.map(r => r.agency_id)));
       const { data: existingRelations, error: fetchError } = await supabase
         .from('agency_regions')
         .select('agency_id, region_id')
@@ -854,7 +862,7 @@ async function verifySeededData(
       if (!passed) allPassed = false;
     }
     
-    // 6. Verify specific agency has correct trades
+    // 6. Verify specific agency has correct trades (using first agency)
     const { data: sampleAgency, error: sampleError } = await supabase
       .from('agencies')
       .select(`
@@ -863,7 +871,7 @@ async function verifySeededData(
           trade:trades(name)
         )
       `)
-      .eq('name', 'Industrial Staffing Solutions')
+      .eq('name', mockAgencies[0].name)
       .single();
     
     if (sampleError) {
@@ -874,11 +882,9 @@ async function verifySeededData(
       });
       allPassed = false;
     } else if (sampleAgency) {
-      const expectedTrades = mockAgencies
-        .find(a => a.name === 'Industrial Staffing Solutions')
-        ?.trades || [];
-      const foundTrades = sampleAgency.trades
-        .map((t: any) => t.trade.name)
+      const expectedTrades = mockAgencies[0].trades || [];
+      const foundTrades = (sampleAgency.trades as Array<{ trade: { name: string } }>)
+        .map(t => t.trade.name)
         .sort();
       const passed = expectedTrades.length === foundTrades.length &&
         expectedTrades.every(t => foundTrades.includes(t));
@@ -931,6 +937,16 @@ async function main() {
     
     // Create Supabase client
     const supabase = createSupabaseClient(url, key);
+    
+    // Validate mock data after client creation
+    if (!mockAgencies || !Array.isArray(mockAgencies) || mockAgencies.length === 0) {
+      log.error('Mock agencies data is not available or empty');
+      process.exit(1);
+    }
+    if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
+      log.error('All states data is not available or empty');
+      process.exit(1);
+    }
     
     // Test connection
     const connected = await testConnection(supabase);

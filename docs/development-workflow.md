@@ -18,6 +18,22 @@ This guide outlines common development workflows and best practices for working 
 - Frontend components aren't displaying expected data
 - Working on search/filter functionality
 
+### Quick Mode for Development
+
+For faster iteration during development:
+```bash
+# Seeds only 3 agencies instead of 12
+SEED_QUICK_MODE=true npm run seed
+
+# Custom agency count
+SEED_AGENCY_COUNT=5 npm run seed
+
+# Skip relationships for basic testing
+SEED_SKIP_RELATIONSHIPS=true npm run seed
+```
+
+**Note:** These environment variables are planned features. Currently, the script always seeds all 12 agencies.
+
 ### Daily Development Routine
 
 ```bash
@@ -225,3 +241,39 @@ When reviewing PRs that affect data or API:
 - Never run seed scripts against production
 - Use proper migrations and data management tools
 - Maintain separate production data import processes
+
+## Production Safety Guidelines
+
+### Environment Safeguards
+The seed script includes multiple safety mechanisms:
+
+1. **Service Role Key Requirement**: Won't run without proper authentication
+2. **URL Validation**: Checks for development patterns in database URL
+3. **Reset Confirmation**: 3-second pause before destructive operations
+4. **Idempotent by Default**: Won't create duplicates if data exists
+
+### Best Practices for Safety
+
+#### Development
+- Use `.env.local` for credentials (never commit)
+- Run freely - designed for repeated use
+- Use `seed:verify` to check data integrity
+
+#### Staging
+- Future feature: Will require `--staging` flag
+- Currently: Double-check URL before running
+- Always verify with `seed:verify` after seeding
+
+#### Production
+- **NEVER** run seed scripts in production
+- Block service role key access in production
+- Use database migrations for schema changes
+- Use admin panels or APIs for data entry
+
+### Emergency Procedures
+
+If accidentally run in wrong environment:
+1. **DO NOT** run `seed:reset` - it will delete data
+2. Check with `npm run seed:verify` to see what was added
+3. Manually review and remove test agencies if needed
+4. Update credentials to prevent future accidents

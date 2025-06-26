@@ -396,6 +396,39 @@ describe('Agency-Trade Relationship Functions', () => {
     });
 
     it('should handle missing state codes gracefully', async () => {
+      // Store original allStates before resetting modules
+      const { allStates } = require('../../lib/mock-data');
+      
+      // Reset modules to allow mocking
+      jest.resetModules();
+      
+      // Create test data with invalid state
+      const testAgencies = [
+        ...mockAgencies,
+        {
+          name: 'Test Agency',
+          regions: ['InvalidState'],
+          trades: [],
+          description: 'Test',
+          logo_url: 'test.png',
+          website: 'https://test.com',
+          offers_per_diem: false,
+          is_union: false,
+          founded_year: 2020,
+          employee_count: '1-10',
+          headquarters: 'Test City, TX'
+        }
+      ];
+      
+      // Mock the mock-data module before importing createAgencyRegionRelationships
+      jest.doMock('../../lib/mock-data', () => ({
+        mockAgencies: testAgencies,
+        allStates: allStates
+      }));
+      
+      // Re-import the function with mocked data
+      const { createAgencyRegionRelationships: mockedCreateRelationships } = require('../seed-database');
+      
       const agencyIdMap = new Map([
         ['Test Agency', 'agency-1']
       ]);
@@ -403,14 +436,6 @@ describe('Agency-Trade Relationship Functions', () => {
       const regionIdMap = new Map([
         ['TX', 'region-TX']
       ]);
-
-      // Mock an agency with an invalid state
-      const originalAgencies = mockAgencies.length;
-      (mockAgencies as any).push({
-        name: 'Test Agency',
-        regions: ['InvalidState'],
-        trades: []
-      });
 
       const mockClient = {
         from: jest.fn(() => ({
@@ -426,17 +451,18 @@ describe('Agency-Trade Relationship Functions', () => {
       const logSpy = jest.fn();
       console.log = logSpy;
 
-      await createAgencyRegionRelationships(mockClient as any, agencyIdMap, regionIdMap);
+      await mockedCreateRelationships(mockClient as any, agencyIdMap, regionIdMap);
 
       // Should have logged warning for invalid state
       const warningCalls = logSpy.mock.calls.filter(call => 
-        call[0].includes('State code not found for: InvalidState')
+        call[0] && call[0].includes('State code not found for: InvalidState')
       );
       expect(warningCalls.length).toBe(1);
 
       // Restore
       console.log = originalLog;
-      mockAgencies.length = originalAgencies;
+      jest.resetModules();
+      jest.unmock('../../lib/mock-data');
     });
 
     it('should complete within performance target', async () => {

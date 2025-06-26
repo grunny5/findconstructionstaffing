@@ -42,7 +42,7 @@ describe('seed-database.ts', () => {
     });
 
     it('should exit when SUPABASE_URL is missing', () => {
-      delete process.env.SUPABASE_URL;
+      process.env.SUPABASE_URL = undefined;
       process.env.SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIn0.test';
 
       expect(() => validateEnvironment()).toThrow('Process.exit called with code 1');
@@ -51,7 +51,7 @@ describe('seed-database.ts', () => {
 
     it('should exit when SUPABASE_SERVICE_ROLE_KEY is missing', () => {
       process.env.SUPABASE_URL = 'https://test.supabase.co';
-      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      process.env.SUPABASE_SERVICE_ROLE_KEY = undefined;
 
       expect(() => validateEnvironment()).toThrow('Process.exit called with code 1');
       expect(mockExit).toHaveBeenCalledWith(1);

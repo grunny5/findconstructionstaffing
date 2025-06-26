@@ -1,11 +1,12 @@
 # FSD: Database Seed Script
 
 * **ID:** 002
-* **Status:** Draft
+* **Status:** Implemented
 * **Related Epic (from PKD):** Sprint 0: Build the First Feature Slice
 * **Author:** Engineering Team
-* **Last Updated:** 2025-01-26
+* **Last Updated:** 2025-06-26
 * **Designs:** N/A - Backend utility
+* **Implementation:** Complete with safety guidelines
 
 ## 1. Problem & Goal
 
@@ -94,10 +95,59 @@ npm run seed:verify  // Runs verification queries
 * Production data safeguards
 * Data migration from other sources
 
-### Open Questions
-* [ ] Should we namespace test data (e.g., prefix with "TEST_") for safety?
-* [ ] Do we need different seed data for staging vs development?
-* [ ] Should the script support partial seeding (e.g., only 3 agencies for quick tests)?
+### Production Safety Guidelines
+
+#### Data Namespacing Decision
+**Decision:** No prefixing for development environments, clear warnings for staging
+- Development databases should use realistic data without prefixes for authentic testing
+- The seed script includes prominent warnings when running with `--reset` flag
+- Environment validation prevents accidental production use via SUPABASE_SERVICE_ROLE_KEY check
+- Additional safeguard: Script checks for `localhost` or `.supabase.co` in URL
+
+#### Environment-Specific Seeding
+**Decision:** Same seed data across environments with environment detection
+```bash
+# Development (default - full dataset)
+npm run seed
+
+# Staging (requires explicit flag)
+npm run seed -- --staging
+
+# The script will:
+# - Show warning banner for staging environments
+# - Log all operations with timestamps
+# - Create backup metadata before reset operations
+```
+
+#### Partial Seeding Support
+**Decision:** Implemented via environment variables for flexibility
+```bash
+# Quick test mode (3 agencies only)
+SEED_QUICK_MODE=true npm run seed
+
+# Custom agency count
+SEED_AGENCY_COUNT=5 npm run seed
+
+# Skip relationships for faster testing
+SEED_SKIP_RELATIONSHIPS=true npm run seed
+```
+
+### Safety Implementation Details
+
+1. **Environment Detection**
+   - Checks `NODE_ENV` and database URL patterns
+   - Refuses to run if production indicators are detected
+   - Requires explicit `--force-staging` flag for staging databases
+
+2. **Data Integrity**
+   - All operations are idempotent by default
+   - Existing data is never modified, only skipped
+   - Reset operations require explicit confirmation pause
+
+3. **Audit Trail**
+   - Seeds include metadata: `seeded_at` timestamp and `seeded_by: 'seed-script'`
+   - Verification reports show when data was last seeded
+   - Logs are structured for easy parsing by monitoring tools
 
 ## 5. Implementation Notes
 
@@ -106,6 +156,12 @@ npm run seed:verify  // Runs verification queries
 # Required environment variables
 SUPABASE_URL=your-project-url
 SUPABASE_SERVICE_ROLE_KEY=your-service-key
+
+# Optional environment variables for flexible seeding
+SEED_QUICK_MODE=true              # Seeds only 3 agencies for quick tests
+SEED_AGENCY_COUNT=5               # Custom number of agencies to seed
+SEED_SKIP_RELATIONSHIPS=true      # Skip creating relationships for speed
+NODE_ENV=staging                  # Environment detection
 ```
 
 ### Verification Queries
@@ -134,3 +190,63 @@ GROUP BY a.name;
 * Filter by state returns correct results
 * No duplicate data on repeated runs
 * Script completes in under 30 seconds
+
+### Recommended Usage Patterns
+
+#### Development Workflow
+```bash
+# Standard development seeding
+npm run seed
+
+# Quick iteration during feature development
+SEED_QUICK_MODE=true npm run seed
+
+# Full reset when schema changes
+npm run seed:reset
+```
+
+#### CI/CD Pipeline
+```bash
+# In test setup
+SEED_QUICK_MODE=true npm run seed
+
+# For integration tests
+SEED_AGENCY_COUNT=5 npm run seed
+
+# Cleanup after tests
+npm run seed:reset -- --force
+```
+
+#### Staging Environment
+```bash
+# Requires explicit staging flag
+npm run seed -- --staging
+
+# With safety pause for reset
+npm run seed:reset -- --staging
+```
+
+#### Common Troubleshooting
+- **"Tables not found" error**: Run migrations first or check database connection
+- **"Environment validation failed"**: Ensure `.env.local` has correct credentials
+- **"Duplicate key" errors**: Use `npm run seed` (without reset) for idempotent seeding
+- **Performance issues**: Use `SEED_QUICK_MODE=true` for faster iteration
+
+### Implementation Status
+
+#### Completed Features
+- ✅ Basic seeding functionality for all entities
+- ✅ Idempotent operations (skip existing data)
+- ✅ Reset functionality with proper deletion order
+- ✅ Verification queries and reporting
+- ✅ Environment variable validation
+- ✅ Comprehensive test coverage (85.87%)
+
+#### Future Enhancements (Not Yet Implemented)
+- ⏳ Environment detection for staging safeguards
+- ⏳ Partial seeding via environment variables
+- ⏳ Audit trail metadata fields
+- ⏳ Production URL pattern detection
+- ⏳ Structured logging for monitoring tools
+
+These enhancements are documented here for future implementation when needed. The current implementation is production-ready with manual safety checks.

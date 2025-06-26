@@ -123,44 +123,51 @@ describe('Region Seeding Functions', () => {
     });
 
     it('should handle invalid state names gracefully', async () => {
-      // Test with agencies that have invalid states directly
-      const mockAgenciesWithInvalidState = [...mockAgencies];
-      mockAgenciesWithInvalidState.push({
-        name: 'Test Agency',
-        regions: ['InvalidState'],
-        trades: [],
-        // Other required fields
-        description: 'Test',
-        logo_url: 'test.png',
-        website: 'https://test.com',
-        offers_per_diem: false,
-        is_union: false
-      } as any);
-
-      // Temporarily override mockAgencies
-      const originalLength = mockAgencies.length;
-      mockAgencies.push({
-        name: 'Test Agency',
-        regions: ['InvalidState'],
-        trades: [],
-        description: 'Test',
-        logo_url: 'test.png',
-        website: 'https://test.com',
-        offers_per_diem: false,
-        is_union: false
-      } as any);
-
+      // Test the seedRegions function directly by mocking the data it uses
+      // We'll mock the seed-database module to control what extractUniqueStates returns
+      
+      // First, we need to re-import the module with mocked data
+      jest.resetModules();
+      
+      // Mock the mock-data module before importing seed-database
+      jest.doMock('../../lib/mock-data', () => ({
+        mockAgencies: [
+          {
+            name: 'Test Agency',
+            regions: ['InvalidState', 'Texas'], // InvalidState won't be in allStates
+            trades: [],
+            description: 'Test',
+            logo_url: 'test.png',
+            website: 'https://test.com',
+            offers_per_diem: false,
+            is_union: false,
+            founded_year: 2020,
+            employee_count: '1-10',
+            headquarters: 'Test City, TX'
+          }
+        ],
+        allStates: [
+          { name: 'Texas', code: 'TX' }
+          // InvalidState is not included
+        ]
+      }));
+      
+      // Now import the seed-database module with mocked data
+      const { seedRegions: mockSeedRegions } = require('../seed-database');
+      
+      const insertMock = jest.fn((data: any[]) => ({
+        select: jest.fn(() => Promise.resolve({
+          data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
+          error: null
+        }))
+      }));
+      
       const mockClient = {
-        from: jest.fn(() => ({
+        from: jest.fn((table: string) => ({
           select: jest.fn(() => ({
             in: jest.fn(() => Promise.resolve({ data: [], error: null }))
           })),
-          insert: jest.fn((data: any[]) => ({
-            select: jest.fn(() => Promise.resolve({
-              data: data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-              error: null
-            }))
-          }))
+          insert: insertMock
         }))
       };
 
@@ -169,17 +176,23 @@ describe('Region Seeding Functions', () => {
       const logSpy = jest.fn();
       console.log = logSpy;
 
-      await seedRegions(mockClient as any);
+      await mockSeedRegions(mockClient as any);
 
       // Check that warning was logged
       const warningCalls = logSpy.mock.calls.filter(call => 
-        call[0].includes('Unknown state name: "InvalidState"')
+        call[0] && call[0].includes('Unknown state name') && call[0].includes('InvalidState')
       );
       expect(warningCalls.length).toBe(1);
 
+      // Check that only valid states were processed
+      expect(insertMock).toHaveBeenCalledTimes(1);
+      expect(insertMock.mock.calls[0][0]).toHaveLength(1);
+      expect(insertMock.mock.calls[0][0][0].state_code).toBe('TX');
+
       // Restore
       console.log = originalLog;
-      mockAgencies.length = originalLength; // Remove the test agency
+      jest.resetModules();
+      jest.unmock('../../lib/mock-data');
     });
 
     it('should generate proper slugs for regions', async () => {
