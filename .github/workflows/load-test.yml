@@ -107,7 +107,7 @@ jobs:
         if: always()
         run: |
           if [ -f .pid ]; then
-            kill $(cat .pid) || true
+            kill "$(cat .pid)" || true
           fi
       
       - name: Comment PR with results
