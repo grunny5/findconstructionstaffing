@@ -47,7 +47,7 @@ jobs:
       
       - name: Alias to Staging URL
         run: |
-          vercel alias set $(cat deployment-url.txt) staging.findconstructionstaffing.com --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel alias set "$(cat deployment-url.txt)" staging.findconstructionstaffing.com --token="${{ secrets.VERCEL_TOKEN }}" || true
       
       - name: Add Deployment Summary
         run: |
