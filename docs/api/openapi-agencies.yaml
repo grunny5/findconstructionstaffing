@@ -1,0 +1,479 @@
+openapi: 3.0.0
+info:
+  title: Find Construction Staffing API
+  description: API for searching and filtering construction staffing agencies
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@findconstructionstaffing.com
+servers:
+  - url: https://api.findconstructionstaffing.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/agencies:
+    get:
+      summary: Get agencies
+      description: Retrieve a list of active construction staffing agencies with optional filtering
+      operationId: getAgencies
+      tags:
+        - Agencies
+      parameters:
+        - name: search
+          in: query
+          description: Search term for full-text search across agency name and description
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          example: construction
+        
+        - name: trades[]
+          in: query
+          description: Filter by trade specialties (OR logic - matches ANY specified trade)
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              minLength: 1
+            maxItems: 10
+          examples:
+            single:
+              value: [electricians]
+              summary: Single trade filter
+            multiple:
+              value: [electricians, plumbers]
+              summary: Multiple trades filter
+        
+        - name: states[]
+          in: query
+          description: Filter by US state codes (OR logic - matches ANY specified state)
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              pattern: '^[A-Z]{2}$'
+              description: 2-letter US state code
+            maxItems: 10
+          examples:
+            single:
+              value: [TX]
+              summary: Single state filter
+            multiple:
+              value: [TX, CA, NY]
+              summary: Multiple states filter
+        
+        - name: limit
+          in: query
+          description: Number of results per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+        
+        - name: offset
+          in: query
+          description: Starting position in result set for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+      
+      responses:
+        '200':
+          description: Successful response with list of agencies
+          headers:
+            Cache-Control:
+              description: Caching directives
+              schema:
+                type: string
+                example: 'public, max-age=300, must-revalidate'
+            ETag:
+              description: Entity tag for cache validation
+              schema:
+                type: string
+                example: 'd41d8cd98f00b204e9800998ecf8427e'
+            Vary:
+              description: Request headers that affect response
+              schema:
+                type: string
+                example: 'Accept-Encoding'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgenciesResponse'
+              examples:
+                success:
+                  $ref: '#/components/examples/AgenciesResponseExample'
+        
+        '304':
+          description: Not Modified - content hasn't changed since last request
+          headers:
+            ETag:
+              description: Entity tag matching If-None-Match header
+              schema:
+                type: string
+            Cache-Control:
+              description: Caching directives
+              schema:
+                type: string
+        
+        '400':
+          description: Bad Request - invalid query parameters
+          headers:
+            Cache-Control:
+              description: No-cache headers for errors
+              schema:
+                type: string
+                example: 'no-cache, no-store, must-revalidate'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidParams:
+                  $ref: '#/components/examples/InvalidParamsError'
+        
+        '500':
+          description: Internal Server Error
+          headers:
+            Cache-Control:
+              description: No-cache headers for errors
+              schema:
+                type: string
+                example: 'no-cache, no-store, must-revalidate'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                databaseError:
+                  $ref: '#/components/examples/DatabaseError'
+
+components:
+  schemas:
+    Agency:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - is_active
+        - is_claimed
+        - offers_per_diem
+        - is_union
+        - review_count
+        - project_count
+        - verified
+        - featured
+        - trades
+        - regions
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the agency
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        name:
+          type: string
+          description: Agency name
+          example: 'Elite Construction Staffing'
+        slug:
+          type: string
+          description: URL-friendly version of agency name
+          example: 'elite-construction-staffing'
+        description:
+          type: string
+          nullable: true
+          description: Agency description
+          example: 'Premier construction staffing solutions'
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to agency logo
+          example: 'https://example.com/logo.png'
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: Agency website URL
+          example: 'https://elitestaffing.com'
+        phone:
+          type: string
+          nullable: true
+          description: Contact phone number
+          example: '555-0123'
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: Contact email
+          example: 'contact@elitestaffing.com'
+        is_claimed:
+          type: boolean
+          description: Whether agency profile is claimed by owner
+          example: true
+        offers_per_diem:
+          type: boolean
+          description: Whether agency offers per diem
+          example: false
+        is_union:
+          type: boolean
+          description: Whether agency works with unions
+          example: true
+        founded_year:
+          type: integer
+          nullable: true
+          minimum: 1900
+          maximum: 2100
+          description: Year agency was founded
+          example: 2010
+        employee_count:
+          type: string
+          nullable: true
+          enum: ['1-10', '11-50', '50-100', '100-250', '250-500', '500+']
+          description: Size range of agency
+          example: '50-100'
+        headquarters:
+          type: string
+          nullable: true
+          description: Agency headquarters location
+          example: 'Dallas, TX'
+        rating:
+          type: number
+          format: float
+          nullable: true
+          minimum: 0
+          maximum: 5
+          description: Average rating from reviews
+          example: 4.5
+        review_count:
+          type: integer
+          minimum: 0
+          description: Number of reviews
+          example: 25
+        project_count:
+          type: integer
+          minimum: 0
+          description: Number of completed projects
+          example: 150
+        verified:
+          type: boolean
+          description: Whether agency is verified
+          example: true
+        featured:
+          type: boolean
+          description: Whether agency is featured
+          example: false
+        is_active:
+          type: boolean
+          description: Whether agency is active
+          example: true
+        trades:
+          type: array
+          description: Trade specialties offered by agency
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/Trade'
+        regions:
+          type: array
+          description: Geographic regions served by agency
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/Region'
+    
+    Trade:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the trade
+          example: '456e7890-e89b-12d3-a456-426614174001'
+        name:
+          type: string
+          description: Trade name
+          example: 'Electricians'
+        slug:
+          type: string
+          description: URL-friendly trade identifier
+          example: 'electricians'
+    
+    Region:
+      type: object
+      required:
+        - id
+        - name
+        - code
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the region
+          example: '789e0123-e89b-12d3-a456-426614174002'
+        name:
+          type: string
+          description: Region name
+          example: 'Dallas-Fort Worth'
+        code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: 2-letter state code
+          example: 'TX'
+    
+    PaginationMetadata:
+      type: object
+      required:
+        - total
+        - limit
+        - offset
+        - hasMore
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of agencies matching filters
+          example: 150
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Number of results per page
+          example: 20
+        offset:
+          type: integer
+          minimum: 0
+          description: Starting position in result set
+          example: 0
+        hasMore:
+          type: boolean
+          description: Whether more results exist beyond this page
+          example: true
+    
+    AgenciesResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of agency records
+          items:
+            $ref: '#/components/schemas/Agency'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+    
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: 
+                - INVALID_PARAMS
+                - DATABASE_ERROR
+                - INTERNAL_ERROR
+              description: Error code for client handling
+              example: 'INVALID_PARAMS'
+            message:
+              type: string
+              description: Human-readable error message
+              example: 'Invalid query parameters'
+            details:
+              type: object
+              additionalProperties: true
+              description: Additional error context
+  
+  examples:
+    AgenciesResponseExample:
+      value:
+        data:
+          - id: '123e4567-e89b-12d3-a456-426614174000'
+            name: 'Elite Construction Staffing'
+            slug: 'elite-construction-staffing'
+            description: 'Premier construction staffing solutions across Texas'
+            logo_url: 'https://example.com/logo.png'
+            website: 'https://elitestaffing.com'
+            phone: '555-0123'
+            email: 'contact@elitestaffing.com'
+            is_claimed: true
+            offers_per_diem: false
+            is_union: true
+            founded_year: 2010
+            employee_count: '50-100'
+            headquarters: 'Dallas, TX'
+            rating: 4.5
+            review_count: 25
+            project_count: 150
+            verified: true
+            featured: false
+            is_active: true
+            trades:
+              - id: '456e7890-e89b-12d3-a456-426614174001'
+                name: 'Electricians'
+                slug: 'electricians'
+              - id: '567e8901-e89b-12d3-a456-426614174002'
+                name: 'Plumbers'
+                slug: 'plumbers'
+            regions:
+              - id: '789e0123-e89b-12d3-a456-426614174002'
+                name: 'Dallas-Fort Worth'
+                code: 'TX'
+              - id: '890e1234-e89b-12d3-a456-426614174003'
+                name: 'Houston'
+                code: 'TX'
+        pagination:
+          total: 150
+          limit: 20
+          offset: 0
+          hasMore: true
+    
+    InvalidParamsError:
+      value:
+        error:
+          code: 'INVALID_PARAMS'
+          message: 'Invalid query parameters'
+          details:
+            issues:
+              - path: 'limit'
+                message: 'Number must be less than or equal to 100'
+                received: '150'
+              - path: 'states.0'
+                message: 'State code must be 2 letters'
+                received: 'TEXAS'
+    
+    DatabaseError:
+      value:
+        error:
+          code: 'DATABASE_ERROR'
+          message: 'Failed to fetch agencies'
+          details:
+            supabaseError: 'relation "agencies" does not exist'
+            code: 'PGRST204'

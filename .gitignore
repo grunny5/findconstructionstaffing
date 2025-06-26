@@ -37,3 +37,6 @@ next-env.d.ts
 
 # test results
 docs/*-test-results.json
+
+# Supabase CLI executable
+supabase.exe
