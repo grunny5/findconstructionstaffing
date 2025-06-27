@@ -63,19 +63,83 @@ jobs:
       - name: Wait for API to be ready
         run: |
           echo "Waiting for API to be ready..."
-          for i in {1..30}; do
-            if curl -s http://localhost:3000/api/agencies > /dev/null; then
-              echo "API is ready!"
-              break
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          HEALTH_URL="http://localhost:3000/api/health"
+          AGENCIES_URL="http://localhost:3000/api/agencies"
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            
+            # First check health endpoint
+            HEALTH_RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
+            HEALTH_CODE=$(echo "$HEALTH_RESPONSE" | tail -n1)
+            HEALTH_BODY=$(echo "$HEALTH_RESPONSE" | sed '$d')
+            
+            if [ "$HEALTH_CODE" = "200" ]; then
+              echo "✓ Health check passed (HTTP 200)"
+              
+              # Parse health check response
+              if echo "$HEALTH_BODY" | jq -e '.status == "healthy"' > /dev/null 2>&1; then
+                API_CHECK=$(echo "$HEALTH_BODY" | jq -r '.checks.api')
+                DB_CHECK=$(echo "$HEALTH_BODY" | jq -r '.checks.database')
+                ENV_CHECK=$(echo "$HEALTH_BODY" | jq -r '.checks.environment')
+                
+                echo "  - API check: $API_CHECK"
+                echo "  - Database check: $DB_CHECK"
+                echo "  - Environment check: $ENV_CHECK"
+                
+                if [ "$API_CHECK" = "true" ] && [ "$DB_CHECK" = "true" ] && [ "$ENV_CHECK" = "true" ]; then
+                  # Now verify the main API endpoint
+                  echo "Verifying main API endpoint..."
+                  API_RESPONSE=$(curl -s -w "\n%{http_code}" "$AGENCIES_URL" || echo "000")
+                  API_CODE=$(echo "$API_RESPONSE" | tail -n1)
+                  API_BODY=$(echo "$API_RESPONSE" | sed '$d')
+                  
+                  if [ "$API_CODE" = "200" ]; then
+                    # Verify response structure
+                    if echo "$API_BODY" | jq -e '.data | type == "array"' > /dev/null 2>&1 && \
+                       echo "$API_BODY" | jq -e '.pagination | has("total", "limit", "offset", "hasMore")' > /dev/null 2>&1; then
+                      echo "✓ API is fully operational and ready for load testing!"
+                      echo "  - Health status: healthy"
+                      echo "  - API response: valid"
+                      echo "  - Response structure: confirmed"
+                      exit 0
+                    else
+                      echo "⚠ API returned 200 but response structure is invalid"
+                    fi
+                  else
+                    echo "⚠ API endpoint returned HTTP $API_CODE"
+                  fi
+                else
+                  echo "⚠ Health check indicates system not ready"
+                  MESSAGE=$(echo "$HEALTH_BODY" | jq -r '.details.message // empty')
+                  [ -n "$MESSAGE" ] && echo "  Message: $MESSAGE"
+                fi
+              else
+                echo "⚠ Health check returned unhealthy status"
+              fi
+            elif [ "$HEALTH_CODE" = "503" ]; then
+              echo "⚠ Health check failed (HTTP 503)"
+              if [ -n "$HEALTH_BODY" ]; then
+                MESSAGE=$(echo "$HEALTH_BODY" | jq -r '.details.message // empty' 2>/dev/null)
+                [ -n "$MESSAGE" ] && echo "  Message: $MESSAGE"
+              fi
+            else
+              echo "Health check returned HTTP $HEALTH_CODE"
             fi
-            echo "Attempt $i/30..."
+            
             sleep 2
           done
-          # Fail fast if the API never started
-          if ! curl -s http://localhost:3000/api/agencies > /dev/null; then
-            echo "::error::API did not become ready after 60 seconds"
-            exit 1
+          
+          # If we get here, API never became ready
+          echo "::error::API did not become ready after $((MAX_ATTEMPTS * 2)) seconds"
+          echo "::error::Last health check status: $HEALTH_CODE"
+          if [ -n "$HEALTH_BODY" ]; then
+            echo "::error::Last health response: $HEALTH_BODY"
           fi
+          exit 1
       
       - name: Validate input parameters
         run: |

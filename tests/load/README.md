@@ -85,7 +85,41 @@ Test results are saved to `tests/load/results/` with timestamps:
 
 ## Running Load Tests in CI/CD
 
-Add to your GitHub Actions workflow:
+The project includes a comprehensive GitHub Actions workflow for load testing with the following features:
+
+- **Robust API readiness checks** using both health endpoint and API validation
+- **Input parameter validation** to prevent resource exhaustion
+- **Detailed performance reporting** with statistical analysis
+- **Automatic artifact storage** for test results
+
+### Health Check Endpoint
+
+The API includes a dedicated health endpoint (`/api/health`) that verifies:
+- API availability
+- Database connectivity
+- Environment configuration
+
+Example health check response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.123Z",
+  "checks": {
+    "api": true,
+    "database": true,
+    "environment": true
+  },
+  "details": {
+    "environment": "production",
+    "version": "1.0.0",
+    "uptime": 3600
+  }
+}
+```
+
+### GitHub Actions Workflow
+
+The load test workflow includes comprehensive readiness checks:
 
 ```yaml
 name: Load Testing
@@ -94,19 +128,19 @@ on:
   workflow_dispatch:
     inputs:
       target_url:
-        description: 'Target URL for load testing (e.g., https://staging.example.com)'
+        description: 'Target URL for load testing'
         required: false
         default: 'http://localhost:3000'
         type: string
       concurrent_users:
-        description: 'Number of concurrent users'
+        description: 'Number of concurrent users (1-500)'
         required: false
         default: '50'
         type: string
       test_duration:
-        description: 'Test duration in seconds'
+        description: 'Test duration in seconds (10-600)'
         required: false
-        default: '30'
+        default: '60'
         type: string
 
 jobs:
@@ -114,12 +148,8 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      # Supabase environment variables
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      # Optional: Service role key for seeding if needed
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      # Base URL for load tests
       BASE_URL: ${{ github.event.inputs.target_url || 'http://localhost:3000' }}
     
     steps:
