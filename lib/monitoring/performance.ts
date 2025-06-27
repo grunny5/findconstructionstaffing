@@ -6,6 +6,9 @@
  * - Database query times
  * - Error tracking
  * - Performance alerts
+ * 
+ * Configuration:
+ * - DB_QUERY_THRESHOLD_MS: Database query time threshold in milliseconds (default: 50)
  */
 
 /**
@@ -47,12 +50,12 @@ export class PerformanceMonitor {
 
   /**
    * Mark the end of a database query
-   * Completes the most recent uncompleted query
+   * Completes the first uncompleted query (FIFO order)
    */
   endQuery(): void {
-    const lastQuery = this.queries[this.queries.length - 1];
-    if (lastQuery && !lastQuery.end) {
-      lastQuery.end = performance.now();
+    const firstUncompletedQuery = this.queries.find(q => !q.end);
+    if (firstUncompletedQuery) {
+      firstUncompletedQuery.end = performance.now();
     }
   }
 
@@ -132,9 +135,10 @@ export class PerformanceMonitor {
    * Check for performance alerts
    */
   private checkAlerts(metrics: PerformanceMetrics): void {
-    // Alert for slow database queries (>50ms as per performance requirements)
-    if (metrics.queryTime && metrics.queryTime > 50) {
-      console.warn(`[PERFORMANCE ALERT] Slow database query: ${metrics.endpoint} query took ${metrics.queryTime}ms`);
+    // Alert for slow database queries (configurable threshold)
+    const queryTimeThreshold = parseInt(process.env.DB_QUERY_THRESHOLD_MS || '50', 10);
+    if (metrics.queryTime && metrics.queryTime > queryTimeThreshold) {
+      console.warn(`[PERFORMANCE ALERT] Slow database query: ${metrics.endpoint} query took ${metrics.queryTime}ms (threshold: ${queryTimeThreshold}ms)`);
       
       // In production, this would trigger actual alerts (PagerDuty, Slack, etc.)
       if (process.env.NODE_ENV === 'production') {
@@ -211,6 +215,15 @@ export class PerformanceMonitor {
 
 /**
  * Error rate tracker for monitoring API health
+ * 
+ * IMPORTANT: This tracker is per-process and does NOT synchronize across multiple
+ * workers or processes. In a multi-worker environment (e.g., cluster mode), each
+ * worker maintains its own separate instance with independent metrics.
+ * 
+ * For production environments with multiple workers, consider using:
+ * - External metrics storage (Redis, Prometheus, etc.)
+ * - Aggregation at the load balancer level
+ * - Centralized logging and monitoring solutions
  */
 export class ErrorRateTracker {
   private static instance?: ErrorRateTracker;
@@ -218,6 +231,7 @@ export class ErrorRateTracker {
   private requestCounts: Map<string, number> = new Map();
   private windowStart: number = Date.now();
   private readonly WINDOW_SIZE = 60000; // 1 minute window
+  private readonly MAX_ENDPOINTS = 1000; // Maximum number of endpoints to track
 
   private constructor() {}
 
@@ -233,12 +247,32 @@ export class ErrorRateTracker {
    */
   recordRequest(endpoint: string, isError: boolean): void {
     this.checkWindow();
+    this.enforceMemoryLimit();
 
     const key = endpoint;
     this.requestCounts.set(key, (this.requestCounts.get(key) || 0) + 1);
     
     if (isError) {
       this.errorCounts.set(key, (this.errorCounts.get(key) || 0) + 1);
+    }
+  }
+
+  /**
+   * Enforce memory limits by removing least recently used endpoints
+   */
+  private enforceMemoryLimit(): void {
+    if (this.requestCounts.size >= this.MAX_ENDPOINTS) {
+      // Remove endpoints with the lowest request counts
+      const entries = Array.from(this.requestCounts.entries())
+        .sort((a, b) => a[1] - b[1]);
+      
+      // Remove the bottom 10% of endpoints
+      const toRemove = Math.ceil(this.MAX_ENDPOINTS * 0.1);
+      for (let i = 0; i < toRemove && i < entries.length; i++) {
+        const endpoint = entries[i][0];
+        this.requestCounts.delete(endpoint);
+        this.errorCounts.delete(endpoint);
+      }
     }
   }
 

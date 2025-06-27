@@ -69,28 +69,28 @@ describe('PerformanceMonitor', () => {
     it('should track multiple concurrent queries', () => {
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
-      // Start first query
+      // Start first query at t=10
       jest.advanceTimersByTime(10);
       monitor.startQuery();
       
-      // Start second query while first is running
+      // Start second query at t=15 (while first is running)
       jest.advanceTimersByTime(5);
       monitor.startQuery();
       
-      // End first query
+      // End first query at t=30 (duration: 20ms)
       jest.advanceTimersByTime(15);
       monitor.endQuery();
       
-      // End second query
+      // End second query at t=40 (duration: 25ms)
       jest.advanceTimersByTime(10);
       monitor.endQuery();
       
-      jest.advanceTimersByTime(10);
+      jest.advanceTimersByTime(10); // Total time: 50ms
       
       const metrics = monitor.complete(200);
       
       expect(metrics.responseTime).toBe(50);
-      // First query: 20ms (5+15), Second query: 25ms (15+10)
+      // Total query time should be sum of both queries: 20ms + 25ms = 45ms
       expect(metrics.queryTime).toBe(45);
     });
 
@@ -114,6 +114,16 @@ describe('PerformanceMonitor', () => {
   });
 
   describe('performance alerts', () => {
+    const originalDbThreshold = process.env.DB_QUERY_THRESHOLD_MS;
+
+    afterEach(() => {
+      if (originalDbThreshold !== undefined) {
+        process.env.DB_QUERY_THRESHOLD_MS = originalDbThreshold;
+      } else {
+        delete process.env.DB_QUERY_THRESHOLD_MS;
+      }
+    });
+
     it('should warn for slow responses (>200ms)', () => {
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
@@ -121,8 +131,42 @@ describe('PerformanceMonitor', () => {
       monitor.complete(200);
       
       expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining('[PERFORMANCE ALERT]'),
-        expect.stringContaining('250ms')
+        expect.stringContaining('[PERFORMANCE ALERT] Slow API response: /api/test took 250ms')
+      );
+    });
+
+    it('should use configurable database query threshold', () => {
+      // Set custom threshold
+      process.env.DB_QUERY_THRESHOLD_MS = '30';
+      
+      const monitor = new PerformanceMonitor('/api/test', 'GET');
+      
+      monitor.startQuery();
+      jest.advanceTimersByTime(40); // 40ms query time
+      monitor.endQuery();
+      
+      monitor.complete(200);
+      
+      // Should warn because 40ms > 30ms threshold
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('[PERFORMANCE ALERT] Slow database query: /api/test query took 40ms (threshold: 30ms)')
+      );
+    });
+
+    it('should use default threshold when not configured', () => {
+      delete process.env.DB_QUERY_THRESHOLD_MS;
+      
+      const monitor = new PerformanceMonitor('/api/test', 'GET');
+      
+      monitor.startQuery();
+      jest.advanceTimersByTime(60); // 60ms query time
+      monitor.endQuery();
+      
+      monitor.complete(200);
+      
+      // Should warn because 60ms > 50ms default threshold
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('[PERFORMANCE ALERT] Slow database query: /api/test query took 60ms (threshold: 50ms)')
       );
     });
 
@@ -133,8 +177,7 @@ describe('PerformanceMonitor', () => {
       monitor.complete(200);
       
       expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining('[CRITICAL PERFORMANCE]'),
-        expect.stringContaining('1500ms')
+        expect.stringContaining('[CRITICAL PERFORMANCE] Very slow API response: /api/test took 1500ms')
       );
     });
 
@@ -144,8 +187,7 @@ describe('PerformanceMonitor', () => {
       monitor.complete(500, 'Internal Server Error');
       
       expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining('[API ERROR]'),
-        expect.stringContaining('Internal Server Error')
+        expect.stringContaining('[API ERROR] /api/test: Internal Server Error')
       );
     });
   });
@@ -275,5 +317,22 @@ describe('ErrorRateTracker', () => {
     
     const errorRate = tracker.getErrorRate('/api/test');
     expect(errorRate).toBe(0); // Only the recent request counts
+  });
+
+  it('should enforce memory limits on tracked endpoints', () => {
+    const tracker = ErrorRateTracker.getInstance();
+    
+    // Record requests for many endpoints to approach the limit
+    // We'll create slightly more than MAX_ENDPOINTS (1000) to trigger cleanup
+    for (let i = 0; i < 1005; i++) {
+      tracker.recordRequest(`/api/endpoint${i}`, false);
+    }
+    
+    const rates = tracker.getAllErrorRates();
+    const endpointCount = Object.keys(rates).length;
+    
+    // Should have removed approximately 10% of endpoints
+    expect(endpointCount).toBeLessThanOrEqual(1000);
+    expect(endpointCount).toBeGreaterThan(900); // Should keep most endpoints
   });
 });
