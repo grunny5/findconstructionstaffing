@@ -24,6 +24,8 @@ jest.mock('@/lib/supabase', () => ({
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
+    or: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
     order: jest.fn().mockResolvedValue({
       data: [
@@ -42,13 +44,35 @@ jest.mock('@/lib/supabase', () => ({
 
 describe('GET /api/agencies - Caching', () => {
   const { supabase } = require('@/lib/supabase');
+  let fromCallCount: number;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock count query
-    supabase.select.mockResolvedValue({
-      count: 1,
-      error: null
+    fromCallCount = 0;
+    
+    // Reset all mocks to return supabase for chaining
+    supabase.from.mockReturnValue(supabase);
+    supabase.select.mockReturnValue(supabase);
+    supabase.eq.mockReturnValue(supabase);
+    supabase.or.mockReturnValue(supabase);
+    supabase.in.mockReturnValue(supabase);
+    supabase.range.mockReturnValue(supabase);
+    
+    // Set up a counter to handle the count query (second from() call)
+    supabase.from.mockImplementation(() => {
+      fromCallCount++;
+      if (fromCallCount === 2) {
+        // This is the count query
+        return {
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockResolvedValue({
+              count: 1,
+              error: null
+            })
+          })
+        };
+      }
+      return supabase;
     });
   });
 

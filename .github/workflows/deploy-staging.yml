@@ -16,6 +16,9 @@ env:
 
 jobs:
   deploy-staging:
+    concurrency:
+      group: deploy-staging-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     # Only run on merged PRs or direct pushes to staging/develop
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
@@ -37,11 +40,13 @@ jobs:
       - name: Deploy to Staging
         run: |
           vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}" > deployment-url.txt
-          echo "DEPLOYMENT_URL=$(cat deployment-url.txt)" >> "$GITHUB_ENV"
+          DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
+          echo "DEPLOYMENT_URL=${DEPLOYMENT_URL}" >> "$GITHUB_ENV"
       
       - name: Alias to Staging URL
         run: |
-          if ! vercel alias set "$(cat deployment-url.txt)" staging.findconstructionstaffing.com --token="${{ secrets.VERCEL_TOKEN }}"; then
+          DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
+          if ! vercel alias set "${DEPLOYMENT_URL}" staging.findconstructionstaffing.com --token="${{ secrets.VERCEL_TOKEN }}"; then
             echo "::warning::Failed to set staging alias. This is non-critical and deployment continues."
             echo "::warning::Error details: $?"
           fi
@@ -64,5 +69,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Staging Deployment Complete\n\nYour changes have been deployed to staging!\n\n**URL:** ${{ env.DEPLOYMENT_URL }}\n\nPlease verify your changes in the staging environment.`
+              body: `## 🚀 Staging Deployment Complete\n\nYour changes have been deployed to staging!\n\n**URL:** ${process.env.DEPLOYMENT_URL}\n\nPlease verify your changes in the staging environment.`
             })

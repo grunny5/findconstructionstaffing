@@ -45,6 +45,7 @@ jest.mock('@/lib/supabase', () => {
     select: jest.fn(),
     eq: jest.fn(),
     or: jest.fn(),
+    in: jest.fn(),
     range: jest.fn(),
     order: jest.fn()
   };
@@ -54,6 +55,7 @@ jest.mock('@/lib/supabase', () => {
   mockSupabase.select.mockReturnValue(mockSupabase);
   mockSupabase.eq.mockReturnValue(mockSupabase);
   mockSupabase.or.mockReturnValue(mockSupabase);
+  mockSupabase.in.mockReturnValue(mockSupabase);
   mockSupabase.range.mockReturnValue(mockSupabase);
   mockSupabase.order.mockReturnValue(mockSupabase);
 
@@ -439,11 +441,14 @@ describe('GET /api/agencies', () => {
       mockSupabase.from.mockImplementation(() => {
         fromCallCount++;
         if (fromCallCount === 2) {
+          // This is the count query
           return {
             select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 1,
-                error: null
+              eq: jest.fn().mockReturnValue({
+                or: jest.fn().mockResolvedValue({
+                  count: 1,
+                  error: null
+                })
               })
             })
           };
@@ -527,8 +532,7 @@ describe('GET /api/agencies', () => {
       await GET(mockRequest);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[Performance Warning]'),
-        expect.stringContaining('85ms')
+        expect.stringContaining('[Performance Warning] /api/agencies approaching 100ms target: 85ms')
       );
 
       consoleSpy.mockRestore();

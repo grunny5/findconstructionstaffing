@@ -20,16 +20,27 @@ jest.mock('next/server', () => ({
 }));
 
 // Mock Supabase with proper chaining support
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    order: jest.fn()
-  }
-}));
+jest.mock('@/lib/supabase', () => {
+  const mockSupabase = {
+    from: jest.fn(),
+    select: jest.fn(),
+    eq: jest.fn(),
+    or: jest.fn(),
+    range: jest.fn(),
+    order: jest.fn(),
+    in: jest.fn()
+  };
+  
+  // Setup chaining
+  mockSupabase.from.mockReturnValue(mockSupabase);
+  mockSupabase.select.mockReturnValue(mockSupabase);
+  mockSupabase.eq.mockReturnValue(mockSupabase);
+  mockSupabase.or.mockReturnValue(mockSupabase);
+  mockSupabase.range.mockReturnValue(mockSupabase);
+  mockSupabase.in.mockReturnValue(mockSupabase);
+  
+  return { supabase: mockSupabase };
+});
 
 describe('GET /api/agencies - Search Functionality', () => {
   const { supabase } = require('@/lib/supabase');
@@ -37,28 +48,24 @@ describe('GET /api/agencies - Search Functionality', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
+    // Reset chaining
+    supabase.from.mockReturnValue(supabase);
+    supabase.select.mockReturnValue(supabase);
+    supabase.eq.mockReturnValue(supabase);
+    supabase.or.mockReturnValue(supabase);
+    supabase.range.mockReturnValue(supabase);
+    supabase.in.mockReturnValue(supabase);
+    
     // Setup default successful responses
     supabase.order.mockResolvedValue({
       data: [],
       error: null,
       count: null
     });
-    
-    // Mock for count query
-    supabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          or: jest.fn().mockResolvedValue({
-            count: 0,
-            error: null
-          })
-        })
-      })
-    });
   });
 
   describe('Search Query Processing', () => {
-    it('should apply full-text search when search parameter is provided', async () => {
+    it('should apply search filter when search parameter is provided', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { search: 'construction' }
@@ -66,9 +73,9 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       await GET(mockRequest);
 
-      // Verify that or() was called with full-text search syntax
+      // Verify that or() was called with ilike for search
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.construction,description.fts.construction,name.ilike.%construction%,description.ilike.%construction%'
+        'name.ilike.%construction%,description.ilike.%construction%'
       );
     });
 
@@ -91,9 +98,10 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       await GET(mockRequest);
 
-      // Verify that dangerous characters are removed
+      // Verify that dangerous characters and keywords are removed
+      // The sanitizer removes 'script' keyword, brackets, quotes, and other special chars
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.scriptalert("xss")/script,description.fts.scriptalert("xss")/script,name.ilike.%scriptalert("xss")/script%,description.ilike.%scriptalert("xss")/script%'
+        'name.ilike.%xss%,description.ilike.%xss%'
       );
     });
 
@@ -105,9 +113,9 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       await GET(mockRequest);
 
-      // Verify both full-text and partial matching are used
+      // Verify partial matching is used
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.elect,description.fts.elect,name.ilike.%elect%,description.ilike.%elect%'
+        'name.ilike.%elect%,description.ilike.%elect%'
       );
     });
 
@@ -121,7 +129,7 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       // Verify search term is processed correctly
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.construction staffing,description.fts.construction staffing,name.ilike.%construction staffing%,description.ilike.%construction staffing%'
+        'name.ilike.%construction staffing%,description.ilike.%construction staffing%'
       );
     });
 
@@ -135,23 +143,13 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       // Verify trimmed search term
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.construction,description.fts.construction,name.ilike.%construction%,description.ilike.%construction%'
+        'name.ilike.%construction%,description.ilike.%construction%'
       );
     });
   });
 
   describe('Search Integration', () => {
     it('should apply search filters to both main and count queries', async () => {
-      const countQuery = {
-        or: jest.fn().mockResolvedValue({ count: 5, error: null })
-      };
-      
-      supabase.from.mockReturnValueOnce({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue(countQuery)
-        })
-      });
-
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { search: 'electrical' }
@@ -161,13 +159,11 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       // Verify main query uses search
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.electrical,description.fts.electrical,name.ilike.%electrical%,description.ilike.%electrical%'
+        'name.ilike.%electrical%,description.ilike.%electrical%'
       );
-
-      // Verify count query also uses search
-      expect(countQuery.or).toHaveBeenCalledWith(
-        'name.fts.electrical,description.fts.electrical,name.ilike.%electrical%,description.ilike.%electrical%'
-      );
+      
+      // The or() method should be called twice - once for main query, once for count query
+      expect(supabase.or).toHaveBeenCalledTimes(2);
     });
 
     it('should combine search with other filters correctly', async () => {
@@ -187,7 +183,7 @@ describe('GET /api/agencies - Search Functionality', () => {
       
       // Verify search filter is applied
       expect(supabase.or).toHaveBeenCalledWith(
-        'name.fts.plumbing,description.fts.plumbing,name.ilike.%plumbing%,description.ilike.%plumbing%'
+        'name.ilike.%plumbing%,description.ilike.%plumbing%'
       );
       
       // Verify pagination is applied

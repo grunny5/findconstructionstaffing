@@ -212,9 +212,8 @@ export async function GET(request: NextRequest) {
 
     // Apply search filter if provided
     if (sanitizedSearch) {
-      // Use Supabase's textSearch for full-text search capabilities
-      // First try full-text search, fallback to ilike for partial matches
-      query = query.or(`name.fts.${sanitizedSearch},description.fts.${sanitizedSearch},name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
+      // Use ilike for partial text matching on name and description columns
+      query = query.or(`name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
     }
     
     // Apply trade and state filters
@@ -296,7 +295,7 @@ export async function GET(request: NextRequest) {
 
     // Apply same search filter to count query
     if (sanitizedSearch) {
-      countQuery = countQuery.or(`name.fts.${sanitizedSearch},description.fts.${sanitizedSearch},name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
+      countQuery = countQuery.or(`name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
     }
     
     // Apply same filters to count query - reuse the filtered agency IDs
