@@ -56,6 +56,17 @@ VERCEL_PROJECT_ID     # Found in: .vercel/project.json after first deploy
 STAGING_DOMAIN        # Your staging domain (e.g., staging.findconstructionstaffing.com)
 ```
 
+### ⚠️ Security Warning for VERCEL_TOKEN
+
+**VERCEL_TOKEN is highly sensitive and must be protected:**
+
+- **Store Securely**: Use GitHub's encrypted secrets - never store in plain text
+- **Minimal Permissions**: Create tokens with only the permissions needed for deployment
+- **Regular Rotation**: Rotate tokens every 90 days or immediately if compromised
+- **Never Commit**: Add `.env*` to `.gitignore` and never commit tokens to version control
+- **Audit Access**: Regularly review who has access to your GitHub secrets
+- **Use Scoped Tokens**: If possible, create project-specific tokens rather than account-wide tokens
+
 ### Getting Vercel IDs:
 
 1. Install Vercel CLI: `npm i -g vercel`
@@ -96,8 +107,44 @@ vercel
 Use a separate Supabase project for staging:
 
 1. Create a new Supabase project for staging
-2. Run migrations: `npm run migrate:staging`
-3. Seed test data: `npm run seed`
+2. Apply database schema:
+   ```bash
+   # Option 1: Use Supabase Dashboard
+   # Go to SQL Editor and run your schema creation scripts
+   
+   # Option 2: Use Supabase CLI (if migrations are set up)
+   npx supabase db push --linked
+   
+   # Option 3: Create the migrate:staging script in package.json:
+   # "migrate:staging": "npx supabase db push --db-url $STAGING_DATABASE_URL"
+   ```
+
+3. Seed test data:
+   ```bash
+   # Ensure SUPABASE_SERVICE_ROLE_KEY is set for your staging environment
+   NEXT_PUBLIC_SUPABASE_URL=your-staging-url \
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-staging-anon-key \
+   SUPABASE_SERVICE_ROLE_KEY=your-staging-service-key \
+   npm run seed
+   
+   # Or if you've configured .env.staging:
+   npm run seed
+   ```
+
+   Available seed commands:
+   - `npm run seed` - Seed database with mock data
+   - `npm run seed:reset` - Clear and re-seed (destructive)
+   - `npm run seed:verify` - Verify data integrity
+
+   **Note**: To add custom migration scripts, update `package.json`:
+   ```json
+   {
+     "scripts": {
+       "migrate:staging": "npx supabase db push --db-url $STAGING_DATABASE_URL",
+       "migrate:prod": "npx supabase db push --db-url $PRODUCTION_DATABASE_URL"
+     }
+   }
+   ```
 
 ### Feature Flags
 
