@@ -117,18 +117,7 @@ const mockAgencies = [
   }
 ];
 
-// Mock Supabase client
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    order: jest.fn()
-  }
-}));
+// Use the global Supabase mock from jest.setup.js
 
 describe('GET /api/agencies - Comprehensive Integration Tests', () => {
   const { supabase } = require('@/lib/supabase');
@@ -137,29 +126,55 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     // Reset mocks
     jest.clearAllMocks();
     
-    // Mock main query
-    supabase.order.mockResolvedValue({
-      data,
-      error: null,
-      count: null
+    // Ensure chainable methods return the supabase mock object
+    Object.keys(supabase).forEach(method => {
+      if (typeof supabase[method] === 'function' && method !== 'order' && method !== 'select') {
+        supabase[method].mockReturnValue(supabase);
+      }
     });
     
-    // Mock count query
-    supabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          or: jest.fn().mockReturnValue({
-            in: jest.fn().mockResolvedValue({
-              count: total,
-              error: null
-            })
-          }),
-          in: jest.fn().mockResolvedValue({
-            count: total,
-            error: null
-          })
-        })
-      })
+    // Mock select method to handle count queries
+    supabase.select.mockImplementation((fields, options) => {
+      if (options && options.count === 'exact' && options.head === true) {
+        // This is a count query
+        supabase._isCountQuery = true;
+      }
+      return supabase;
+    });
+    
+    // Mock the final order method to return data
+    supabase.order.mockImplementation(() => {
+      // For main query, return data
+      return Promise.resolve({
+        data,
+        error: null,
+        count: null
+      });
+    });
+    
+    // Mock in method to handle count queries and make it thenable
+    supabase.in.mockImplementation((...args) => {
+      const result = Object.create(supabase);
+      
+      // Add promise methods for count queries
+      if (supabase._isCountQuery) {
+        result.then = (onFulfilled) => {
+          return Promise.resolve({
+            data: null,
+            error: null,
+            count: total
+          }).then(onFulfilled);
+        };
+      }
+      
+      return result;
+    });
+    
+    // Reset count query flag after each from() call
+    const originalFrom = supabase.from;
+    supabase.from.mockImplementation((...args) => {
+      supabase._isCountQuery = false;
+      return supabase;
     });
   };
 

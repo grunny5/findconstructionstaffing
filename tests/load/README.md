@@ -88,25 +88,131 @@ Test results are saved to `tests/load/results/` with timestamps:
 Add to your GitHub Actions workflow:
 
 ```yaml
-- name: Start API server
-  run: npm run dev &
-  env:
-    DATABASE_URL: ${{ secrets.DATABASE_URL }}
+name: Load Testing
 
-- name: Wait for API
-  run: npx wait-on http://localhost:3000/api/agencies
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL for load testing (e.g., https://staging.example.com)'
+        required: false
+        default: 'http://localhost:3000'
+        type: string
+      concurrent_users:
+        description: 'Number of concurrent users'
+        required: false
+        default: '50'
+        type: string
+      test_duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '30'
+        type: string
 
-- name: Run load test
-  run: node tests/load/simple-load-test.js
-  env:
-    CONCURRENT_USERS: 50
-    TEST_DURATION: 30
-
-- name: Upload results
-  uses: actions/upload-artifact@v3
-  with:
-    name: load-test-results
-    path: tests/load/results/
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    
+    env:
+      # Supabase environment variables
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      # Optional: Service role key for seeding if needed
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Base URL for load tests
+      BASE_URL: ${{ github.event.inputs.target_url || 'http://localhost:3000' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      # Only build and start locally if testing localhost
+      - name: Build application
+        if: contains(env.BASE_URL, 'localhost')
+        run: npm run build
+      
+      - name: Start application
+        if: contains(env.BASE_URL, 'localhost')
+        run: |
+          npm start &
+          echo $! > .pid
+      
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API at $BASE_URL to be ready..."
+          for i in {1..30}; do
+            if curl -s $BASE_URL/api/agencies > /dev/null; then
+              echo "API is ready!"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+          
+          # Verify API is responding
+          if ! curl -s $BASE_URL/api/agencies > /dev/null; then
+            echo "::error::API did not become ready after 60 seconds"
+            exit 1
+          fi
+      
+      - name: Run load test
+        run: |
+          echo "Running load test against $BASE_URL"
+          node tests/load/simple-load-test.js
+        env:
+          CONCURRENT_USERS: ${{ github.event.inputs.concurrent_users }}
+          TEST_DURATION: ${{ github.event.inputs.test_duration }}
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results-${{ github.run_number }}
+          path: tests/load/results/
+          retention-days: 30
+      
+      - name: Stop application
+        if: always() && contains(env.BASE_URL, 'localhost')
+        run: |
+          if [ -f .pid ]; then
+            kill "$(cat .pid)" || true
+            rm .pid
+          fi
+      
+      - name: Check performance targets
+        run: |
+          # Find the latest summary file
+          SUMMARY=$(ls -t tests/load/results/simple-load-test-summary_*.md 2>/dev/null | head -1)
+          
+          if [ -z "$SUMMARY" ] || [ ! -f "$SUMMARY" ]; then
+            echo "::error::No load test summary file found"
+            exit 1
+          fi
+          
+          # Display results in job summary
+          {
+            echo "## Load Test Results"
+            echo ""
+            echo "**Target URL:** $BASE_URL"
+            echo "**Concurrent Users:** ${{ github.event.inputs.concurrent_users }}"
+            echo "**Test Duration:** ${{ github.event.inputs.test_duration }}s"
+            echo ""
+            cat "$SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
+          
+          # Fail if targets not met
+          if grep -q "❌" "$SUMMARY"; then
+            echo "::error::Performance targets not met. See summary for details."
+            exit 1
+          fi
 ```
 
 ## Interpreting Results

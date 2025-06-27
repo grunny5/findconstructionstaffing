@@ -13,9 +13,22 @@ const path = require('path');
 
 // Configuration
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-const CONCURRENT_USERS = parseInt(process.env.CONCURRENT_USERS) || 100;
-const TEST_DURATION = parseInt(process.env.TEST_DURATION) || 60; // seconds
+const CONCURRENT_USERS = Math.min(Math.max(parseInt(process.env.CONCURRENT_USERS) || 100, 1), 1000);
+const TEST_DURATION = Math.min(Math.max(parseInt(process.env.TEST_DURATION) || 60, 1), 3600); // Max 1 hour
 const RESULTS_DIR = path.join(__dirname, 'results');
+
+// Validate configuration
+if (isNaN(CONCURRENT_USERS) || isNaN(TEST_DURATION)) {
+  console.error('❌ Invalid configuration: CONCURRENT_USERS and TEST_DURATION must be valid numbers');
+  process.exit(1);
+}
+
+// Log configuration with limits
+console.log('Load Test Configuration:');
+console.log(`- Base URL: ${BASE_URL}`);
+console.log(`- Concurrent Users: ${CONCURRENT_USERS} (min: 1, max: 1000)`);
+console.log(`- Test Duration: ${TEST_DURATION}s (min: 1s, max: 3600s)`);
+console.log();
 
 // Test scenarios
 const scenarios = [

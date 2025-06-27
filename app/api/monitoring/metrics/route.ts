@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ErrorRateTracker } from '@/lib/monitoring/performance';
 import { HTTP_STATUS } from '@/types/api';
+import { getClientIp, hashIpForRateLimiting } from '@/lib/utils/ip-extraction';
 
 /**
  * Rate limiting for failed authentication attempts
@@ -44,13 +45,14 @@ export async function GET(request: NextRequest) {
   // Authentication is implemented via API key
   const monitoringKey = process.env.MONITORING_API_KEY;
   const providedKey = request.headers.get('x-monitoring-key');
-  const clientIp = request.headers.get('x-forwarded-for') || 
-                   request.headers.get('x-real-ip') || 
-                   'unknown';
   
-  // Check rate limiting for this IP
+  // Securely extract and validate client IP
+  const clientIp = getClientIp(request);
+  const rateLimitKey = hashIpForRateLimiting(clientIp);
+  
+  // Check rate limiting for this IP using the hashed key
   const now = Date.now();
-  const authAttempt = failedAuthAttempts.get(clientIp);
+  const authAttempt = failedAuthAttempts.get(rateLimitKey);
   
   if (authAttempt && authAttempt.resetTime > now && authAttempt.count >= MAX_FAILED_ATTEMPTS) {
     const retryAfter = Math.ceil((authAttempt.resetTime - now) / 1000);
@@ -70,9 +72,9 @@ export async function GET(request: NextRequest) {
   
   // Clean up expired entries periodically
   if (Math.random() < 0.1) { // 10% chance to cleanup
-    failedAuthAttempts.forEach((attempt, ip) => {
+    failedAuthAttempts.forEach((attempt, key) => {
       if (attempt.resetTime <= now) {
-        failedAuthAttempts.delete(ip);
+        failedAuthAttempts.delete(key);
       }
     });
   }
@@ -83,8 +85,8 @@ export async function GET(request: NextRequest) {
   const isAuthorized = !isProduction || hasValidApiKey;
   
   if (!isAuthorized) {
-    // Track failed authentication attempt
-    let attempt = failedAuthAttempts.get(clientIp);
+    // Track failed authentication attempt using the hashed key
+    let attempt = failedAuthAttempts.get(rateLimitKey);
     
     if (!attempt) {
       // First failed attempt - set the reset time
@@ -98,7 +100,7 @@ export async function GET(request: NextRequest) {
       attempt.count++;
     }
     
-    failedAuthAttempts.set(clientIp, attempt);
+    failedAuthAttempts.set(rateLimitKey, attempt);
     
     return NextResponse.json(
       { 

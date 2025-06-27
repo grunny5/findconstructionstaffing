@@ -89,16 +89,68 @@
       ```bash
       # List environment variables for staging
       vercel env ls staging
+      ```
       
-      # Pull staging env to local .env file
-      # ⚠️ SECURITY WARNING: This creates a file with sensitive credentials!
-      # - NEVER commit .env.staging to version control
-      # - Add .env.staging to .gitignore immediately
-      # - Delete the file after use or store in a secure location
-      # - Restrict access to authorized personnel only
-      # - Consider using a password manager or secure vault instead
+      <div style="border: 3px solid #ff0000; background-color: #ffe6e6; padding: 20px; margin: 20px 0; border-radius: 8px;">
+      
+      ### 🚨 **CRITICAL SECURITY WARNING** 🚨
+      
+      **The following command creates a file containing SENSITIVE CREDENTIALS:**
+      
+      ```bash
       vercel env pull .env.staging --environment=staging
       ```
+      
+      #### ⚠️ **IMMEDIATE ACTIONS REQUIRED:**
+      
+      1. **BEFORE running this command:**
+         - [ ] Ensure you&apos;re in a secure, private environment
+         - [ ] Verify `.env.staging` is in `.gitignore`
+         - [ ] Check no screen sharing/recording is active
+      
+      2. **AFTER running this command:**
+         - [ ] **Set restrictive file permissions immediately:**
+           ```bash
+           chmod 600 .env.staging  # Owner read/write only
+           ```
+         - [ ] **Never commit this file:**
+           ```bash
+           # Verify it&apos;s not staged
+           git status
+           # If accidentally staged, remove it
+           git rm --cached .env.staging
+           ```
+      
+      3. **SECURE HANDLING:**
+         - [ ] **Delete immediately after use:**
+           ```bash
+           rm -f .env.staging
+           # Verify deletion
+           ls -la .env.staging  # Should show "No such file"
+           ```
+         - [ ] **If you must keep it temporarily:**
+           - Store in an encrypted vault (1Password, Bitwarden, etc.)
+           - Use full-disk encryption
+           - Never store on shared/cloud drives
+      
+      4. **SAFER ALTERNATIVES:**
+         - Use Vercel Dashboard (no local file created)
+         - Use environment variable managers (direnv with encryption)
+         - Access secrets directly from secure vaults via CLI
+      
+      #### 🛡️ **Security Best Practices:**
+      - **Principle of Least Privilege:** Only pull secrets you absolutely need
+      - **Time-Limited Access:** Delete credentials after each use
+      - **Audit Trail:** Document who accessed credentials and when
+      - **Regular Rotation:** Change credentials periodically
+      
+      #### ❌ **NEVER DO THIS:**
+      - Commit `.env` files to Git (even in "private" repos)
+      - Share credentials via email, Slack, or chat
+      - Store credentials in plain text files long-term
+      - Use production credentials in development
+      
+      </div>
    
    3. **Test Supabase Connection:**
       ```bash

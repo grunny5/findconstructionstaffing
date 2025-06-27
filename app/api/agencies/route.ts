@@ -366,6 +366,11 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: any) {
+    // Log the actual error for debugging in tests
+    if (process.env.NODE_ENV === 'test') {
+      console.error('API Route Error:', error);
+    }
+    
     // Handle unexpected errors
     const errorResponse: ErrorResponse = {
       error: {
