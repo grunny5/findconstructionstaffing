@@ -123,12 +123,28 @@ export class PerformanceMonitor {
    * Check for performance alerts
    */
   private checkAlerts(metrics: PerformanceMetrics): void {
-    // Alert for slow queries (>200ms as per FSD)
-    if (metrics.responseTime > 200) {
-      console.warn(`[PERFORMANCE ALERT] Slow API response: ${metrics.endpoint} took ${metrics.responseTime}ms`);
+    // Alert for slow database queries (>50ms as per performance requirements)
+    if (metrics.queryTime && metrics.queryTime > 50) {
+      console.warn(`[PERFORMANCE ALERT] Slow database query: ${metrics.endpoint} query took ${metrics.queryTime}ms`);
       
       // In production, this would trigger actual alerts (PagerDuty, Slack, etc.)
       if (process.env.NODE_ENV === 'production') {
+        // TODO: Integrate with alerting service
+        this.sendAlert({
+          severity: 'warning',
+          title: 'Slow Database Query',
+          description: `${metrics.method} ${metrics.endpoint} database query took ${metrics.queryTime}ms`,
+          metrics
+        });
+      }
+    }
+
+    // Alert for slow API responses (>80ms approaching 100ms target)
+    if (metrics.responseTime > 80) {
+      console.warn(`[PERFORMANCE ALERT] Slow API response: ${metrics.endpoint} took ${metrics.responseTime}ms (approaching 100ms target)`);
+      
+      // In production, this would trigger actual alerts (PagerDuty, Slack, etc.)
+      if (process.env.NODE_ENV === 'production' && metrics.responseTime > 100) {
         // TODO: Integrate with alerting service
         this.sendAlert({
           severity: 'warning',

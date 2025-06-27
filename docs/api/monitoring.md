@@ -114,7 +114,7 @@ When deploying to Vercel, add the `MONITORING_API_KEY` environment variable thro
 
 The performance monitoring system automatically logs warnings when:
 - Response time exceeds 80ms (approaching the 100ms target)
-- Query time exceeds 200ms
+- Query time exceeds 50ms (database query performance requirement)
 - Error rates exceed thresholds
 
 These alerts can be integrated with your monitoring infrastructure (e.g., Datadog, New Relic, CloudWatch).
