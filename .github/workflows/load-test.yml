@@ -94,7 +94,18 @@ jobs:
       - name: Check performance targets
         run: |
           # Read the latest summary file
-          SUMMARY=$(ls -t tests/load/results/simple-load-test-summary_*.md | head -1)
+          SUMMARY=$(ls -t tests/load/results/simple-load-test-summary_*.md 2>/dev/null | head -1)
+          
+          # Check if summary file exists
+          if [ -z "$SUMMARY" ] || [ ! -f "$SUMMARY" ]; then
+            echo "::error::No load test summary file found in tests/load/results/"
+            echo "## Load Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Error**: No load test summary file was generated." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This may indicate the load test failed to complete or didn't generate results." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
           
           echo "## Load Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -121,6 +132,22 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            
+            // Check if results directory exists
+            if (!fs.existsSync('tests/load/results')) {
+              const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No results directory found.\n\nThe load test may have failed to run or generate results.`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: errorComment
+              });
+              
+              core.setFailed('No load test results directory found');
+              return;
+            }
+            
             const summaryFiles = fs.readdirSync('tests/load/results')
               .filter(f => f.startsWith('simple-load-test-summary_'))
               .sort()
@@ -137,4 +164,15 @@ jobs:
                 repo: context.repo.repo,
                 body: comment
               });
+            } else {
+              const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No load test summary files found.\n\nThe load test completed but didn't generate summary files.`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: errorComment
+              });
+              
+              core.setFailed('No load test summary files found');
             }
