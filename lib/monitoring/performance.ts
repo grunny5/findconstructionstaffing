@@ -97,7 +97,7 @@ export class PerformanceMonitor {
    */
   private logMetrics(metrics: PerformanceMetrics): void {
     const logLevel = metrics.error ? 'error' : 
-                    metrics.responseTime > 200 ? 'warn' : 'info';
+                    metrics.responseTime > 80 ? 'warn' : 'info';
 
     const logData = {
       type: 'api_performance',
