@@ -355,7 +355,7 @@ export default function HomePage() {
               No agencies found
             </h3>
             <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-              We couldn't find any agencies matching your criteria. Try adjusting your filters or search terms.
+              We couldn&apos;t find any agencies matching your criteria. Try adjusting your filters or search terms.
             </p>
             <Button 
               variant="outline" 
@@ -386,7 +386,7 @@ export default function HomePage() {
               Why Construction Leaders Trust Our Directory
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              We've helped thousands of projects connect with the right staffing partners across all major construction sectors
+              We&apos;ve helped thousands of projects connect with the right staffing partners across all major construction sectors
             </p>
           </div>
 

@@ -272,6 +272,22 @@ export class ErrorRateTracker {
       this.windowStart = now;
     }
   }
+
+  /**
+   * Reset all tracking data - useful for testing
+   */
+  reset(): void {
+    this.errorCounts.clear();
+    this.requestCounts.clear();
+    this.windowStart = Date.now();
+  }
+
+  /**
+   * Reset the singleton instance - primarily for testing
+   */
+  static resetInstance(): void {
+    ErrorRateTracker.instance = undefined as any;
+  }
 }
 
 /**

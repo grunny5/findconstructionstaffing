@@ -341,7 +341,7 @@ export default function DirectoryFilters({ onFiltersChange, totalResults }: Dire
           <div className="flex flex-wrap gap-2">
             {filters.search && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
-                Search: "{filters.search}"
+                Search: &quot;{filters.search}&quot;
                 <button 
                   onClick={() => removeFilter('search')}
                   className="ml-2 hover:text-blue-900"

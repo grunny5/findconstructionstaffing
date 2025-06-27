@@ -38,9 +38,71 @@
    ```
 
 2. **Verify Environment Variables**
-   - Check Vercel dashboard for staging environment
-   - Ensure all required variables are set
-   - Verify Supabase connection
+   
+   **Required Variables:**
+   
+   - [ ] **`NEXT_PUBLIC_SUPABASE_URL`**
+     - Format: `https://[project-ref].supabase.co`
+     - Verify in Vercel: Settings → Environment Variables → Staging
+     - Test: `curl -I [URL]/rest/v1/` should return 200 OK
+   
+   - [ ] **`NEXT_PUBLIC_SUPABASE_ANON_KEY`**
+     - Format: JWT token (long string)
+     - Verify: Should be different from production
+     - Test: Use in API call to verify authentication works
+   
+   - [ ] **`SUPABASE_SERVICE_ROLE_KEY`** (if using server-side operations)
+     - Format: JWT token (keep secret!)
+     - Required for: Database seeding, admin operations
+     - Verify: Never expose in client-side code
+   
+   - [ ] **`MONITORING_API_KEY`** (for production)
+     - Format: Random secure string (min 32 chars)
+     - Required for: `/api/monitoring/metrics` endpoint
+     - Test: `curl -H "x-monitoring-key: [KEY]" [URL]/api/monitoring/metrics`
+   
+   - [ ] **`NEXT_PUBLIC_APP_URL`** (optional but recommended)
+     - Format: `https://staging.findconstructionstaffing.com`
+     - Used for: Absolute URLs, redirects, SEO
+   
+   - [ ] **`NEXT_PUBLIC_ENVIRONMENT`** (optional)
+     - Value: `staging` or `production`
+     - Used for: Environment-specific features/logging
+   
+   **Verification Steps:**
+   
+   1. **In Vercel Dashboard:**
+      ```
+      1. Go to Project Settings → Environment Variables
+      2. Select "Staging" environment
+      3. Verify all variables are present (not inherited from production)
+      4. Check "Encrypted" toggle for sensitive values
+      ```
+   
+   2. **Using Vercel CLI:**
+      ```bash
+      # List environment variables for staging
+      vercel env ls staging
+      
+      # Pull staging env to local .env file (be careful!)
+      vercel env pull .env.staging --environment=staging
+      ```
+   
+   3. **Test Supabase Connection:**
+      ```bash
+      # Test API endpoint (should return agencies data)
+      curl https://staging.your-domain.com/api/agencies
+      
+      # Test database URL directly
+      curl -I "https://[project-ref].supabase.co/rest/v1/agencies" \
+        -H "apikey: [ANON_KEY]" \
+        -H "Authorization: Bearer [ANON_KEY]"
+      ```
+   
+   4. **Verify No Production Keys in Staging:**
+      - Staging should use separate Supabase project
+      - API keys should be different from production
+      - Service role keys must never be the same
 
 3. **Deploy to Staging**
    - Automatic: Push to staging branch triggers deployment

@@ -159,6 +159,17 @@ describe('PerformanceMonitor', () => {
 });
 
 describe('ErrorRateTracker', () => {
+  beforeEach(() => {
+    // Reset the singleton instance to ensure clean state
+    ErrorRateTracker.resetInstance();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Clean up after each test
+    ErrorRateTracker.resetInstance();
+  });
+
   it('should be a singleton', () => {
     const instance1 = ErrorRateTracker.getInstance();
     const instance2 = ErrorRateTracker.getInstance();
@@ -175,6 +186,25 @@ describe('ErrorRateTracker', () => {
     
     const errorRate = tracker.getErrorRate('/api/test');
     expect(errorRate).toBe(33.33333333333333); // 1 error out of 3 requests
+  });
+
+  it('should reset data when reset() is called', () => {
+    const tracker = ErrorRateTracker.getInstance();
+    
+    // Record some requests
+    tracker.recordRequest('/api/test', false);
+    tracker.recordRequest('/api/test', true);
+    
+    // Verify data exists
+    expect(tracker.getErrorRate('/api/test')).toBe(50);
+    
+    // Reset the tracker
+    tracker.reset();
+    
+    // Verify data is cleared
+    expect(tracker.getErrorRate('/api/test')).toBe(0);
+    const allRates = tracker.getAllErrorRates();
+    expect(Object.keys(allRates).length).toBe(0);
   });
 
   it('should return 0 error rate for endpoints with no requests', () => {

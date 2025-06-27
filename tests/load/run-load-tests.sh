@@ -19,19 +19,6 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Create results directory
 mkdir -p "$RESULTS_DIR"
 
-# Check for required tools
-if ! command -v k6 &> /dev/null; then
-    echo -e "${RED}Error: k6 is not installed. Please install k6 to run load tests.${NC}"
-    echo "Visit https://k6.io/docs/getting-started/installation/ for installation instructions."
-    exit 1
-fi
-
-if ! command -v jq &> /dev/null; then
-    echo -e "${RED}Error: jq is not installed. Please install jq to process test results.${NC}"
-    echo "Visit https://stedolan.github.io/jq/download/ for installation instructions."
-    exit 1
-fi
-
 echo "🚀 Starting load tests for Agencies API"
 echo "Base URL: $BASE_URL"
 echo "Results will be saved to: $RESULTS_DIR"
@@ -60,10 +47,22 @@ run_test() {
     echo ""
 }
 
-# Check if k6 is installed
+# Check for required tools
 if ! command -v k6 &> /dev/null; then
-    echo -e "${RED}Error: k6 is not installed${NC}"
-    echo "Please install k6 from https://k6.io/docs/getting-started/installation"
+    echo -e "${RED}Error: k6 is not installed. Please install k6 to run load tests.${NC}"
+    echo "Visit https://k6.io/docs/getting-started/installation/ for installation instructions."
+    exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+    echo -e "${RED}Error: jq is not installed. Please install jq to process test results.${NC}"
+    echo "Visit https://stedolan.github.io/jq/download/ for installation instructions."
+    exit 1
+fi
+
+if ! command -v bc &> /dev/null; then
+    echo -e "${RED}Error: bc is not installed. Please install bc for floating-point calculations.${NC}"
+    echo "Install with: apt-get install bc (Debian/Ubuntu) or yum install bc (RHEL/CentOS)"
     exit 1
 fi
 
@@ -101,14 +100,21 @@ evaluate_performance() {
     fi
     
     # Extract metrics using jq
-    local p95=$(jq -r '.metrics.http_req_duration["p(95)"] // 0' "$json_file" 2>/dev/null || echo "0")
-    local error_rate=$(jq -r '.metrics.http_req_failed.rate // 0' "$json_file" 2>/dev/null || echo "0")
-    local avg_duration=$(jq -r '.metrics.http_req_duration.avg // 0' "$json_file" 2>/dev/null || echo "0")
-    local total_reqs=$(jq -r '.metrics.http_reqs.count // 0' "$json_file" 2>/dev/null || echo "0")
-    local failed_reqs=$(jq -r '.metrics.http_req_failed.count // 0' "$json_file" 2>/dev/null || echo "0")
+    local p95
+    local error_rate
+    local avg_duration
+    local total_reqs
+    local failed_reqs
+    
+    p95=$(jq -r '.metrics.http_req_duration["p(95)"] // 0' "$json_file" 2>/dev/null || echo "0")
+    error_rate=$(jq -r '.metrics.http_req_failed.rate // 0' "$json_file" 2>/dev/null || echo "0")
+    avg_duration=$(jq -r '.metrics.http_req_duration.avg // 0' "$json_file" 2>/dev/null || echo "0")
+    total_reqs=$(jq -r '.metrics.http_reqs.count // 0' "$json_file" 2>/dev/null || echo "0")
+    failed_reqs=$(jq -r '.metrics.http_req_failed.count // 0' "$json_file" 2>/dev/null || echo "0")
     
     # Convert error rate to percentage
-    local error_rate_pct=$(awk "BEGIN {printf \"%.2f\", $error_rate * 100}")
+    local error_rate_pct
+    error_rate_pct=$(awk "BEGIN {printf \"%.2f\", $error_rate * 100}")
     
     # Evaluate targets
     local p95_target="❌"

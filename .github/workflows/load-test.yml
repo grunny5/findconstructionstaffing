@@ -104,17 +104,21 @@ jobs:
           # Check if summary file exists
           if [ -z "$SUMMARY" ] || [ ! -f "$SUMMARY" ]; then
             echo "::error::No load test summary file found in tests/load/results/"
-            echo "## Load Test Results" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "❌ **Error**: No load test summary file was generated." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "This may indicate the load test failed to complete or didn't generate results." >> $GITHUB_STEP_SUMMARY
+            {
+              echo "## Load Test Results"
+              echo ""
+              echo "❌ **Error**: No load test summary file was generated."
+              echo ""
+              echo "This may indicate the load test failed to complete or didn't generate results."
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           
-          echo "## Load Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          cat "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Load Test Results"
+            echo ""
+            cat "$SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
           
           # Check if targets were met
           if grep -q "❌" "$SUMMARY"; then

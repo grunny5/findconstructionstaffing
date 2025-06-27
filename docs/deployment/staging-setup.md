@@ -73,7 +73,7 @@ VERCEL_PROJECT_ID     # Found in: .vercel/project.json after first deploy
 
 ```bash
 # Deploy to staging
-vercel --prod --env staging
+vercel --target staging
 
 # Deploy preview
 vercel
