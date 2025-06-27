@@ -65,13 +65,34 @@ const API_ENDPOINT = `${BASE_URL}/api/agencies`;
 
 export function setup() {
   // Verify the API is accessible
-  const res = http.get(API_ENDPOINT);
-  if (res.status !== 200) {
-    throw new Error(`API is not accessible. Status: ${res.status}`);
+  let res;
+  try {
+    res = http.get(API_ENDPOINT);
+  } catch (error) {
+    throw new Error(`Failed to connect to API at ${API_ENDPOINT}. Network error: ${error.message}`);
   }
   
-  // Get initial agency count
-  const data = res.json();
+  if (res.status !== 200) {
+    throw new Error(`API returned non-200 status. Expected: 200, Received: ${res.status}. Response body: ${res.body || 'empty'}`);
+  }
+  
+  // Parse JSON response with error handling
+  let data;
+  try {
+    data = res.json();
+  } catch (error) {
+    throw new Error(`Failed to parse JSON response from API. Status: ${res.status}, Body: ${res.body || 'empty'}, Error: ${error.message}`);
+  }
+  
+  // Validate response structure
+  if (!data || typeof data !== 'object') {
+    throw new Error(`Invalid response structure. Expected object, received: ${typeof data}`);
+  }
+  
+  if (!data.pagination || typeof data.pagination.total !== 'number') {
+    throw new Error(`Invalid pagination data in response. Expected pagination.total to be a number. Response: ${JSON.stringify(data)}`);
+  }
+  
   console.log(`Initial setup - Total agencies: ${data.pagination.total}`);
   
   if (data.pagination.total < 1000) {

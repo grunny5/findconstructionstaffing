@@ -56,7 +56,7 @@ async function makeRequest() {
       headers: {
         'Accept': 'application/json',
       },
-      timeout: 5000, // 5 second timeout
+      timeout: 30000, // 30 second timeout for load testing
     };
     
     const req = client.request(options, (res) => {
@@ -80,12 +80,26 @@ async function makeRequest() {
           }
         } else {
           metrics.failedRequests++;
+          
+          // Parse response body for error details
+          let errorDetails = '';
+          try {
+            const parsedData = JSON.parse(data);
+            errorDetails = parsedData.error?.message || parsedData.message || '';
+          } catch (e) {
+            errorDetails = data.substring(0, 200); // First 200 chars of response
+          }
+          
           metrics.errors.push({
             scenario: scenario.name,
             status: res.statusCode,
+            statusText: res.statusMessage,
+            responseTime: responseTime,
+            errorDetails: errorDetails,
+            headers: res.headers,
             time: new Date().toISOString(),
           });
-          console.error(`❌ Error: ${scenario.name} returned ${res.statusCode}`);
+          console.error(`❌ Error: ${scenario.name} returned ${res.statusCode} - ${errorDetails}`);
         }
         
         resolve();
@@ -93,26 +107,50 @@ async function makeRequest() {
     });
     
     req.on('error', (error) => {
+      const responseTime = Date.now() - startTime;
       metrics.totalRequests++;
       metrics.failedRequests++;
+      
+      // Determine error type and add detailed information
+      let errorType = 'NetworkError';
+      if (error.code === 'ECONNREFUSED') {
+        errorType = 'ConnectionRefused';
+      } else if (error.code === 'ETIMEDOUT') {
+        errorType = 'NetworkTimeout';
+      } else if (error.code === 'ENOTFOUND') {
+        errorType = 'DNSLookupFailed';
+      }
+      
       metrics.errors.push({
         scenario: scenario.name,
-        error: error.message,
+        errorType: errorType,
+        errorCode: error.code,
+        errorMessage: error.message,
+        syscall: error.syscall,
+        hostname: error.hostname,
+        port: error.port,
+        responseTime: responseTime,
+        stack: error.stack,
         time: new Date().toISOString(),
       });
-      console.error(`❌ Request error: ${error.message}`);
+      console.error(`❌ Request error: ${errorType} - ${error.message} (${scenario.name})`);
       resolve();
     });
     
     req.on('timeout', () => {
+      const responseTime = Date.now() - startTime;
       req.destroy();
       metrics.totalRequests++;
       metrics.failedRequests++;
       metrics.errors.push({
         scenario: scenario.name,
-        error: 'Timeout',
+        errorType: 'RequestTimeout',
+        errorMessage: `Request timed out after ${responseTime}ms`,
+        timeout: options.timeout,
+        responseTime: responseTime,
         time: new Date().toISOString(),
       });
+      console.error(`❌ Timeout: ${scenario.name} timed out after ${responseTime}ms`);
       resolve();
     });
     

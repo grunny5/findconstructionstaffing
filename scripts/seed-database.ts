@@ -883,7 +883,7 @@ async function verifySeededData(
       allPassed = false;
     } else if (sampleAgency) {
       const expectedTrades = mockAgencies[0].trades || [];
-      const foundTrades = (sampleAgency.trades as Array<{ trade: { name: string } }>)
+      const foundTrades = ((sampleAgency.trades || []) as unknown as Array<{ trade: { name: string } }>)
         .map(t => t.trade.name)
         .sort();
       const passed = expectedTrades.length === foundTrades.length &&

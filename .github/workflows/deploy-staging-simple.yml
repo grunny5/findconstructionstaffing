@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     concurrency:
-      group: deploy-staging-${{ github.ref }}
+      group: deploy-staging-simple-${{ github.ref }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:

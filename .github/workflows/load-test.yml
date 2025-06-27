@@ -10,7 +10,7 @@ on:
       - 'lib/validation/**'
       - 'tests/load/**'
   
-  # Allow manual trigger
+  # Allow manual trigger with confirmation
   workflow_dispatch:
     inputs:
       concurrent_users:
@@ -21,13 +21,24 @@ on:
         description: 'Test duration in seconds'
         required: false
         default: '60'
+      confirm_execution:
+        description: 'Type "confirm" to run load tests'
+        required: true
+        type: string
 
 jobs:
   load-test:
     runs-on: ubuntu-latest
     
-    # Only run if the PR has the 'performance' label or is manually triggered
-    if: (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'performance')) || github.event_name == 'workflow_dispatch'
+    # Only run if the PR has the 'performance' label or is manually triggered with confirmation
+    if: |
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'performance')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm_execution == 'confirm')
+    
+    # Define environment variables at job level
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     
     steps:
       - uses: actions/checkout@v4
@@ -43,17 +54,11 @@ jobs:
       
       - name: Build application
         run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       
       - name: Start application
         run: |
           npm start &
           echo $! > .pid
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       
       - name: Wait for API to be ready
         run: |
@@ -132,47 +137,71 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            const path = require('path');
             
-            // Check if results directory exists
-            if (!fs.existsSync('tests/load/results')) {
-              const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No results directory found.\n\nThe load test may have failed to run or generate results.`;
+            // Define safe base directory
+            const SAFE_BASE_DIR = 'tests/load/results';
+            
+            // Function to validate and sanitize paths
+            function getSafePath(filename) {
+              const normalized = path.normalize(path.join(SAFE_BASE_DIR, filename));
+              const resolved = path.resolve(normalized);
+              const baseResolved = path.resolve(SAFE_BASE_DIR);
               
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: errorComment
-              });
+              // Ensure the resolved path is within the safe directory
+              if (!resolved.startsWith(baseResolved)) {
+                throw new Error('Path traversal attempt detected');
+              }
               
-              core.setFailed('No load test results directory found');
-              return;
+              return resolved;
             }
             
-            const summaryFiles = fs.readdirSync('tests/load/results')
-              .filter(f => f.startsWith('simple-load-test-summary_'))
-              .sort()
-              .reverse();
-            
-            if (summaryFiles.length > 0) {
-              const summary = fs.readFileSync(`tests/load/results/${summaryFiles[0]}`, 'utf8');
+            // Check if results directory exists
+            try {
+              const safeResultsDir = path.resolve(SAFE_BASE_DIR);
+              if (!fs.existsSync(safeResultsDir)) {
+                const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No results directory found.\n\nThe load test may have failed to run or generate results.`;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: errorComment
+                });
+                
+                core.setFailed('No load test results directory found');
+                return;
+              }
               
-              const comment = `## 🚀 Load Test Results\n\n${summary}`;
+              const summaryFiles = fs.readdirSync(safeResultsDir)
+                .filter(f => f.startsWith('simple-load-test-summary_') && f.endsWith('.md'))
+                .sort()
+                .reverse();
               
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            } else {
-              const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No load test summary files found.\n\nThe load test completed but didn't generate summary files.`;
-              
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: errorComment
-              });
-              
-              core.setFailed('No load test summary files found');
+              if (summaryFiles.length > 0) {
+                const safeFilePath = getSafePath(summaryFiles[0]);
+                const summary = fs.readFileSync(safeFilePath, 'utf8');
+                
+                const comment = `## 🚀 Load Test Results\n\n${summary}`;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              } else {
+                const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No load test summary files found.\n\nThe load test completed but didn't generate summary files.`;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: errorComment
+                });
+                
+                core.setFailed('No load test summary files found');
+              }
+            } catch (error) {
+              core.setFailed(`Security error: ${error.message}`);
             }
