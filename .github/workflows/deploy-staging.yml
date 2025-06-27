@@ -26,13 +26,7 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       
-      - name: Debug Environment Variables
-        run: |
-          echo "VERCEL_ORG_ID length: ${#VERCEL_ORG_ID}"
-          echo "VERCEL_PROJECT_ID length: ${#VERCEL_PROJECT_ID}"
-          echo "VERCEL_TOKEN set: $([ -n "$VERCEL_TOKEN" ] && echo "Yes" || echo "No")"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # Debug step removed for security - do not log secret lengths or structure
       
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
@@ -47,7 +41,10 @@ jobs:
       
       - name: Alias to Staging URL
         run: |
-          vercel alias set "$(cat deployment-url.txt)" staging.findconstructionstaffing.com --token="${{ secrets.VERCEL_TOKEN }}" || true
+          if ! vercel alias set "$(cat deployment-url.txt)" staging.findconstructionstaffing.com --token="${{ secrets.VERCEL_TOKEN }}"; then
+            echo "::warning::Failed to set staging alias. This is non-critical and deployment continues."
+            echo "::warning::Error details: $?"
+          fi
       
       - name: Add Deployment Summary
         run: |
