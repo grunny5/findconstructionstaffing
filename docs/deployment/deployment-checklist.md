@@ -28,6 +28,12 @@
 - [ ] Seed data is appropriate for environment
 - [ ] Backup strategy is in place
 
+### GitHub Secrets (for CI/CD)
+- [ ] `VERCEL_TOKEN` is configured
+- [ ] `VERCEL_ORG_ID` is configured
+- [ ] `VERCEL_PROJECT_ID` is configured
+- [ ] `STAGING_DOMAIN` is configured (e.g., staging.yourproject.com)
+
 ## Staging Deployment Steps
 
 1. **Prepare Branch**

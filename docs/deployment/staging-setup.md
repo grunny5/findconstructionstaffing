@@ -53,6 +53,7 @@ For automated deployments, add these secrets to your GitHub repository:
 VERCEL_TOKEN          # Get from: https://vercel.com/account/tokens
 VERCEL_ORG_ID         # Found in: .vercel/project.json after first deploy
 VERCEL_PROJECT_ID     # Found in: .vercel/project.json after first deploy
+STAGING_DOMAIN        # Your staging domain (e.g., staging.findconstructionstaffing.com)
 ```
 
 ### Getting Vercel IDs:
@@ -60,6 +61,15 @@ VERCEL_PROJECT_ID     # Found in: .vercel/project.json after first deploy
 1. Install Vercel CLI: `npm i -g vercel`
 2. Run `vercel link` in your project
 3. Check `.vercel/project.json` for the IDs
+
+### Configuring Staging Domain:
+
+The `STAGING_DOMAIN` secret allows the workflow to be reusable across different projects:
+
+1. Choose your staging subdomain (e.g., `staging.yourproject.com`)
+2. Add the domain in Vercel Dashboard > Settings > Domains
+3. Add `STAGING_DOMAIN` secret in GitHub with this value
+4. The deployment workflow will automatically alias deployments to this domain
 
 ## Deployment Workflows
 

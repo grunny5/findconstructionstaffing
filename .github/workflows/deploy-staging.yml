@@ -46,7 +46,7 @@ jobs:
       - name: Alias to Staging URL
         run: |
           DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
-          if ! vercel alias set "${DEPLOYMENT_URL}" staging.findconstructionstaffing.com --token="${{ secrets.VERCEL_TOKEN }}"; then
+          if ! vercel alias set "${DEPLOYMENT_URL}" "${{ secrets.STAGING_DOMAIN }}" --token="${{ secrets.VERCEL_TOKEN }}"; then
             echo "::warning::Failed to set staging alias. This is non-critical and deployment continues."
             echo "::warning::Error details: $?"
           fi
