@@ -2,8 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ErrorRateTracker } from '@/lib/monitoring/performance';
 import { HTTP_STATUS } from '@/types/api';
 
-// Rate limiting for failed authentication attempts
-const failedAuthAttempts = new Map<string, { count: number; resetTime: number }>();
+/**
+ * Rate limiting for failed authentication attempts
+ * 
+ * WARNING: This in-memory implementation is NOT suitable for production use:
+ * - Data is lost on server restart
+ * - Does not work across multiple server instances
+ * - No persistence between deployments
+ * 
+ * For production, use a persistent store like Redis:
+ * - Redis SET with EX (expiration) for automatic cleanup
+ * - Redis INCR for atomic counter increments
+ * - Shared across all server instances
+ * 
+ * Example Redis implementation:
+ * ```
+ * const redis = new Redis();
+ * const key = `rate_limit:monitoring:${clientIp}`;
+ * const count = await redis.incr(key);
+ * if (count === 1) {
+ *   await redis.expire(key, 900); // 15 minutes
+ * }
+ * ```
+ */
+const failedAuthAttempts = new Map<string, { count: number; resetTime: number; firstAttemptTime: number }>();
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
 const MAX_FAILED_ATTEMPTS = 5;
 
@@ -12,6 +34,11 @@ const MAX_FAILED_ATTEMPTS = 5;
  * 
  * Returns current performance metrics and error rates
  * Protected by API key authentication in production
+ * 
+ * PRODUCTION CONSIDERATIONS:
+ * - Replace in-memory rate limiting with Redis or similar
+ * - Implement distributed rate limiting for multi-instance deployments
+ * - Consider using a proper API gateway for authentication and rate limiting
  */
 export async function GET(request: NextRequest) {
   // Authentication is implemented via API key
@@ -57,9 +84,20 @@ export async function GET(request: NextRequest) {
   
   if (!isAuthorized) {
     // Track failed authentication attempt
-    const attempt = failedAuthAttempts.get(clientIp) || { count: 0, resetTime: now + RATE_LIMIT_WINDOW };
-    attempt.count++;
-    attempt.resetTime = Math.max(attempt.resetTime, now + RATE_LIMIT_WINDOW);
+    let attempt = failedAuthAttempts.get(clientIp);
+    
+    if (!attempt) {
+      // First failed attempt - set the reset time
+      attempt = { 
+        count: 1, 
+        resetTime: now + RATE_LIMIT_WINDOW,
+        firstAttemptTime: now 
+      };
+    } else {
+      // Subsequent attempts - increment count but don't extend reset time
+      attempt.count++;
+    }
+    
     failedAuthAttempts.set(clientIp, attempt);
     
     return NextResponse.json(
