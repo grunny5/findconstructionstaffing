@@ -23,6 +23,10 @@ async function applyFilters(
   trades?: string[],
   states?: string[]
 ): Promise<string[] | null> {
+  if (!supabase) {
+    throw new Error('Database connection not initialized');
+  }
+  
   let agencyIds: string[] | null = null;
   
   // Apply trade filter
