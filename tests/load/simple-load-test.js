@@ -141,8 +141,20 @@ async function ensureResultsDir() {
 function calculatePercentile(arr, percentile) {
   if (arr.length === 0) return 0;
   const sorted = arr.slice().sort((a, b) => a - b);
-  const index = Math.ceil((percentile / 100) * sorted.length) - 1;
-  return sorted[index];
+  
+  // Calculate exact position using linear interpolation
+  const pos = (percentile / 100) * (sorted.length - 1);
+  const lower = Math.floor(pos);
+  const upper = Math.ceil(pos);
+  const weight = pos - lower;
+  
+  // If position is exact, return that value
+  if (lower === upper) {
+    return sorted[lower];
+  }
+  
+  // Otherwise, interpolate between lower and upper values
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
 function calculateStats() {
