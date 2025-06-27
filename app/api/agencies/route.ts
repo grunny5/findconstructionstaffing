@@ -31,12 +31,12 @@ async function applyFilters(
   
   // Apply trade filter
   if (trades && trades.length > 0) {
-    monitor.startQuery();
+    const tradeQueryId = monitor.startQuery();
     const { data: tradeData, error: tradeError } = await supabase
       .from('trades')
       .select('id')
       .in('slug', trades);
-    monitor.endQuery();
+    monitor.endQuery(tradeQueryId);
     
     if (tradeError || !tradeData) {
       throw new Error('Failed to fetch trade data');
@@ -45,12 +45,12 @@ async function applyFilters(
     const tradeIds = tradeData.map(t => t.id);
     
     if (tradeIds.length > 0) {
-      monitor.startQuery();
+      const agencyTradeQueryId = monitor.startQuery();
       const { data: agencyTradeData, error: agencyTradeError } = await supabase
         .from('agency_trades')
         .select('agency_id')
         .in('trade_id', tradeIds);
-      monitor.endQuery();
+      monitor.endQuery(agencyTradeQueryId);
       
       if (agencyTradeError || !agencyTradeData) {
         throw new Error('Failed to fetch agency trade data');
@@ -65,12 +65,12 @@ async function applyFilters(
   
   // Apply state filter
   if (states && states.length > 0) {
-    monitor.startQuery();
+    const regionQueryId = monitor.startQuery();
     const { data: regionData, error: regionError } = await supabase
       .from('regions')
       .select('id')
       .in('state_code', states);
-    monitor.endQuery();
+    monitor.endQuery(regionQueryId);
     
     if (regionError || !regionData) {
       throw new Error('Failed to fetch region data');
@@ -79,12 +79,12 @@ async function applyFilters(
     const regionIds = regionData.map(r => r.id);
     
     if (regionIds.length > 0) {
-      monitor.startQuery();
+      const agencyRegionQueryId = monitor.startQuery();
       const { data: agencyRegionData, error: agencyRegionError } = await supabase
         .from('agency_regions')
         .select('agency_id')
         .in('region_id', regionIds);
-      monitor.endQuery();
+      monitor.endQuery(agencyRegionQueryId);
       
       if (agencyRegionError || !agencyRegionData) {
         throw new Error('Failed to fetch agency region data');
@@ -230,9 +230,9 @@ export async function GET(request: NextRequest) {
       .order('name', { ascending: true });
 
     // Execute the query with performance tracking
-    monitor.startQuery();
+    const mainQueryId = monitor.startQuery();
     const { data: agencies, error, count } = await query;
-    monitor.endQuery();
+    monitor.endQuery(mainQueryId);
 
     if (error) {
       const errorResponse: ErrorResponse = {
@@ -287,7 +287,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get total count for pagination with same filters applied
-    monitor.startQuery();
+    const countQueryId = monitor.startQuery();
     let countQuery = supabase
       .from('agencies')
       .select('id', { count: 'exact', head: true })
@@ -304,7 +304,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { count: totalCount } = await countQuery;
-    monitor.endQuery();
+    monitor.endQuery(countQueryId);
 
     // Build the response
     const response: AgenciesApiResponse = {

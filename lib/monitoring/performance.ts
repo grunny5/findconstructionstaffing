@@ -30,7 +30,8 @@ export interface PerformanceMetrics {
  */
 export class PerformanceMonitor {
   private startTime: number;
-  private queries: Array<{ start: number; end?: number }> = [];
+  private queries: Map<string, { start: number; end?: number }> = new Map();
+  private queryCounter: number = 0;
   private endpoint: string;
   private method: string;
 
@@ -42,20 +43,22 @@ export class PerformanceMonitor {
 
   /**
    * Mark the start of a database query
-   * Supports tracking multiple concurrent queries
+   * @returns Query identifier to use when calling endQuery
    */
-  startQuery(): void {
-    this.queries.push({ start: performance.now() });
+  startQuery(): string {
+    const queryId = `query_${++this.queryCounter}`;
+    this.queries.set(queryId, { start: performance.now() });
+    return queryId;
   }
 
   /**
    * Mark the end of a database query
-   * Completes the first uncompleted query (FIFO order)
+   * @param queryId - The identifier returned by startQuery
    */
-  endQuery(): void {
-    const firstUncompletedQuery = this.queries.find(q => !q.end);
-    if (firstUncompletedQuery) {
-      firstUncompletedQuery.end = performance.now();
+  endQuery(queryId: string): void {
+    const query = this.queries.get(queryId);
+    if (query && !query.end) {
+      query.end = performance.now();
     }
   }
 
@@ -64,7 +67,7 @@ export class PerformanceMonitor {
    * Returns the sum of all completed queries
    */
   getQueryTime(): number | undefined {
-    const completedQueries = this.queries.filter(q => q.end);
+    const completedQueries = Array.from(this.queries.values()).filter(q => q.end);
     if (completedQueries.length === 0) {
       return undefined;
     }

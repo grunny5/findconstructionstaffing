@@ -55,9 +55,9 @@ describe('PerformanceMonitor', () => {
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
       jest.advanceTimersByTime(10);
-      monitor.startQuery();
+      const queryId = monitor.startQuery();
       jest.advanceTimersByTime(30);
-      monitor.endQuery();
+      monitor.endQuery(queryId);
       jest.advanceTimersByTime(10);
       
       const metrics = monitor.complete(200);
@@ -71,19 +71,19 @@ describe('PerformanceMonitor', () => {
       
       // Start first query at t=10
       jest.advanceTimersByTime(10);
-      monitor.startQuery();
+      const query1Id = monitor.startQuery();
       
       // Start second query at t=15 (while first is running)
       jest.advanceTimersByTime(5);
-      monitor.startQuery();
+      const query2Id = monitor.startQuery();
       
       // End first query at t=30 (duration: 20ms)
       jest.advanceTimersByTime(15);
-      monitor.endQuery();
+      monitor.endQuery(query1Id);
       
       // End second query at t=40 (duration: 25ms)
       jest.advanceTimersByTime(10);
-      monitor.endQuery();
+      monitor.endQuery(query2Id);
       
       jest.advanceTimersByTime(10); // Total time: 50ms
       
@@ -92,6 +92,30 @@ describe('PerformanceMonitor', () => {
       expect(metrics.responseTime).toBe(50);
       // Total query time should be sum of both queries: 20ms + 25ms = 45ms
       expect(metrics.queryTime).toBe(45);
+    });
+
+    it('should handle out-of-order query completion', () => {
+      const monitor = new PerformanceMonitor('/api/test', 'GET');
+      
+      // Start query 1 at t=0
+      const query1Id = monitor.startQuery();
+      
+      // Start query 2 at t=10
+      jest.advanceTimersByTime(10);
+      const query2Id = monitor.startQuery();
+      
+      // End query 2 first at t=20 (duration: 10ms)
+      jest.advanceTimersByTime(10);
+      monitor.endQuery(query2Id);
+      
+      // End query 1 later at t=30 (duration: 30ms)
+      jest.advanceTimersByTime(10);
+      monitor.endQuery(query1Id);
+      
+      const metrics = monitor.complete(200);
+      
+      // Total query time should be sum: 30ms + 10ms = 40ms
+      expect(metrics.queryTime).toBe(40);
     });
 
     it('should include error information', () => {
@@ -141,9 +165,9 @@ describe('PerformanceMonitor', () => {
       
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
-      monitor.startQuery();
+      const queryId = monitor.startQuery();
       jest.advanceTimersByTime(40); // 40ms query time
-      monitor.endQuery();
+      monitor.endQuery(queryId);
       
       monitor.complete(200);
       
@@ -158,9 +182,9 @@ describe('PerformanceMonitor', () => {
       
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
-      monitor.startQuery();
+      const queryId = monitor.startQuery();
       jest.advanceTimersByTime(60); // 60ms query time
-      monitor.endQuery();
+      monitor.endQuery(queryId);
       
       monitor.complete(200);
       
