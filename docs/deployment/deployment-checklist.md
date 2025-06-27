@@ -84,7 +84,13 @@
       # List environment variables for staging
       vercel env ls staging
       
-      # Pull staging env to local .env file (be careful!)
+      # Pull staging env to local .env file
+      # ⚠️ SECURITY WARNING: This creates a file with sensitive credentials!
+      # - NEVER commit .env.staging to version control
+      # - Add .env.staging to .gitignore immediately
+      # - Delete the file after use or store in a secure location
+      # - Restrict access to authorized personnel only
+      # - Consider using a password manager or secure vault instead
       vercel env pull .env.staging --environment=staging
       ```
    

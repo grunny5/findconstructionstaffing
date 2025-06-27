@@ -172,7 +172,22 @@ async function ensureResultsDir() {
   try {
     await fs.mkdir(RESULTS_DIR, { recursive: true });
   } catch (error) {
-    // Directory might already exist
+    // Only ignore EEXIST errors (directory already exists)
+    if (error.code !== 'EEXIST') {
+      console.error(`❌ Failed to create results directory: ${error.message}`);
+      console.error(`   Path: ${RESULTS_DIR}`);
+      console.error(`   Error code: ${error.code}`);
+      
+      // Handle specific error cases
+      if (error.code === 'EACCES') {
+        console.error('   Permission denied. Check write permissions for the parent directory.');
+      } else if (error.code === 'ENOSPC') {
+        console.error('   No space left on device. Free up disk space and try again.');
+      }
+      
+      // Re-throw to prevent silent failures
+      throw error;
+    }
   }
 }
 
