@@ -153,7 +153,8 @@ let query = supabase
 
 // Apply search filter
 if (search) {
-  query = query.textSearch('name,description', search);
+  // Use full-text search on individual columns and ilike fallback
+  query = query.or(`name.fts.${search},description.fts.${search},name.ilike.%${search}%,description.ilike.%${search}%`);
 }
 
 // Apply trade filter with subquery
