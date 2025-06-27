@@ -164,18 +164,51 @@ if (trades?.length) {
     .select('id')
     .in('slug', trades);
   
-  const tradeIds = tradeData.map(t => t.id);
+  const tradeIds = (tradeData ?? []).map(t => t.id);
+  
+  if (!tradeIds.length) {
+    // No matching trades found - return empty result
+    return { data: [], pagination: { total: 0, limit, offset, hasMore: false } };
+  }
   
   const { data: agencyTradeData } = await supabase
     .from('agency_trades')
     .select('agency_id')
     .in('trade_id', tradeIds);
   
-  const agencyIds = [...new Set(agencyTradeData.map(at => at.agency_id))];
+  const agencyIds = [...new Set((agencyTradeData ?? []).map(at => at.agency_id))];
   
-  query = query.in('id', agencyIds);
+  if (agencyIds.length > 0) {
+    query = query.in('id', agencyIds);
+  } else {
+    // No agencies match the filter - return empty result
+    return { data: [], pagination: { total: 0, limit, offset, hasMore: false } };
+  }
 }
+
+// Note: In production, consider using an RPC function or view to reduce round trips:
+// const { data: agencyIds } = await supabase
+//   .rpc('get_agencies_by_trades', { trade_slugs: trades });
 ```
+
+### Performance Optimization Opportunities
+
+For production deployments with strict performance requirements:
+
+1. **Database Views or RPC Functions**: Replace multi-step queries with server-side joins
+   ```sql
+   CREATE FUNCTION get_agencies_by_trades(trade_slugs text[])
+   RETURNS TABLE(agency_id uuid) AS $$
+     SELECT DISTINCT at.agency_id
+     FROM agency_trades at
+     JOIN trades t ON at.trade_id = t.id
+     WHERE t.slug = ANY(trade_slugs)
+   $$ LANGUAGE sql STABLE;
+   ```
+
+2. **Materialized Views**: Pre-compute common filter combinations
+3. **Connection Pooling**: Use Supabase connection pooling for better performance
+4. **Query Result Caching**: Cache frequent query results at the API layer
 
 ### Testing Strategy
 - Unit tests for query parameter parsing
