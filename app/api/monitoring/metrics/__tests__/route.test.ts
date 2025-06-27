@@ -12,6 +12,7 @@ jest.mock('@/lib/monitoring/performance', () => ({
 describe('GET /api/monitoring/metrics', () => {
   let mockErrorTracker: any;
   const originalEnv = process.env.NODE_ENV;
+  const originalApiKey = process.env.MONITORING_API_KEY;
 
   beforeEach(() => {
     mockErrorTracker = {
@@ -28,10 +29,12 @@ describe('GET /api/monitoring/metrics', () => {
     };
 
     (ErrorRateTracker.getInstance as jest.Mock).mockReturnValue(mockErrorTracker);
+    process.env.MONITORING_API_KEY = 'test-key';
   });
 
   afterEach(() => {
     process.env.NODE_ENV = originalEnv;
+    process.env.MONITORING_API_KEY = originalApiKey;
     jest.clearAllMocks();
   });
 

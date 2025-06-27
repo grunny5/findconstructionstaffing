@@ -213,7 +213,7 @@ export class PerformanceMonitor {
  * Error rate tracker for monitoring API health
  */
 export class ErrorRateTracker {
-  private static instance: ErrorRateTracker;
+  private static instance?: ErrorRateTracker;
   private errorCounts: Map<string, number> = new Map();
   private requestCounts: Map<string, number> = new Map();
   private windowStart: number = Date.now();
@@ -295,7 +295,7 @@ export class ErrorRateTracker {
    * Reset the singleton instance - primarily for testing
    */
   static resetInstance(): void {
-    ErrorRateTracker.instance = undefined as any;
+    ErrorRateTracker.instance = undefined;
   }
 }
 
@@ -306,8 +306,10 @@ export function withPerformanceMonitoring<T extends (...args: any[]) => Promise<
   handler: T,
   endpoint: string
 ): T {
-  return (async (...args: any[]) => {
-    const method = args[0]?.method || 'GET';
+  return (async (...args: Parameters<T>) => {
+    // More robust method extraction with type safety
+    const request = args[0] as Request | undefined;
+    const method = request?.method || 'GET';
     const monitor = new PerformanceMonitor(endpoint, method);
     const errorTracker = ErrorRateTracker.getInstance();
 
@@ -321,8 +323,19 @@ export function withPerformanceMonitoring<T extends (...args: any[]) => Promise<
       
       return response;
     } catch (error) {
-      // Record error metrics
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      // Record error metrics with better error handling
+      let errorMessage: string;
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'toString' in error) {
+        errorMessage = String(error);
+      } else {
+        errorMessage = 'Unknown error';
+      }
+      
       monitor.complete(500, errorMessage);
       errorTracker.recordRequest(endpoint, true);
       

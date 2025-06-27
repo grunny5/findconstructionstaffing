@@ -112,7 +112,7 @@
 
 3. **Deploy to Staging**
    - Automatic: Push to staging branch triggers deployment
-   - Manual: `vercel --env preview`
+   - Manual: `vercel`  # deploys a preview build
 
 4. **Post-Deployment Verification**
    - [ ] Site loads without errors
