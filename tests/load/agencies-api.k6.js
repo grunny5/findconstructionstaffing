@@ -69,7 +69,8 @@ export function setup() {
   try {
     res = http.get(API_ENDPOINT);
   } catch (error) {
-    throw new Error(`Failed to connect to API at ${API_ENDPOINT}. Network error: ${error.message}`);
+    const errorMessage = error && error.message ? error.message : String(error);
+    throw new Error(`Failed to connect to API at ${API_ENDPOINT}. Network error: ${errorMessage}`);
   }
   
   if (res.status !== 200) {
@@ -81,7 +82,8 @@ export function setup() {
   try {
     data = res.json();
   } catch (error) {
-    throw new Error(`Failed to parse JSON response from API. Status: ${res.status}, Body: ${res.body || 'empty'}, Error: ${error.message}`);
+    const errorMessage = error && error.message ? error.message : String(error);
+    throw new Error(`Failed to parse JSON response from API. Status: ${res.status}, Body: ${res.body || 'empty'}, Error: ${errorMessage}`);
   }
   
   // Validate response structure
@@ -168,10 +170,16 @@ export default function (data) {
 }
 
 export function handleSummary(data) {
-  // Custom summary output
-  const p95 = data.metrics.http_req_duration.values['p(95)'];
-  const avgResponseTime = data.metrics.http_req_duration.values.avg;
-  const errorRate = data.metrics.errors ? data.metrics.errors.values.rate : 0;
+  // Custom summary output with defensive checks
+  const p95 = data.metrics.http_req_duration && data.metrics.http_req_duration.values && data.metrics.http_req_duration.values['p(95)']
+    ? data.metrics.http_req_duration.values['p(95)']
+    : 0;
+  const avgResponseTime = data.metrics.http_req_duration && data.metrics.http_req_duration.values && data.metrics.http_req_duration.values.avg
+    ? data.metrics.http_req_duration.values.avg
+    : 0;
+  const errorRate = data.metrics.errors && data.metrics.errors.values && data.metrics.errors.values.rate 
+    ? data.metrics.errors.values.rate 
+    : 0;
   
   console.log('\n=== Load Test Summary ===');
   console.log(`Average Response Time: ${avgResponseTime.toFixed(2)}ms`);
@@ -187,10 +195,16 @@ export function handleSummary(data) {
       metrics: {
         avgResponseTime: avgResponseTime,
         p95ResponseTime: p95,
-        p99ResponseTime: data.metrics.http_req_duration.values['p(99)'],
+        p99ResponseTime: data.metrics.http_req_duration && data.metrics.http_req_duration.values && data.metrics.http_req_duration.values['p(99)']
+          ? data.metrics.http_req_duration.values['p(99)']
+          : null,
         errorRate: errorRate,
-        totalRequests: data.metrics.http_reqs.values.count,
-        requestsPerSecond: data.metrics.http_reqs.values.rate,
+        totalRequests: data.metrics.http_reqs && data.metrics.http_reqs.values && data.metrics.http_reqs.values.count 
+          ? data.metrics.http_reqs.values.count 
+          : 0,
+        requestsPerSecond: data.metrics.http_reqs && data.metrics.http_reqs.values && data.metrics.http_reqs.values.rate
+          ? data.metrics.http_reqs.values.rate
+          : 0,
       },
       thresholds: {
         p95Under100ms: p95 < 100,
