@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     
     # Only run if the PR has the 'performance' label or is manually triggered
-    if: contains(github.event.pull_request.labels.*.name, 'performance') || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'performance')) || github.event_name == 'workflow_dispatch'
     
     steps:
       - uses: actions/checkout@v4
