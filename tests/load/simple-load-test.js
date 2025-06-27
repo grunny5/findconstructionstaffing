@@ -168,6 +168,56 @@ async function runUser() {
   }
 }
 
+/**
+ * Verify API accessibility without affecting metrics
+ * Used for initial health check before starting the load test
+ */
+async function verifyApiAccessibility() {
+  const scenario = scenarios[0]; // Use the simple agencies list endpoint
+  const baseUrl = new URL(BASE_URL);
+  const client = baseUrl.protocol === 'https:' ? https : http;
+  
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: baseUrl.hostname,
+      port: baseUrl.port || (baseUrl.protocol === 'https:' ? 443 : 80),
+      path: scenario.path,
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      timeout: 10000, // 10 second timeout for verification
+    };
+    
+    const req = client.request(options, (res) => {
+      let data = '';
+      
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          resolve();
+        } else {
+          reject(new Error(`API returned status ${res.statusCode}: ${res.statusMessage}`));
+        }
+      });
+    });
+    
+    req.on('error', (error) => {
+      reject(error);
+    });
+    
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('API verification timed out after 10 seconds'));
+    });
+    
+    req.end();
+  });
+}
+
 async function ensureResultsDir() {
   try {
     await fs.mkdir(RESULTS_DIR, { recursive: true });
@@ -319,7 +369,7 @@ async function main() {
   // Verify API is accessible
   console.log('🔍 Verifying API accessibility...');
   try {
-    await makeRequest();
+    await verifyApiAccessibility();
     console.log('✅ API is accessible\n');
   } catch (error) {
     console.error('❌ Cannot access API:', error.message);
