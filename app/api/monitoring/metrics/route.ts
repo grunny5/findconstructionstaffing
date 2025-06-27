@@ -43,11 +43,11 @@ export async function GET(request: NextRequest) {
   
   // Clean up expired entries periodically
   if (Math.random() < 0.1) { // 10% chance to cleanup
-    for (const [ip, attempt] of failedAuthAttempts.entries()) {
+    failedAuthAttempts.forEach((attempt, ip) => {
       if (attempt.resetTime <= now) {
         failedAuthAttempts.delete(ip);
       }
-    }
+    });
   }
   
   // Explicit authorization check with clear conditions

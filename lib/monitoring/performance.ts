@@ -27,8 +27,7 @@ export interface PerformanceMetrics {
  */
 export class PerformanceMonitor {
   private startTime: number;
-  private queryStartTime?: number;
-  private queryEndTime?: number;
+  private queries: Array<{ start: number; end?: number }> = [];
   private endpoint: string;
   private method: string;
 
@@ -40,28 +39,38 @@ export class PerformanceMonitor {
 
   /**
    * Mark the start of a database query
+   * Supports tracking multiple concurrent queries
    */
   startQuery(): void {
-    this.queryStartTime = performance.now();
+    this.queries.push({ start: performance.now() });
   }
 
   /**
    * Mark the end of a database query
+   * Completes the most recent uncompleted query
    */
   endQuery(): void {
-    if (this.queryStartTime) {
-      this.queryEndTime = performance.now();
+    const lastQuery = this.queries[this.queries.length - 1];
+    if (lastQuery && !lastQuery.end) {
+      lastQuery.end = performance.now();
     }
   }
 
   /**
    * Get the total query time in milliseconds
+   * Returns the sum of all completed queries
    */
   getQueryTime(): number | undefined {
-    if (this.queryStartTime && this.queryEndTime) {
-      return Math.round(this.queryEndTime - this.queryStartTime);
+    const completedQueries = this.queries.filter(q => q.end);
+    if (completedQueries.length === 0) {
+      return undefined;
     }
-    return undefined;
+    
+    const totalTime = completedQueries.reduce((sum, query) => {
+      return sum + Math.round(query.end! - query.start);
+    }, 0);
+    
+    return totalTime;
   }
 
   /**

@@ -66,6 +66,34 @@ describe('PerformanceMonitor', () => {
       expect(metrics.queryTime).toBe(30);
     });
 
+    it('should track multiple concurrent queries', () => {
+      const monitor = new PerformanceMonitor('/api/test', 'GET');
+      
+      // Start first query
+      jest.advanceTimersByTime(10);
+      monitor.startQuery();
+      
+      // Start second query while first is running
+      jest.advanceTimersByTime(5);
+      monitor.startQuery();
+      
+      // End first query
+      jest.advanceTimersByTime(15);
+      monitor.endQuery();
+      
+      // End second query
+      jest.advanceTimersByTime(10);
+      monitor.endQuery();
+      
+      jest.advanceTimersByTime(10);
+      
+      const metrics = monitor.complete(200);
+      
+      expect(metrics.responseTime).toBe(50);
+      // First query: 20ms (5+15), Second query: 25ms (15+10)
+      expect(metrics.queryTime).toBe(45);
+    });
+
     it('should include error information', () => {
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
