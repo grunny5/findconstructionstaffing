@@ -24,72 +24,6 @@ jest.mock('next/server', () => ({
 // Import the route AFTER mocks are set up
 import { GET } from '../route';
 
-// Helper function to setup multi-table mocks for state filtering
-function setupStateFilterMocks(states: string[], regionData: any[], agencyRegionData: any[]) {
-  // Store the configured response
-  const configuredResponse = supabase._defaultData || [];
-  const configuredCount = supabase._defaultCount || 0;
-  
-  supabase.from.mockImplementation((table) => {
-    // For filter queries, create a simple mock chain
-    if (table === 'regions' || table === 'agency_regions' || table === 'trades' || table === 'agency_trades') {
-      const filterMock = {
-        select: jest.fn(() => filterMock),
-        in: jest.fn(() => filterMock),
-        eq: jest.fn(() => filterMock),
-        or: jest.fn(() => filterMock),
-        range: jest.fn(() => filterMock),
-        order: jest.fn(() => filterMock),
-        then: (onFulfilled) => {
-          let result = { data: null, error: null };
-          
-          if (table === 'regions') {
-            result.data = regionData;
-          } else if (table === 'agency_regions') {
-            result.data = agencyRegionData;
-          } else if (table === 'trades') {
-            result.data = [{ id: 'trade-1' }];
-          } else if (table === 'agency_trades') {
-            result.data = [{ agency_id: 'agency-1' }];
-          }
-          
-          return Promise.resolve(result).then(onFulfilled);
-        }
-      };
-      return filterMock;
-    }
-    
-    // For main agencies query, create a full mock chain
-    const queryChain = {
-      select: jest.fn(() => queryChain),
-      eq: jest.fn(() => queryChain),
-      in: jest.fn(() => queryChain),
-      or: jest.fn(() => queryChain),
-      range: jest.fn(() => queryChain),
-      order: jest.fn(() => queryChain),
-      then: (onFulfilled) => {
-        const result = {
-          data: configuredResponse,
-          error: null,
-          count: configuredCount
-        };
-        return Promise.resolve(result).then(onFulfilled);
-      }
-    };
-    
-    // Track the mocked methods on the supabase object for assertions
-    Object.keys(queryChain).forEach(method => {
-      if (jest.isMockFunction(queryChain[method]) && jest.isMockFunction(supabase[method])) {
-        queryChain[method].mockImplementation((...args) => {
-          supabase[method](...args);
-          return queryChain;
-        });
-      }
-    });
-    
-    return queryChain;
-  });
-}
 
 describe('GET /api/agencies - State/Region Filtering', () => {
   beforeEach(() => {
@@ -106,11 +40,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
   describe('State Parameter Parsing', () => {
     it('should parse single state parameter correctly', async () => {
       // Setup mocks for state filtering
-      setupStateFilterMocks(
-        ['TX'],
-        [{ id: 'region-1' }], // regions data
-        [{ agency_id: 'agency-1' }] // agency_regions data
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['TX'],
+          regionIds: ['region-1'],
+          agencyIds: ['agency-1']
+        }
+      });
       
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -131,11 +67,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
 
     it('should parse multiple state parameters correctly', async () => {
       // Setup mocks for multi-state filtering
-      setupStateFilterMocks(
-        ['TX', 'CA', 'FL'],
-        [{ id: 'region-1' }, { id: 'region-2' }, { id: 'region-3' }], // regions data
-        [{ agency_id: 'agency-1' }, { agency_id: 'agency-2' }] // agency_regions data
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['TX', 'CA', 'FL'],
+          regionIds: ['region-1', 'region-2', 'region-3'],
+          agencyIds: ['agency-1', 'agency-2']
+        }
+      });
       
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -157,11 +95,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
 
     it('should handle states without bracket notation', async () => {
       // Setup mocks for state filtering
-      setupStateFilterMocks(
-        ['CA'],
-        [{ id: 'region-ca' }], // regions data
-        [{ agency_id: 'agency-ca' }] // agency_regions data
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['CA'],
+          regionIds: ['region-ca'],
+          agencyIds: ['agency-ca']
+        }
+      });
       
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -300,11 +240,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       });
       
       // Setup state filter mocks
-      setupStateFilterMocks(
-        ['TX'],
-        [{ id: 'region-tx' }], // regions data
-        [{ agency_id: '123' }] // agency_regions data matching our mock agency
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['TX'],
+          regionIds: ['region-tx'],
+          agencyIds: ['123']
+        }
+      });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -329,11 +271,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       });
       
       // Setup state filter mocks
-      setupStateFilterMocks(
-        ['CA'],
-        [{ id: 'region-ca' }], // regions data
-        Array(5).fill({ agency_id: '123' }) // agency_regions data
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['CA'],
+          regionIds: ['region-ca'],
+          agencyIds: Array(5).fill('123')
+        }
+      });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -453,11 +397,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       });
       
       // Setup state filter mocks
-      setupStateFilterMocks(
-        ['TX'],
-        [{ id: 'region-tx' }], // regions data
-        [{ agency_id: '123' }] // agency_regions data - agency is in TX
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['TX'],
+          regionIds: ['region-tx'],
+          agencyIds: ['123']
+        }
+      });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -480,11 +426,13 @@ describe('GET /api/agencies - State/Region Filtering', () => {
   describe('Combined Filters', () => {
     it('should combine state filter with search filter', async () => {
       // Setup state filter mocks
-      setupStateFilterMocks(
-        ['TX'],
-        [{ id: 'region-tx' }], // regions data
-        [{ agency_id: 'agency-1' }] // agency_regions data
-      );
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['TX'],
+          regionIds: ['region-tx'],
+          agencyIds: ['agency-1']
+        }
+      });
       
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
