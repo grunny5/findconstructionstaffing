@@ -1,4 +1,6 @@
-import { GET } from '../route';
+// Import centralized mock first
+import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import { supabase } from '@/lib/supabase';
 import { 
   isErrorResponse, 
   API_CONSTANTS,
@@ -19,48 +21,18 @@ jest.mock('next/server', () => ({
   }
 }));
 
-// Mock Supabase with proper chaining support
-jest.mock('@/lib/supabase', () => {
-  const mockSupabase = {
-    from: jest.fn(),
-    select: jest.fn(),
-    eq: jest.fn(),
-    or: jest.fn(),
-    range: jest.fn(),
-    order: jest.fn(),
-    in: jest.fn()
-  };
-  
-  // Setup chaining
-  mockSupabase.from.mockReturnValue(mockSupabase);
-  mockSupabase.select.mockReturnValue(mockSupabase);
-  mockSupabase.eq.mockReturnValue(mockSupabase);
-  mockSupabase.or.mockReturnValue(mockSupabase);
-  mockSupabase.range.mockReturnValue(mockSupabase);
-  mockSupabase.in.mockReturnValue(mockSupabase);
-  
-  return { supabase: mockSupabase };
-});
+// Import the route AFTER mocks are set up
+import { GET } from '../route';
 
 describe('GET /api/agencies - Search Functionality', () => {
-  const { supabase } = require('@/lib/supabase');
-  
   beforeEach(() => {
     jest.clearAllMocks();
+    resetSupabaseMock(supabase);
     
-    // Reset chaining
-    supabase.from.mockReturnValue(supabase);
-    supabase.select.mockReturnValue(supabase);
-    supabase.eq.mockReturnValue(supabase);
-    supabase.or.mockReturnValue(supabase);
-    supabase.range.mockReturnValue(supabase);
-    supabase.in.mockReturnValue(supabase);
-    
-    // Setup default successful responses
-    supabase.order.mockResolvedValue({
-      data: [],
-      error: null,
-      count: null
+    // Setup default successful response
+    configureSupabaseMock(supabase, {
+      defaultData: [],
+      defaultCount: 0
     });
   });
 

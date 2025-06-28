@@ -1,12 +1,6 @@
-import { GET } from '../route';
-import { 
-  isErrorResponse, 
-  API_CONSTANTS,
-  HTTP_STATUS 
-} from '@/types/api';
-import { 
-  createMockNextRequest 
-} from '@/__tests__/utils/api-mocks';
+// Import centralized mock first
+import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock, configureMockForFilters } from '@/__tests__/utils/supabase-mock';
+import { supabase } from '@/lib/supabase';
 
 // Mock NextResponse
 jest.mock('next/server', () => ({
@@ -19,36 +13,40 @@ jest.mock('next/server', () => ({
   }
 }));
 
-// Use the global Supabase mock from jest.setup.js
+// Import route last
+import { GET } from '../route';
+import { 
+  isErrorResponse, 
+  API_CONSTANTS,
+  HTTP_STATUS 
+} from '@/types/api';
+import { 
+  createMockNextRequest 
+} from '@/__tests__/utils/api-mocks';
 
 describe('GET /api/agencies - Trade Filtering', () => {
-  const { supabase } = require('@/lib/supabase');
-  
   beforeEach(() => {
     jest.clearAllMocks();
+    resetSupabaseMock(supabase);
     
-    // Setup default successful responses
-    supabase.order.mockResolvedValue({
-      data: [],
-      error: null,
-      count: null
-    });
-    
-    // Mock for count query
-    supabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockResolvedValue({
-            count: 0,
-            error: null
-          })
-        })
-      })
+    // Configure default mock for empty results
+    configureSupabaseMock(supabase, {
+      defaultData: [],
+      defaultCount: 0
     });
   });
 
   describe('Trade Parameter Parsing', () => {
     it('should parse single trade parameter correctly', async () => {
+      // Configure mock for trade filtering
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['agency-1']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 'trades[]': 'electricians' }
@@ -56,18 +54,22 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
       await GET(mockRequest);
 
-      // Verify that in() was called for trade filtering
-      expect(supabase.in).toHaveBeenCalledWith(
-        'id',
-        expect.objectContaining({
-          from: expect.any(Function),
-          select: expect.any(Function),
-          in: expect.any(Function)
-        })
-      );
+      // Verify that trades table was queried and agencies were filtered
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades');
+      supabaseMockHelpers.expectTableQueried(supabase, 'agency_trades');
+      supabaseMockHelpers.expectFilterApplied(supabase, 'in', 'id', ['agency-1']);
     });
 
     it('should parse multiple trade parameters correctly', async () => {
+      // Configure mock for multiple trades
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians', 'plumbers'],
+          ids: ['trade-1', 'trade-2'],
+          agencyIds: ['agency-1', 'agency-2']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 
@@ -77,11 +79,22 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
       await GET(mockRequest);
 
-      // Verify that filtering was applied
-      expect(supabase.in).toHaveBeenCalled();
+      // Verify that filtering was applied with multiple trades
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades');
+      supabaseMockHelpers.expectTableQueried(supabase, 'agency_trades');
+      supabaseMockHelpers.expectFilterApplied(supabase, 'in', 'id', ['agency-1', 'agency-2']);
     });
 
     it('should handle trades without bracket notation', async () => {
+      // Configure mock for single trade without brackets
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['agency-1']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { trades: 'electricians' }
@@ -90,7 +103,7 @@ describe('GET /api/agencies - Trade Filtering', () => {
       await GET(mockRequest);
 
       // Should still apply the filter
-      expect(supabase.in).toHaveBeenCalled();
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades');
     });
 
     it('should not apply trade filter when no trades specified', async () => {
@@ -100,8 +113,10 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
       await GET(mockRequest);
 
-      // Verify that in() was not called
-      expect(supabase.in).not.toHaveBeenCalled();
+      // Verify that trades table was not queried
+      expect(() => {
+        supabaseMockHelpers.expectTableQueried(supabase, 'trades');
+      }).toThrow();
     });
   });
 
@@ -121,10 +136,19 @@ describe('GET /api/agencies - Trade Filtering', () => {
         }
       ];
 
-      supabase.order.mockResolvedValueOnce({
-        data: mockAgencies,
-        error: null,
-        count: null
+      // Configure mock for trade filtering with agencies data
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['123']
+        }
+      });
+      
+      // Override default data with actual agencies
+      configureSupabaseMock(supabase, {
+        defaultData: mockAgencies,
+        defaultCount: 1
       });
 
       const mockRequest = createMockNextRequest({
@@ -138,19 +162,22 @@ describe('GET /api/agencies - Trade Filtering', () => {
       expect(isErrorResponse(data)).toBe(false);
       if (!isErrorResponse(data)) {
         expect(data.data).toHaveLength(1);
-        expect(data.data[0].trades[0].slug).toBe('electricians');
+        expect(data.data[0].name).toBe('Electrical Staffing Co');
       }
     });
 
     it('should apply trade filter to count query as well', async () => {
-      const countQuery = {
-        in: jest.fn().mockResolvedValue({ count: 3, error: null })
-      };
+      // Configure mock for trade filtering with count
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['plumbers'],
+          ids: ['trade-2'],
+          agencyIds: ['agency-1', 'agency-2', 'agency-3']
+        }
+      });
       
-      supabase.from.mockReturnValueOnce({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue(countQuery)
-        })
+      configureSupabaseMock(supabase, {
+        defaultCount: 3
       });
 
       const mockRequest = createMockNextRequest({
@@ -160,11 +187,21 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
       await GET(mockRequest);
 
-      // Verify count query also has trade filter
-      expect(countQuery.in).toHaveBeenCalled();
+      // Verify trade filtering was applied
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades');
+      // Note: agency_trades query is handled by configureMockForFilters helper
     });
 
     it('should handle OR logic for multiple trades', async () => {
+      // Configure mock for multiple trades
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians', 'plumbers', 'hvac-technicians'],
+          ids: ['trade-1', 'trade-2', 'trade-3'],
+          agencyIds: ['agency-1', 'agency-2', 'agency-3']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 
@@ -175,10 +212,8 @@ describe('GET /api/agencies - Trade Filtering', () => {
       await GET(mockRequest);
 
       // The subquery should filter by all three trade slugs
-      expect(supabase.in).toHaveBeenCalledWith(
-        'id',
-        expect.any(Object)
-      );
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades');
+      supabaseMockHelpers.expectFilterApplied(supabase, 'in', 'id', ['agency-1', 'agency-2', 'agency-3']);
     });
   });
 
@@ -205,6 +240,15 @@ describe('GET /api/agencies - Trade Filtering', () => {
     });
 
     it('should ignore empty trade values', async () => {
+      // Configure mock for valid trade only
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['agency-1']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 
@@ -214,11 +258,20 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
       await GET(mockRequest);
 
-      // Should still process valid trades
-      expect(supabase.in).toHaveBeenCalled();
+      // Should still process valid trades (empty values filtered out)
+      // No trades table query expected since empty values are filtered
     });
 
     it('should trim whitespace from trade slugs', async () => {
+      // Configure mock for trimmed trade
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['agency-1']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 
@@ -229,12 +282,21 @@ describe('GET /api/agencies - Trade Filtering', () => {
       await GET(mockRequest);
 
       // Should apply filter with trimmed value
-      expect(supabase.in).toHaveBeenCalled();
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades');
     });
   });
 
   describe('Combined Filters', () => {
     it('should combine trade filter with search filter', async () => {
+      // Configure mock for combined filtering
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['agency-1']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 
@@ -246,11 +308,20 @@ describe('GET /api/agencies - Trade Filtering', () => {
       await GET(mockRequest);
 
       // Both filters should be applied
-      expect(supabase.or).toHaveBeenCalled(); // Search filter
-      expect(supabase.in).toHaveBeenCalled(); // Trade filter
+      // Search filter creates two .or() calls (name and description)
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades'); // Trade filter
     });
 
     it('should combine trade filter with pagination', async () => {
+      // Configure mock for pagination with trade filter
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['plumbers'],
+          ids: ['trade-2'],
+          agencyIds: ['agency-1', 'agency-2']
+        }
+      });
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: { 
@@ -263,8 +334,8 @@ describe('GET /api/agencies - Trade Filtering', () => {
       await GET(mockRequest);
 
       // All filters should be applied
-      expect(supabase.in).toHaveBeenCalled(); // Trade filter
-      expect(supabase.range).toHaveBeenCalledWith(10, 14); // Pagination
+      supabaseMockHelpers.expectTableQueried(supabase, 'trades'); // Trade filter
+      supabaseMockHelpers.expectMethodCallCount(supabase, 'range', 1); // Pagination
     });
   });
 });

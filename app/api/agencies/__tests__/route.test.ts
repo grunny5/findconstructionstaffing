@@ -1,4 +1,6 @@
-import { GET } from '../route';
+// Import centralized mock first
+import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import { supabase } from '@/lib/supabase';
 import { 
   isErrorResponse, 
   API_CONSTANTS,
@@ -24,31 +26,8 @@ jest.mock('next/server', () => ({
   }
 }));
 
-// Mock Supabase
-jest.mock('@/lib/supabase', () => {
-  const mockSupabase = {
-    from: jest.fn(),
-    select: jest.fn(),
-    eq: jest.fn(),
-    or: jest.fn(),
-    in: jest.fn(),
-    range: jest.fn(),
-    order: jest.fn()
-  };
-
-  // Set up chaining
-  mockSupabase.from.mockReturnValue(mockSupabase);
-  mockSupabase.select.mockReturnValue(mockSupabase);
-  mockSupabase.eq.mockReturnValue(mockSupabase);
-  mockSupabase.or.mockReturnValue(mockSupabase);
-  mockSupabase.in.mockReturnValue(mockSupabase);
-  mockSupabase.range.mockReturnValue(mockSupabase);
-  mockSupabase.order.mockReturnValue(mockSupabase);
-
-  return {
-    supabase: mockSupabase
-  };
-});
+// Import the route AFTER mocks are set up
+import { GET } from '../route';
 
 // Helper function to create monitoring mocks
 function createMonitoringMocks() {
@@ -69,12 +48,12 @@ function createMonitoringMocks() {
 }
 
 describe('GET /api/agencies', () => {
-  const { supabase: mockSupabase } = require('@/lib/supabase');
   let mockMonitor: any;
   let mockErrorTracker: any;
   
   beforeEach(() => {
     jest.clearAllMocks();
+    resetSupabaseMock(supabase);
     
     // Setup monitoring mocks
     const mocks = createMonitoringMocks();
@@ -84,13 +63,11 @@ describe('GET /api/agencies', () => {
     (PerformanceMonitor as jest.Mock).mockImplementation(() => mockMonitor);
     (ErrorRateTracker.getInstance as jest.Mock).mockReturnValue(mockErrorTracker);
     
-    // Reset mock return values to default chaining
-    mockSupabase.from.mockReturnValue(mockSupabase);
-    mockSupabase.select.mockReturnValue(mockSupabase);
-    mockSupabase.eq.mockReturnValue(mockSupabase);
-    mockSupabase.or.mockReturnValue(mockSupabase);
-    mockSupabase.range.mockReturnValue(mockSupabase);
-    mockSupabase.order.mockReturnValue(mockSupabase);
+    // Setup default successful response
+    configureSupabaseMock(supabase, {
+      defaultData: [],
+      defaultCount: 0
+    });
   });
 
   describe('Error Handling', () => {
@@ -100,10 +77,9 @@ describe('GET /api/agencies', () => {
         code: 'PGRST116'
       };
 
-      mockSupabase.order.mockResolvedValueOnce({
-        data: null,
-        error: mockError,
-        count: null
+      // Configure mock to return an error
+      configureSupabaseMock(supabase, {
+        error: mockError
       });
 
       const mockRequest = createMockNextRequest({
@@ -152,33 +128,10 @@ describe('GET /api/agencies', () => {
         }
       ];
 
-      // Mock the main query chain  
-      mockSupabase.order.mockResolvedValueOnce({
-        data: mockAgencies,
-        error: null,
-        count: null
-      });
-
-      // Mock the count query chain
-      // We need to handle the second from() call differently
-      let fromCallCount = 0;
-      const originalFrom = mockSupabase.from;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          // Second call is for count query
-          const countMock = {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 1,
-                error: null
-              })
-            })
-          };
-          return countMock;
-        }
-        // First call returns normal mock chain
-        return mockSupabase;
+      // Configure mock with test data
+      configureSupabaseMock(supabase, {
+        defaultData: mockAgencies,
+        defaultCount: 1
       });
 
       const mockRequest = createMockNextRequest({
@@ -188,8 +141,6 @@ describe('GET /api/agencies', () => {
       const response = await GET(mockRequest);
       const data = await response.json();
 
-      // Note: Test infrastructure needs refinement for new query structure
-      // The search parameter parsing functionality is working correctly
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(isErrorResponse(data)).toBe(false);
       expect(data.data).toHaveLength(1);
@@ -206,28 +157,10 @@ describe('GET /api/agencies', () => {
     });
 
     it('should handle empty results', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          // Second call is for count query
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
+      // Configure mock with empty data
+      configureSupabaseMock(supabase, {
+        defaultData: [],
+        defaultCount: 0
       });
 
       const mockRequest = createMockNextRequest({
@@ -246,102 +179,33 @@ describe('GET /api/agencies', () => {
 
   describe('Query Configuration', () => {
     it('should filter by active agencies', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
-      });
-
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies'
       });
 
       await GET(mockRequest);
 
-      expect(mockSupabase.eq).toHaveBeenCalledWith('is_active', true);
+      expect(supabase.eq).toHaveBeenCalledWith('is_active', true);
     });
 
     it('should apply default pagination', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
-      });
-
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies'
       });
 
       await GET(mockRequest);
 
-      expect(mockSupabase.range).toHaveBeenCalledWith(0, API_CONSTANTS.DEFAULT_LIMIT - 1);
+      expect(supabase.range).toHaveBeenCalledWith(0, API_CONSTANTS.DEFAULT_LIMIT - 1);
     });
 
     it('should order by name ascending', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
-      });
-
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies'
       });
 
       await GET(mockRequest);
 
-      expect(mockSupabase.order).toHaveBeenCalledWith('name', { ascending: true });
+      expect(supabase.order).toHaveBeenCalledWith('name', { ascending: true });
     });
   });
 
@@ -349,29 +213,6 @@ describe('GET /api/agencies', () => {
     // Using mockMonitor and mockErrorTracker from parent scope
 
     it('should initialize performance monitoring', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
-      });
-
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies'
       });
@@ -383,29 +224,6 @@ describe('GET /api/agencies', () => {
     });
 
     it('should track query performance', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
-      });
-
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies'
       });
@@ -427,30 +245,10 @@ describe('GET /api/agencies', () => {
         }
       ];
 
-      mockSupabase.order.mockResolvedValueOnce({
-        data: mockAgencies,
-        error: null,
-        count: 1
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          // This is the count query
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockReturnValue({
-                or: jest.fn().mockResolvedValue({
-                  count: 1,
-                  error: null
-                })
-              })
-            })
-          };
-        }
-        return mockSupabase;
+      // Configure mock with test data
+      configureSupabaseMock(supabase, {
+        defaultData: mockAgencies,
+        defaultCount: 1
       });
 
       const mockRequest = createMockNextRequest({
@@ -472,10 +270,9 @@ describe('GET /api/agencies', () => {
     });
 
     it('should track errors in monitoring', async () => {
-      mockSupabase.order.mockResolvedValueOnce({
-        data: null,
-        error: { message: 'Database error', code: 'TEST_ERROR' },
-        count: null
+      // Configure mock to return an error
+      configureSupabaseMock(supabase, {
+        error: { message: 'Database error', code: 'TEST_ERROR' }
       });
 
       const mockRequest = createMockNextRequest({
@@ -497,29 +294,6 @@ describe('GET /api/agencies', () => {
       mockMonitor.complete.mockReturnValue({
         responseTime: 85,
         queryTime: 30
-      });
-
-      mockSupabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null,
-        count: 0
-      });
-
-      // Mock the count query chain
-      let fromCallCount = 0;
-      mockSupabase.from.mockImplementation(() => {
-        fromCallCount++;
-        if (fromCallCount === 2) {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({
-                count: 0,
-                error: null
-              })
-            })
-          };
-        }
-        return mockSupabase;
       });
 
       const mockRequest = createMockNextRequest({

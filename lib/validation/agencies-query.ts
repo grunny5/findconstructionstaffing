@@ -29,7 +29,7 @@ export const AgenciesQuerySchema = z.object({
   states: z
     .union([z.string(), z.array(z.string())])
     .transform((val) => Array.isArray(val) ? val : [val])
-    .pipe(z.array(z.string().trim().length(2, 'State code must be 2 letters')).max(API_CONSTANTS.MAX_STATE_FILTERS, 'Too many state filters'))
+    .pipe(z.array(z.string().trim().length(2, 'State code must be 2 letters').transform(s => s.toUpperCase())).max(API_CONSTANTS.MAX_STATE_FILTERS, 'Too many state filters'))
     .optional(),
 
   // Pagination parameters

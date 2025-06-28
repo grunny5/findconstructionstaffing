@@ -1,4 +1,6 @@
-import { GET } from '../route';
+// Import centralized mock first
+import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import { supabase } from '@/lib/supabase';
 import { 
   API_CONSTANTS,
   HTTP_STATUS 
@@ -60,17 +62,20 @@ jest.mock('@/lib/monitoring/performance', () => ({
   }
 }));
 
-// Mock Supabase
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    order: jest.fn().mockResolvedValue({
-      data: [
+// Import the route AFTER mocks are set up
+import { GET } from '../route';
+
+describe('GET /api/agencies - Caching', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    resetSupabaseMock(supabase);
+    
+    // Reset crypto mock to return consistent ETags by default
+    mockDigest.mockReturnValue('consistent-etag-for-testing');
+    
+    // Setup default successful response
+    configureSupabaseMock(supabase, {
+      defaultData: [
         {
           id: '1',
           name: 'Test Agency',
@@ -78,46 +83,7 @@ jest.mock('@/lib/supabase', () => ({
           regions: []
         }
       ],
-      error: null,
-      count: 1
-    })
-  }
-}));
-
-describe('GET /api/agencies - Caching', () => {
-  const { supabase } = require('@/lib/supabase');
-  let fromCallCount: number;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    fromCallCount = 0;
-    
-    // Reset crypto mock to return consistent ETags by default
-    mockDigest.mockReturnValue('consistent-etag-for-testing');
-    
-    // Reset all mocks to return supabase for chaining
-    supabase.from.mockReturnValue(supabase);
-    supabase.select.mockReturnValue(supabase);
-    supabase.eq.mockReturnValue(supabase);
-    supabase.or.mockReturnValue(supabase);
-    supabase.in.mockReturnValue(supabase);
-    supabase.range.mockReturnValue(supabase);
-    
-    // Set up a counter to handle the count query (second from() call)
-    supabase.from.mockImplementation(() => {
-      fromCallCount++;
-      if (fromCallCount === 2) {
-        // This is the count query
-        return {
-          select: jest.fn().mockReturnValue({
-            eq: jest.fn().mockResolvedValue({
-              count: 1,
-              error: null
-            })
-          })
-        };
-      }
-      return supabase;
+      defaultCount: 1
     });
   });
 
@@ -140,11 +106,9 @@ describe('GET /api/agencies - Caching', () => {
     });
 
     it('should include no-cache headers in error responses', async () => {
-      // Force an error
-      supabase.order.mockResolvedValueOnce({
-        data: null,
-        error: { message: 'Database error', code: 'PGRST001' },
-        count: null
+      // Configure mock to return an error
+      configureSupabaseMock(supabase, {
+        error: { message: 'Database error', code: 'PGRST001' }
       });
 
       const mockRequest = createMockNextRequest({
@@ -184,10 +148,9 @@ describe('GET /api/agencies - Caching', () => {
         .mockReturnValueOnce('etag-for-agency-2');
       
       // First request
-      supabase.order.mockResolvedValueOnce({
-        data: [{ id: '1', name: 'Agency 1', trades: [], regions: [] }],
-        error: null,
-        count: 1
+      configureSupabaseMock(supabase, {
+        defaultData: [{ id: '1', name: 'Agency 1', trades: [], regions: [] }],
+        defaultCount: 1
       });
 
       const mockRequest1 = createMockNextRequest({
@@ -197,10 +160,9 @@ describe('GET /api/agencies - Caching', () => {
       const response1 = await GET(mockRequest1);
 
       // Second request with different data
-      supabase.order.mockResolvedValueOnce({
-        data: [{ id: '2', name: 'Agency 2', trades: [], regions: [] }],
-        error: null,
-        count: 1
+      configureSupabaseMock(supabase, {
+        defaultData: [{ id: '2', name: 'Agency 2', trades: [], regions: [] }],
+        defaultCount: 1
       });
 
       const mockRequest2 = createMockNextRequest({
