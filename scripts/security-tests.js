@@ -393,7 +393,15 @@ async function runSecurityTests() {
   }
   
   // Save test results
-  const reportPath = path.join(__dirname, '..', 'docs', 'security-test-results.json');
+  const docsDir = path.join(__dirname, '..', 'docs');
+  const reportPath = path.join(docsDir, 'security-test-results.json');
+  
+  // Ensure docs directory exists
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
+    console.log(`📁 Created directory: ${docsDir}`);
+  }
+  
   fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
   console.log(`\n📄 Security test results saved to: ${reportPath}`);
   
