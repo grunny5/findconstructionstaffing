@@ -29,10 +29,10 @@ echo "Test 2: Testing with missing k6 (simulated)..."
     # Use || true to prevent pipefail from failing when the script exits with error
     if { ./tests/load/run-load-tests.sh --skip-stress 2>&1 || true; } | grep -q "k6 is not installed"; then
         echo "✅ Missing k6 detection works"
-        rmdir "$EMPTY_DIR"
+        rm -rf "$EMPTY_DIR"
     else
         echo "❌ Missing k6 detection failed"
-        rmdir "$EMPTY_DIR"
+        rm -rf "$EMPTY_DIR"
         exit 1
     fi
 )
