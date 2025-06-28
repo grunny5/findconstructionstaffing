@@ -38,7 +38,7 @@ async function verifyIndexes() {
   try {
     const { data: indexes, error } = await supabase.rpc('get_indexes', {
       query_text: indexQuery
-    }).single();
+    });
     
     if (error) {
       // Differentiate between error types
