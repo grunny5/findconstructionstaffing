@@ -50,10 +50,25 @@ try {
     throw new Error('JWT contains empty parts');
   }
   
+  // Function to decode Base64URL to Base64
+  function base64urlToBase64(base64url) {
+    // Replace Base64URL characters with Base64 characters
+    let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // Add padding if necessary
+    const padding = base64.length % 4;
+    if (padding) {
+      base64 += '='.repeat(4 - padding);
+    }
+    
+    return base64;
+  }
+  
   // Decode header
   let header;
   try {
-    header = JSON.parse(Buffer.from(parts[0], 'base64').toString());
+    const base64Header = base64urlToBase64(parts[0]);
+    header = JSON.parse(Buffer.from(base64Header, 'base64').toString());
     console.log(`- Algorithm: ${header.alg || 'Not specified'}`);
     console.log(`- Type: ${header.typ || 'Not specified'}`);
   } catch (e) {
@@ -63,7 +78,8 @@ try {
   // Decode payload
   let payload;
   try {
-    payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+    const base64Payload = base64urlToBase64(parts[1]);
+    payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString());
   } catch (e) {
     throw new Error(`Failed to decode JWT payload: ${e.message}`);
   }
