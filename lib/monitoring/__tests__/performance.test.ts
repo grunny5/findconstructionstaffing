@@ -144,7 +144,7 @@ describe('PerformanceMonitor', () => {
       if (originalDbThreshold !== undefined) {
         process.env.DB_QUERY_THRESHOLD_MS = originalDbThreshold;
       } else {
-        delete process.env.DB_QUERY_THRESHOLD_MS;
+        process.env.DB_QUERY_THRESHOLD_MS = undefined;
       }
     });
 
@@ -178,7 +178,7 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should use default threshold when not configured', () => {
-      delete process.env.DB_QUERY_THRESHOLD_MS;
+      process.env.DB_QUERY_THRESHOLD_MS = undefined;
       
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
