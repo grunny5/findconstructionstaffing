@@ -69,7 +69,9 @@ done
 
 # Check environment variable if command line arg not provided
 if [[ -z "$RUN_STRESS" ]] && [[ -n "$RUN_STRESS_TEST" ]]; then
-    case "${RUN_STRESS_TEST,,}" in  # Convert to lowercase
+    # Portable lowercase conversion for compatibility with Bash 3.2 (macOS)
+    RUN_STRESS_TEST_LOWER=$(printf '%s' "$RUN_STRESS_TEST" | tr '[:upper:]' '[:lower:]')
+    case "$RUN_STRESS_TEST_LOWER" in
         true|yes|y|1)
             RUN_STRESS="true"
             ;;

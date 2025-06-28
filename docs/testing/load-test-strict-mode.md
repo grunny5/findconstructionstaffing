@@ -115,3 +115,24 @@ When modifying the load test script:
    # Bad (can break with spaces)
    echo $variable
    ```
+
+5. **Use portable Bash features**
+   ```bash
+   # Good - works on Bash 3.2+ (macOS)
+   lowercase=$(printf '%s' "$var" | tr '[:upper:]' '[:lower:]')
+   
+   # Bad - requires Bash 4+
+   lowercase="${var,,}"
+   ```
+
+## Bash Compatibility
+
+The script is compatible with:
+- **Bash 3.2** (macOS default)
+- **Bash 4.x and 5.x** (most Linux distributions)
+- Other POSIX-compliant shells
+
+Key compatibility considerations:
+- Avoid Bash 4+ specific features like `${var,,}` for case conversion
+- Use `tr` for portable string manipulation
+- Test on macOS to ensure compatibility
