@@ -6,6 +6,24 @@ import { createHash } from 'crypto';
 const TEST_SALT = 'fcs-ip-hash-default-salt-2024';
 
 describe('IP Extraction Utilities', () => {
+  // Store original env var
+  const originalSalt = process.env.IP_HASH_SALT;
+  
+  beforeEach(() => {
+    // Mock environment variable for consistent testing
+    // This ensures the test uses the same salt regardless of the actual environment
+    // and matches how the implementation reads the salt value
+    process.env.IP_HASH_SALT = TEST_SALT;
+  });
+  
+  afterEach(() => {
+    // Restore original env var to avoid affecting other tests
+    if (originalSalt !== undefined) {
+      process.env.IP_HASH_SALT = originalSalt;
+    } else {
+      delete process.env.IP_HASH_SALT;
+    }
+  });
   describe('hashIpForRateLimiting', () => {
     it('should hash known IP addresses using SHA-256', () => {
       const testIp = '192.168.1.1';
@@ -79,6 +97,29 @@ describe('IP Extraction Utilities', () => {
         expect(hash).not.toContain(ip);
         expect(hash).toMatch(/^[a-f0-9]{16}$/); // Should be hex string
       });
+    });
+
+    it('should produce different hashes with different salts', () => {
+      const testIp = '192.168.1.1';
+      
+      // Get hash with current salt
+      const hash1 = hashIpForRateLimiting(testIp);
+      
+      // Change salt
+      process.env.IP_HASH_SALT = 'different-salt-for-testing';
+      
+      // Need to clear the module cache to reload with new env var
+      jest.resetModules();
+      const { hashIpForRateLimiting: hashIpForRateLimitingNew } = require('../ip-extraction');
+      
+      const hash2 = hashIpForRateLimitingNew(testIp);
+      
+      // Hashes should be different with different salts
+      expect(hash1).not.toBe(hash2);
+      
+      // Both should still be valid hashes
+      expect(hash1).toMatch(/^[a-f0-9]{16}$/);
+      expect(hash2).toMatch(/^[a-f0-9]{16}$/);
     });
   });
 
