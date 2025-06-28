@@ -63,8 +63,8 @@ describe('GET /api/health', () => {
   describe('Unhealthy States', () => {
     it('should return unhealthy when environment variables are missing', async () => {
       // Remove required environment variables
-      delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-      delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      process.env.NEXT_PUBLIC_SUPABASE_URL = undefined;
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = undefined;
 
       const response = await GET();
       const data = await response.json();
