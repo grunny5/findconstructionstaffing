@@ -26,7 +26,8 @@ echo "Test 2: Testing with missing k6 (simulated)..."
     EMPTY_DIR=$(mktemp -d)
     # Prepend empty directory to PATH so k6 is not found, but other commands still work
     PATH="$EMPTY_DIR:$PATH"
-    if ./tests/load/run-load-tests.sh --skip-stress 2>&1 | grep -q "k6 is not installed"; then
+    # Use || true to prevent pipefail from failing when the script exits with error
+    if { ./tests/load/run-load-tests.sh --skip-stress 2>&1 || true; } | grep -q "k6 is not installed"; then
         echo "✅ Missing k6 detection works"
         rmdir "$EMPTY_DIR"
     else
@@ -40,7 +41,8 @@ echo "Test 2: Testing with missing k6 (simulated)..."
 echo "Test 3: Testing with invalid RUN_STRESS_TEST value..."
 (
     export RUN_STRESS_TEST="invalid"
-    if ./tests/load/run-load-tests.sh --skip-stress 2>&1 | grep -q "Warning: Invalid RUN_STRESS_TEST value"; then
+    # Use || true to prevent pipefail from failing when the script exits with error
+    if { ./tests/load/run-load-tests.sh --skip-stress 2>&1 || true; } | grep -q "Warning: Invalid RUN_STRESS_TEST value"; then
         echo "✅ Invalid environment variable handling works"
     else
         echo "❌ Invalid environment variable handling failed"
