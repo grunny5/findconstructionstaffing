@@ -29,6 +29,49 @@ describe('Formatting Utilities', () => {
     it('should handle empty string', () => {
       expect(createSlug('')).toBe('');
     });
+
+    // New test cases for enhanced functionality
+    it('should handle null and undefined inputs', () => {
+      expect(createSlug(null as any)).toBe('');
+      expect(createSlug(undefined as any)).toBe('');
+    });
+
+    it('should handle non-string inputs', () => {
+      expect(createSlug(123 as any)).toBe('');
+      expect(createSlug({} as any)).toBe('');
+      expect(createSlug([] as any)).toBe('');
+    });
+
+    it('should handle accented characters', () => {
+      expect(createSlug('Café Résumé')).toBe('cafe-resume');
+      expect(createSlug('Naïve façade')).toBe('naive-facade');
+      expect(createSlug('El Niño')).toBe('el-nino');
+    });
+
+    it('should handle international characters', () => {
+      expect(createSlug('Zürich München')).toBe('zurich-munchen');
+      expect(createSlug('São Paulo')).toBe('sao-paulo');
+      // Note: Ø is not decomposable in NFD, so it gets removed
+      expect(createSlug('Øresund')).toBe('resund');
+      // Alternative test with decomposable characters
+      expect(createSlug('Åarhus')).toBe('aarhus');
+    });
+
+    it('should handle edge cases with special characters', () => {
+      expect(createSlug('!!!Hello---World!!!')).toBe('hello-world');
+      expect(createSlug('---test---')).toBe('test');
+      expect(createSlug('   ---   ')).toBe('');
+    });
+
+    it('should handle mixed alphanumeric content', () => {
+      expect(createSlug('Test123 ABC')).toBe('test123-abc');
+      expect(createSlug('2024-Year Plan!')).toBe('2024-year-plan');
+    });
+
+    it('should preserve existing hyphens', () => {
+      expect(createSlug('pre-existing-hyphens')).toBe('pre-existing-hyphens');
+      expect(createSlug('mix-of spaces-and-hyphens')).toBe('mix-of-spaces-and-hyphens');
+    });
   });
 
   describe('formatPhoneNumber', () => {

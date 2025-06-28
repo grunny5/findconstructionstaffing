@@ -1,13 +1,24 @@
 // Shared formatting utility functions
 
 export const createSlug = (text: string): string => {
+  // Input validation
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+  
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9 -]/g, '')
-    .replace(/\s+/g, '-')
+    // Normalize Unicode characters (NFD = Canonical Decomposition)
+    .normalize('NFD')
+    // Remove diacritics/accents
+    .replace(/[\u0300-\u036f]/g, '')
+    // Replace any sequence of non-alphanumeric characters (except hyphens) with a single hyphen
+    .replace(/[^a-z0-9\-]+/g, '-')
+    // Replace multiple consecutive hyphens with a single hyphen
     .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+    // Remove leading and trailing hyphens
+    .replace(/^-+|-+$/g, '');
 };
 
 export const formatPhoneNumber = (phone: string): string => {
