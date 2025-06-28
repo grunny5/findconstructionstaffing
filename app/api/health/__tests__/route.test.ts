@@ -1,4 +1,9 @@
-import { GET } from '../route';
+// Import centralized mock helpers first
+import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+
+// The mock is already set up at module level in supabase-mock.ts
+// Import supabase AFTER the mock setup
+import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // Mock NextResponse
@@ -12,12 +17,16 @@ jest.mock('next/server', () => ({
   }
 }));
 
+// Import the route AFTER all mocks are set up
+import { GET } from '../route';
+
 describe('GET /api/health', () => {
-  const { supabase } = require('@/lib/supabase');
   const originalEnv = process.env;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset the mock to default state
+    resetSupabaseMock(supabase);
     // Reset environment to original state
     process.env = { ...originalEnv };
   });
@@ -32,13 +41,10 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
       
-      // Mock successful database query
-      supabase.from.mockReturnValue(supabase);
-      supabase.select.mockReturnValue(supabase);
-      supabase.limit.mockReturnValue(Promise.resolve({
-        data: [{ id: '1' }],
-        error: null
-      }));
+      // Configure mock for successful query - the mock already chains properly
+      configureSupabaseMock(supabase, {
+        defaultData: [{ id: '1' }]
+      });
 
       const response = await GET();
       const data = await response.json();
@@ -57,8 +63,8 @@ describe('GET /api/health', () => {
   describe('Unhealthy States', () => {
     it('should return unhealthy when environment variables are missing', async () => {
       // Remove required environment variables
-      delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-      delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      process.env.NEXT_PUBLIC_SUPABASE_URL = undefined;
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = undefined;
 
       const response = await GET();
       const data = await response.json();
@@ -74,13 +80,10 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
       
-      // Mock database error
-      supabase.from.mockReturnValue(supabase);
-      supabase.select.mockReturnValue(supabase);
-      supabase.limit.mockReturnValue(Promise.resolve({
-        data: null,
+      // Use centralized mock configuration
+      configureSupabaseMock(supabase, {
         error: { message: 'Connection refused' }
-      }));
+      });
 
       const response = await GET();
       const data = await response.json();
@@ -89,6 +92,10 @@ describe('GET /api/health', () => {
       expect(data.status).toBe('unhealthy');
       expect(data.checks.database).toBe(false);
       expect(data.details.message).toContain('Database check failed');
+      
+      // Use assertion helpers
+      supabaseMockHelpers.expectTableQueried(supabase, 'agencies');
+      supabaseMockHelpers.expectSelectCalled(supabase, 'id');
     });
 
     it('should return unhealthy when supabase client is not initialized', async () => {
