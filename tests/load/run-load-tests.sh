@@ -15,7 +15,7 @@
 #   RUN_STRESS_TEST  Set to 'true' or 'false' to control stress test execution
 #   CI               When set, disables interactive prompts
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
