@@ -22,9 +22,10 @@ fi
 # Test 2: Check that the script validates required tools
 echo "Test 2: Testing with missing k6 (simulated)..."
 (
-    # Create a subshell with empty PATH to ensure k6 is not found
+    # Create a subshell with k6 hidden from PATH
     EMPTY_DIR=$(mktemp -d)
-    PATH="$EMPTY_DIR"
+    # Prepend empty directory to PATH so k6 is not found, but other commands still work
+    PATH="$EMPTY_DIR:$PATH"
     if ./tests/load/run-load-tests.sh --skip-stress 2>&1 | grep -q "k6 is not installed"; then
         echo "✅ Missing k6 detection works"
         rmdir "$EMPTY_DIR"
