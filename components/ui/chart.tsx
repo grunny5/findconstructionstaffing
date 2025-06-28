@@ -46,6 +46,9 @@ const ChartContainer = React.forwardRef<
   const uniqueId = React.useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, '')}`;
 
+  // Get CSS variables for light theme
+  const cssVariables = getThemeStyles(config, 'light');
+
   return (
     <ChartContext.Provider value={{ config }}>
       <div
@@ -55,9 +58,9 @@ const ChartContainer = React.forwardRef<
           "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
           className
         )}
+        style={cssVariables as React.CSSProperties}
         {...props}
       >
-        <ChartStyle id={chartId} config={config} />
         <RechartsPrimitive.ResponsiveContainer>
           {children}
         </RechartsPrimitive.ResponsiveContainer>
@@ -67,37 +70,49 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = 'Chart';
 
-const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
-  const colorConfig = Object.entries(config).filter(
-    ([_, config]) => config.theme || config.color
-  );
-
-  if (!colorConfig.length) {
-    return null;
-  }
-
+// Validate color values to prevent XSS
+const isValidColor = (color: string): boolean => {
+  // Allow hex colors, rgb/rgba, hsl/hsla, and common color names
+  const colorPatterns = [
+    /^#[0-9A-Fa-f]{3,8}$/,  // Hex colors
+    /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/,  // rgb
+    /^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[0-1]?\.?\d*\s*\)$/,  // rgba
+    /^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/,  // hsl
+    /^hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*,\s*[0-1]?\.?\d*\s*\)$/,  // hsla
+  ];
+  
+  // Common safe color keywords
+  const safeColorKeywords = [
+    'transparent', 'currentColor', 'inherit', 'initial', 'revert', 'unset',
+    'black', 'white', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta',
+    'gray', 'grey', 'orange', 'purple', 'brown', 'pink', 'lime', 'indigo'
+  ];
+  
+  const normalizedColor = color.trim().toLowerCase();
+  
   return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join('\n')}
-}
-`
-          )
-          .join('\n'),
-      }}
-    />
+    colorPatterns.some(pattern => pattern.test(color)) ||
+    safeColorKeywords.includes(normalizedColor)
   );
+};
+
+// Generate CSS variables for a specific theme
+const getThemeStyles = (
+  config: ChartConfig,
+  theme: keyof typeof THEMES
+): Record<string, string> => {
+  const styles: Record<string, string> = {};
+  
+  Object.entries(config).forEach(([key, itemConfig]) => {
+    if (itemConfig.theme || itemConfig.color) {
+      const color = itemConfig.theme?.[theme] || itemConfig.color;
+      if (color && isValidColor(color)) {
+        styles[`--color-${key}`] = color;
+      }
+    }
+  });
+  
+  return styles;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
@@ -238,7 +253,7 @@ const ChartTooltipContent = React.forwardRef<
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
-                      {item.value && (
+                      {item.value != null && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
                           {item.value.toLocaleString()}
                         </span>
@@ -361,5 +376,4 @@ export {
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  ChartStyle,
 };

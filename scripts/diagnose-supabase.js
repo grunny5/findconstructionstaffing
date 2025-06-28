@@ -50,10 +50,25 @@ try {
     throw new Error('JWT contains empty parts');
   }
   
+  // Function to decode Base64URL to Base64
+  function base64urlToBase64(base64url) {
+    // Replace Base64URL characters with Base64 characters
+    let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // Add padding if necessary
+    const padding = base64.length % 4;
+    if (padding) {
+      base64 += '='.repeat(4 - padding);
+    }
+    
+    return base64;
+  }
+  
   // Decode header
   let header;
   try {
-    header = JSON.parse(Buffer.from(parts[0], 'base64').toString());
+    const base64Header = base64urlToBase64(parts[0]);
+    header = JSON.parse(Buffer.from(base64Header, 'base64').toString());
     console.log(`- Algorithm: ${header.alg || 'Not specified'}`);
     console.log(`- Type: ${header.typ || 'Not specified'}`);
   } catch (e) {
@@ -63,7 +78,8 @@ try {
   // Decode payload
   let payload;
   try {
-    payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+    const base64Payload = base64urlToBase64(parts[1]);
+    payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString());
   } catch (e) {
     throw new Error(`Failed to decode JWT payload: ${e.message}`);
   }
@@ -131,6 +147,9 @@ try {
 // Test different endpoints
 console.log('\n🔄 Testing API Endpoints...\n');
 
+// Track if any critical errors occurred
+let hasErrors = false;
+
 async function testEndpoint(path, description) {
   return new Promise((resolve) => {
     const url = new URL(envVars.NEXT_PUBLIC_SUPABASE_URL);
@@ -150,17 +169,59 @@ async function testEndpoint(path, description) {
       res.on('end', () => {
         console.log(`${description}:`);
         console.log(`  Status: ${res.statusCode}`);
-        if (res.statusCode !== 200 && data) {
+        
+        // Handle different status codes
+        if (res.statusCode === 401) {
+          console.log('  ❌ Unauthorized: Invalid API key or JWT token');
+          hasErrors = true;
+        } else if (res.statusCode === 403) {
+          console.log('  ❌ Forbidden: Access denied to this resource');
+          hasErrors = true;
+        } else if (res.statusCode === 404) {
+          console.log('  ⚠️  Not Found: Resource does not exist (this may be expected)');
+        } else if (res.statusCode === 200) {
+          // Parse response to check for errors even with 200 status
+          try {
+            const responseData = JSON.parse(data);
+            
+            // Check for error in response body
+            if (responseData.error) {
+              console.log(`  ❌ Error in response: ${responseData.error}`);
+              hasErrors = true;
+            } else if (responseData.message && responseData.message.includes('Unauthorized')) {
+              console.log(`  ❌ Unauthorized response: ${responseData.message}`);
+              hasErrors = true;
+            } else if (Array.isArray(responseData) && responseData.length === 0) {
+              console.log('  ✅ Success (empty array - table may be empty)');
+            } else if (responseData.status === 'ok' || responseData.healthy === true) {
+              console.log('  ✅ Success (health check passed)');
+            } else {
+              console.log('  ✅ Success');
+            }
+          } catch (e) {
+            // If response is not JSON, show preview
+            const preview = data.length > 100 ? data.substring(0, 100) + '...' : data;
+            console.log(`  ⚠️  Non-JSON response: ${preview}`);
+          }
+        } else {
+          // Other status codes
           const preview = data.length > 100 ? data.substring(0, 100) + '...' : data;
           console.log(`  Response: ${preview}`);
+          
+          if (res.statusCode >= 500) {
+            console.log('  ❌ Server error');
+            hasErrors = true;
+          }
         }
+        
         console.log('');
         resolve();
       });
     });
 
     req.on('error', (error) => {
-      console.log(`${description}: ❌ ${error.message}\n`);
+      console.log(`${description}: ❌ Network error: ${error.message}\n`);
+      hasErrors = true;
       resolve();
     });
 
@@ -174,8 +235,20 @@ async function testEndpoint(path, description) {
   await testEndpoint('/auth/v1/health', 'Auth Health Check');
   await testEndpoint('/rest/v1/agencies', 'Agencies Table (may not exist yet)');
   
-  console.log('📌 Next Steps:');
-  console.log('1. If you see 401 errors, verify your anon key in Supabase dashboard');
-  console.log('2. If the URL/Key don\'t match, check you\'re using the right project');
-  console.log('3. If all endpoints fail, check your internet connection');
+  if (hasErrors) {
+    console.log('❌ Diagnostic found critical errors!\n');
+    console.log('📌 Next Steps:');
+    console.log('1. If you see 401 errors, verify your anon key in Supabase dashboard');
+    console.log('2. If the URL/Key don\'t match, check you\'re using the right project');
+    console.log('3. Check that your Supabase project is active and not paused');
+    console.log('4. Ensure environment variables are correctly set');
+    
+    // Exit with error code for CI
+    process.exit(1);
+  } else {
+    console.log('✅ All diagnostics passed!\n');
+    console.log('📌 Next Steps:');
+    console.log('1. If agencies table returned 404, run database migrations');
+    console.log('2. Your Supabase connection is properly configured');
+  }
 })();

@@ -38,7 +38,7 @@ async function verifyIndexes() {
   try {
     const { data: indexes, error } = await supabase.rpc('get_indexes', {
       query_text: indexQuery
-    }).single();
+    });
     
     if (error) {
       // Differentiate between error types
@@ -84,6 +84,11 @@ async function verifyIndexes() {
         .ilike('name', '%test%')
         .limit(5);
       const time1 = Date.now() - start1;
+      if (nameError) {
+        console.log(`❌ Test 1 failed: ${nameError.message}`);
+        console.log('   Skipping remaining tests due to error\n');
+        return;
+      }
       console.log(`✅ Name search completed in ${time1}ms\n`);
       
       // Test 2: Active + Featured filter
@@ -96,6 +101,11 @@ async function verifyIndexes() {
         .eq('featured', true)
         .limit(5);
       const time2 = Date.now() - start2;
+      if (activeError) {
+        console.log(`❌ Test 2 failed: ${activeError.message}`);
+        console.log('   Skipping remaining tests due to error\n');
+        return;
+      }
       console.log(`✅ Active/featured search completed in ${time2}ms\n`);
       
       // Test 3: Rating sort
@@ -108,6 +118,11 @@ async function verifyIndexes() {
         .order('rating', { ascending: false })
         .limit(5);
       const time3 = Date.now() - start3;
+      if (ratingError) {
+        console.log(`❌ Test 3 failed: ${ratingError.message}`);
+        console.log('   Skipping remaining tests due to error\n');
+        return;
+      }
       console.log(`✅ Rating sort completed in ${time3}ms\n`);
       
       // Test 4: Trade lookup
@@ -119,6 +134,11 @@ async function verifyIndexes() {
         .eq('slug', 'electrician')
         .single();
       const time4 = Date.now() - start4;
+      if (tradeError) {
+        console.log(`❌ Test 4 failed: ${tradeError.message}`);
+        console.log('   Skipping remaining tests due to error\n');
+        return;
+      }
       console.log(`✅ Trade lookup completed in ${time4}ms\n`);
       
       // Test 5: Region by state
@@ -130,6 +150,10 @@ async function verifyIndexes() {
         .eq('state_code', 'TX')
         .limit(5);
       const time5 = Date.now() - start5;
+      if (regionError) {
+        console.log(`❌ Test 5 failed: ${regionError.message}`);
+        return;
+      }
       console.log(`✅ Region search completed in ${time5}ms\n`);
       
       console.log('📊 Performance Summary:');

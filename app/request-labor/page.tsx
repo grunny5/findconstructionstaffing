@@ -130,7 +130,7 @@ export default function RequestLaborPage() {
               Request Skilled Labor
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Tell us about your project and we'll connect you with qualified staffing agencies
+              Tell us about your project and we&apos;ll connect you with qualified staffing agencies
             </p>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function RequestLaborPage() {
             <Alert className="mb-8">
               <Building2 className="h-4 w-4" />
               <AlertDescription>
-                <strong>How it works:</strong> Fill out this form and we'll automatically match you with the top 5 staffing agencies 
+                <strong>How it works:</strong> Fill out this form and we&apos;ll automatically match you with the top 5 staffing agencies 
                 that specialize in your required trade and location. Agencies typically respond within 24 hours.
               </AlertDescription>
             </Alert>

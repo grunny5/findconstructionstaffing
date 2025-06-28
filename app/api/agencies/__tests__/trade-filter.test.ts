@@ -19,18 +19,7 @@ jest.mock('next/server', () => ({
   }
 }));
 
-// Mock Supabase
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    order: jest.fn()
-  }
-}));
+// Use the global Supabase mock from jest.setup.js
 
 describe('GET /api/agencies - Trade Filtering', () => {
   const { supabase } = require('@/lib/supabase');

@@ -7,14 +7,56 @@ import {
   createMockNextRequest 
 } from '@/__tests__/utils/api-mocks';
 
+// Mock the crypto module to generate consistent ETags for testing
+const mockDigest = jest.fn();
+jest.mock('crypto', () => ({
+  createHash: jest.fn(() => ({
+    update: jest.fn().mockReturnThis(),
+    digest: mockDigest
+  }))
+}));
+
 // Mock NextResponse
+class MockNextResponse {
+  status: number;
+  headers: Headers;
+  body: any;
+  
+  constructor(body: any, init?: ResponseInit) {
+    this.body = body;
+    this.status = init?.status || 200;
+    this.headers = new Headers(init?.headers);
+  }
+  
+  static json(data: any, init?: ResponseInit) {
+    const response = new MockNextResponse(data, init);
+    response.json = async () => data;
+    return response;
+  }
+  
+  json() {
+    return Promise.resolve(this.body);
+  }
+}
+
 jest.mock('next/server', () => ({
-  NextResponse: {
-    json: jest.fn((data: any, init?: ResponseInit) => ({
-      status: init?.status || 200,
-      json: async () => data,
-      headers: init?.headers || new Headers()
-    }))
+  NextResponse: MockNextResponse
+}));
+
+// Mock performance monitoring to avoid console logs in tests
+jest.mock('@/lib/monitoring/performance', () => ({
+  PerformanceMonitor: jest.fn().mockImplementation(() => ({
+    startQuery: jest.fn(),
+    endQuery: jest.fn(),
+    complete: jest.fn().mockReturnValue({
+      responseTime: 0,
+      queryTime: undefined
+    })
+  })),
+  ErrorRateTracker: {
+    getInstance: jest.fn().mockReturnValue({
+      recordRequest: jest.fn()
+    })
   }
 }));
 
@@ -24,6 +66,8 @@ jest.mock('@/lib/supabase', () => ({
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
+    or: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
     order: jest.fn().mockResolvedValue({
       data: [
@@ -42,13 +86,38 @@ jest.mock('@/lib/supabase', () => ({
 
 describe('GET /api/agencies - Caching', () => {
   const { supabase } = require('@/lib/supabase');
+  let fromCallCount: number;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock count query
-    supabase.select.mockResolvedValue({
-      count: 1,
-      error: null
+    fromCallCount = 0;
+    
+    // Reset crypto mock to return consistent ETags by default
+    mockDigest.mockReturnValue('consistent-etag-for-testing');
+    
+    // Reset all mocks to return supabase for chaining
+    supabase.from.mockReturnValue(supabase);
+    supabase.select.mockReturnValue(supabase);
+    supabase.eq.mockReturnValue(supabase);
+    supabase.or.mockReturnValue(supabase);
+    supabase.in.mockReturnValue(supabase);
+    supabase.range.mockReturnValue(supabase);
+    
+    // Set up a counter to handle the count query (second from() call)
+    supabase.from.mockImplementation(() => {
+      fromCallCount++;
+      if (fromCallCount === 2) {
+        // This is the count query
+        return {
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockResolvedValue({
+              count: 1,
+              error: null
+            })
+          })
+        };
+      }
+      return supabase;
     });
   });
 
@@ -109,6 +178,11 @@ describe('GET /api/agencies - Caching', () => {
     });
 
     it('should generate different ETags for different responses', async () => {
+      // Configure crypto to return different ETags
+      mockDigest
+        .mockReturnValueOnce('etag-for-agency-1')
+        .mockReturnValueOnce('etag-for-agency-2');
+      
       // First request
       supabase.order.mockResolvedValueOnce({
         data: [{ id: '1', name: 'Agency 1', trades: [], regions: [] }],

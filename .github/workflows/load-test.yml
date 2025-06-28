@@ -1,0 +1,314 @@
+name: Load Testing
+
+on:
+  # Run on pull requests to main
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/api/agencies/**'
+      - 'lib/supabase.ts'
+      - 'lib/validation/**'
+      - 'tests/load/**'
+  
+  # Allow manual trigger with confirmation
+  workflow_dispatch:
+    inputs:
+      concurrent_users:
+        description: 'Number of concurrent users'
+        required: false
+        default: '50'
+      test_duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '60'
+      confirm_execution:
+        description: 'Type "confirm" to run load tests'
+        required: true
+        type: string
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    
+    # Prevent overlapping runs for the same PR or workflow
+    concurrency:
+      # Use a deterministic string key to prevent overlapping runs
+      # format() ensures we get a string result instead of boolean from && operator
+      group: >-
+        load-test-${{ github.event_name == 'pull_request'
+          && format('pr-{0}', github.event.pull_request.number)
+          || format('run-{0}', github.run_id) }}
+      cancel-in-progress: true
+    
+    # Only run if the PR has the 'performance' label or is manually triggered with confirmation
+    if: |
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'performance')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm_execution == 'confirm')
+    
+    # Define environment variables at job level
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Start application
+        run: |
+          npm start &
+          echo $! > .pid
+      
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API to be ready..."
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          HEALTH_URL="http://localhost:3000/api/health"
+          AGENCIES_URL="http://localhost:3000/api/agencies"
+          
+          while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            
+            # First check health endpoint
+            HEALTH_RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
+            HEALTH_CODE=$(echo "$HEALTH_RESPONSE" | tail -n1)
+            HEALTH_BODY=$(echo "$HEALTH_RESPONSE" | sed '$d')
+            
+            if [ "$HEALTH_CODE" = "200" ]; then
+              echo "✓ Health check passed (HTTP 200)"
+              
+              # Parse health check response
+              if echo "$HEALTH_BODY" | jq -e '.status == "healthy"' > /dev/null 2>&1; then
+                API_CHECK=$(echo "$HEALTH_BODY" | jq -r '.checks.api')
+                DB_CHECK=$(echo "$HEALTH_BODY" | jq -r '.checks.database')
+                ENV_CHECK=$(echo "$HEALTH_BODY" | jq -r '.checks.environment')
+                
+                echo "  - API check: $API_CHECK"
+                echo "  - Database check: $DB_CHECK"
+                echo "  - Environment check: $ENV_CHECK"
+                
+                if [ "$API_CHECK" = "true" ] && [ "$DB_CHECK" = "true" ] && [ "$ENV_CHECK" = "true" ]; then
+                  # Now verify the main API endpoint
+                  echo "Verifying main API endpoint..."
+                  API_RESPONSE=$(curl -s -w "\n%{http_code}" "$AGENCIES_URL" || echo "000")
+                  API_CODE=$(echo "$API_RESPONSE" | tail -n1)
+                  API_BODY=$(echo "$API_RESPONSE" | sed '$d')
+                  
+                  if [ "$API_CODE" = "200" ]; then
+                    # Verify response structure
+                    if echo "$API_BODY" | jq -e '.data | type == "array"' > /dev/null 2>&1 && \
+                       echo "$API_BODY" | jq -e '.pagination | has("total") and has("limit") and has("offset") and has("hasMore")' > /dev/null 2>&1; then
+                      echo "✓ API is fully operational and ready for load testing!"
+                      echo "  - Health status: healthy"
+                      echo "  - API response: valid"
+                      echo "  - Response structure: confirmed"
+                      exit 0
+                    else
+                      echo "⚠ API returned 200 but response structure is invalid"
+                    fi
+                  else
+                    echo "⚠ API endpoint returned HTTP $API_CODE"
+                  fi
+                else
+                  echo "⚠ Health check indicates system not ready"
+                  MESSAGE=$(echo "$HEALTH_BODY" | jq -r '.details.message // empty')
+                  [ -n "$MESSAGE" ] && echo "  Message: $MESSAGE"
+                fi
+              else
+                echo "⚠ Health check returned unhealthy status"
+              fi
+            elif [ "$HEALTH_CODE" = "503" ]; then
+              echo "⚠ Health check failed (HTTP 503)"
+              if [ -n "$HEALTH_BODY" ]; then
+                MESSAGE=$(echo "$HEALTH_BODY" | jq -r '.details.message // empty' 2>/dev/null)
+                [ -n "$MESSAGE" ] && echo "  Message: $MESSAGE"
+              fi
+            else
+              echo "Health check returned HTTP $HEALTH_CODE"
+            fi
+            
+            sleep 2
+          done
+          
+          # If we get here, API never became ready
+          echo "::error::API did not become ready after $((MAX_ATTEMPTS * 2)) seconds"
+          echo "::error::Last health check status: $HEALTH_CODE"
+          if [ -n "$HEALTH_BODY" ]; then
+            echo "::error::Last health response: $HEALTH_BODY"
+          fi
+          exit 1
+      
+      - name: Validate input parameters
+        run: |
+          CONCURRENT_USERS="${{ github.event.inputs.concurrent_users || '50' }}"
+          TEST_DURATION="${{ github.event.inputs.test_duration || '60' }}"
+          
+          # Validate CONCURRENT_USERS
+          if ! [[ "$CONCURRENT_USERS" =~ ^[0-9]+$ ]]; then
+            echo "::error::CONCURRENT_USERS must be a positive integer. Got: '$CONCURRENT_USERS'"
+            exit 1
+          fi
+          
+          if [ "$CONCURRENT_USERS" -lt 1 ] || [ "$CONCURRENT_USERS" -gt 1000 ]; then
+            echo "::error::CONCURRENT_USERS must be between 1 and 1000. Got: $CONCURRENT_USERS"
+            exit 1
+          fi
+          
+          # Validate TEST_DURATION
+          if ! [[ "$TEST_DURATION" =~ ^[0-9]+$ ]]; then
+            echo "::error::TEST_DURATION must be a positive integer. Got: '$TEST_DURATION'"
+            exit 1
+          fi
+          
+          if [ "$TEST_DURATION" -lt 10 ] || [ "$TEST_DURATION" -gt 3600 ]; then
+            echo "::error::TEST_DURATION must be between 10 and 3600 seconds. Got: $TEST_DURATION"
+            exit 1
+          fi
+          
+          echo "✅ Input validation passed: CONCURRENT_USERS=$CONCURRENT_USERS, TEST_DURATION=$TEST_DURATION"
+      
+      - name: Run load test
+        run: |
+          CONCURRENT_USERS="${{ github.event.inputs.concurrent_users || '50' }}"
+          TEST_DURATION="${{ github.event.inputs.test_duration || '60' }}"
+          
+          echo "Running load test with $CONCURRENT_USERS users for $TEST_DURATION seconds"
+          
+          CONCURRENT_USERS="$CONCURRENT_USERS" \
+          TEST_DURATION="$TEST_DURATION" \
+          node tests/load/simple-load-test.js
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: tests/load/results/
+          retention-days: 30
+      
+      - name: Check performance targets
+        run: |
+          # Read the latest summary file using find for better reliability
+          SUMMARY=$(find tests/load/results -name "simple-load-test-summary_*.md" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+          
+          # Check if summary file exists
+          if [ -z "$SUMMARY" ] || [ ! -f "$SUMMARY" ]; then
+            echo "::error::No load test summary file found in tests/load/results/"
+            {
+              echo "## Load Test Results"
+              echo ""
+              echo "❌ **Error**: No load test summary file was generated."
+              echo ""
+              echo "This may indicate the load test failed to complete or didn't generate results."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          
+          {
+            echo "## Load Test Results"
+            echo ""
+            cat "$SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
+          
+          # Check if targets were met
+          if grep -q "❌" "$SUMMARY"; then
+            echo "::error::Performance targets not met. See summary for details."
+            exit 1
+          else
+            echo "::notice::All performance targets met!"
+          fi
+      
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f .pid ]; then
+            kill "$(cat .pid)" || true
+          fi
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Define safe base directory
+            const SAFE_BASE_DIR = 'tests/load/results';
+            
+            // Function to validate and sanitize paths
+            function getSafePath(filename) {
+              const normalized = path.normalize(path.join(SAFE_BASE_DIR, filename));
+              const resolved = path.resolve(normalized);
+              const baseResolved = path.resolve(SAFE_BASE_DIR);
+              
+              // Ensure the resolved path is within the safe directory
+              if (!resolved.startsWith(baseResolved)) {
+                throw new Error('Path traversal attempt detected');
+              }
+              
+              return resolved;
+            }
+            
+            // Check if results directory exists
+            try {
+              const safeResultsDir = path.resolve(SAFE_BASE_DIR);
+              if (!fs.existsSync(safeResultsDir)) {
+                const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No results directory found.\n\nThe load test may have failed to run or generate results.`;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: errorComment
+                });
+                
+                core.setFailed('No load test results directory found');
+                return;
+              }
+              
+              const summaryFiles = fs.readdirSync(safeResultsDir)
+                .filter(f => f.startsWith('simple-load-test-summary_') && f.endsWith('.md'))
+                .sort()
+                .reverse();
+              
+              if (summaryFiles.length > 0) {
+                const safeFilePath = getSafePath(summaryFiles[0]);
+                const summary = fs.readFileSync(safeFilePath, 'utf8');
+                
+                const comment = `## 🚀 Load Test Results\n\n${summary}`;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              } else {
+                const errorComment = `## 🚀 Load Test Results\n\n❌ **Error**: No load test summary files found.\n\nThe load test completed but didn't generate summary files.`;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: errorComment
+                });
+                
+                core.setFailed('No load test summary files found');
+              }
+            } catch (error) {
+              core.setFailed(`Security error: ${error.message}`);
+            }

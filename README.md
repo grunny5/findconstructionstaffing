@@ -218,6 +218,9 @@ npm install
 # Set up environment variables
 cp .env.example .env.local
 
+# Seed the database (required for development)
+npm run seed
+
 # Run development server
 npm run dev
 ```
@@ -282,6 +285,33 @@ The project includes a comprehensive database seeding script for development and
 - **35 Regions**: US states with agencies
 - **60 Agency-Trade Relationships**: Specialization mappings
 - **58 Agency-Region Relationships**: Service area mappings
+
+## Deployment
+
+### Vercel Deployment
+
+The project is configured for deployment on Vercel with automatic CI/CD:
+
+1. **Environment Setup**: Configure environment variables in Vercel before deploying
+   - See [docs/deployment/vercel-env-setup.md](docs/deployment/vercel-env-setup.md) for detailed instructions
+   - Quick setup: `bash scripts/setup-vercel-env.sh`
+
+2. **Automatic Deployments**:
+   - **Production**: Merges to `main` branch
+   - **Staging**: Pushes to `staging` branch  
+   - **Preview**: All pull requests
+
+3. **Manual Deployment**:
+   ```bash
+   vercel --prod  # Deploy to production
+   vercel         # Deploy preview
+   ```
+
+4. **Required Environment Variables**:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+   - `SUPABASE_SERVICE_ROLE_KEY` - Service role key (for API routes)
+   - `MONITORING_API_KEY` - Optional, for metrics endpoint
 
 ## Contributing
 

@@ -31,7 +31,7 @@ async function runVerificationQueries() {
   
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   );
   
   const results = {};
@@ -41,41 +41,61 @@ async function runVerificationQueries() {
   
   try {
     // Count agencies
-    const { count: agencyCount } = await supabase
+    const { count: agencyCount, error: agencyError } = await supabase
       .from('agencies')
       .select('*', { count: 'exact', head: true });
+    
+    if (agencyError) {
+      throw new Error(`Failed to count agencies: ${agencyError.message}`);
+    }
     
     results.agencyCount = agencyCount || 0;
     console.log(`   Agencies: ${results.agencyCount}`);
     
     // Count trades
-    const { count: tradeCount } = await supabase
+    const { count: tradeCount, error: tradeError } = await supabase
       .from('trades')
       .select('*', { count: 'exact', head: true });
+    
+    if (tradeError) {
+      throw new Error(`Failed to count trades: ${tradeError.message}`);
+    }
     
     results.tradeCount = tradeCount || 0;
     console.log(`   Trades: ${results.tradeCount}`);
     
     // Count regions
-    const { count: regionCount } = await supabase
+    const { count: regionCount, error: regionError } = await supabase
       .from('regions')
       .select('*', { count: 'exact', head: true });
+    
+    if (regionError) {
+      throw new Error(`Failed to count regions: ${regionError.message}`);
+    }
     
     results.regionCount = regionCount || 0;
     console.log(`   Regions: ${results.regionCount}`);
     
     // Count agency-trade relationships
-    const { count: agencyTradeCount } = await supabase
+    const { count: agencyTradeCount, error: agencyTradeError } = await supabase
       .from('agency_trades')
       .select('*', { count: 'exact', head: true });
+    
+    if (agencyTradeError) {
+      throw new Error(`Failed to count agency-trade relationships: ${agencyTradeError.message}`);
+    }
     
     results.agencyTradeCount = agencyTradeCount || 0;
     console.log(`   Agency-Trade Links: ${results.agencyTradeCount}`);
     
     // Count agency-region relationships
-    const { count: agencyRegionCount } = await supabase
+    const { count: agencyRegionCount, error: agencyRegionError } = await supabase
       .from('agency_regions')
       .select('*', { count: 'exact', head: true });
+    
+    if (agencyRegionError) {
+      throw new Error(`Failed to count agency-region relationships: ${agencyRegionError.message}`);
+    }
     
     results.agencyRegionCount = agencyRegionCount || 0;
     console.log(`   Agency-Region Links: ${results.agencyRegionCount}`);
@@ -98,7 +118,11 @@ async function runVerificationQueries() {
       `)
       .limit(10);
     
-    if (!error && agenciesWithTrades) {
+    if (error) {
+      throw new Error(`Failed to get agencies with trades: ${error.message}`);
+    }
+    
+    if (agenciesWithTrades) {
       console.log('   Agencies with trade counts:');
       agenciesWithTrades.forEach(agency => {
         // Safely extract count from agency_trades
@@ -157,7 +181,11 @@ async function runVerificationQueries() {
       `)
       .limit(10);
     
-    if (!error && agenciesWithRegions) {
+    if (error) {
+      throw new Error(`Failed to get agencies with regions: ${error.message}`);
+    }
+    
+    if (agenciesWithRegions) {
       console.log('   Agencies with region counts:');
       agenciesWithRegions.forEach(agency => {
         // Safely extract count from agency_regions
@@ -207,13 +235,21 @@ async function runVerificationQueries() {
   
   try {
     // Check for trades not linked to any agency
-    const { data: allTrades } = await supabase
+    const { data: allTrades, error: allTradesError } = await supabase
       .from('trades')
       .select('id, name');
     
-    const { data: linkedTrades } = await supabase
+    if (allTradesError) {
+      throw new Error(`Failed to get all trades: ${allTradesError.message}`);
+    }
+    
+    const { data: linkedTrades, error: linkedTradesError } = await supabase
       .from('agency_trades')
       .select('trade_id');
+    
+    if (linkedTradesError) {
+      throw new Error(`Failed to get linked trades: ${linkedTradesError.message}`);
+    }
     
     if (allTrades && linkedTrades) {
       const linkedTradeIds = new Set(linkedTrades.map(lt => lt.trade_id));
@@ -228,13 +264,21 @@ async function runVerificationQueries() {
     }
     
     // Check for regions not linked to any agency
-    const { data: allRegions } = await supabase
+    const { data: allRegions, error: allRegionsError } = await supabase
       .from('regions')
       .select('id, name, state_code');
     
-    const { data: linkedRegions } = await supabase
+    if (allRegionsError) {
+      throw new Error(`Failed to get all regions: ${allRegionsError.message}`);
+    }
+    
+    const { data: linkedRegions, error: linkedRegionsError } = await supabase
       .from('agency_regions')
       .select('region_id');
+    
+    if (linkedRegionsError) {
+      throw new Error(`Failed to get linked regions: ${linkedRegionsError.message}`);
+    }
     
     if (allRegions && linkedRegions) {
       const linkedRegionIds = new Set(linkedRegions.map(lr => lr.region_id));
@@ -256,9 +300,13 @@ async function runVerificationQueries() {
   
   try {
     // Check for duplicate slugs
-    const { data: agencies } = await supabase
+    const { data: agencies, error: slugError } = await supabase
       .from('agencies')
       .select('slug');
+    
+    if (slugError) {
+      throw new Error(`Failed to get agency slugs: ${slugError.message}`);
+    }
     
     if (agencies) {
       const slugs = agencies.map(a => a.slug);
@@ -272,10 +320,14 @@ async function runVerificationQueries() {
     }
     
     // Check for missing required fields
-    const { data: incompleteAgencies } = await supabase
+    const { data: incompleteAgencies, error: incompleteError } = await supabase
       .from('agencies')
       .select('name')
       .or('name.is.null,slug.is.null');
+    
+    if (incompleteError) {
+      throw new Error(`Failed to check incomplete agencies: ${incompleteError.message}`);
+    }
     
     if (incompleteAgencies && incompleteAgencies.length > 0) {
       console.log(`   ⚠️  ${incompleteAgencies.length} agencies with missing required fields`);
@@ -284,9 +336,13 @@ async function runVerificationQueries() {
     }
     
     // Check boolean field consistency
-    const { data: booleanStats } = await supabase
+    const { data: booleanStats, error: booleanError } = await supabase
       .from('agencies')
       .select('is_active, is_claimed, is_union, offers_per_diem');
+    
+    if (booleanError) {
+      throw new Error(`Failed to get boolean stats: ${booleanError.message}`);
+    }
     
     if (booleanStats && booleanStats.length > 0) {
       const activeCount = booleanStats.filter(a => a.is_active).length;

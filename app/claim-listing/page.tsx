@@ -92,7 +92,7 @@ export default function ClaimListingPage() {
             </h1>
             <p className="text-lg text-gray-600 mb-8">
               Your claim request has been received and is under review. 
-              We'll contact you within 2 business days to verify your ownership.
+              We&apos;ll contact you within 2 business days to verify your ownership.
             </p>
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <h3 className="font-semibold text-lg mb-4">What happens next?</h3>
@@ -110,7 +110,7 @@ export default function ClaimListingPage() {
                     <span className="text-sm font-semibold text-blue-600">2</span>
                   </div>
                   <p className="text-gray-600">
-                    We'll contact you via email to confirm your identity and role
+                    We&apos;ll contact you via email to confirm your identity and role
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -118,7 +118,7 @@ export default function ClaimListingPage() {
                     <span className="text-sm font-semibold text-blue-600">3</span>
                   </div>
                   <p className="text-gray-600">
-                    Once verified, you'll receive login credentials to manage your listing
+                    Once verified, you&apos;ll receive login credentials to manage your listing
                   </p>
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function ClaimListingPage() {
             <Alert className="mb-8">
               <Building2 className="h-4 w-4" />
               <AlertDescription>
-                <strong>Free to claim:</strong> All agency listings are free. Once verified, you'll be able to 
+                <strong>Free to claim:</strong> All agency listings are free. Once verified, you&apos;ll be able to 
                 edit your profile, manage leads, and enhance your visibility to potential clients.
               </AlertDescription>
             </Alert>
@@ -219,9 +219,9 @@ export default function ClaimListingPage() {
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           <Building2 className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                          <p>No agencies found matching "{searchTerm}"</p>
+                          <p>No agencies found matching &quot;{searchTerm}&quot;</p>
                           <p className="text-sm mt-1">
-                            Can't find your agency? Contact us to get it added.
+                            Can&apos;t find your agency? Contact us to get it added.
                           </p>
                         </div>
                       )}
@@ -317,7 +317,7 @@ export default function ClaimListingPage() {
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        We'll verify your claim within 2 business days. If your email domain matches the agency website, 
+                        We&apos;ll verify your claim within 2 business days. If your email domain matches the agency website, 
                         verification will be automatic. Otherwise, we may request additional documentation.
                       </AlertDescription>
                     </Alert>

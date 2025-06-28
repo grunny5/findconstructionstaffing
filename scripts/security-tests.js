@@ -81,8 +81,9 @@ async function runSecurityTests() {
         .insert(test.data)
         .select();
       
-      if (error && error.message?.includes('new row violates row-level security policy')) {
-        console.log(`✅ PASS - ${test.operation} on ${test.table} blocked`);
+      // Check for RLS policy violation (error code 42501)
+      if (error && (error.code === '42501' || error.message?.includes('row-level security policy'))) {
+        console.log(`✅ PASS - ${test.operation} on ${test.table} blocked (RLS)`);
         results.passed++;
         results.tests.push({ 
           name: `Block ${test.operation} on ${test.table}`, 
@@ -90,6 +91,9 @@ async function runSecurityTests() {
         });
       } else {
         console.log(`❌ FAIL - ${test.operation} on ${test.table} should be blocked!`);
+        if (error) {
+          console.log(`   Error code: ${error.code}, Message: ${error.message}`);
+        }
         results.failed++;
         results.tests.push({ 
           name: `Block ${test.operation} on ${test.table}`, 
@@ -118,12 +122,16 @@ async function runSecurityTests() {
         .update({ name: 'Hacked Name' })
         .eq('id', agencies[0].id);
       
-      if (error && error.message?.includes('violates row-level security policy')) {
+      // Check for RLS policy violation (error code 42501)
+      if (error && (error.code === '42501' || error.message?.includes('row-level security policy'))) {
         console.log('✅ PASS - UPDATE operations blocked by RLS');
         results.passed++;
         results.tests.push({ name: 'Block UPDATE operations', status: 'PASS' });
       } else {
         console.log('❌ FAIL - UPDATE should be blocked!');
+        if (error) {
+          console.log(`   Error code: ${error.code}, Message: ${error.message}`);
+        }
         results.failed++;
         results.tests.push({ name: 'Block UPDATE operations', status: 'FAIL' });
       }
@@ -160,12 +168,16 @@ async function runSecurityTests() {
         .delete()
         .eq('id', agencies[0].id);
       
-      if (error && error.message?.includes('violates row-level security policy')) {
+      // Check for RLS policy violation (error code 42501)
+      if (error && (error.code === '42501' || error.message?.includes('row-level security policy'))) {
         console.log('✅ PASS - DELETE operations blocked by RLS');
         results.passed++;
         results.tests.push({ name: 'Block DELETE operations', status: 'PASS' });
       } else {
         console.log('❌ FAIL - DELETE should be blocked!');
+        if (error) {
+          console.log(`   Error code: ${error.code}, Message: ${error.message}`);
+        }
         results.failed++;
         results.tests.push({ name: 'Block DELETE operations', status: 'FAIL' });
       }
@@ -251,12 +263,16 @@ async function runSecurityTests() {
         trade_id: '00000000-0000-0000-0000-000000000000'
       });
     
-    if (error && error.message?.includes('violates row-level security policy')) {
+    // Check for RLS policy violation (error code 42501)
+    if (error && (error.code === '42501' || error.message?.includes('row-level security policy'))) {
       console.log('✅ PASS - Junction table INSERT blocked');
       results.passed++;
       results.tests.push({ name: 'Junction table security', status: 'PASS' });
     } else {
       console.log('❌ FAIL - Junction table should block INSERT!');
+      if (error) {
+        console.log(`   Error code: ${error.code}, Message: ${error.message}`);
+      }
       results.failed++;
       results.tests.push({ name: 'Junction table security', status: 'FAIL' });
     }
@@ -393,7 +409,15 @@ async function runSecurityTests() {
   }
   
   // Save test results
-  const reportPath = path.join(__dirname, '..', 'docs', 'security-test-results.json');
+  const docsDir = path.join(__dirname, '..', 'docs');
+  const reportPath = path.join(docsDir, 'security-test-results.json');
+  
+  // Ensure docs directory exists
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
+    console.log(`📁 Created directory: ${docsDir}`);
+  }
+  
   fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
   console.log(`\n📄 Security test results saved to: ${reportPath}`);
   
