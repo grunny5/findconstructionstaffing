@@ -253,7 +253,7 @@ The following test files have been successfully migrated to the centralized mock
 - `app/api/agencies/__tests__/search.test.ts` (8 tests)
 - `app/api/agencies/__tests__/pagination.test.ts` (migrated earlier)
 - `app/api/agencies/__tests__/integration.test.ts` (migrated earlier)
-- `app/api/agencies/__tests__/health.test.ts` (migrated earlier)
+- `app/api/health/__tests__/route.test.ts` (migrated earlier)
 - `app/api/agencies/__tests__/trade-filter.test.ts` (12 tests) - Uses `configureMockForFilters`
 
 ### Migration Complete ✅

@@ -21,7 +21,7 @@ describe('IP Extraction Utilities', () => {
     if (originalSalt !== undefined) {
       process.env.IP_HASH_SALT = originalSalt;
     } else {
-      delete process.env.IP_HASH_SALT;
+      process.env.IP_HASH_SALT = undefined;
     }
   });
   describe('hashIpForRateLimiting', () => {
