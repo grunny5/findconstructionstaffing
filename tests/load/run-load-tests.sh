@@ -137,15 +137,15 @@ fi
 
 # Run baseline test first
 echo "1️⃣ BASELINE TEST (1 user, 100 iterations)"
-run_test "baseline" "--config tests/load/config/load-test-config.js -s baselineTest:tests/load/agencies-api.k6.js"
+run_test "baseline" "--config tests/load/config/load-test-config.js -s baselineTest"
 
 # Run smoke test
 echo "2️⃣ SMOKE TEST (5 users, 1.5 minutes)"
-run_test "smoke" "--config tests/load/config/load-test-config.js -s smokeTest:tests/load/agencies-api.k6.js"
+run_test "smoke" "--config tests/load/config/load-test-config.js -s smokeTest"
 
 # Run main load test
 echo "3️⃣ LOAD TEST (100 users, 9 minutes)"
-run_test "load" "--config tests/load/config/load-test-config.js -s loadTest:tests/load/agencies-api.k6.js"
+run_test "load" "--config tests/load/config/load-test-config.js -s loadTest"
 
 # Optional: Run stress test
 should_run_stress=""
@@ -173,7 +173,7 @@ fi
 # Run stress test if requested
 if [[ "$should_run_stress" == "true" ]]; then
     echo "4️⃣ STRESS TEST (up to 400 users, 15 minutes)"
-    run_test "stress" "--config tests/load/config/load-test-config.js -s stressTest:tests/load/agencies-api.k6.js"
+    run_test "stress" "--config tests/load/config/load-test-config.js -s stressTest"
 else
     echo "Skipping stress test"
 fi
