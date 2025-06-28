@@ -2,6 +2,18 @@
 
 # Load test runner script for agencies API
 # This script runs various load test scenarios and generates reports
+#
+# Usage:
+#   ./run-load-tests.sh [options]
+#
+# Options:
+#   --run-stress     Run the stress test without prompting
+#   --skip-stress    Skip the stress test without prompting
+#   --help           Show this help message
+#
+# Environment variables:
+#   RUN_STRESS_TEST  Set to 'true' or 'false' to control stress test execution
+#   CI               When set, disables interactive prompts
 
 set -e
 
@@ -15,6 +27,61 @@ NC='\033[0m' # No Color
 BASE_URL="${BASE_URL:-http://localhost:3000}"
 RESULTS_DIR="tests/load/results"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Default values
+RUN_STRESS=""
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --run-stress)
+            RUN_STRESS="true"
+            shift
+            ;;
+        --skip-stress)
+            RUN_STRESS="false"
+            shift
+            ;;
+        --help)
+            echo "Load test runner for agencies API"
+            echo ""
+            echo "Usage:"
+            echo "  $0 [options]"
+            echo ""
+            echo "Options:"
+            echo "  --run-stress     Run the stress test without prompting"
+            echo "  --skip-stress    Skip the stress test without prompting"
+            echo "  --help           Show this help message"
+            echo ""
+            echo "Environment variables:"
+            echo "  BASE_URL         API base URL (default: http://localhost:3000)"
+            echo "  RUN_STRESS_TEST  Set to 'true' or 'false' to control stress test"
+            echo "  CI               When set, disables interactive prompts"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Check environment variable if command line arg not provided
+if [[ -z "$RUN_STRESS" ]] && [[ -n "$RUN_STRESS_TEST" ]]; then
+    case "${RUN_STRESS_TEST,,}" in  # Convert to lowercase
+        true|yes|y|1)
+            RUN_STRESS="true"
+            ;;
+        false|no|n|0)
+            RUN_STRESS="false"
+            ;;
+        *)
+            echo "Warning: Invalid RUN_STRESS_TEST value: $RUN_STRESS_TEST"
+            echo "Expected: true, false, yes, no, y, n, 1, or 0"
+            ;;
+    esac
+fi
 
 # Create results directory
 mkdir -p "$RESULTS_DIR"
@@ -79,11 +146,34 @@ echo "3️⃣ LOAD TEST (100 users, 9 minutes)"
 run_test "load" "--config tests/load/config/load-test-config.js -s loadTest:tests/load/agencies-api.k6.js"
 
 # Optional: Run stress test
-read -p "Do you want to run the stress test? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+should_run_stress=""
+
+# Determine if we should run the stress test
+if [[ -n "$RUN_STRESS" ]]; then
+    # Command line argument or environment variable was provided
+    should_run_stress="$RUN_STRESS"
+elif [[ -n "$CI" ]] || [[ ! -t 0 ]]; then
+    # In CI or non-interactive environment, skip stress test by default
+    echo "Running in non-interactive mode (CI or no TTY detected)"
+    echo "Skipping stress test. Use --run-stress or RUN_STRESS_TEST=true to include it."
+    should_run_stress="false"
+else
+    # Interactive environment - prompt user
+    read -p "Do you want to run the stress test? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        should_run_stress="true"
+    else
+        should_run_stress="false"
+    fi
+fi
+
+# Run stress test if requested
+if [[ "$should_run_stress" == "true" ]]; then
     echo "4️⃣ STRESS TEST (up to 400 users, 15 minutes)"
     run_test "stress" "--config tests/load/config/load-test-config.js -s stressTest:tests/load/agencies-api.k6.js"
+else
+    echo "Skipping stress test"
 fi
 
 # Generate summary report

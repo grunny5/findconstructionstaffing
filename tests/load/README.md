@@ -7,6 +7,27 @@ This directory contains load testing scripts for the GET /api/agencies endpoint 
 - ✅ Support for 100 concurrent users
 - ✅ Stable performance with 1000+ agencies in database
 
+## Quick Start
+
+### Running the Comprehensive Test Suite
+
+```bash
+# Interactive mode (will prompt for stress test)
+./tests/load/run-load-tests.sh
+
+# CI/CD mode - skip stress test (default)
+./tests/load/run-load-tests.sh --skip-stress
+
+# CI/CD mode - include stress test
+./tests/load/run-load-tests.sh --run-stress
+
+# Using environment variables
+RUN_STRESS_TEST=true ./tests/load/run-load-tests.sh
+CI=true ./tests/load/run-load-tests.sh  # Auto-detects CI environment
+```
+
+For detailed CI/CD integration, see [CI Integration Guide](./docs/ci-integration.md).
+
 ## Available Load Tests
 
 ### 1. Simple Load Test (No Dependencies)
