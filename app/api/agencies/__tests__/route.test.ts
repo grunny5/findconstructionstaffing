@@ -11,21 +11,7 @@ import {
 import { PerformanceMonitor, ErrorRateTracker } from '@/lib/monitoring/performance';
 
 // Mock performance monitoring
-jest.mock('@/lib/monitoring/performance', () => ({
-  PerformanceMonitor: jest.fn().mockImplementation(() => ({
-    startQuery: jest.fn(),
-    endQuery: jest.fn(),
-    complete: jest.fn().mockReturnValue({
-      responseTime: 50,
-      queryTime: 30
-    })
-  })),
-  ErrorRateTracker: {
-    getInstance: jest.fn().mockReturnValue({
-      recordRequest: jest.fn()
-    })
-  }
-}));
+jest.mock('@/lib/monitoring/performance');
 
 // Mock NextResponse
 jest.mock('next/server', () => ({
@@ -64,11 +50,40 @@ jest.mock('@/lib/supabase', () => {
   };
 });
 
+// Helper function to create monitoring mocks
+function createMonitoringMocks() {
+  const mockMonitor = {
+    startQuery: jest.fn(),
+    endQuery: jest.fn(),
+    complete: jest.fn().mockReturnValue({
+      responseTime: 50,
+      queryTime: 30
+    })
+  };
+  
+  const mockErrorTracker = {
+    recordRequest: jest.fn()
+  };
+  
+  return { mockMonitor, mockErrorTracker };
+}
+
 describe('GET /api/agencies', () => {
   const { supabase: mockSupabase } = require('@/lib/supabase');
+  let mockMonitor: any;
+  let mockErrorTracker: any;
   
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Setup monitoring mocks
+    const mocks = createMonitoringMocks();
+    mockMonitor = mocks.mockMonitor;
+    mockErrorTracker = mocks.mockErrorTracker;
+    
+    (PerformanceMonitor as jest.Mock).mockImplementation(() => mockMonitor);
+    (ErrorRateTracker.getInstance as jest.Mock).mockReturnValue(mockErrorTracker);
+    
     // Reset mock return values to default chaining
     mockSupabase.from.mockReturnValue(mockSupabase);
     mockSupabase.select.mockReturnValue(mockSupabase);
@@ -331,25 +346,7 @@ describe('GET /api/agencies', () => {
   });
 
   describe('Performance Monitoring', () => {
-    let mockMonitor: any;
-    let mockErrorTracker: any;
-
-    beforeEach(() => {
-      mockMonitor = {
-        startQuery: jest.fn(),
-        endQuery: jest.fn(),
-        complete: jest.fn().mockReturnValue({
-          responseTime: 50,
-          queryTime: 30
-        })
-      };
-      mockErrorTracker = {
-        recordRequest: jest.fn()
-      };
-
-      (PerformanceMonitor as jest.Mock).mockImplementation(() => mockMonitor);
-      (ErrorRateTracker.getInstance as jest.Mock).mockReturnValue(mockErrorTracker);
-    });
+    // Using mockMonitor and mockErrorTracker from parent scope
 
     it('should initialize performance monitoring', async () => {
       mockSupabase.order.mockResolvedValueOnce({

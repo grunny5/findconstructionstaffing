@@ -51,6 +51,21 @@ We believe that by building a **GET /api/agencies endpoint** for **Construction 
 * [ ] **Given** an offset parameter, **When** I query with `?offset=20&limit=10`, **Then** agencies 21-30 are returned
 * [ ] **Given** any query, **When** results are returned, **Then** the total count is included in the response
 
+### Story 5: Filter by Union Status **[P1 - Sprint 1]**
+> As a **Construction Company**, I want to **filter agencies by union affiliation**, so that **I can find agencies that match my project's labor requirements**.
+
+**Acceptance Criteria:**
+* [ ] **Given** a union filter, **When** I query with `?is_union=true`, **Then** only union-affiliated agencies are returned
+* [ ] **Given** a non-union filter, **When** I query with `?is_union=false`, **Then** only non-union agencies are returned
+* [ ] **Given** no union filter, **When** I query the API, **Then** both union and non-union agencies are returned
+
+### Story 6: Filter by Per Diem Offering **[P1 - Sprint 1]**
+> As a **Construction Company**, I want to **filter agencies that offer per diem**, so that **I can find agencies suitable for out-of-town projects**.
+
+**Acceptance Criteria:**
+* [ ] **Given** a per diem filter, **When** I query with `?offers_per_diem=true`, **Then** only agencies offering per diem are returned
+* [ ] **Given** combined filters, **When** I query with `?offers_per_diem=true&is_union=true`, **Then** only union agencies with per diem are returned
+
 ## 3. Technical & Design Requirements
 
 ### API Design
@@ -63,6 +78,11 @@ We believe that by building a **GET /api/agencies endpoint** for **Construction 
 - `states[]` (array): Filter by state codes (e.g., "TX", "CA")
 - `limit` (number): Number of results per page (default: 20, max: 100)
 - `offset` (number): Number of results to skip (default: 0)
+
+**Future Parameters (Per Prioritized Questions):**
+- `is_union` (boolean): Filter by union status - **[P1 - Sprint 1]**
+- `offers_per_diem` (boolean): Filter by per diem offering - **[P1 - Sprint 1]**
+- `include_aggregates` (boolean): Include filter counts - **[P2 - Sprint 2]**
 
 **Response Format:**
 ```typescript
@@ -131,11 +151,29 @@ We believe that by building a **GET /api/agencies endpoint** for **Construction 
 - Agency claiming/management endpoints
 - POST/PUT/DELETE operations
 
-### Open Questions
-* [ ] Should we implement result ranking/scoring for search results?
-* [ ] Do we need to support filtering by other agency attributes (union, per diem)?
-* [ ] Should the API return aggregate counts for filter options?
-* [ ] What should be the exact structure for included trades/regions data?
+### Open Questions (Prioritized)
+
+#### High Priority - Sprint 1
+* [ ] **[P1]** Do we need to support filtering by other agency attributes (union, per diem)?
+  - **Impact**: Critical for user experience - construction companies often specifically need union or non-union workers
+  - **Implementation**: Add `is_union` and `offers_per_diem` as query parameters
+  - **Acceptance Criteria**: Add boolean filters in Sprint 1 implementation
+
+* [ ] **[P1]** Should we implement result ranking/scoring for search results?
+  - **Impact**: Directly affects search quality and user satisfaction
+  - **Implementation**: Weight matches by field (name > description) and boost exact matches
+  - **Acceptance Criteria**: Implement basic relevance scoring in Sprint 1
+
+#### Medium Priority - Sprint 2
+* [ ] **[P2]** Should the API return aggregate counts for filter options?
+  - **Impact**: Enables faceted search UI (e.g., "Electricians (12)", "Plumbers (8)")
+  - **Implementation**: Add optional `include_aggregates` parameter
+  - **Future Enhancement**: Defer to Sprint 2 for performance optimization
+
+#### Low Priority - Already Resolved
+* [ ] **[P3]** ~~What should be the exact structure for included trades/regions data?~~
+  - **Status**: ✅ Resolved - Structure defined in TypeScript interfaces
+  - **Current Implementation**: Nested objects with flattened properties
 
 ## 5. Implementation Notes
 

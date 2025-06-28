@@ -1,4 +1,11 @@
 // Centralized Supabase mock setup for tests
+//
+// This file provides two approaches for mocking Supabase:
+// 1. Module-level mock (default) - Automatically mocked for all tests
+// 2. Runtime mock - Use setupSupabaseMockRuntime() for dynamic mocking
+//
+// For most tests, the module-level mock is sufficient. Use runtime mocking
+// only when you need to change mock behavior during test execution.
 
 // Define all Supabase method names for type safety
 type SupabaseMethod = 
@@ -162,6 +169,24 @@ export function resetSupabaseMock(mock) {
   // Reset error state
   mock._error = null;
   mock._throwError = false;
+}
+
+// Runtime mock setup function (use only if you need dynamic mocking)
+// For most cases, the module-level mock above is sufficient
+export function setupSupabaseMockRuntime(config?: SupabaseMockConfig) {
+  const mockSupabase = createSupabaseMock(config);
+  
+  // Use doMock for runtime mocking (not hoisted)
+  jest.doMock('@/lib/supabase', () => {
+    const { createSlug, formatPhoneNumber } = require('@/lib/utils/formatting');
+    return {
+      supabase: mockSupabase,
+      createSlug,
+      formatPhoneNumber
+    };
+  });
+  
+  return mockSupabase;
 }
 
 // Helper to configure mock for specific test scenarios
