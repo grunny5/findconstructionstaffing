@@ -2,12 +2,17 @@
 
 # Test script to verify run-load-tests.sh works correctly in different scenarios
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUN_LOAD_TESTS="$SCRIPT_DIR/run-load-tests.sh"
+
 echo "Testing run-load-tests.sh in various scenarios..."
 echo "=============================================="
+echo "Script location: $RUN_LOAD_TESTS"
 
 # Test 1: Help option
 echo -e "\n1. Testing --help option:"
-./tests/load/run-load-tests.sh --help > /dev/null 2>&1
+"$RUN_LOAD_TESTS" --help > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "✓ Help option works"
 else
@@ -16,7 +21,7 @@ fi
 
 # Test 2: Invalid option
 echo -e "\n2. Testing invalid option:"
-./tests/load/run-load-tests.sh --invalid-option > /dev/null 2>&1
+"$RUN_LOAD_TESTS" --invalid-option > /dev/null 2>&1
 if [ $? -eq 1 ]; then
     echo "✓ Invalid option correctly rejected"
 else
@@ -47,17 +52,17 @@ unset CI
 # Test 6: Non-interactive detection
 echo -e "\n6. Testing non-interactive detection:"
 echo "   Running with no stdin should skip prompts"
-echo "" | ./tests/load/run-load-tests.sh --help > /dev/null 2>&1
+echo "" | "$RUN_LOAD_TESTS" --help > /dev/null 2>&1
 
 echo -e "\n=============================================="
 echo "Test scenarios completed. Manual verification required for actual execution."
 echo ""
 echo "Example usage in CI:"
 echo "  # Skip stress test (default in CI)"
-echo "  CI=true ./tests/load/run-load-tests.sh"
+echo "  CI=true $RUN_LOAD_TESTS"
 echo ""
 echo "  # Run with stress test in CI"
-echo "  CI=true RUN_STRESS_TEST=true ./tests/load/run-load-tests.sh"
+echo "  CI=true RUN_STRESS_TEST=true $RUN_LOAD_TESTS"
 echo ""
 echo "  # Or using command line"
-echo "  ./tests/load/run-load-tests.sh --run-stress"
+echo "  $RUN_LOAD_TESTS --run-stress"
