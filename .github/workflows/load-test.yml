@@ -105,7 +105,7 @@ jobs:
                   if [ "$API_CODE" = "200" ]; then
                     # Verify response structure
                     if echo "$API_BODY" | jq -e '.data | type == "array"' > /dev/null 2>&1 && \
-                       echo "$API_BODY" | jq -e '.pagination | has("total", "limit", "offset", "hasMore")' > /dev/null 2>&1; then
+                       echo "$API_BODY" | jq -e '.pagination | has("total") and has("limit") and has("offset") and has("hasMore")' > /dev/null 2>&1; then
                       echo "✓ API is fully operational and ready for load testing!"
                       echo "  - Health status: healthy"
                       echo "  - API response: valid"
