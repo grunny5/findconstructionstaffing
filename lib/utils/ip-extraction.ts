@@ -1,5 +1,12 @@
 import { NextRequest } from 'next/server';
 import { isIP, isIPv4, isIPv6 } from 'net';
+import { createHash } from 'crypto';
+
+/**
+ * Salt for IP hashing - In production, this should be an environment variable
+ * Using a constant salt ensures consistent hashing across the application
+ */
+const IP_HASH_SALT = process.env.IP_HASH_SALT || 'fcs-ip-hash-default-salt-2024';
 
 /**
  * Extracts and validates the client IP address from a Next.js request
@@ -83,10 +90,28 @@ function validateAndSanitizeIp(ip: string): string | null {
   // Remove any whitespace
   const trimmedIp = ip.trim();
   
-  // Remove port if present (e.g., "1.2.3.4:8080" -> "1.2.3.4")
-  const ipWithoutPort = trimmedIp.split(':').slice(0, -1).join(':') || trimmedIp;
+  // Remove port if present
+  let ipWithoutPort = trimmedIp;
   
-  // Handle IPv6 with brackets (e.g., "[::1]")
+  // Handle IPv6 with port: [2001:db8::1]:8080
+  if (trimmedIp.startsWith('[') && trimmedIp.includes(']:')) {
+    ipWithoutPort = trimmedIp.substring(1, trimmedIp.lastIndexOf(']:'));
+  } 
+  // Handle IPv4 with port: 1.2.3.4:8080
+  // Check if it looks like IPv4 (contains dots) before processing port
+  else if (trimmedIp.includes('.') && trimmedIp.includes(':')) {
+    const lastColonIndex = trimmedIp.lastIndexOf(':');
+    const potentialPort = trimmedIp.substring(lastColonIndex + 1);
+    
+    // Check if what comes after the colon is a valid port number or empty
+    if (/^\d*$/.test(potentialPort)) {
+      ipWithoutPort = trimmedIp.substring(0, lastColonIndex);
+    }
+  }
+  // For plain IPv6 addresses (no brackets, multiple colons), keep as is
+  // IPv6 addresses have at least 2 colons and no dots
+  
+  // Remove any remaining brackets for IPv6 addresses without ports
   const cleanIp = ipWithoutPort.replace(/^\[|\]$/g, '');
   
   // Validate using Node.js built-in IP validation
@@ -140,21 +165,37 @@ function isPrivateIp(ip: string): boolean {
 
 /**
  * Hashes an IP address for storage (e.g., in rate limiting)
- * This provides some privacy protection while still allowing rate limiting
+ * This provides privacy protection while still allowing rate limiting
+ * 
+ * Uses SHA-256 with salt to ensure:
+ * - IP addresses cannot be reverse-engineered from the hash
+ * - Same IP always produces the same hash (for rate limiting)
+ * - Different salts produce different hashes (security through configuration)
  * 
  * @param ip - The IP address to hash
- * @returns A hashed representation of the IP
+ * @returns A securely hashed representation of the IP
  */
 export function hashIpForRateLimiting(ip: string): string {
   if (ip === 'unknown') {
     // For unknown IPs, include a timestamp component to prevent
     // all unknown IPs from being rate limited together
     const timeSlot = Math.floor(Date.now() / (5 * 60 * 1000)); // 5-minute slots
-    return `unknown-${timeSlot}`;
+    // Hash the unknown identifier with timestamp for consistency
+    const unknownIdentifier = `unknown-${timeSlot}`;
+    return createHash('sha256')
+      .update(unknownIdentifier + IP_HASH_SALT)
+      .digest('hex')
+      .substring(0, 16); // Use first 16 chars for brevity
   }
   
-  // For known IPs, we can use the IP directly since we've already validated it
-  // In a production environment, you might want to use a proper hash function
-  // like crypto.createHash('sha256').update(ip + salt).digest('hex')
-  return ip;
+  // For known IPs, create a secure hash using SHA-256 with salt
+  // This prevents the raw IP from being exposed while maintaining
+  // consistent hashing for rate limiting purposes
+  const hash = createHash('sha256')
+    .update(ip + IP_HASH_SALT)
+    .digest('hex');
+  
+  // Return first 16 characters of the hash for efficiency
+  // This provides sufficient uniqueness while keeping storage compact
+  return hash.substring(0, 16);
 }
