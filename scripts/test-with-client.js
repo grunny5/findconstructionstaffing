@@ -11,8 +11,47 @@ async function testSupabaseClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
   console.log('📋 Configuration:');
-  console.log(`URL: ${url}`);
+  console.log(`URL: ${url || 'NOT SET'}`);
   console.log(`Key: ${key ? key.substring(0, 50) + '...' : 'NOT SET'}\n`);
+  
+  // Validate environment variables
+  const missingVars = [];
+  if (!url) {
+    missingVars.push('NEXT_PUBLIC_SUPABASE_URL');
+  }
+  if (!key) {
+    missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  }
+  
+  if (missingVars.length > 0) {
+    console.error('❌ Missing required environment variables:');
+    missingVars.forEach(varName => {
+      console.error(`   - ${varName}`);
+    });
+    console.error('\n📋 Please set these variables in your .env.local file:');
+    console.error('   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url');
+    console.error('   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key');
+    console.error('\n💡 You can find these values in your Supabase project dashboard.');
+    process.exit(1);
+  }
+  
+  // Additional validation for URL format
+  try {
+    new URL(url);
+  } catch (e) {
+    console.error('❌ Invalid NEXT_PUBLIC_SUPABASE_URL format');
+    console.error(`   Provided: ${url}`);
+    console.error('   Expected format: https://your-project.supabase.co');
+    process.exit(1);
+  }
+  
+  // Validate key format (basic check for JWT structure)
+  if (!key.match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/)) {
+    console.error('❌ Invalid NEXT_PUBLIC_SUPABASE_ANON_KEY format');
+    console.error('   The key should be a JWT token (three parts separated by dots)');
+    console.error('   Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi...');
+    process.exit(1);
+  }
   
   try {
     console.log('✅ Supabase client library loaded\n');
