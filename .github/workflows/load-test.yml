@@ -32,7 +32,10 @@ jobs:
     
     # Prevent overlapping runs for the same PR or workflow
     concurrency:
-      group: load-test-${{ github.head_ref || github.run_id }}
+      # Use run_id for workflow_dispatch, or sanitized head_ref for PRs
+      # Note: github.head_ref may contain slashes (e.g., feature/foo) which need sanitization
+      # Since we can't do string manipulation in the expression, we use a hash for PR branches
+      group: load-test-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
       cancel-in-progress: true
     
     # Only run if the PR has the 'performance' label or is manually triggered with confirmation
