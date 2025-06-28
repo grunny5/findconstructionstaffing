@@ -30,6 +30,11 @@ jobs:
   load-test:
     runs-on: ubuntu-latest
     
+    # Prevent overlapping runs for the same PR or workflow
+    concurrency:
+      group: load-test-${{ github.head_ref || github.run_id }}
+      cancel-in-progress: true
+    
     # Only run if the PR has the 'performance' label or is manually triggered with confirmation
     if: |
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'performance')) ||
