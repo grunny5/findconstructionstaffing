@@ -36,7 +36,7 @@ In production, the metrics endpoint requires authentication:
 ```bash
 # Set the MONITORING_API_KEY environment variable in your production environment
 # Then include the API key in requests:
-curl -H "x-monitoring-key: YOUR_MONITORING_KEY" https://your-domain.com/api/monitoring/metrics
+curl -H "x-monitoring-key: <YOUR_MONITORING_API_KEY>" https://your-domain.com/api/monitoring/metrics
 ```
 
 ### Response Format
@@ -98,7 +98,7 @@ Add these to your `.env.local` file:
 
 ```bash
 # Optional: API key for monitoring metrics endpoint (production only)
-MONITORING_API_KEY=your-secure-monitoring-key-here
+MONITORING_API_KEY=<YOUR_SECURE_MONITORING_KEY_HERE>
 ```
 
 ### Vercel Configuration

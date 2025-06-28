@@ -3,5 +3,8 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
+  // Region restriction to iad1 (US East) for optimal database performance
+  // Since our Supabase database is in US East, deploying to the same region
+  // minimizes latency and improves API response times
   "regions": ["iad1"]
 }

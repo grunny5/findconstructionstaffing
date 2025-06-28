@@ -1,4 +1,6 @@
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const { loadEnvironmentVariables, extractProjectReference } = require('./utils/env-loader');
 
 // Load environment variables using the centralized utility
@@ -43,13 +45,21 @@ try {
 console.log('📤 Pushing migrations to database...\n');
 
 try {
-  const output = execSync('supabase db push', { encoding: 'utf8' });
+  // Use --non-interactive flag to prevent hanging in CI environments
+  const output = execSync('supabase db push --non-interactive', { encoding: 'utf8' });
   console.log(output);
   console.log('\n✅ Migrations applied successfully!');
   
   // Generate TypeScript types from remote database
   console.log('\n🔧 Generating TypeScript types from remote database...');
   try {
+    // Ensure lib directory exists
+    const libDir = path.join(process.cwd(), 'lib');
+    if (!fs.existsSync(libDir)) {
+      fs.mkdirSync(libDir, { recursive: true });
+      console.log('📁 Created lib directory');
+    }
+    
     // First, pull the latest schema from remote to ensure accuracy
     console.log('📥 Pulling latest schema from remote database...');
     execSync('supabase db pull', { encoding: 'utf8' });
@@ -61,6 +71,12 @@ try {
     console.log('⚠️  Could not generate types:', typeError.message);
     console.log('Falling back to local schema generation...');
     try {
+      // Ensure lib directory exists for fallback case too
+      const libDir = path.join(process.cwd(), 'lib');
+      if (!fs.existsSync(libDir)) {
+        fs.mkdirSync(libDir, { recursive: true });
+        console.log('📁 Created lib directory');
+      }
       execSync('supabase gen types typescript --local > lib/database.types.ts');
       console.log('✅ TypeScript types generated from local schema');
     } catch (localError) {

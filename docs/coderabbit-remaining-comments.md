@@ -9,15 +9,21 @@ Based on the GitHub PR comments and our previous work, here are the remaining Co
 - **Issue**: Region restriction to `iad1` may impact global performance
 - **Type**: Performance consideration
 - **Priority**: P3 (Low)
-- **Status**: 📋 Pending
-- **Action**: Document the reason for region restriction or consider multi-region deployment
+- **Status**: ✅ Fixed
+- **Action**: ~~Document the reason for region restriction or consider multi-region deployment~~
+- **Resolution**: 
+  - Added comments explaining region restriction is for optimal database performance
+  - Deploying to same region as Supabase database (US East) minimizes latency
 
 ### 2. docs/api/monitoring.md
 - **Issue**: API key in example could be seen as secret leak
 - **Type**: Documentation
 - **Priority**: P3 (Low)
-- **Status**: 📋 Pending
-- **Action**: Make placeholder more obvious (e.g., `<YOUR_MONITORING_KEY>`)
+- **Status**: ✅ Fixed
+- **Action**: ~~Make placeholder more obvious (e.g., `<YOUR_MONITORING_KEY>`)~~
+- **Resolution**: 
+  - Updated placeholder to `<YOUR_MONITORING_API_KEY>`
+  - Changed environment variable example to `<YOUR_SECURE_MONITORING_KEY_HERE>`
 
 ### 3. .github/workflows/load-test.yml
 - **Issue**: Shell best practices - unquoted variables and fragile `ls -t | head -1`
