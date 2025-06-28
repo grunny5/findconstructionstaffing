@@ -74,9 +74,18 @@ async function makeRequest() {
     
     const req = client.request(options, (res) => {
       let data = '';
+      let dataSize = 0;
+      const maxResponseSize = 1024 * 1024; // 1MB limit for safety during load testing
+      let truncated = false;
       
       res.on('data', (chunk) => {
-        data += chunk;
+        dataSize += chunk.length;
+        if (dataSize <= maxResponseSize) {
+          data += chunk;
+        } else if (!truncated) {
+          truncated = true;
+          console.warn(`⚠️  Response truncated at ${maxResponseSize} bytes for ${scenario.name}`);
+        }
       });
       
       res.on('end', () => {

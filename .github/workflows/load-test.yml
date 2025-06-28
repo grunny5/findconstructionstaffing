@@ -68,7 +68,7 @@ jobs:
           HEALTH_URL="http://localhost:3000/api/health"
           AGENCIES_URL="http://localhost:3000/api/agencies"
           
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+          while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
             ATTEMPT=$((ATTEMPT + 1))
             echo "Attempt $ATTEMPT/$MAX_ATTEMPTS..."
             
@@ -177,8 +177,8 @@ jobs:
           
           echo "Running load test with $CONCURRENT_USERS users for $TEST_DURATION seconds"
           
-          CONCURRENT_USERS=$CONCURRENT_USERS \
-          TEST_DURATION=$TEST_DURATION \
+          CONCURRENT_USERS="$CONCURRENT_USERS" \
+          TEST_DURATION="$TEST_DURATION" \
           node tests/load/simple-load-test.js
       
       - name: Upload results
@@ -191,8 +191,8 @@ jobs:
       
       - name: Check performance targets
         run: |
-          # Read the latest summary file
-          SUMMARY=$(ls -t tests/load/results/simple-load-test-summary_*.md 2>/dev/null | head -1)
+          # Read the latest summary file using find for better reliability
+          SUMMARY=$(find tests/load/results -name "simple-load-test-summary_*.md" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
           
           # Check if summary file exists
           if [ -z "$SUMMARY" ] || [ ! -f "$SUMMARY" ]; then
