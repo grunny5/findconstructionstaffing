@@ -28,17 +28,17 @@ This document breaks down the feature into sprint-ready engineering tasks. All t
     * **TypeScript:** Maintain strict mode compliance with proper type definitions
     * **Error Handling:** Implement comprehensive error states as per PKD standards
 * **Acceptance Criteria (for this task):**
-    * [ ] A `useAgencies` hook is created in `hooks/use-agencies.ts`
-    * [ ] Hook supports query parameters (search, trades, states, limit, offset)
-    * [ ] Hook returns loading, error, and data states with proper TypeScript types
-    * [ ] Hook implements automatic retry logic for failed requests
-    * [ ] Unit tests cover all hook states and edge cases
+    * [x] A `useAgencies` hook is created in `hooks/use-agencies.ts`
+    * [x] Hook supports query parameters (search, trades, states, limit, offset)
+    * [x] Hook returns loading, error, and data states with proper TypeScript types
+    * [x] Hook implements automatic retry logic for failed requests
+    * [x] Unit tests cover all hook states and edge cases
 * **Definition of Done:**
-    * [ ] Code complete with TypeScript strict mode passing
-    * [ ] Unit tests written and passing with 80%+ coverage
-    * [ ] Hook documentation added with usage examples
-    * [ ] PR submitted and approved by at least one other team member
-    * [ ] **Final Check:** Work aligns with all relevant standards in `PROJECT_KICKSTART.md`
+    * [x] Code complete with TypeScript strict mode passing
+    * [x] Unit tests written and passing with 80%+ coverage
+    * [x] Hook documentation added with usage examples
+    * [x] PR submitted and approved by at least one other team member
+    * [x] **Final Check:** Work aligns with all relevant standards in `PROJECT_KICKSTART.md`
 
 ---
 ### ✅ Task Brief: Update Home Page to Use API Data
