@@ -257,21 +257,43 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
-                <Select>
+                <Select onValueChange={(value) => {
+                  if (value === 'all') {
+                    setFilters(prev => ({ ...prev, states: [] }));
+                  } else {
+                    setFilters(prev => ({ ...prev, states: [value] }));
+                  }
+                }}>
                   <SelectTrigger className="modern-select w-full lg:w-56 h-14">
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="co">Colorado</SelectItem>
-                    <SelectItem value="tx">Texas</SelectItem>
-                    <SelectItem value="az">Arizona</SelectItem>
-                    <SelectItem value="wa">Washington</SelectItem>
-                    <SelectItem value="ga">Georgia</SelectItem>
-                    <SelectItem value="il">Illinois</SelectItem>
+                    <SelectItem value="CO">Colorado</SelectItem>
+                    <SelectItem value="TX">Texas</SelectItem>
+                    <SelectItem value="AZ">Arizona</SelectItem>
+                    <SelectItem value="WA">Washington</SelectItem>
+                    <SelectItem value="GA">Georgia</SelectItem>
+                    <SelectItem value="IL">Illinois</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select>
+                <Select onValueChange={(value) => {
+                  if (value === 'all') {
+                    setFilters(prev => ({ ...prev, trades: [] }));
+                  } else {
+                    // Convert display names to slugs that match API
+                    const tradeMap: Record<string, string> = {
+                      'general': 'general-labor',
+                      'electrical': 'electrician', 
+                      'plumbing': 'plumber',
+                      'hvac': 'hvac-technician',
+                      'welding': 'welder',
+                      'carpentry': 'carpenter'
+                    };
+                    const tradeSlug = tradeMap[value] || value;
+                    setFilters(prev => ({ ...prev, trades: [tradeSlug] }));
+                  }
+                }}>
                   <SelectTrigger className="modern-select w-full lg:w-56 h-14">
                     <SelectValue placeholder="Specialty" />
                   </SelectTrigger>
@@ -285,7 +307,16 @@ export default function HomePage() {
                     <SelectItem value="carpentry">Carpentry</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button className="modern-button-primary h-14 px-8 font-semibold">
+                <Button 
+                  className="modern-button-primary h-14 px-8 font-semibold"
+                  onClick={() => {
+                    // Scroll to results section
+                    const resultsSection = document.getElementById('results-section');
+                    if (resultsSection) {
+                      resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
                   Search
                 </Button>
               </div>
@@ -330,7 +361,7 @@ export default function HomePage() {
       </section>
 
       {/* Main Directory Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section id="results-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Results Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12">
           <div>
