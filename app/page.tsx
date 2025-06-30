@@ -114,12 +114,21 @@ export default function HomePage() {
     
     return apiResponse.data.map((agency, index) => ({
       ...agency,
+      // Convert null values to undefined for AgencyCard compatibility
+      description: agency.description || undefined,
+      logo_url: agency.logo_url || undefined,
+      website: agency.website || undefined,
+      phone: agency.phone || undefined,
+      email: agency.email || undefined,
+      founded_year: agency.founded_year || undefined,
+      employee_count: agency.employee_count || undefined,
+      headquarters: agency.headquarters || undefined,
+      rating: agency.rating || undefined,
       // Map trades to string array for AgencyCard component
       trades: agency.trades?.map(t => t.name) || [],
       // Map regions to string array for AgencyCard component
       regions: agency.regions?.map(r => r.name) || [],
       // Add any additional fields needed for UI
-      rating: agency.rating || 4.1 + (index % 9) / 10,
       reviewCount: agency.review_count || 12 + (index * 7) % 88,
       projectCount: agency.project_count || 45 + (index * 13) % 455,
       verified: agency.verified ?? (index % 3 === 0),
@@ -147,7 +156,7 @@ export default function HomePage() {
     // Sort results
     switch (sortBy) {
       case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'reviews':
         filtered.sort((a, b) => b.reviewCount - a.reviewCount);

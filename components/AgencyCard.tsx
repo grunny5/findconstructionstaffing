@@ -107,6 +107,8 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                     <Link 
                       href={`/recruiters/${agency.slug}`}
                       className="hover:text-blue-600 transition-colors"
+                      prefetch={true}
+                      aria-label={`View ${agency.name} profile`}
                     >
                       {agency.name}
                     </Link>
@@ -197,7 +199,11 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                   className="bg-white/80 text-slate-700 border-slate-300/60 hover:bg-white backdrop-blur-sm rounded-xl w-full lg:w-40 group"
                   asChild
                 >
-                  <Link href={`/recruiters/${agency.slug}`}>
+                  <Link 
+                    href={`/recruiters/${agency.slug}`} 
+                    prefetch={true}
+                    aria-label={`View ${agency.name} full profile`}
+                  >
                     View Profile
                     <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </Link>

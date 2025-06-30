@@ -80,14 +80,6 @@ export interface Agency {
   regions: Region[];
 }
 
-/**
- * Agency response format for API endpoint
- * Extends Agency with computed/formatted fields
- */
-export interface AgencyResponse extends Agency {
-  // All fields from Agency are included
-  // Additional computed fields can be added here if needed
-}
 
 /**
  * Pagination metadata for list responses
@@ -108,7 +100,7 @@ export interface PaginationMetadata {
  */
 export interface AgenciesApiResponse {
   /** Array of agency records */
-  data: AgencyResponse[];
+  data: Agency[];
   /** Pagination information */
   pagination: PaginationMetadata;
 }
@@ -149,6 +141,13 @@ export interface ErrorResponse {
 }
 
 /**
+ * Single agency response
+ */
+export interface AgencyResponse {
+  data: Agency;
+}
+
+/**
  * Type guard to check if a response is an error
  */
 export function isErrorResponse(response: any): response is ErrorResponse {
@@ -179,6 +178,7 @@ export const API_CONSTANTS = {
 export const HTTP_STATUS = {
   OK: 200,
   BAD_REQUEST: 400,
+  NOT_FOUND: 404,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
@@ -189,4 +189,5 @@ export const ERROR_CODES = {
   INVALID_PARAMS: 'INVALID_PARAMS',
   DATABASE_ERROR: 'DATABASE_ERROR',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
+  NOT_FOUND: 'NOT_FOUND',
 } as const;
