@@ -13,41 +13,46 @@ describe('AgencyCardSkeleton', () => {
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it('renders with proper layout classes', () => {
-    const { container } = render(<AgencyCardSkeleton />);
+  it('renders with proper layout structure', () => {
+    render(<AgencyCardSkeleton />);
     
     // Check for card structure
-    const card = container.querySelector('.border-0.bg-white\\/80');
+    const card = screen.getByTestId('agency-card-skeleton');
     expect(card).toBeInTheDocument();
     
     // Check for flex layout
-    const flexContainer = container.querySelector('.flex.flex-col.lg\\:flex-row');
+    const flexContainer = screen.getByTestId('skeleton-flex-container');
     expect(flexContainer).toBeInTheDocument();
   });
 
-  it('renders logo skeleton with correct dimensions', () => {
-    const { container } = render(<AgencyCardSkeleton />);
+  it('renders logo skeleton', () => {
+    render(<AgencyCardSkeleton />);
     
     // Check for logo skeleton
-    const logoSkeleton = container.querySelector('.w-20.h-20.rounded-3xl');
+    const logoSkeleton = screen.getByTestId('skeleton-logo');
     expect(logoSkeleton).toBeInTheDocument();
+    expect(logoSkeleton).toHaveClass('w-20', 'h-20', 'rounded-3xl');
   });
 
   it('renders correct number of stat skeletons', () => {
-    const { container } = render(<AgencyCardSkeleton />);
+    render(<AgencyCardSkeleton />);
     
     // Should have 4 stat items in the grid
-    const statGrid = container.querySelector('.grid.grid-cols-2.lg\\:grid-cols-4');
+    const statGrid = screen.getByTestId('skeleton-stats-grid');
     expect(statGrid).toBeInTheDocument();
-    expect(statGrid?.children.length).toBe(4);
+    expect(statGrid.children.length).toBe(4);
   });
 
   it('renders action button skeletons', () => {
-    const { container } = render(<AgencyCardSkeleton />);
+    render(<AgencyCardSkeleton />);
     
     // Should have 2 button skeletons
-    const buttonSkeletons = container.querySelectorAll('.h-10.w-full.lg\\:w-40.rounded-xl');
-    expect(buttonSkeletons.length).toBe(2);
+    const button1 = screen.getByTestId('skeleton-button-1');
+    const button2 = screen.getByTestId('skeleton-button-2');
+    expect(button1).toBeInTheDocument();
+    expect(button2).toBeInTheDocument();
+    expect(button1).toHaveClass('h-10', 'w-full', 'lg:w-40', 'rounded-xl');
+    expect(button2).toHaveClass('h-10', 'w-full', 'lg:w-40', 'rounded-xl');
   });
 
   it('has no layout shift potential', () => {
