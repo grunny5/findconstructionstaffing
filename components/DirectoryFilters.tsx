@@ -23,9 +23,20 @@ import {
 } from 'lucide-react';
 import { allTrades, allStates, companySizes, focusAreas } from '@/lib/mock-data';
 
+// Helper function to convert trade names to slugs
+const tradeToSlug = (trade: string): string => {
+  return trade
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim();
+};
+
 interface DirectoryFiltersProps {
   onFiltersChange: (filters: FilterState) => void;
   totalResults: number;
+  isLoading?: boolean;
 }
 
 export interface FilterState {
@@ -39,7 +50,7 @@ export interface FilterState {
   focusAreas: string[];
 }
 
-export default function DirectoryFilters({ onFiltersChange, totalResults }: DirectoryFiltersProps) {
+export default function DirectoryFilters({ onFiltersChange, totalResults, isLoading }: DirectoryFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     trades: [],
@@ -177,27 +188,30 @@ export default function DirectoryFilters({ onFiltersChange, totalResults }: Dire
             activeCount={filters.trades.length}
           >
             <div className="space-y-3">
-              {allTrades.map((trade) => (
-                <div key={trade} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={`trade-${trade}`}
-                    checked={filters.trades.includes(trade)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        updateFilters({ trades: [...filters.trades, trade] });
-                      } else {
-                        updateFilters({ trades: filters.trades.filter(t => t !== trade) });
-                      }
-                    }}
-                  />
-                  <Label 
-                    htmlFor={`trade-${trade}`}
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    {trade}
-                  </Label>
-                </div>
-              ))}
+              {allTrades.map((trade) => {
+                const tradeSlug = tradeToSlug(trade);
+                return (
+                  <div key={trade} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={`trade-${tradeSlug}`}
+                      checked={filters.trades.includes(tradeSlug)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          updateFilters({ trades: [...filters.trades, tradeSlug] });
+                        } else {
+                          updateFilters({ trades: filters.trades.filter(t => t !== tradeSlug) });
+                        }
+                      }}
+                    />
+                    <Label 
+                      htmlFor={`trade-${tradeSlug}`}
+                      className="text-sm font-normal cursor-pointer flex-1"
+                    >
+                      {trade}
+                    </Label>
+                  </div>
+                );
+              })}
             </div>
           </FilterPopover>
 
@@ -213,12 +227,12 @@ export default function DirectoryFilters({ onFiltersChange, totalResults }: Dire
                 <div key={state.code} className="flex items-center space-x-3">
                   <Checkbox
                     id={`state-${state.code}`}
-                    checked={filters.states.includes(state.name)}
+                    checked={filters.states.includes(state.code)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        updateFilters({ states: [...filters.states, state.name] });
+                        updateFilters({ states: [...filters.states, state.code] });
                       } else {
-                        updateFilters({ states: filters.states.filter(s => s !== state.name) });
+                        updateFilters({ states: filters.states.filter(s => s !== state.code) });
                       }
                     }}
                   />
@@ -321,8 +335,17 @@ export default function DirectoryFilters({ onFiltersChange, totalResults }: Dire
 
         {/* Results Count and Clear Filters */}
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-900">{totalResults}</span> {totalResults === 1 ? 'agency' : 'agencies'} found
+          <div className="text-sm text-gray-600 flex items-center gap-2">
+            <span>
+              <span className="font-semibold text-gray-900">{totalResults}</span> {totalResults === 1 ? 'agency' : 'agencies'} found
+            </span>
+            {isLoading && (
+              <div className="flex items-center gap-1 text-gray-500">
+                <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full"></div>
+                <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:150ms]"></div>
+                <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:300ms]"></div>
+              </div>
+            )}
           </div>
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-blue-600 hover:text-blue-700">
@@ -350,33 +373,41 @@ export default function DirectoryFilters({ onFiltersChange, totalResults }: Dire
                 </button>
               </Badge>
             )}
-            {filters.trades.slice(0, 3).map(trade => (
-              <Badge key={trade} variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
-                {trade}
-                <button 
-                  onClick={() => removeFilter('trade', trade)}
-                  className="ml-2 hover:text-blue-900"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
+            {filters.trades.slice(0, 3).map(tradeSlug => {
+              // Find the original trade name from the slug
+              const tradeName = allTrades.find(t => tradeToSlug(t) === tradeSlug) || tradeSlug;
+              return (
+                <Badge key={tradeSlug} variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+                  {tradeName}
+                  <button 
+                    onClick={() => removeFilter('trade', tradeSlug)}
+                    className="ml-2 hover:text-blue-900"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              );
+            })}
             {filters.trades.length > 3 && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
                 +{filters.trades.length - 3} more trades
               </Badge>
             )}
-            {filters.states.slice(0, 2).map(state => (
-              <Badge key={state} variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
-                {state}
-                <button 
-                  onClick={() => removeFilter('state', state)}
-                  className="ml-2 hover:text-blue-900"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
+            {filters.states.slice(0, 2).map(stateCode => {
+              // Find the state name from the code
+              const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
+              return (
+                <Badge key={stateCode} variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+                  {stateName}
+                  <button 
+                    onClick={() => removeFilter('state', stateCode)}
+                    className="ml-2 hover:text-blue-900"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              );
+            })}
             {filters.states.length > 2 && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
                 +{filters.states.length - 2} more states
