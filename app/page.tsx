@@ -156,7 +156,11 @@ export default function HomePage() {
         filtered.sort((a, b) => b.projectCount - a.projectCount);
         break;
       case 'founded':
-        filtered.sort((a, b) => a.founded_year - b.founded_year);
+        filtered.sort((a, b) => {
+          const aYear = a.founded_year || 9999;
+          const bYear = b.founded_year || 9999;
+          return aYear - bYear;
+        });
         break;
       default:
         // Featured agencies first, then alphabetical
