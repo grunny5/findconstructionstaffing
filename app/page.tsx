@@ -47,7 +47,7 @@ export default function HomePage() {
   const searchParams = useSearchParams();
   
   const [filters, setFilters] = useState<FilterState>({
-    search: '',
+    search: searchParams.get('search') || '',
     trades: searchParams.getAll('trades[]') || [],
     states: searchParams.getAll('states[]') || [],
     perDiem: null,
@@ -58,17 +58,16 @@ export default function HomePage() {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState('name');
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
   // Debounce the search query to avoid excessive API calls
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedSearchQuery = useDebounce(filters.search, 300);
   
   // Track if we're in a searching state (user has typed but debounce hasn't fired)
-  const isSearching = searchQuery !== debouncedSearchQuery;
+  const isSearching = filters.search !== debouncedSearchQuery;
 
   // Fetch agencies from API with debounced search and filters
   const { data: apiResponse, error, isLoading, isValidating } = useAgencies({
-    search: debouncedSearchQuery || filters.search,
+    search: debouncedSearchQuery,
     trades: filters.trades,
     states: filters.states,
   });
@@ -194,7 +193,7 @@ export default function HomePage() {
     
   const hasActiveFilters = filters.search || 
     activeFilterCount > 0 ||
-    searchQuery;
+    filters.search;
 
   const clearAllFilters = () => {
     setFilters({
@@ -207,7 +206,6 @@ export default function HomePage() {
       companySize: [],
       focusAreas: [],
     });
-    setSearchQuery('');
   };
 
   return (
@@ -247,8 +245,8 @@ export default function HomePage() {
                   <Search className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
                   <Input
                     placeholder="Search companies, specialties, or locations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={filters.search}
+                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                     className="modern-input pl-12 pr-12 h-14 text-lg"
                   />
                   {/* Loading indicator for search */}
@@ -340,7 +338,7 @@ export default function HomePage() {
             <p className="text-slate-600 text-lg">
               {filteredAgencies.length} verified companies 
               {activeFilterCount > 0 && ` • ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied`}
-              {searchQuery && ' • Search active'}
+              {filters.search && ' • Search active'}
               • Updated daily
             </p>
           </div>
@@ -432,7 +430,7 @@ export default function HomePage() {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
                   className="px-8 modern-button-secondary"
                 >
                   Clear Search
