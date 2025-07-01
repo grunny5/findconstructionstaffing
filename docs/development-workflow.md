@@ -18,21 +18,21 @@ This guide outlines common development workflows and best practices for working 
 - Frontend components aren't displaying expected data
 - Working on search/filter functionality
 
-### Quick Mode for Development
+### Seeding Options
 
-For faster iteration during development:
+The seed script creates a comprehensive dataset:
 ```bash
-# Seeds only 3 agencies instead of 12
-SEED_QUICK_MODE=true npm run seed
+# Standard seeding (12 agencies with full relationships)
+npm run seed
 
-# Custom agency count
-SEED_AGENCY_COUNT=5 npm run seed
+# Reset and re-seed for a clean slate
+npm run seed:reset
 
-# Skip relationships for basic testing
-SEED_SKIP_RELATIONSHIPS=true npm run seed
+# Verify data integrity after seeding
+npm run seed:verify
 ```
 
-**Note:** These environment variables are planned features. Currently, the script always seeds all 12 agencies.
+**Note:** The script currently seeds all 12 agencies. Quick-mode options for faster development iterations may be added in future updates.
 
 ### Daily Development Routine
 
