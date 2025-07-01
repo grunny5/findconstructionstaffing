@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AgencyCard from '@/components/AgencyCard';
+import AgencyCardSkeleton from '@/components/AgencyCardSkeleton';
+import ApiErrorState from '@/components/ApiErrorState';
 import DirectoryFilters, { FilterState } from '@/components/DirectoryFilters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createSlug } from '@/lib/utils/formatting';
 import { 
   Building2, 
   Users, 
@@ -22,26 +26,22 @@ import {
   TrendingUp,
   Award,
   Briefcase,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
-import { mockAgencies } from '@/lib/mock-data';
+import { useAgencies } from '@/hooks/use-agencies';
+import { useDebounce } from '@/hooks/use-debounce';
+import { Agency } from '@/types/api';
 import Link from 'next/link';
 
-// Utility function for creating slugs
-const createSlug = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-};
-
 export default function HomePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [filters, setFilters] = useState<FilterState>({
-    search: '',
-    trades: [],
-    states: [],
+    search: searchParams.get('search') || '',
+    trades: searchParams.getAll('trades[]') || [],
+    states: searchParams.getAll('states[]') || [],
     perDiem: null,
     union: null,
     claimedOnly: false,
@@ -50,75 +50,108 @@ export default function HomePage() {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState('name');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [limit, setLimit] = useState(20);
+  const [offset, setOffset] = useState(0);
+  
+  // Debounce the search query to avoid excessive API calls
+  const debouncedSearchQuery = useDebounce(filters.search, 300);
+  
+  // Track if we're in a searching state (user has typed but debounce hasn't fired)
+  const isSearching = filters.search !== debouncedSearchQuery;
 
-  // Convert mock data to proper format with enhanced data
+  // Fetch agencies from API with debounced search and filters
+  const { data: apiResponse, error, isLoading, isValidating, mutate } = useAgencies({
+    search: debouncedSearchQuery,
+    trades: filters.trades,
+    states: filters.states,
+    limit,
+    offset,
+  });
+  
+  // Update URL when search or filters change
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    
+    // Handle search
+    if (debouncedSearchQuery) {
+      params.set('search', debouncedSearchQuery);
+    } else {
+      params.delete('search');
+    }
+    
+    // Handle trades filter
+    if (filters.trades.length > 0) {
+      params.delete('trades[]'); // Clear existing
+      filters.trades.forEach(trade => {
+        params.append('trades[]', trade);
+      });
+    } else {
+      params.delete('trades[]');
+    }
+    
+    // Handle states filter
+    if (filters.states.length > 0) {
+      params.delete('states[]'); // Clear existing
+      filters.states.forEach(state => {
+        params.append('states[]', state);
+      });
+    } else {
+      params.delete('states[]');
+    }
+    
+    // Use replace to avoid adding to browser history on every change
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [debouncedSearchQuery, filters.trades, filters.states, router, searchParams]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setOffset(0);
+  }, [debouncedSearchQuery, filters.trades, filters.states]);
+
+  // Process API data and accumulate results for pagination
+  const [allAgencies, setAllAgencies] = useState<Agency[]>([]);
+  
+  useEffect(() => {
+    if (apiResponse?.data) {
+      if (offset === 0) {
+        // Reset agencies when starting fresh
+        setAllAgencies(apiResponse.data);
+      } else {
+        // Append new agencies for pagination
+        setAllAgencies(prev => [...prev, ...apiResponse.data]);
+      }
+    }
+  }, [apiResponse?.data, offset]);
+
   const agencies = useMemo(() => {
-    return mockAgencies.map((agency, index) => ({
-      id: createSlug(agency.name),
-      name: agency.name,
-      slug: createSlug(agency.name),
-      description: agency.description,
-      logo_url: agency.logo_url,
-      website: agency.website,
-      phone: '',
-      email: '',
-      is_claimed: index % 3 === 0, // Every 3rd agency is claimed for demo
-      is_active: true,
-      offers_per_diem: agency.offers_per_diem,
-      is_union: agency.is_union,
-      trades: agency.trades,
-      regions: agency.regions,
-      rating: 4.1 + (index % 9) / 10, // Ratings between 4.1-4.9
-      reviewCount: 12 + (index * 7) % 88, // Review counts between 12-100
-      projectCount: 45 + (index * 13) % 455, // Project counts between 45-500
-      founded_year: agency.founded_year,
-      employee_count: agency.employee_count,
-      headquarters: agency.headquarters,
-      verified: index % 3 === 0,
-      featured: index < 3, // First 3 agencies are featured
+    return allAgencies.map((agency, index) => ({
+      ...agency,
+      // Convert null values to undefined for AgencyCard compatibility
+      description: agency.description || undefined,
+      logo_url: agency.logo_url || undefined,
+      website: agency.website || undefined,
+      phone: agency.phone || undefined,
+      email: agency.email || undefined,
+      founded_year: agency.founded_year || undefined,
+      employee_count: agency.employee_count || undefined,
+      headquarters: agency.headquarters || undefined,
+      rating: agency.rating || undefined,
+      // Map trades to string array for AgencyCard component
+      trades: agency.trades?.map(t => t.name) || [],
+      // Map regions to string array for AgencyCard component
+      regions: agency.regions?.map(r => r.name) || [],
+      // Add any additional fields needed for UI
+      reviewCount: agency.review_count || 12 + (index * 7) % 88,
+      projectCount: agency.project_count || 45 + (index * 13) % 455,
+      verified: agency.verified ?? (index % 3 === 0),
+      featured: agency.featured ?? (index < 3),
     }));
-  }, []);
+  }, [allAgencies]);
 
-  // Filter agencies based on current filters and search
+  // Filter agencies based on current filters (API handles search/trades/states)
   const filteredAgencies = useMemo(() => {
     let filtered = agencies.filter(agency => {
-      // Global search filter
-      if (searchQuery) {
-        const searchTerm = searchQuery.toLowerCase();
-        const matchesName = agency.name.toLowerCase().includes(searchTerm);
-        const matchesDescription = agency.description?.toLowerCase().includes(searchTerm);
-        const matchesTrades = agency.trades?.some(trade => 
-          trade.toLowerCase().includes(searchTerm)
-        );
-        const matchesLocation = agency.regions?.some(region =>
-          region.toLowerCase().includes(searchTerm)
-        );
-        if (!matchesName && !matchesDescription && !matchesTrades && !matchesLocation) return false;
-      }
-
-      // Other filters
-      if (filters.search) {
-        const searchTerm = filters.search.toLowerCase();
-        const matchesName = agency.name.toLowerCase().includes(searchTerm);
-        const matchesDescription = agency.description?.toLowerCase().includes(searchTerm);
-        if (!matchesName && !matchesDescription) return false;
-      }
-
-      if (filters.trades.length > 0) {
-        const hasMatchingTrade = agency.trades?.some(trade => 
-          filters.trades.includes(trade)
-        );
-        if (!hasMatchingTrade) return false;
-      }
-
-      if (filters.states.length > 0) {
-        const hasMatchingState = agency.regions?.some(region => 
-          filters.states.includes(region)
-        );
-        if (!hasMatchingState) return false;
-      }
-
+      // Client-side filters for properties not handled by API
       if (filters.perDiem !== null) {
         if (agency.offers_per_diem !== filters.perDiem) return false;
       }
@@ -135,7 +168,7 @@ export default function HomePage() {
     // Sort results
     switch (sortBy) {
       case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'reviews':
         filtered.sort((a, b) => b.reviewCount - a.reviewCount);
@@ -144,7 +177,11 @@ export default function HomePage() {
         filtered.sort((a, b) => b.projectCount - a.projectCount);
         break;
       case 'founded':
-        filtered.sort((a, b) => a.founded_year - b.founded_year);
+        filtered.sort((a, b) => {
+          const aYear = a.founded_year || 9999;
+          const bYear = b.founded_year || 9999;
+          return aYear - bYear;
+        });
         break;
       default:
         // Featured agencies first, then alphabetical
@@ -156,15 +193,19 @@ export default function HomePage() {
     }
 
     return filtered;
-  }, [agencies, filters, searchQuery, sortBy]);
+  }, [agencies, filters, sortBy]);
 
+  const activeFilterCount = 
+    filters.trades.length + 
+    filters.states.length + 
+    (filters.perDiem !== null ? 1 : 0) + 
+    (filters.union !== null ? 1 : 0) + 
+    (filters.claimedOnly ? 1 : 0) +
+    filters.companySize.length +
+    filters.focusAreas.length;
+    
   const hasActiveFilters = filters.search || 
-    filters.trades.length > 0 || 
-    filters.states.length > 0 || 
-    filters.perDiem !== null || 
-    filters.union !== null || 
-    filters.claimedOnly ||
-    searchQuery;
+    activeFilterCount > 0;
 
   const clearAllFilters = () => {
     setFilters({
@@ -177,7 +218,6 @@ export default function HomePage() {
       companySize: [],
       focusAreas: [],
     });
-    setSearchQuery('');
   };
 
   return (
@@ -217,26 +257,47 @@ export default function HomePage() {
                   <Search className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
                   <Input
                     placeholder="Search companies, specialties, or locations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="modern-input pl-12 h-14 text-lg"
+                    value={filters.search}
+                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                    className="modern-input pl-12 pr-12 h-14 text-lg"
                   />
+                  {/* Loading indicator for search */}
+                  {(isSearching || isValidating) && (
+                    <div className="absolute right-4 top-4">
+                      <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
+                      <span className="sr-only">Searching agencies</span>
+                    </div>
+                  )}
                 </div>
-                <Select>
+                <Select onValueChange={(value) => {
+                  if (value === 'all') {
+                    setFilters(prev => ({ ...prev, states: [] }));
+                  } else {
+                    setFilters(prev => ({ ...prev, states: [value] }));
+                  }
+                }}>
                   <SelectTrigger className="modern-select w-full lg:w-56 h-14">
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="co">Colorado</SelectItem>
-                    <SelectItem value="tx">Texas</SelectItem>
-                    <SelectItem value="az">Arizona</SelectItem>
-                    <SelectItem value="wa">Washington</SelectItem>
-                    <SelectItem value="ga">Georgia</SelectItem>
-                    <SelectItem value="il">Illinois</SelectItem>
+                    <SelectItem value="CO">Colorado</SelectItem>
+                    <SelectItem value="TX">Texas</SelectItem>
+                    <SelectItem value="AZ">Arizona</SelectItem>
+                    <SelectItem value="WA">Washington</SelectItem>
+                    <SelectItem value="GA">Georgia</SelectItem>
+                    <SelectItem value="IL">Illinois</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select>
+                <Select onValueChange={(value) => {
+                  if (value === 'all') {
+                    setFilters(prev => ({ ...prev, trades: [] }));
+                  } else {
+                    // Derive slug from the selected display name
+                    const tradeSlug = createSlug(value);
+                    setFilters(prev => ({ ...prev, trades: [tradeSlug] }));
+                  }
+                }}>
                   <SelectTrigger className="modern-select w-full lg:w-56 h-14">
                     <SelectValue placeholder="Specialty" />
                   </SelectTrigger>
@@ -250,7 +311,16 @@ export default function HomePage() {
                     <SelectItem value="carpentry">Carpentry</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button className="modern-button-primary h-14 px-8 font-semibold">
+                <Button 
+                  className="modern-button-primary h-14 px-8 font-semibold"
+                  onClick={() => {
+                    // Scroll to results section
+                    const resultsSection = document.getElementById('results-section');
+                    if (resultsSection) {
+                      resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
                   Search
                 </Button>
               </div>
@@ -275,7 +345,7 @@ export default function HomePage() {
           {/* Stats */}
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-number">{agencies.length}+</div>
+              <div className="stat-number">{isLoading ? '...' : agencies.length + '+'}</div>
               <div className="stat-label">Verified Agencies</div>
             </div>
             <div className="stat-item">
@@ -295,12 +365,17 @@ export default function HomePage() {
       </section>
 
       {/* Main Directory Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section id="results-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Results Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12">
           <div>
             <h2 className="text-3xl font-bold text-slate-900 mb-3">Premium Staffing Partners</h2>
-            <p className="text-slate-600 text-lg">{filteredAgencies.length} verified companies • Updated daily</p>
+            <p className="text-slate-600 text-lg">
+              {filteredAgencies.length} verified companies 
+              {activeFilterCount > 0 && ` • ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied`}
+              {filters.search && ' • Search active'}
+              • Updated daily
+            </p>
           </div>
           <div className="flex items-center gap-4 mt-6 lg:mt-0">
             <Button
@@ -309,6 +384,11 @@ export default function HomePage() {
             >
               <Filter className="h-4 w-4 mr-2" />
               Advanced Filters
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {activeFilterCount}
+                </Badge>
+              )}
             </Button>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-48 modern-button-secondary">
@@ -329,10 +409,27 @@ export default function HomePage() {
         <DirectoryFilters 
           onFiltersChange={setFilters}
           totalResults={filteredAgencies.length}
+          isLoading={isValidating || isSearching}
         />
 
         {/* Results Grid */}
-        {filteredAgencies.length > 0 ? (
+        {isLoading && !apiResponse ? (
+          <div className="space-y-6 mt-8">
+            {/* Show 6-8 skeleton cards while initial loading */}
+            {[...Array(6)].map((_, index) => (
+              <AgencyCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="mt-8">
+            <ApiErrorState
+              error={error}
+              onRetry={() => mutate()}
+              title="Unable to load agencies"
+              message="We encountered an error while loading the staffing agencies. Please try again or contact support if the problem persists."
+            />
+          </div>
+        ) : filteredAgencies.length > 0 ? (
           <div className="space-y-6 mt-8">
             {filteredAgencies.map((agency, index) => (
               <div key={agency.id} className="relative">
@@ -350,29 +447,62 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="text-center py-20">
-            <Building2 className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="h-10 w-10 text-gray-400" />
+            </div>
             <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-              No agencies found
+              {debouncedSearchQuery ? 'No matches found' : 'No agencies found'}
             </h3>
             <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-              We couldn&apos;t find any agencies matching your criteria. Try adjusting your filters or search terms.
+              {debouncedSearchQuery ? (
+                <>We couldn&apos;t find any agencies matching &ldquo;{debouncedSearchQuery}&rdquo;. Try a different search term or browse all agencies.</>
+              ) : (
+                <>We couldn&apos;t find any agencies matching your filters. Try adjusting your criteria or browse all agencies.</>
+              )}
             </p>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={clearAllFilters}
-              className="px-8 modern-button-secondary"
-            >
-              Clear All Filters
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {debouncedSearchQuery && (
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
+                  className="px-8 modern-button-secondary"
+                >
+                  Clear Search
+                </Button>
+              )}
+              {hasActiveFilters && (
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={clearAllFilters}
+                  className="px-8 modern-button-secondary"
+                >
+                  Clear All Filters
+                </Button>
+              )}
+            </div>
           </div>
         )}
 
         {/* Load More Button */}
-        {filteredAgencies.length > 0 && filteredAgencies.length >= 10 && (
+        {filteredAgencies.length > 0 && apiResponse?.pagination?.hasMore && (
           <div className="text-center mt-16">
-            <Button variant="outline" size="lg" className="px-8 modern-button-secondary">
-              Load More Companies
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="px-8 modern-button-secondary"
+              onClick={() => setOffset(prev => prev + limit)}
+              disabled={isLoading || isValidating}
+            >
+              {isLoading || isValidating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                'Load More Companies'
+              )}
             </Button>
           </div>
         )}
