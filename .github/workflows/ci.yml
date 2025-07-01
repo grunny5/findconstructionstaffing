@@ -30,6 +30,9 @@ jobs:
         check: [typescript, eslint, prettier]
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js and dependencies
         uses: ./.github/actions/setup-node
         with:
@@ -61,6 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js and dependencies
         uses: ./.github/actions/setup-node
         with:
@@ -128,6 +134,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js and dependencies
         uses: ./.github/actions/setup-node
         with:
@@ -151,6 +160,9 @@ jobs:
     needs: [quality-checks, test, security]
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js and dependencies
         uses: ./.github/actions/setup-node
         with:
