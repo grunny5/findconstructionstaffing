@@ -111,7 +111,7 @@ jobs:
               repo: context.repo.repo,
               deployment_id: deployment.data.id,
               state: 'success',
-              environment_url: 'https://findconstructionstaffing.com',
+              environment_url: '${{ steps.rollback.outputs.rollback-url }}',
               description: 'Rollback completed successfully'
             });
             
