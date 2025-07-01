@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useDebounce } from '@/hooks/use-debounce';
+import { Agency } from '@/types/api';
 import Link from 'next/link';
 
 // Utility function for creating slugs
@@ -58,6 +59,8 @@ export default function HomePage() {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState('name');
+  const [limit, setLimit] = useState(20);
+  const [offset, setOffset] = useState(0);
   
   // Debounce the search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(filters.search, 300);
@@ -66,10 +69,12 @@ export default function HomePage() {
   const isSearching = filters.search !== debouncedSearchQuery;
 
   // Fetch agencies from API with debounced search and filters
-  const { data: apiResponse, error, isLoading, isValidating } = useAgencies({
+  const { data: apiResponse, error, isLoading, isValidating, mutate } = useAgencies({
     search: debouncedSearchQuery,
     trades: filters.trades,
     states: filters.states,
+    limit,
+    offset,
   });
   
   // Update URL when search or filters change
@@ -107,11 +112,28 @@ export default function HomePage() {
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [debouncedSearchQuery, filters.trades, filters.states, router, searchParams]);
 
-  // Process API data
+  // Reset pagination when filters change
+  useEffect(() => {
+    setOffset(0);
+  }, [debouncedSearchQuery, filters.trades, filters.states]);
+
+  // Process API data and accumulate results for pagination
+  const [allAgencies, setAllAgencies] = useState<Agency[]>([]);
+  
+  useEffect(() => {
+    if (apiResponse?.data) {
+      if (offset === 0) {
+        // Reset agencies when starting fresh
+        setAllAgencies(apiResponse.data);
+      } else {
+        // Append new agencies for pagination
+        setAllAgencies(prev => [...prev, ...apiResponse.data]);
+      }
+    }
+  }, [apiResponse?.data, offset]);
+
   const agencies = useMemo(() => {
-    if (!apiResponse?.data) return [];
-    
-    return apiResponse.data.map((agency, index) => ({
+    return allAgencies.map((agency, index) => ({
       ...agency,
       // Convert null values to undefined for AgencyCard compatibility
       description: agency.description || undefined,
@@ -133,7 +155,7 @@ export default function HomePage() {
       verified: agency.verified ?? (index % 3 === 0),
       featured: agency.featured ?? (index < 3),
     }));
-  }, [apiResponse]);
+  }, [allAgencies]);
 
   // Filter agencies based on current filters (API handles search/trades/states)
   const filteredAgencies = useMemo(() => {
@@ -420,7 +442,7 @@ export default function HomePage() {
           <div className="mt-8">
             <ApiErrorState
               error={error}
-              onRetry={() => window.location.reload()}
+              onRetry={() => mutate()}
               title="Unable to load agencies"
               message="We encountered an error while loading the staffing agencies. Please try again or contact support if the problem persists."
             />
@@ -482,10 +504,23 @@ export default function HomePage() {
         )}
 
         {/* Load More Button */}
-        {filteredAgencies.length > 0 && filteredAgencies.length >= 10 && (
+        {filteredAgencies.length > 0 && apiResponse?.pagination?.hasMore && (
           <div className="text-center mt-16">
-            <Button variant="outline" size="lg" className="px-8 modern-button-secondary">
-              Load More Companies
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="px-8 modern-button-secondary"
+              onClick={() => setOffset(prev => prev + limit)}
+              disabled={isLoading || isValidating}
+            >
+              {isLoading || isValidating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                'Load More Companies'
+              )}
             </Button>
           </div>
         )}

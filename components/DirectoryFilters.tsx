@@ -137,7 +137,11 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
   }) => (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-10 border-gray-300 hover:border-gray-400">
+        <Button 
+          variant="outline" 
+          className="h-10 border-gray-300 hover:border-gray-400"
+          disabled={isLoading}
+        >
           <Icon className="h-4 w-4 mr-2" />
           {trigger}
           {activeCount > 0 && (
@@ -174,6 +178,7 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
               value={filters.search}
               onChange={(e) => updateFilters({ search: e.target.value })}
               className="pl-10"
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -336,14 +341,17 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
         {/* Results Count and Clear Filters */}
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 flex items-center gap-2">
-            <span>
+            <span className={isLoading ? "opacity-60" : ""}>
               <span className="font-semibold text-gray-900">{totalResults}</span> {totalResults === 1 ? 'agency' : 'agencies'} found
             </span>
             {isLoading && (
-              <div className="flex items-center gap-1 text-gray-500">
-                <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full"></div>
-                <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:150ms]"></div>
-                <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:300ms]"></div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-gray-500">
+                  <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full"></div>
+                  <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:150ms]"></div>
+                  <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:300ms]"></div>
+                </div>
+                <span className="text-xs text-gray-500">Updating...</span>
               </div>
             )}
           </div>
