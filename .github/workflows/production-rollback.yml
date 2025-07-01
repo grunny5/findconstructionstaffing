@@ -37,8 +37,31 @@ jobs:
         id: deployment
         run: |
           if [ -z "${{ github.event.inputs.deployment_id }}" ]; then
-            # Get the previous production deployment
-            DEPLOYMENT_ID=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} | grep "Production" | sed -n '2p' | awk '{print $1}')
+            # Get the previous production deployment using JSON output
+            echo "Fetching deployment list..."
+            DEPLOYMENTS_JSON=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} --output json || echo '{"deployments":[]}')
+            
+            # Parse JSON to find the second-most recent production deployment
+            DEPLOYMENT_ID=$(echo "$DEPLOYMENTS_JSON" | node -e "
+              const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+              const prodDeployments = (data.deployments || [])
+                .filter(d => d.target === 'production' && d.state === 'READY')
+                .sort((a, b) => new Date(b.created) - new Date(a.created));
+              
+              if (prodDeployments.length < 2) {
+                console.error('Error: Not enough production deployments to rollback');
+                process.exit(1);
+              }
+              
+              // Get the second deployment (index 1)
+              console.log(prodDeployments[1].uid);
+            ")
+            
+            if [ -z "$DEPLOYMENT_ID" ]; then
+              echo "Error: Could not find previous deployment to rollback to"
+              exit 1
+            fi
+            
             echo "Rolling back to previous deployment: $DEPLOYMENT_ID"
           else
             DEPLOYMENT_ID="${{ github.event.inputs.deployment_id }}"
@@ -51,11 +74,21 @@ jobs:
         id: rollback
         run: |
           # Promote the deployment to production
+          echo "Promoting deployment ${{ steps.deployment.outputs.deployment-id }} to production..."
           vercel promote ${{ steps.deployment.outputs.deployment-id }} --token=${{ secrets.VERCEL_TOKEN }} --yes
           
-          # Get the URL of the promoted deployment
-          ROLLBACK_URL=$(vercel inspect ${{ steps.deployment.outputs.deployment-id }} --token=${{ secrets.VERCEL_TOKEN }} | grep "URL" | awk '{print $2}')
+          # Get deployment details using JSON output
+          echo "Fetching deployment details..."
+          DEPLOYMENT_INFO=$(vercel inspect ${{ steps.deployment.outputs.deployment-id }} --token=${{ secrets.VERCEL_TOKEN }} --output json || echo '{}')
+          
+          # Extract the URL from JSON
+          ROLLBACK_URL=$(echo "$DEPLOYMENT_INFO" | node -e "
+            const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+            console.log(data.url || 'https://findconstructionstaffing.com');
+          ")
+          
           echo "rollback-url=$ROLLBACK_URL" >> $GITHUB_OUTPUT
+          echo "Rollback completed. Production URL: $ROLLBACK_URL"
           
       - name: Create rollback record
         uses: actions/github-script@v7
