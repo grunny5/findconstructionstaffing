@@ -37,6 +37,44 @@ const customJestConfig = {
     '<rootDir>/**/__tests__/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/**/*.test.{js,jsx,ts,tsx}'
   ],
+  // Coverage configuration
+  collectCoverageFrom: [
+    '**/*.{js,jsx,ts,tsx}',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!**/.next/**',
+    '!**/coverage/**',
+    '!**/jest.config.js',
+    '!**/jest.setup.js',
+    '!**/next.config.js',
+    '!**/postcss.config.js',
+    '!**/tailwind.config.ts',
+    '!**/scripts/**',
+    '!**/tests/load/**',
+    '!**/__mocks__/**',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  },
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
+  reporters: [
+    'default',
+    ['jest-junit', {
+      outputDirectory: './test-results',
+      outputName: 'junit.xml',
+      classNameTemplate: '{classname}',
+      titleTemplate: '{title}',
+      ancestorSeparator: ' › ',
+      usePathForSuiteName: true
+    }]
+  ],
+  // Cache configuration
+  cacheDirectory: '.jest-cache',
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

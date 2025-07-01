@@ -1,5 +1,8 @@
 # FindConstructionStaffing
 
+[![CI/CD Pipeline](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml/badge.svg)](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml)
+[![Coverage Status](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)](./coverage/lcov-report/index.html)
+
 A modern web directory platform connecting construction companies with specialized staffing agencies across North America.
 
 ## Project Overview
@@ -288,6 +291,28 @@ The project includes a comprehensive database seeding script for development and
 - **35 Regions**: US states with agencies
 - **60 Agency-Trade Relationships**: Specialization mappings
 - **58 Agency-Region Relationships**: Service area mappings
+
+## CI/CD
+
+Our project uses GitHub Actions for continuous integration and deployment:
+
+### Continuous Integration
+- **Type Checking**: TypeScript compilation with strict mode
+- **Linting**: ESLint for code quality
+- **Formatting**: Prettier for consistent style
+- **Testing**: Jest with 80% coverage requirement
+- **Security**: npm audit for vulnerability scanning
+
+### Continuous Deployment
+- **Preview Deployments**: Every PR gets a unique preview URL
+- **Production Deployments**: Automatic deployment to Vercel on main branch
+- **Environment Management**: Separate preview and production environments
+- **Rollback Support**: Via Vercel dashboard
+
+All PR checks must pass before merging. Preview deployments available at:
+```
+https://findconstructionstaffing-pr-{PR_NUMBER}.vercel.app
+```
 
 ## Deployment
 

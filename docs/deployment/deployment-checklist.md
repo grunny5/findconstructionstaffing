@@ -2,10 +2,17 @@
 
 ## Pre-Deployment Checklist
 
+### CI/CD Pipeline
+- [ ] All GitHub Actions checks passing
+- [ ] Branch is up to date with main
+- [ ] PR has been approved by at least 1 reviewer
+- [ ] No merge conflicts
+
 ### Code Quality
 - [ ] All tests passing (`npm test`)
 - [ ] Linting passes (`npm run lint`)
-- [ ] TypeScript builds without errors (`npm run build`)
+- [ ] TypeScript builds without errors (`npm run type-check`)
+- [ ] Code formatted with Prettier (`npm run format:check`)
 - [ ] No console.log statements in production code
 - [ ] No hardcoded secrets or API keys
 
@@ -29,10 +36,22 @@
 - [ ] Backup strategy is in place
 
 ### GitHub Secrets (for CI/CD)
-- [ ] `VERCEL_TOKEN` is configured
-- [ ] `VERCEL_ORG_ID` is configured
-- [ ] `VERCEL_PROJECT_ID` is configured
-- [ ] `STAGING_DOMAIN` is configured (e.g., staging.yourproject.com)
+- [ ] `NEXT_PUBLIC_SUPABASE_URL` is configured (for build step)
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` is configured (for build step)
+- [ ] `VERCEL_TOKEN` is configured ✅
+- [ ] `VERCEL_ORG_ID` is configured ✅
+- [ ] `VERCEL_PROJECT_ID` is configured ✅
+- [ ] Branch protection rules are active on main branch
+
+### CI/CD Pipeline Checks
+- [ ] TypeScript compilation successful
+- [ ] ESLint checks pass with no errors
+- [ ] Prettier formatting verified
+- [ ] All tests pass with 80%+ coverage
+- [ ] Security scan shows no vulnerabilities
+- [ ] Build completes successfully
+- [ ] Preview deployments working for PRs
+- [ ] Production deployment configured
 
 ## Staging Deployment Steps
 
@@ -195,38 +214,70 @@
    - [ ] Performance meets targets
    - [ ] Stakeholders have approved
 
-2. **Create Release**
+2. **Merge to Main**
    ```bash
    git checkout main
-   git merge staging
-   git tag -a v1.0.0 -m "Release version 1.0.0"
-   git push origin main --tags
+   git merge staging  # or merge PR
+   git push origin main
    ```
 
-3. **Monitor Deployment**
-   - Watch Vercel dashboard
-   - Check build logs
-   - Verify deployment status
+3. **Automatic Deployment**
+   - CI/CD pipeline triggers automatically
+   - All checks must pass before deployment
+   - Monitor progress in GitHub Actions
+   - Deployment to Vercel happens automatically
 
-4. **Post-Deployment**
-   - [ ] Verify production site
-   - [ ] Check monitoring dashboards
-   - [ ] Run smoke tests
-   - [ ] Update status page
+4. **Monitor Deployment**
+   - [ ] Watch GitHub Actions progress
+   - [ ] Check Vercel build logs
+   - [ ] Monitor deployment status updates
+   - [ ] Wait for health checks to complete
+
+5. **Post-Deployment Verification**
+   - [ ] Health checks pass (automatic)
+   - [ ] Production site loads correctly
+   - [ ] API endpoints responding
+   - [ ] Check deployment notification in PR
+   - [ ] Verify in Vercel dashboard
+   - [ ] Monitor error rates
 
 ## Rollback Procedure
 
 If issues are discovered:
 
-1. **Immediate Rollback**
-   - Vercel Dashboard > Deployments > Redeploy previous version
-   - Or: `vercel rollback [deployment-url]`
+1. **Automatic Rollback (Recommended)**
+   ```bash
+   # Use GitHub Actions workflow
+   gh workflow run production-rollback.yml
+   ```
+   - Enter rollback reason when prompted
+   - Optionally specify deployment ID
 
-2. **Fix Issues**
+2. **Manual Rollback Options**
+   
+   **Via Vercel Dashboard:**
+   - Go to Deployments tab
+   - Find previous stable deployment
+   - Click "..." → "Promote to Production"
+   
+   **Via CLI:**
+   ```bash
+   vercel rollback  # rolls back to previous
+   # or
+   vercel promote [deployment-id]  # specific deployment
+   ```
+
+3. **Post-Rollback Actions**
+   - [ ] Verify site is stable
+   - [ ] Check rollback issue created in GitHub
+   - [ ] Notify team of rollback
+   - [ ] Begin root cause analysis
+
+4. **Fix and Redeploy**
    - Create hotfix branch
    - Fix the issue
-   - Test thoroughly
-   - Deploy through normal process
+   - Test thoroughly in preview
+   - Deploy through normal PR process
 
 ## Environment-Specific Configurations
 

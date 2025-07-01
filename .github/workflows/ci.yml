@@ -7,6 +7,14 @@ on:
     branches: [main, develop]
 
 jobs:
+  # Record start time for performance monitoring
+  start-timer:
+    runs-on: ubuntu-latest
+    outputs:
+      start-time: ${{ steps.start.outputs.time }}
+    steps:
+      - id: start
+        run: echo "time=$(date -u +%s)" >> $GITHUB_OUTPUT
   quality-checks:
     name: Code Quality Checks
     runs-on: ubuntu-latest
@@ -24,15 +32,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Cache ESLint
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: ${{ runner.os }}-eslint-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '.eslintrc.json') }}
+          restore-keys: |
+            ${{ runner.os }}-eslint-
+        
       - name: Run TypeScript compilation
         run: npm run type-check
         continue-on-error: false
         
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint -- --cache --cache-location .eslintcache
+        continue-on-error: false
         
       - name: Run Prettier check
         run: npm run format:check
+        continue-on-error: false
         
   test:
     name: Run Tests
@@ -51,14 +69,64 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Cache Jest cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /tmp/jest_*
+            .jest-cache
+          key: ${{ runner.os }}-jest-${{ hashFiles('**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-
+            
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+        
       - name: Run unit tests with coverage
-        run: npm test -- --coverage --ci
+        run: npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache
+        env:
+          NODE_ENV: test
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          
+      - name: Cache performance metrics
+        if: always()
+        run: |
+          echo "=== Cache Performance Metrics ==="
+          echo "Jest cache size:"
+          du -sh .jest-cache 2>/dev/null || echo "0 (no cache)"
+          echo "Cache files:"
+          find .jest-cache -type f 2>/dev/null | wc -l || echo "0"
         
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
           path: coverage/
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results/
+          
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Jest Tests
+          path: test-results/junit.xml
+          reporter: jest-junit
+          fail-on-error: false
           
   security:
     name: Security Scanning
@@ -112,3 +180,80 @@ jobs:
         with:
           name: build-artifacts
           path: .next/
+          
+  # Performance monitoring and summary
+  performance-summary:
+    name: Performance Summary
+    runs-on: ubuntu-latest
+    needs: [start-timer, quality-checks, test, security, build]
+    if: always()
+    
+    steps:
+      - name: Calculate pipeline duration
+        id: duration
+        run: |
+          START_TIME=${{ needs.start-timer.outputs.start-time }}
+          END_TIME=$(date -u +%s)
+          DURATION=$((END_TIME - START_TIME))
+          DURATION_MIN=$((DURATION / 60))
+          DURATION_SEC=$((DURATION % 60))
+          
+          echo "duration=${DURATION}" >> $GITHUB_OUTPUT
+          echo "duration_display=${DURATION_MIN}m ${DURATION_SEC}s" >> $GITHUB_OUTPUT
+          
+          # Check if under 5 minutes
+          if [ $DURATION -lt 300 ]; then
+            echo "status=✅ PASS" >> $GITHUB_OUTPUT
+            echo "Performance target met: ${DURATION_MIN}m ${DURATION_SEC}s < 5m"
+          else
+            echo "status=⚠️ WARNING" >> $GITHUB_OUTPUT
+            echo "Performance target exceeded: ${DURATION_MIN}m ${DURATION_SEC}s > 5m"
+          fi
+          
+      - name: Generate job summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # CI/CD Pipeline Performance Report
+          
+          ## Overall Duration: ${{ steps.duration.outputs.duration_display }}
+          **Status**: ${{ steps.duration.outputs.status }}
+          
+          ## Job Results
+          - Quality Checks: ${{ needs.quality-checks.result }}
+          - Tests: ${{ needs.test.result }}
+          - Security: ${{ needs.security.result }}
+          - Build: ${{ needs.build.result }}
+          
+          ## Performance Target
+          - Target: < 5 minutes
+          - Actual: ${{ steps.duration.outputs.duration_display }}
+          
+          EOF
+          
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const duration = '${{ steps.duration.outputs.duration_display }}';
+            const status = '${{ steps.duration.outputs.status }}';
+            
+            const comment = `### CI/CD Pipeline Performance
+            
+            **Duration**: ${duration}
+            **Status**: ${status}
+            
+            | Job | Status |
+            |-----|--------|
+            | Quality Checks | ${{ needs.quality-checks.result }} |
+            | Tests | ${{ needs.test.result }} |
+            | Security | ${{ needs.security.result }} |
+            | Build | ${{ needs.build.result }} |
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

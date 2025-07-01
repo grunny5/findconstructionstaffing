@@ -1,0 +1,96 @@
+# Test workflow to verify caching performance
+# This file tests that our CI pipeline caching is working effectively
+
+name: Test Cache Performance
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-cache-cold:
+    name: Cold Cache Run
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          
+      - name: Clear caches
+        run: |
+          echo "Ensuring cold cache by using unique key"
+          
+      - name: Time npm install
+        run: |
+          START_TIME=$(date +%s)
+          npm ci
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "npm ci took ${DURATION} seconds (cold cache)"
+          echo "NPM_INSTALL_COLD=${DURATION}" >> $GITHUB_ENV
+          
+      - name: Time Jest run (cold)
+        run: |
+          START_TIME=$(date +%s)
+          npm test -- --ci --passWithNoTests --cacheDirectory=.jest-cache-test-cold || true
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "Jest took ${DURATION} seconds (cold cache)"
+          echo "JEST_RUN_COLD=${DURATION}" >> $GITHUB_ENV
+          
+  test-cache-warm:
+    name: Warm Cache Run
+    runs-on: ubuntu-latest
+    needs: test-cache-cold
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js with cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          
+      - name: Time npm install (cached)
+        run: |
+          START_TIME=$(date +%s)
+          npm ci
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "npm ci took ${DURATION} seconds (with cache)"
+          echo "NPM_INSTALL_WARM=${DURATION}" >> $GITHUB_ENV
+          
+      - name: Cache Jest cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .jest-cache
+          key: ${{ runner.os }}-jest-perf-${{ hashFiles('**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-perf-
+            
+      - name: Time Jest run (warm)
+        run: |
+          START_TIME=$(date +%s)
+          npm test -- --ci --passWithNoTests --cacheDirectory=.jest-cache || true
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "Jest took ${DURATION} seconds (warm cache)"
+          echo "JEST_RUN_WARM=${DURATION}" >> $GITHUB_ENV
+          
+      - name: Cache statistics
+        run: |
+          echo "=== Cache Performance Summary ==="
+          echo "NPM install speedup: Check GitHub cache hit rate above"
+          echo "Jest cache directory size:"
+          du -sh .jest-cache || echo "No Jest cache found"
+          echo ""
+          echo "ESLint cache:"
+          ls -la .eslintcache 2>/dev/null || echo "No ESLint cache found"

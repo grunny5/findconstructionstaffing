@@ -1,0 +1,73 @@
+# Test workflow to verify test result reporting
+# This file tests that our CI pipeline properly generates and reports test results
+
+name: Test Result Reporting
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-reporting:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run tests with all reporters
+        run: |
+          echo "Running tests with coverage and JUnit reporting..."
+          npm test -- --coverage --ci --passWithNoTests || echo "Some tests failed (expected)"
+          
+      - name: Verify test artifacts
+        run: |
+          echo "Checking test result files..."
+          
+          # Check JUnit XML
+          if [ -f test-results/junit.xml ]; then
+            echo "✓ JUnit XML report generated"
+            echo "First 20 lines of JUnit report:"
+            head -20 test-results/junit.xml
+          else
+            echo "✗ JUnit XML report missing"
+            exit 1
+          fi
+          
+          # Check coverage reports
+          echo ""
+          echo "Coverage artifacts:"
+          ls -la coverage/ | head -10
+          
+          # Check coverage summary
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "✓ Coverage summary JSON generated"
+            echo "Coverage summary:"
+            cat coverage/coverage-summary.json | jq '.total' || cat coverage/coverage-summary.json
+          fi
+          
+      - name: Generate coverage badge data
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct' || echo "0")
+            echo "Total coverage: ${COVERAGE}%"
+            
+            # Determine badge color
+            if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+              COLOR="brightgreen"
+            elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+              COLOR="yellow"
+            else
+              COLOR="red"
+            fi
+            
+            echo "Badge color: $COLOR"
+          fi

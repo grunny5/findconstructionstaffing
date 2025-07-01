@@ -288,6 +288,18 @@ async function debugSchema() {
 - Verify PostgreSQL client installed
 - Check SELinux permissions
 
+## CI/CD Issues
+
+For CI/CD pipeline and GitHub Actions issues, see:
+- [CI/CD Troubleshooting Guide](./CI_CD_TROUBLESHOOTING.md)
+
+Common CI/CD problems:
+- TypeScript compilation errors
+- ESLint/Prettier failures
+- Test failures in CI but not locally
+- Build failures
+- Branch protection issues
+
 ## Getting Help
 
 ### Before Asking for Help
@@ -295,12 +307,14 @@ async function debugSchema() {
 2. Check error messages carefully
 3. Review recent changes
 4. Search existing issues
+5. Check CI/CD logs if applicable
 
 ### Information to Provide
 - Full error message
 - Environment (OS, Node version)
 - Steps to reproduce
 - What you've already tried
+- Link to failed CI run (if applicable)
 
 ### Support Channels
 1. GitHub Issues: Project repository

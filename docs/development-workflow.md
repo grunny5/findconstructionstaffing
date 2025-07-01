@@ -46,7 +46,12 @@ npm install
 # 3. Seed database with fresh data
 npm run seed
 
-# 4. Start development server
+# 4. Run CI checks locally before starting work
+npm run type-check  # TypeScript compilation
+npm run lint        # ESLint checks
+npm run format:check # Prettier formatting
+
+# 5. Start development server
 npm run dev
 ```
 
@@ -198,15 +203,70 @@ time npm run seed
 # If slower, check database connectivity
 ```
 
+## CI/CD Workflow
+
+### Pre-Push Checklist
+Before pushing code:
+```bash
+# Run all quality checks
+npm run type-check    # TypeScript compilation
+npm run lint          # ESLint validation
+npm run format        # Auto-fix formatting
+npm run test          # Run test suite
+```
+
+### Pull Request Workflow
+1. **Create feature branch**: `git checkout -b feat/your-feature`
+2. **Make changes and commit**: Follow conventional commits
+3. **Push branch**: `git push origin feat/your-feature`
+4. **Open PR**: CI checks will run automatically
+
+### CI Pipeline Checks
+Every PR triggers:
+- **Code Quality Checks**: TypeScript, ESLint, Prettier
+- **Test Suite**: Jest unit tests with coverage
+- **Security Scanning**: npm audit
+- **Build Verification**: Next.js production build
+
+### Fixing CI Failures
+If CI checks fail:
+```bash
+# TypeScript errors
+npm run type-check
+# Fix type errors in reported files
+
+# ESLint errors
+npm run lint
+# Fix linting issues or use:
+npm run lint -- --fix
+
+# Prettier errors
+npm run format
+# This auto-fixes all formatting
+
+# Test failures
+npm test
+# Fix failing tests
+```
+
 ## Code Review Checklist
 
-When reviewing PRs that affect data or API:
+When reviewing PRs:
 
+### Data & API Changes
 - [ ] Does the PR update mock data if schema changed?
 - [ ] Are seeding scripts updated for new fields/relationships?
 - [ ] Do tests account for seeded data structure?
 - [ ] Is verification updated for new data requirements?
 - [ ] Does documentation reflect data changes?
+
+### CI/CD Requirements
+- [ ] All CI checks passing (green status)
+- [ ] TypeScript compilation successful
+- [ ] No ESLint errors (warnings acceptable)
+- [ ] Code properly formatted with Prettier
+- [ ] Test coverage maintained or improved
+- [ ] No security vulnerabilities introduced
 
 ## Best Practices
 

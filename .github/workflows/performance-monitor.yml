@@ -1,0 +1,143 @@
+name: CI/CD Performance Monitor
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+  schedule:
+    # Run weekly performance report on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  collect-metrics:
+    name: Collect Performance Metrics
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      issues: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Collect workflow metrics
+        uses: actions/github-script@v7
+        id: metrics
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const workflowName = 'CI/CD Pipeline';
+            
+            // Get workflow runs from the past week
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            const workflows = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              workflow_id: 'ci.yml',
+              created: `>=${oneWeekAgo.toISOString()}`,
+              per_page: 100
+            });
+            
+            const metrics = {
+              totalRuns: workflows.data.workflow_runs.length,
+              successfulRuns: 0,
+              failedRuns: 0,
+              cancelledRuns: 0,
+              averageDuration: 0,
+              maxDuration: 0,
+              minDuration: Infinity,
+              successRate: 0,
+              durations: []
+            };
+            
+            for (const run of workflows.data.workflow_runs) {
+              if (run.status !== 'completed') continue;
+              
+              if (run.conclusion === 'success') {
+                metrics.successfulRuns++;
+                const duration = new Date(run.updated_at) - new Date(run.created_at);
+                metrics.durations.push(duration);
+                metrics.maxDuration = Math.max(metrics.maxDuration, duration);
+                metrics.minDuration = Math.min(metrics.minDuration, duration);
+              } else if (run.conclusion === 'failure') {
+                metrics.failedRuns++;
+              } else if (run.conclusion === 'cancelled') {
+                metrics.cancelledRuns++;
+              }
+            }
+            
+            if (metrics.durations.length > 0) {
+              metrics.averageDuration = metrics.durations.reduce((a, b) => a + b, 0) / metrics.durations.length;
+              metrics.successRate = (metrics.successfulRuns / metrics.totalRuns) * 100;
+            }
+            
+            // Convert durations to minutes
+            metrics.averageDurationMinutes = (metrics.averageDuration / 1000 / 60).toFixed(2);
+            metrics.maxDurationMinutes = (metrics.maxDuration / 1000 / 60).toFixed(2);
+            metrics.minDurationMinutes = metrics.minDuration === Infinity ? 0 : (metrics.minDuration / 1000 / 60).toFixed(2);
+            
+            return metrics;
+            
+      - name: Generate performance report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const metrics = ${{ steps.metrics.outputs.result }};
+            const date = new Date().toISOString().split('T')[0];
+            
+            const report = `# CI/CD Performance Report - ${date}
+
+## Summary
+- **Total Runs**: ${metrics.totalRuns}
+- **Success Rate**: ${metrics.successRate.toFixed(1)}%
+- **Average Duration**: ${metrics.averageDurationMinutes} minutes
+- **Fastest Run**: ${metrics.minDurationMinutes} minutes
+- **Slowest Run**: ${metrics.maxDurationMinutes} minutes
+
+## Run Breakdown
+- ✅ Successful: ${metrics.successfulRuns}
+- ❌ Failed: ${metrics.failedRuns}
+- 🚫 Cancelled: ${metrics.cancelledRuns}
+
+## Performance Trends
+${metrics.averageDurationMinutes > 5 ? '⚠️ **Warning**: Average duration exceeds 5-minute target!' : '✅ Performance target met (<5 minutes)'}
+
+## Recommendations
+${metrics.successRate < 95 ? '- Investigate failing tests and fix flaky tests' : ''}
+${metrics.averageDurationMinutes > 5 ? '- Review caching strategies\n- Consider splitting large test suites\n- Optimize slow-running tests' : ''}
+${metrics.successRate >= 95 && metrics.averageDurationMinutes <= 5 ? '- All metrics within acceptable ranges' : ''}
+`;
+            
+            // Save report as artifact
+            const fs = require('fs');
+            fs.writeFileSync('performance-report.md', report);
+            
+            // Create issue if performance degrades
+            if (metrics.averageDurationMinutes > 5 || metrics.successRate < 95) {
+              const { owner, repo } = context.repo;
+              
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title: `CI/CD Performance Alert - ${date}`,
+                body: report,
+                labels: ['ci/cd', 'performance']
+              });
+            }
+            
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report-${{ github.run_id }}
+          path: performance-report.md
+          
+      - name: Update metrics badge
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          # This would update a badge in README or external service
+          echo "Performance metrics collected and reported"
