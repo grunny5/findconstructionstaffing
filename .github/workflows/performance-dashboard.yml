@@ -63,7 +63,10 @@ jobs:
             return dailyMetrics;
             
       - name: Generate dashboard
+        env:
+          METRICS_DATA: ${{ steps.collect.outputs.result }}
         run: |
+          # Generate dashboard header
           cat > docs/CI_CD_DASHBOARD.md << 'EOF'
           # CI/CD Performance Dashboard
           
@@ -79,7 +82,55 @@ jobs:
           |------|------|--------------|--------------|
           EOF
           
-          # Add metrics data (this would be populated from the collected metrics)
+          # Process metrics and add to table
+          echo "$METRICS_DATA" | node -e "
+            const readline = require('readline');
+            const rl = readline.createInterface({
+              input: process.stdin,
+              output: process.stdout,
+              terminal: false
+            });
+            
+            rl.on('line', (line) => {
+              try {
+                const metrics = JSON.parse(line);
+                const dates = Object.keys(metrics).sort().reverse().slice(0, 30);
+                
+                dates.forEach(date => {
+                  const data = metrics[date];
+                  const successRate = data.runs > 0 
+                    ? ((data.successful / data.runs) * 100).toFixed(1) + '%' 
+                    : 'N/A';
+                  const avgDuration = data.successful > 0 
+                    ? (data.totalDuration / data.successful).toFixed(1) + ' min' 
+                    : 'N/A';
+                  
+                  console.log(\`| \${date} | \${data.runs} | \${successRate} | \${avgDuration} |\`);
+                });
+                
+                // Add summary statistics
+                const totalRuns = Object.values(metrics).reduce((sum, d) => sum + d.runs, 0);
+                const totalSuccess = Object.values(metrics).reduce((sum, d) => sum + d.successful, 0);
+                const overallRate = totalRuns > 0 
+                  ? ((totalSuccess / totalRuns) * 100).toFixed(1) + '%'
+                  : 'N/A';
+                
+                console.log('');
+                console.log('## Summary Statistics');
+                console.log('');
+                console.log(\`- **Total Runs (30 days)**: \${totalRuns}\`);
+                console.log(\`- **Overall Success Rate**: \${overallRate}\`);
+                console.log(\`- **Data Collection Period**: \${dates[dates.length - 1]} to \${dates[0]}\`);
+              } catch (e) {
+                console.error('Error parsing metrics:', e);
+              }
+            });
+          " >> docs/CI_CD_DASHBOARD.md
+          
+          echo "" >> docs/CI_CD_DASHBOARD.md
+          echo "---" >> docs/CI_CD_DASHBOARD.md
+          echo "*Dashboard updated automatically by GitHub Actions*" >> docs/CI_CD_DASHBOARD.md
+          
           echo "Dashboard generated at docs/CI_CD_DASHBOARD.md"
           
       - name: Commit dashboard
