@@ -18,6 +18,8 @@ jobs:
         id: pr
         with:
           script: |
+            const core = require('@actions/core');
+            
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
