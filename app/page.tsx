@@ -214,8 +214,7 @@ export default function HomePage() {
     filters.focusAreas.length;
     
   const hasActiveFilters = filters.search || 
-    activeFilterCount > 0 ||
-    filters.search;
+    activeFilterCount > 0;
 
   const clearAllFilters = () => {
     setFilters({

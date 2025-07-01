@@ -10,7 +10,7 @@ export default function ProfileSkeleton() {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Logo Skeleton */}
             <div className="flex-shrink-0">
-              <Skeleton className="w-32 h-32 rounded-lg" />
+              <Skeleton className="w-32 h-32 rounded-lg" data-testid="logo-skeleton" />
             </div>
 
             {/* Agency Details Skeleton */}
@@ -18,13 +18,13 @@ export default function ProfileSkeleton() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   {/* Name */}
-                  <Skeleton className="h-9 w-80 mb-4" />
+                  <Skeleton className="h-9 w-80 mb-4" data-testid="name-skeleton" />
                   
                   {/* Badges */}
                   <div className="flex items-center gap-4 mb-4">
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-20" data-testid="badge-skeleton" />
+                    <Skeleton className="h-6 w-20" data-testid="badge-skeleton" />
+                    <Skeleton className="h-6 w-20" data-testid="badge-skeleton" />
                   </div>
                   
                   {/* Description */}
@@ -37,15 +37,15 @@ export default function ProfileSkeleton() {
                 
                 {/* CTA Buttons Skeleton */}
                 <div className="flex flex-col gap-3">
-                  <Skeleton className="h-12 w-[200px]" />
-                  <Skeleton className="h-12 w-[200px]" />
+                  <Skeleton className="h-12 w-[200px]" data-testid="cta-button-skeleton" />
+                  <Skeleton className="h-12 w-[200px]" data-testid="cta-button-skeleton" />
                 </div>
               </div>
 
               {/* Quick Stats Skeleton */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8" data-testid="stats-grid">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i}>
+                  <div key={i} data-testid="stat-item">
                     <div className="flex items-center gap-2 mb-1">
                       <Skeleton className="h-4 w-4" />
                       <Skeleton className="h-4 w-20" />
@@ -67,10 +67,10 @@ export default function ProfileSkeleton() {
             <Card>
               <CardContent className="p-6">
                 {/* Tab-like header */}
-                <div className="flex gap-4 mb-6 border-b pb-4">
-                  <Skeleton className="h-8 w-24" />
-                  <Skeleton className="h-8 w-32" />
-                  <Skeleton className="h-8 w-28" />
+                <div className="flex gap-4 mb-6 border-b pb-4" data-testid="tab-skeleton-container">
+                  <Skeleton className="h-8 w-24" data-testid="tab-skeleton" />
+                  <Skeleton className="h-8 w-32" data-testid="tab-skeleton" />
+                  <Skeleton className="h-8 w-28" data-testid="tab-skeleton" />
                 </div>
                 
                 {/* Content */}
@@ -105,7 +105,7 @@ export default function ProfileSkeleton() {
             <Card>
               <CardContent className="p-6">
                 {/* Title */}
-                <Skeleton className="h-6 w-40 mb-4" />
+                <Skeleton className="h-6 w-40 mb-4" data-testid="contact-title-skeleton" />
                 
                 {/* Contact items */}
                 <div className="space-y-4">
@@ -129,7 +129,7 @@ export default function ProfileSkeleton() {
             {/* Back Link Card */}
             <Card>
               <CardContent className="p-6">
-                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-5 w-32" data-testid="back-link-skeleton" />
               </CardContent>
             </Card>
           </div>

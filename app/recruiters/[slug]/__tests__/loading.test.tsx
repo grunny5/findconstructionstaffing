@@ -25,78 +25,85 @@ describe('Profile Page Loading State', () => {
   });
 
   it('should show skeleton for agency logo', () => {
-    const { container } = render(<ProfileLoading />);
+    render(<ProfileLoading />);
     
     // Logo skeleton should be 32x32
-    const logoSkeleton = container.querySelector('.w-32.h-32');
+    const logoSkeleton = screen.getByTestId('logo-skeleton');
     expect(logoSkeleton).toBeInTheDocument();
-    expect(logoSkeleton).toHaveClass('rounded-lg');
+    expect(logoSkeleton).toHaveClass('w-32', 'h-32', 'rounded-lg');
   });
 
   it('should show skeleton for agency name and badges', () => {
-    const { container } = render(<ProfileLoading />);
+    render(<ProfileLoading />);
     
     // Name skeleton
-    const nameSkeleton = container.querySelector('.h-9.w-80');
+    const nameSkeleton = screen.getByTestId('name-skeleton');
     expect(nameSkeleton).toBeInTheDocument();
+    expect(nameSkeleton).toHaveClass('h-9', 'w-80');
     
     // Badge skeletons
-    const badgeSkeletons = container.querySelectorAll('.h-6.w-20');
-    expect(badgeSkeletons.length).toBeGreaterThanOrEqual(3);
+    const badgeSkeletons = screen.getAllByTestId('badge-skeleton');
+    expect(badgeSkeletons).toHaveLength(3);
+    badgeSkeletons.forEach(badge => {
+      expect(badge).toHaveClass('h-6', 'w-20');
+    });
   });
 
   it('should show skeleton for quick stats', () => {
-    const { container } = render(<ProfileLoading />);
-    
-    // Should have 4 stat items
-    const statSkeletons = container.querySelectorAll('.grid-cols-2.lg\\:grid-cols-4 > div');
-    expect(statSkeletons.length).toBe(4);
-  });
-
-  it('should show disabled tabs', () => {
     render(<ProfileLoading />);
     
-    // Tabs should be present but disabled
-    const overviewTab = screen.getByText('Overview');
-    const tradesTab = screen.getByText('Trade Specialties');
-    const regionsTab = screen.getByText('Service Areas');
+    // Should have 4 stat items
+    const statsGrid = screen.getByTestId('stats-grid');
+    expect(statsGrid).toBeInTheDocument();
     
-    expect(overviewTab).toBeInTheDocument();
-    expect(tradesTab).toBeInTheDocument();
-    expect(regionsTab).toBeInTheDocument();
+    const statItems = screen.getAllByTestId('stat-item');
+    expect(statItems).toHaveLength(4);
+  });
+
+  it('should show skeleton for tabs', () => {
+    render(<ProfileLoading />);
     
-    // Tabs should be disabled
-    expect(overviewTab).toHaveAttribute('disabled');
-    expect(tradesTab).toHaveAttribute('disabled');
-    expect(regionsTab).toHaveAttribute('disabled');
+    // Should show tab skeleton container
+    const tabContainer = screen.getByTestId('tab-skeleton-container');
+    expect(tabContainer).toBeInTheDocument();
+    
+    // Should have 3 tab skeletons (Overview, Trade Specialties, Service Areas)
+    const tabSkeletons = screen.getAllByTestId('tab-skeleton');
+    expect(tabSkeletons).toHaveLength(3);
   });
 
   it('should show skeleton for contact information', () => {
-    const { container } = render(<ProfileLoading />);
+    render(<ProfileLoading />);
     
     // Contact card should have title skeleton
-    const contactTitleSkeleton = container.querySelector('.h-6.w-40');
+    const contactTitleSkeleton = screen.getByTestId('contact-title-skeleton');
     expect(contactTitleSkeleton).toBeInTheDocument();
+    expect(contactTitleSkeleton).toHaveClass('h-6', 'w-40');
     
-    // Should have contact item skeletons
+    // Should have contact item skeletons (verify by structure)
+    const { container } = render(<ProfileLoading />);
     const contactItemContainers = container.querySelectorAll('.space-y-4 > div');
     expect(contactItemContainers.length).toBeGreaterThanOrEqual(3);
   });
 
   it('should show skeleton for CTA buttons', () => {
-    const { container } = render(<ProfileLoading />);
+    render(<ProfileLoading />);
     
     // Should have button skeletons
-    const buttonSkeletons = container.querySelectorAll('.h-12.w-\\[200px\\]');
-    expect(buttonSkeletons.length).toBe(2);
+    const buttonSkeletons = screen.getAllByTestId('cta-button-skeleton');
+    expect(buttonSkeletons).toHaveLength(2);
+    buttonSkeletons.forEach(button => {
+      expect(button).toHaveClass('h-12', 'w-[200px]');
+    });
   });
 
   it('should show skeleton for back link card', () => {
-    const { container } = render(<ProfileLoading />);
+    render(<ProfileLoading />);
     
     // Back link skeleton
-    const backLinkSkeleton = container.querySelector('.h-5.w-32');
+    const backLinkSkeleton = screen.getByTestId('back-link-skeleton');
     expect(backLinkSkeleton).toBeInTheDocument();
+    expect(backLinkSkeleton).toHaveClass('h-5', 'w-32');
   });
 
   it('should maintain layout structure while loading', () => {
