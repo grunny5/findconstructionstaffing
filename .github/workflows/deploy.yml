@@ -86,6 +86,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node18-modules-
             ${{ runner.os }}-node-modules-
+            
+      - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
           
       - name: Check Vercel token availability
         id: check-token
