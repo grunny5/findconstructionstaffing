@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createSlug } from '@/lib/utils/formatting';
 import { 
   Building2, 
   Users, 
@@ -302,16 +303,8 @@ export default function HomePage() {
                   if (value === 'all') {
                     setFilters(prev => ({ ...prev, trades: [] }));
                   } else {
-                    // Convert display names to slugs that match API
-                    const tradeMap: Record<string, string> = {
-                      'general': 'general-labor',
-                      'electrical': 'electrician', 
-                      'plumbing': 'plumber',
-                      'hvac': 'hvac-technician',
-                      'welding': 'welder',
-                      'carpentry': 'carpenter'
-                    };
-                    const tradeSlug = tradeMap[value] || value;
+                    // Derive slug from the selected display name
+                    const tradeSlug = createSlug(value);
                     setFilters(prev => ({ ...prev, trades: [tradeSlug] }));
                   }
                 }}>
