@@ -41,11 +41,13 @@ Automated weekly reports include:
 
 ### 4. Performance Dashboard
 
-Daily updated dashboard (docs/CI_CD_DASHBOARD.md) shows:
+Daily updated dashboard ([docs/CI_CD_DASHBOARD.md](./CI_CD_DASHBOARD.md)) shows:
 - 30-day performance trends
 - Daily success rates
 - Average durations over time
-- Visual charts and graphs
+- Summary statistics
+
+*Note: This dashboard is automatically generated and updated daily by the `performance-dashboard.yml` workflow.*
 
 ## Accessing Performance Data
 
