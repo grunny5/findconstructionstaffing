@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "jest",
     "test:watch": "jest --watch",
     "seed": "tsx scripts/seed-database.ts",
@@ -86,6 +89,7 @@
     "dotenv": "^16.5.0",
     "jest": "^30.0.3",
     "jest-environment-jsdom": "^30.0.2",
+    "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "tsx": "^4.20.3"
   }

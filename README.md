@@ -241,6 +241,9 @@ npm run build    # Build for production
 npm run start    # Start production server
 npm run lint     # Run ESLint
 npm run type-check # Run TypeScript compiler
+npm run format   # Format code with Prettier
+npm run format:check # Check code formatting
+npm run test     # Run test suite
 
 # Database seeding commands
 npm run seed         # Seed database with mock data
@@ -313,6 +316,40 @@ The project is configured for deployment on Vercel with automatic CI/CD:
    - `SUPABASE_SERVICE_ROLE_KEY` - Service role key (for API routes)
    - `MONITORING_API_KEY` - Optional, for metrics endpoint
 
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+### Automated Checks
+
+Every pull request and push to main/develop branches triggers:
+
+1. **Code Quality Checks**
+   - TypeScript compilation verification
+   - ESLint code quality rules
+   - Prettier formatting check
+
+2. **Test Suite**
+   - Unit tests with Jest
+   - Coverage report generation
+   - Test results uploaded as artifacts
+
+3. **Security Scanning**
+   - npm audit for vulnerability detection
+   - Production dependency scanning
+
+4. **Build Verification**
+   - Next.js production build
+   - Build artifacts saved for deployment
+
+### Workflow Status
+
+Check the Actions tab in GitHub to view:
+- Pipeline execution history
+- Detailed logs for each job
+- Test coverage reports
+- Build artifacts
+
 ## Contributing
 
 1. Follow the established code patterns
@@ -320,6 +357,7 @@ The project is configured for deployment on Vercel with automatic CI/CD:
 3. Create feature branches for new work
 4. Submit pull requests with clear descriptions
 5. Ensure all tests pass before submitting
+6. CI/CD checks must pass before merging
 
 ## License
 
