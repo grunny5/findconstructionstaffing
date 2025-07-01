@@ -68,6 +68,15 @@ jobs:
           node-version: '18.x'
           cache: 'npm'
           
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+          
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
         
@@ -188,6 +197,15 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
           
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
