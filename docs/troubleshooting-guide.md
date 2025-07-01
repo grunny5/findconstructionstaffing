@@ -21,7 +21,7 @@ node scripts/security-tests.js
 ### Connection Issues
 
 #### Invalid API Key Error
-```
+```text
 Error: Invalid API key
 ```
 
@@ -40,7 +40,7 @@ Error: Invalid API key
 3. Remove any trailing spaces or newlines
 
 #### Connection Timeout
-```
+```text
 Error: Connection timeout
 ```
 
@@ -54,7 +54,7 @@ Error: Connection timeout
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
    ```
-2. Check Supabase status: https://status.supabase.com
+2. Check Supabase status: <https://status.supabase.com>
 3. Test with curl:
    ```bash
    curl https://your-project-id.supabase.co/rest/v1/
@@ -63,7 +63,7 @@ Error: Connection timeout
 ### Database Issues
 
 #### Table Does Not Exist
-```
+```text
 Error: relation "agencies" does not exist
 ```
 
@@ -83,7 +83,7 @@ Error: relation "agencies" does not exist
 3. Verify connected to correct project
 
 #### RLS Policy Blocking Access
-```
+```text
 Error: new row violates row-level security policy
 ```
 
@@ -318,7 +318,7 @@ Common CI/CD problems:
 
 ### Support Channels
 1. GitHub Issues: Project repository
-2. Supabase Discord: https://discord.supabase.com
+2. Supabase Discord: <https://discord.supabase.com>
 3. Team Slack: #backend channel
 
 ## Emergency Procedures
@@ -340,7 +340,7 @@ Common CI/CD problems:
 3. **Contact Supabase support urgently**
    - **Email**: support@supabase.io
    - **Dashboard**: Click "Support" button in your project dashboard
-   - **Discord**: https://discord.supabase.com (for immediate community help)
+   - **Discord**: <https://discord.supabase.com> (for immediate community help)
    - Include: Project ref, time of corruption, last known good state
 
 4. **Restore from backup**

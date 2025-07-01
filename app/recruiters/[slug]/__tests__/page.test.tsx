@@ -70,7 +70,7 @@ describe('Agency Profile Page API Tests', () => {
     supabase.from.mockReturnValue(mockQueryBuilder);
 
     const request = new Request('http://localhost:3000/api/agencies/elite-construction-staffing');
-    const response = await GET(request, { params: { slug: 'elite-construction-staffing' } });
+    const response = await GET(request as any, { params: { slug: 'elite-construction-staffing' } });
     
     expect(response.status).toBe(200);
     const data = await response.json();
@@ -93,7 +93,7 @@ describe('Agency Profile Page API Tests', () => {
     supabase.from.mockReturnValue(mockQueryBuilder);
 
     const request = new Request('http://localhost:3000/api/agencies/non-existent');
-    const response = await GET(request, { params: { slug: 'non-existent' } });
+    const response = await GET(request as any, { params: { slug: 'non-existent' } });
     
     expect(response.status).toBe(404);
     const data = await response.json();
@@ -114,7 +114,7 @@ describe('Agency Profile Page API Tests', () => {
     supabase.from.mockReturnValue(mockQueryBuilder);
 
     const request = new Request('http://localhost:3000/api/agencies/elite-construction-staffing');
-    const response = await GET(request, { params: { slug: 'elite-construction-staffing' } });
+    const response = await GET(request as any, { params: { slug: 'elite-construction-staffing' } });
     
     expect(response.status).toBe(500);
     const data = await response.json();
@@ -124,7 +124,7 @@ describe('Agency Profile Page API Tests', () => {
 
   it('should validate slug parameter', async () => {
     const request = new Request('http://localhost:3000/api/agencies/');
-    const response = await GET(request, { params: { slug: '' } });
+    const response = await GET(request as any, { params: { slug: '' } });
     
     expect(response.status).toBe(400);
     const data = await response.json();
@@ -149,7 +149,7 @@ describe('Agency Profile Page API Tests', () => {
     supabase.from.mockReturnValue(mockQueryBuilder);
 
     const request = new Request('http://localhost:3000/api/agencies/elite-construction-staffing');
-    const response = await GET(request, { params: { slug: 'elite-construction-staffing' } });
+    const response = await GET(request as any, { params: { slug: 'elite-construction-staffing' } });
     
     expect(response.headers.get('Cache-Control')).toContain('public');
     expect(response.headers.get('Cache-Control')).toContain('s-maxage=60');

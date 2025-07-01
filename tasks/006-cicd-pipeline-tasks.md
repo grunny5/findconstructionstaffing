@@ -441,7 +441,7 @@ This document breaks down the CI/CD pipeline feature into sprint-ready engineeri
 
 ### Risk Mitigation:
 - Test each component thoroughly before moving to the next
-- Keep pipeline simple initially, add complexity gradually
+- Keep the pipeline simple initially, add complexity gradually
 - Have rollback plan for each major change
 
 ---

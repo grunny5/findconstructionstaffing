@@ -5,6 +5,17 @@
 
 set -e
 
+# Function to handle API errors
+handle_api_error() {
+    echo "❌ Failed to configure branch protection rules."
+    echo "Common causes:"
+    echo "  - Repository not found or no admin access"
+    echo "  - Branch 'main' does not exist"
+    echo "  - Invalid status check names"
+    echo "  - GitHub CLI not authenticated"
+    exit 1
+}
+
 echo "🔒 Setting up branch protection rules for main branch..."
 
 # Check if gh CLI is installed
@@ -52,7 +63,7 @@ gh api "repos/$REPO_INFO/branches/main/protection" \
   --field block_creations=false \
   --field required_conversation_resolution=false \
   --field lock_branch=false \
-  --field allow_fork_syncing=false
+  --field allow_fork_syncing=false || handle_api_error
 
 echo "✅ Branch protection rules configured successfully!"
 echo ""

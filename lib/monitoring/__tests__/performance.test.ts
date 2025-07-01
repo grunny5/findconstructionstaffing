@@ -220,11 +220,11 @@ describe('PerformanceMonitor', () => {
     const originalEnv = process.env.NODE_ENV;
 
     afterEach(() => {
-      process.env.NODE_ENV = originalEnv;
+      Object.defineProperty(process.env, 'NODE_ENV', { value: originalEnv, configurable: true });
     });
 
     it('should log structured JSON in production', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', configurable: true });
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
       const metrics = monitor.complete(200);
@@ -235,7 +235,7 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should log human-readable format in development', () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
       const monitor = new PerformanceMonitor('/api/test', 'GET');
       
       jest.advanceTimersByTime(50);

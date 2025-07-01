@@ -32,7 +32,6 @@ npm run seed:reset
 npm run seed:verify
 ```
 
-**Note:** The script currently seeds all 12 agencies. Quick-mode options for faster development iterations may be added in future updates.
 
 ### Daily Development Routine
 
@@ -254,7 +253,7 @@ npm test
 When reviewing PRs:
 
 ### Data & API Changes
-- [ ] Does the PR update mock data if schema changed?
+- [ ] Does the PR update the mock data if the schema changed?
 - [ ] Are seeding scripts updated for new fields/relationships?
 - [ ] Do tests account for seeded data structure?
 - [ ] Is verification updated for new data requirements?
@@ -273,7 +272,7 @@ When reviewing PRs:
 ### Database Seeding
 - Always use `npm run seed:verify` after seeding to confirm success
 - Use `npm run seed:reset` sparingly - only when you need a clean slate
-- Don't modify seeded data manually in database - update mock data instead
+- Don't modify seeded data manually in the database - update mock data instead
 
 ### Development Environment
 - Keep local environment variables in `.env.local`
@@ -294,7 +293,7 @@ When reviewing PRs:
 
 ### Staging
 - Should use production-like data volume
-- Seeding should be automated in deployment pipeline
+- Seeding should be automated in the deployment pipeline
 - Verify data integrity after deployment
 
 ### Production
@@ -332,7 +331,7 @@ The seed script includes multiple safety mechanisms:
 
 ### Emergency Procedures
 
-If accidentally run in wrong environment:
+If accidentally run in the wrong environment:
 1. **DO NOT** run `seed:reset` - it will delete data
 2. Check with `npm run seed:verify` to see what was added
 3. Manually review and remove test agencies if needed

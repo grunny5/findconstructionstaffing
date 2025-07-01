@@ -1,5 +1,10 @@
 name: Load Testing
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 on:
   # Run on pull requests to main
   pull_request:

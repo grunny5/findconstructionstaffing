@@ -226,7 +226,76 @@ function createSupabaseMockInternal() {
 // Module-level mock - properly hoisted
 jest.mock('@/lib/supabase', () => {
   const { createSlug, formatPhoneNumber } = require('@/lib/utils/formatting');
-  const mockSupabase = createSupabaseMockInternal();
+  
+  // Create mock inline to avoid scope issues
+  const mockSupabase = {
+    from: jest.fn(),
+    select: jest.fn(),
+    insert: jest.fn(),
+    update: jest.fn(),
+    upsert: jest.fn(),
+    delete: jest.fn(),
+    eq: jest.fn(),
+    neq: jest.fn(),
+    gt: jest.fn(),
+    gte: jest.fn(),
+    lt: jest.fn(),
+    lte: jest.fn(),
+    like: jest.fn(),
+    ilike: jest.fn(),
+    is: jest.fn(),
+    in: jest.fn(),
+    not: jest.fn(),
+    match: jest.fn(),
+    filter: jest.fn(),
+    or: jest.fn(),
+    contains: jest.fn(),
+    containedBy: jest.fn(),
+    rangeGt: jest.fn(),
+    rangeGte: jest.fn(),
+    rangeLt: jest.fn(),
+    rangeLte: jest.fn(),
+    rangeAdjacent: jest.fn(),
+    overlaps: jest.fn(),
+    textSearch: jest.fn(),
+    order: jest.fn(),
+    limit: jest.fn(),
+    range: jest.fn(),
+    single: jest.fn(),
+    maybeSingle: jest.fn(),
+    count: jest.fn(),
+    csv: jest.fn(),
+    _error: null,
+    _throwError: false,
+    _isCountQuery: false,
+    _defaultData: [],
+    _defaultCount: 0,
+    _resolveWith: null,
+    _queryCount: 0
+  };
+
+  // Set up basic chain returns
+  const chainableMethods = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'ilike', 'is', 'in', 'not', 'match', 'filter', 'or', 'contains', 'containedBy', 'rangeGt', 'rangeGte', 'rangeLt', 'rangeLte', 'rangeAdjacent', 'overlaps', 'textSearch', 'order', 'limit', 'range'];
+  
+  chainableMethods.forEach(method => {
+    mockSupabase[method].mockReturnValue(mockSupabase);
+  });
+
+  // Set up from to return chainable mock
+  mockSupabase.from.mockReturnValue(mockSupabase);
+  
+  // Set up select to return chainable mock
+  mockSupabase.select.mockReturnValue(mockSupabase);
+
+  // Set up terminal methods to return promises
+  ['single', 'maybeSingle', 'csv'].forEach(method => {
+    mockSupabase[method].mockResolvedValue({
+      data: null,
+      error: null,
+      count: null
+    });
+  });
+
   return {
     supabase: mockSupabase,
     createSlug,

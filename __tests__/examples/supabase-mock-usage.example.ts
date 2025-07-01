@@ -80,9 +80,7 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
         }
       ];
 
-      if (supabase._setMockData) {
-        supabase._setMockData(customAgencies);
-      }
+      (supabase as any)._setMockData(customAgencies);
 
       const unionAgencies = await supabase
         .from('agencies')
@@ -92,7 +90,7 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
 
       // In a real implementation, you'd filter the data
       // For this mock, it returns all data
-      expect(unionAgencies).toHaveLength(2);
+      expect(unionAgencies!).toHaveLength(2);
       expect(unionAgencies[0].name).toBe('Union Workers Co');
     });
   });
@@ -100,32 +98,28 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
   describe('Error Handling', () => {
     it('should simulate database errors', async () => {
       // Configure the mock to return an error
-      if (supabase._setMockError) {
-        supabase._setMockError({
-          message: 'relation "agencies" does not exist',
-          code: '42P01',
-          details: 'Table not found',
-          hint: 'Check your table name'
-        });
-      }
+      (supabase as any)._setMockError({
+        message: 'relation "agencies" does not exist',
+        code: '42P01',
+        details: 'Table not found',
+        hint: 'Check your table name'
+      });
 
       const response = await supabase
         .from('agencies')
         .select('*');
 
       expect(response.error).toBeDefined();
-      expect(response.error.code).toBe('42P01');
+      expect(response.error!.code).toBe('42P01');
       expect(response.data).toBeNull();
       expect(response.status).toBe(400);
     });
 
     it('should handle errors with catch()', async () => {
-      if (supabase._setMockError) {
-        supabase._setMockError({
-          message: 'Network error',
-          code: 'NETWORK_ERROR'
-        });
-      }
+      (supabase as any)._setMockError({
+        message: 'Network error',
+        code: 'NETWORK_ERROR'
+      });
 
       const result = await supabase
         .from('agencies')

@@ -1,5 +1,11 @@
 name: Deploy to Staging
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  deployments: write
+
 on:
   push:
     branches:

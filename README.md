@@ -1,7 +1,7 @@
 # FindConstructionStaffing
 
 [![CI/CD Pipeline](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml/badge.svg)](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml)
-[![Coverage Status](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)](./coverage/lcov-report/index.html)
+[![Coverage Status](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.total.lines.pct&suffix=%25&url=https%3A%2F%2Fraw.githubusercontent.com%2Fgrunny5%2Ffindconstructionstaffing%2Fmain%2Fcoverage%2Fcoverage-summary.json)](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml)
 
 A modern web directory platform connecting construction companies with specialized staffing agencies across North America.
 
@@ -239,14 +239,17 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # Required for seeding
 ### Development Commands
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint
-npm run type-check # Run TypeScript compiler
-npm run format   # Format code with Prettier
+# Essential development commands
+npm run dev          # Start development server
+npm run test         # Run test suite
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript compiler
 npm run format:check # Check code formatting
-npm run test     # Run test suite
+npm run format       # Format code with Prettier
+
+# Build and deployment
+npm run build        # Build for production
+npm run start        # Start production server
 
 # Database seeding commands
 npm run seed         # Seed database with mock data
@@ -382,7 +385,11 @@ Check the Actions tab in GitHub to view:
 3. Create feature branches for new work
 4. Submit pull requests with clear descriptions
 5. Ensure all tests pass before submitting
-6. CI/CD checks must pass before merging
+6. Run CI checks locally before pushing:
+   ```bash
+   npm run lint && npm run type-check && npm run format:check && npm test
+   ```
+7. CI/CD checks must pass before merging
 
 ## License
 

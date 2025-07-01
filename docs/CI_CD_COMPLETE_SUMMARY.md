@@ -60,7 +60,7 @@ The FindConstructionStaffing project now has a fully automated CI/CD pipeline wi
 
 ### Performance & Monitoring
 - `docs/CI_CD_PERFORMANCE.md` - Performance tracking
-- `docs/CI_CD_DASHBOARD.md` - Metrics dashboard
+- `docs/ci-cd-dashboard.md` - Metrics dashboard
 - `docs/CI_CD_IMPLEMENTATION_SUMMARY.md` - Feature summary
 
 ### Updates

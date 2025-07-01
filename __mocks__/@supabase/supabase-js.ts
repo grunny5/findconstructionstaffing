@@ -1,20 +1,5 @@
 // Enhanced mock for @supabase/supabase-js with TypeScript interfaces
-
-// Define response types matching Supabase patterns
-export interface PostgrestResponse<T> {
-  data: T | null;
-  error: PostgrestError | null;
-  count: number | null;
-  status: number;
-  statusText: string;
-}
-
-export interface PostgrestError {
-  message: string;
-  details?: string;
-  hint?: string;
-  code?: string;
-}
+import type { PostgrestResponse, PostgrestError, SupabaseClient as SupabaseClientType } from '@supabase/supabase-js'
 
 // Sample test data for mocking
 const mockAgencyData = [
@@ -117,7 +102,7 @@ function createQueryBuilder<T = any>(
       count: mockError ? null : mockData.length,
       status: mockError ? 400 : 200,
       statusText: mockError ? 'Bad Request' : 'OK'
-    });
+    } as PostgrestResponse<T[]>);
   };
   
   // Create the query builder object
@@ -158,22 +143,22 @@ function createQueryBuilder<T = any>(
       getResponse().then(res => ({
         ...res,
         data: res.data?.[0] || null
-      }))
-    ),
+      } as PostgrestResponse<T>))
+    ) as jest.Mock<Promise<PostgrestResponse<T>>>,
     
     maybeSingle: jest.fn(() => 
       getResponse().then(res => ({
         ...res,
         data: res.data?.[0] || null
-      }))
-    ),
+      } as PostgrestResponse<T>))
+    ) as jest.Mock<Promise<PostgrestResponse<T>>>,
     
     csv: jest.fn(() => 
       getResponse().then(res => ({
         ...res,
         data: res.data ? 'id,name\n1,test' : null
-      }))
-    ),
+      } as PostgrestResponse<string>))
+    ) as jest.Mock<Promise<PostgrestResponse<string>>>,
     
     execute: jest.fn(() => getResponse()),
     
@@ -184,32 +169,22 @@ function createQueryBuilder<T = any>(
     
     // Internal state for testing
     _mockData: mockData,
-    _mockError: mockError,
+    _mockError: mockError as PostgrestError | undefined,
     _shouldResolve: shouldResolve
   };
   
   return queryBuilder;
 }
 
-// Define the Supabase client interface
+// Create a mock client interface that has our test helper methods
 interface SupabaseClient {
   from: <T = any>(table: string) => SupabaseQueryBuilder<T>;
-  auth: {
-    signUp: jest.Mock;
-    signIn: jest.Mock;
-    signOut: jest.Mock;
-    getUser: jest.Mock;
-    getSession: jest.Mock;
-  };
-  storage: {
-    from: jest.Mock;
-  };
-  functions: {
-    invoke: jest.Mock;
-  };
+  auth: any;
+  storage: any;
+  functions: any;
   // Helper method for tests to set mock data
-  _setMockData?: (data: any[]) => void;
-  _setMockError?: (error: PostgrestError | null) => void;
+  _setMockData: (data: any[]) => void;
+  _setMockError: (error: PostgrestError | null) => void;
 }
 
 // Export the createClient mock
@@ -218,7 +193,7 @@ export const createClient = jest.fn((url: string, key: string): SupabaseClient =
   let currentMockError: PostgrestError | null = null;
   
   const client: SupabaseClient = {
-    from: jest.fn((table: string) => createQueryBuilder(currentMockData, currentMockError)),
+    from: jest.fn((table: string) => createQueryBuilder(currentMockData as any, currentMockError)) as <T = any>(table: string) => SupabaseQueryBuilder<T>,
     
     auth: {
       signUp: jest.fn().mockResolvedValue({ 
@@ -269,8 +244,6 @@ export const createClient = jest.fn((url: string, key: string): SupabaseClient =
 
 // Export types for use in tests
 export type { 
-  PostgrestResponse, 
-  PostgrestError, 
   SupabaseQueryBuilder, 
   SupabaseClient 
 };

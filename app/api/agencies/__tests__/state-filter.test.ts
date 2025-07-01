@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 // Import centralized mock first
 import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock, configureMockForFilters } from '@/__tests__/utils/supabase-mock';
 import { supabase } from '@/lib/supabase';

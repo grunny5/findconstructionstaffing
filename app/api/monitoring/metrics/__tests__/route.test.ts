@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { NextRequest } from 'next/server';
 import { GET } from '../route';
 import { ErrorRateTracker } from '@/lib/monitoring/performance';
@@ -33,14 +36,14 @@ describe('GET /api/monitoring/metrics', () => {
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
+    Object.defineProperty(process.env, 'NODE_ENV', { value: originalEnv });
     process.env.MONITORING_API_KEY = originalApiKey;
     jest.clearAllMocks();
   });
 
   describe('Authorization', () => {
     it('should allow access in development', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);
@@ -49,7 +52,7 @@ describe('GET /api/monitoring/metrics', () => {
     });
 
     it('should deny access in production without auth key', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);
@@ -60,7 +63,7 @@ describe('GET /api/monitoring/metrics', () => {
     });
 
     it('should allow access in production with auth key', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics', {
         headers: {
@@ -75,7 +78,7 @@ describe('GET /api/monitoring/metrics', () => {
 
   describe('Metrics Response', () => {
     it('should return error rates from tracker', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);
@@ -94,7 +97,7 @@ describe('GET /api/monitoring/metrics', () => {
     });
 
     it('should include environment and timestamp', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);
@@ -106,7 +109,7 @@ describe('GET /api/monitoring/metrics', () => {
     });
 
     it('should include performance metrics structure', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);
@@ -124,7 +127,7 @@ describe('GET /api/monitoring/metrics', () => {
     });
 
     it('should include alerts structure', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);
@@ -136,7 +139,7 @@ describe('GET /api/monitoring/metrics', () => {
     });
 
     it('should have no-cache headers', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', configurable: true });
 
       const mockRequest = new NextRequest('http://localhost:3000/api/monitoring/metrics');
       const response = await GET(mockRequest);

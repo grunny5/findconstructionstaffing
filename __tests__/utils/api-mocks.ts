@@ -98,7 +98,7 @@ export function createMockNextRequest(options: {
   mockRequest.blob = jest.fn().mockResolvedValue(new Blob());
   mockRequest.arrayBuffer = jest.fn().mockResolvedValue(new ArrayBuffer(0));
 
-  return mockRequest as NextRequest;
+  return mockRequest as unknown as NextRequest;
 }
 
 /**

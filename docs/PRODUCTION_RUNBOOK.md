@@ -48,7 +48,7 @@ gh workflow run deploy.yml --ref main
 ### Real-time Monitoring
 
 1. **GitHub Actions**
-   - Watch deployment progress: [Actions Tab](../../actions)
+   - Watch deployment progress: [Actions Tab](https://github.com/findconstructionstaffing/findconstructionstaffing/actions)
    - Check deployment logs in real-time
    - Monitor for any errors or warnings
 

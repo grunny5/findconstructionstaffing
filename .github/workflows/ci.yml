@@ -6,6 +6,13 @@ on:
   push:
     branches: [main, develop]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  checks: write
+  actions: read
+
 jobs:
   # Record start time for performance monitoring
   start-timer:
@@ -18,31 +25,18 @@ jobs:
   quality-checks:
     name: Code Quality Checks
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        check: [typescript, eslint, prettier]
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js and dependencies
+        uses: ./.github/actions/setup-node
         with:
-          node-version: '18.x'
-          cache: 'npm'
-          
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        id: node-modules-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
-          
-      - name: Install dependencies
-        if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: npm ci
+          node-version: '20.x'
         
       - name: Cache ESLint
+        if: matrix.check == 'eslint'
         uses: actions/cache@v4
         with:
           path: .eslintcache
@@ -51,43 +45,26 @@ jobs:
             ${{ runner.os }}-eslint-
         
       - name: Run TypeScript compilation
+        if: matrix.check == 'typescript'
         run: npm run type-check
-        continue-on-error: false
         
       - name: Run ESLint
+        if: matrix.check == 'eslint'
         run: npm run lint -- --cache --cache-location .eslintcache
-        continue-on-error: false
         
       - name: Run Prettier check
+        if: matrix.check == 'prettier'
         run: npm run format:check
-        continue-on-error: false
         
   test:
     name: Run Tests
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js and dependencies
+        uses: ./.github/actions/setup-node
         with:
-          node-version: '18.x'
-          cache: 'npm'
-          
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        id: node-modules-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
-          
-      - name: Install dependencies
-        if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: npm ci
+          node-version: '20.x'
         
       - name: Cache Jest cache
         uses: actions/cache@v4
@@ -102,9 +79,7 @@ jobs:
       - name: Cache Next.js build
         uses: actions/cache@v4
         with:
-          path: |
-            .next/cache
-            ${{ github.workspace }}/.next/cache
+          path: .next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
@@ -140,8 +115,8 @@ jobs:
           path: test-results/
           
       - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
+        uses: dorny/test-reporter@v1.9.1
+        if: always() && github.event_name == 'pull_request'
         with:
           name: Jest Tests
           path: test-results/junit.xml
@@ -153,33 +128,22 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js and dependencies
+        uses: ./.github/actions/setup-node
         with:
-          node-version: '18.x'
-          cache: 'npm'
-          
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        id: node-modules-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
-          
-      - name: Install dependencies
-        if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: npm ci
+          node-version: '20.x'
         
       - name: Run npm audit
         run: npm audit --audit-level=moderate
         
-      - name: Check for dependency vulnerabilities
-        run: npm audit --production
+      - name: Generate detailed audit report
+        run: npm audit --audit-level=high --json > audit.json || true
+        
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: audit.json
         
   build:
     name: Build Application
@@ -187,27 +151,10 @@ jobs:
     needs: [quality-checks, test, security]
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js and dependencies
+        uses: ./.github/actions/setup-node
         with:
-          node-version: '18.x'
-          cache: 'npm'
-          
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        id: node-modules-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
-          
-      - name: Install dependencies
-        if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: npm ci
+          node-version: '20.x'
         
       - name: Build application
         run: npm run build

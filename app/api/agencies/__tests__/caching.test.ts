@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 // Import centralized mock first
 import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
 import { supabase } from '@/lib/supabase';
@@ -19,30 +22,28 @@ jest.mock('crypto', () => ({
 }));
 
 // Mock NextResponse
-class MockNextResponse {
-  status: number;
-  headers: Headers;
-  body: any;
-  
-  constructor(body: any, init?: ResponseInit) {
-    this.body = body;
-    this.status = init?.status || 200;
-    this.headers = new Headers(init?.headers);
-  }
-  
-  static json(data: any, init?: ResponseInit) {
-    const response = new MockNextResponse(data, init);
-    response.json = async () => data;
-    return response;
-  }
-  
-  json() {
-    return Promise.resolve(this.body);
-  }
-}
-
 jest.mock('next/server', () => ({
-  NextResponse: MockNextResponse
+  NextResponse: class MockNextResponse {
+    status: number;
+    headers: Headers;
+    body: any;
+    
+    constructor(body: any, init?: ResponseInit) {
+      this.body = body;
+      this.status = init?.status || 200;
+      this.headers = new Headers(init?.headers);
+    }
+    
+    static json(data: any, init?: ResponseInit) {
+      const response = new MockNextResponse(data, init);
+      response.json = async () => data;
+      return response;
+    }
+    
+    json() {
+      return Promise.resolve(this.body);
+    }
+  }
 }));
 
 // Mock performance monitoring to avoid console logs in tests

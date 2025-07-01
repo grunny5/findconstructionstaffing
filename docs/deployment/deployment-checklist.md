@@ -4,7 +4,7 @@
 
 ### CI/CD Pipeline
 - [ ] All GitHub Actions checks passing
-- [ ] Branch is up to date with main
+- [ ] Branch is up-to-date with main
 - [ ] PR has been approved by at least 1 reviewer
 - [ ] No merge conflicts
 

@@ -41,7 +41,7 @@ Automated weekly reports include:
 
 ### 4. Performance Dashboard
 
-Daily updated dashboard ([docs/CI_CD_DASHBOARD.md](./CI_CD_DASHBOARD.md)) shows:
+Daily updated dashboard ([docs/ci-cd-dashboard.md](./ci-cd-dashboard.md)) shows:
 - 30-day performance trends
 - Daily success rates
 - Average durations over time
@@ -71,7 +71,7 @@ gh api repos/:owner/:repo/actions/runs \
 
 ## Performance Optimization Tips
 
-### If Pipeline Exceeds 5 Minutes
+### If Pipeline Exceeds 5-Minute Target
 
 1. **Check Cache Hit Rates**
    - View cache restoration steps in logs

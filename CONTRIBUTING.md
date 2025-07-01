@@ -52,7 +52,7 @@ Example: `feat: add agency search filtering by trade`
 All pull requests must:
 - ✅ Pass all CI/CD checks
 - ✅ Have at least 1 approval
-- ✅ Be up to date with main branch
+- ✅ Be up-to-date with main branch
 - ✅ Include tests for new features
 - ✅ Update documentation as needed
 
@@ -83,7 +83,7 @@ The `main` branch is protected with the following rules:
 - All CI checks must pass
 - Requires 1 code review approval
 - Stale reviews are dismissed on new commits
-- Branches must be up to date before merging
+- Branches must be up-to-date before merging
 
 ## 📝 Code Standards
 

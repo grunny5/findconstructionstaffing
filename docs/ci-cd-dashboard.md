@@ -10,7 +10,6 @@ Last updated: Not yet generated
 
 | Date | Runs | Success Rate | Avg Duration |
 |------|------|--------------|--------------|
-| *No data yet* | - | - | - |
 
 ## Summary Statistics
 

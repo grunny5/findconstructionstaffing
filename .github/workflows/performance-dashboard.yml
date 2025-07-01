@@ -27,18 +27,17 @@ jobs:
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
-            const runs = await github.rest.actions.listWorkflowRunsForRepo({
-              owner,
-              repo,
-              workflow_id: 'ci.yml',
-              created: `>=${thirtyDaysAgo.toISOString()}`,
-              per_page: 100
-            });
+            const allRuns = await github.paginate(
+              github.rest.actions.listWorkflowRuns,
+              { owner, repo, workflow_id: 'ci.yml', per_page: 100 },
+              response => response.data
+            );
+            const runs = allRuns.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
             
             // Group by date
             const dailyMetrics = {};
             
-            for (const run of runs.data.workflow_runs) {
+            for (const run of runs) {
               if (run.status !== 'completed') continue;
               
               const date = run.created_at.split('T')[0];
@@ -67,7 +66,7 @@ jobs:
           METRICS_DATA: ${{ steps.collect.outputs.result }}
         run: |
           # Generate dashboard header
-          cat > docs/CI_CD_DASHBOARD.md << 'EOF'
+          cat > docs/ci-cd-dashboard.md << 'EOF'
           # CI/CD Performance Dashboard
           
           Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
@@ -83,60 +82,48 @@ jobs:
           EOF
           
           # Process metrics and add to table
-          echo "$METRICS_DATA" | node -e "
-            const readline = require('readline');
-            const rl = readline.createInterface({
-              input: process.stdin,
-              output: process.stdout,
-              terminal: false
+          node -e "
+            const metrics = JSON.parse(process.env.METRICS_DATA || '{}');
+            const dates = Object.keys(metrics).sort().reverse().slice(0, 30);
+            
+            dates.forEach(date => {
+              const data = metrics[date];
+              const successRate = data.runs > 0
+                ? ((data.successful / data.runs) * 100).toFixed(1) + '%'
+                : 'N/A';
+              const avgDuration = data.successful > 0
+                ? (data.totalDuration / data.successful).toFixed(1) + ' min'
+                : 'N/A';
+              
+              console.log(\`| \${date} | \${data.runs} | \${successRate} | \${avgDuration} |\`);
             });
             
-            rl.on('line', (line) => {
-              try {
-                const metrics = JSON.parse(line);
-                const dates = Object.keys(metrics).sort().reverse().slice(0, 30);
-                
-                dates.forEach(date => {
-                  const data = metrics[date];
-                  const successRate = data.runs > 0 
-                    ? ((data.successful / data.runs) * 100).toFixed(1) + '%' 
-                    : 'N/A';
-                  const avgDuration = data.successful > 0 
-                    ? (data.totalDuration / data.successful).toFixed(1) + ' min' 
-                    : 'N/A';
-                  
-                  console.log(\`| \${date} | \${data.runs} | \${successRate} | \${avgDuration} |\`);
-                });
-                
-                // Add summary statistics
-                const totalRuns = Object.values(metrics).reduce((sum, d) => sum + d.runs, 0);
-                const totalSuccess = Object.values(metrics).reduce((sum, d) => sum + d.successful, 0);
-                const overallRate = totalRuns > 0 
-                  ? ((totalSuccess / totalRuns) * 100).toFixed(1) + '%'
-                  : 'N/A';
-                
-                console.log('');
-                console.log('## Summary Statistics');
-                console.log('');
-                console.log(\`- **Total Runs (30 days)**: \${totalRuns}\`);
-                console.log(\`- **Overall Success Rate**: \${overallRate}\`);
-                console.log(\`- **Data Collection Period**: \${dates[dates.length - 1]} to \${dates[0]}\`);
-              } catch (e) {
-                console.error('Error parsing metrics:', e);
-              }
-            });
-          " >> docs/CI_CD_DASHBOARD.md
+            // Add summary statistics
+            const totalRuns = Object.values(metrics).reduce((sum, d) => sum + d.runs, 0);
+            const totalSuccess = Object.values(metrics).reduce((sum, d) => sum + d.successful, 0);
+            const overallRate = totalRuns > 0
+              ? ((totalSuccess / totalRuns) * 100).toFixed(1) + '%'
+              : 'N/A';
+            
+            console.log('');
+            console.log('## Summary Statistics');
+            console.log('');
+            console.log(\`- **Total Runs (30 days)**: \${totalRuns}\`);
+            console.log(\`- **Overall Success Rate**: \${overallRate}\`);
+            console.log(\`- **Data Collection Period**: \${dates[dates.length - 1]} to \${dates[0]}\`);
+          " >> docs/ci-cd-dashboard.md
           
-          echo "" >> docs/CI_CD_DASHBOARD.md
-          echo "---" >> docs/CI_CD_DASHBOARD.md
-          echo "*Dashboard updated automatically by GitHub Actions*" >> docs/CI_CD_DASHBOARD.md
+          echo "" >> docs/ci-cd-dashboard.md
+          echo "---" >> docs/ci-cd-dashboard.md
+          echo "*Dashboard updated automatically by GitHub Actions*" >> docs/ci-cd-dashboard.md
           
-          echo "Dashboard generated at docs/CI_CD_DASHBOARD.md"
+          echo "Dashboard generated at docs/ci-cd-dashboard.md"
           
       - name: Commit dashboard
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/CI_CD_DASHBOARD.md || true
+          git pull --rebase --quiet
+          git add docs/ci-cd-dashboard.md || true
           git commit -m "chore: update CI/CD performance dashboard" || echo "No changes to commit"
           git push || echo "No changes to push"
