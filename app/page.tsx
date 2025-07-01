@@ -34,16 +34,6 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Agency } from '@/types/api';
 import Link from 'next/link';
 
-// Utility function for creating slugs
-const createSlug = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-};
-
 export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
