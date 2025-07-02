@@ -21,8 +21,8 @@ export default function SuccessStoriesPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-gray-600">
-              Success stories and case studies coming soon. We&apos;re collecting
-              feedback from our early partners.
+              Success stories and case studies coming soon. We&apos;re
+              collecting feedback from our early partners.
             </p>
           </div>
         </div>

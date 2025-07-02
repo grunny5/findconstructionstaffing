@@ -42,7 +42,9 @@ export function createMockError(
 
 // Type guard for PostgrestError
 export function isPostgrestError(error: any): error is PostgrestError {
-  return error && typeof error.message === 'string' && typeof error.code === 'string';
+  return (
+    error && typeof error.message === 'string' && typeof error.code === 'string'
+  );
 }
 
 // Create typed mock data helpers
@@ -54,7 +56,7 @@ export function createMockResponse<T>(
   return {
     data: error ? null : data,
     error,
-    count: error ? null : count ?? null,
+    count: error ? null : (count ?? null),
     status: error ? 400 : 200,
     statusText: error ? 'Bad Request' : 'OK',
   };
@@ -92,7 +94,7 @@ export function createMockArrayResponse<T>(
   return {
     data: error ? null : data,
     error,
-    count: error ? null : count ?? (data ? data.length : null),
+    count: error ? null : (count ?? (data ? data.length : null)),
     status: error ? 400 : 200,
     statusText: error ? 'Bad Request' : 'OK',
   } as PostgrestResponse<T[]>;

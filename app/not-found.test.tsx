@@ -4,9 +4,13 @@ import NotFound from './not-found';
 
 // Mock Link component
 jest.mock('next/link', () => {
-  const MockLink = ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  );
+  const MockLink = ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) => <a href={href}>{children}</a>;
   MockLink.displayName = 'MockLink';
   return MockLink;
 });

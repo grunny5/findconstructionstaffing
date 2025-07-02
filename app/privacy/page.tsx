@@ -26,10 +26,10 @@ export default function PrivacyPage() {
                 Last updated: {new Date().toLocaleDateString()}
               </p>
               <p className="text-gray-600 mb-4">
-                FindConstructionStaffing (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to
-                protecting your privacy. This Privacy Policy explains how we
-                collect, use, and safeguard your information when you visit our
-                website.
+                FindConstructionStaffing (&quot;we,&quot; &quot;our,&quot; or
+                &quot;us&quot;) is committed to protecting your privacy. This
+                Privacy Policy explains how we collect, use, and safeguard your
+                information when you visit our website.
               </p>
               <h3 className="text-xl font-semibold mb-3 mt-6">
                 Information We Collect

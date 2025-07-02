@@ -69,7 +69,10 @@ describe('Enhanced Supabase Mock', () => {
 
       // The real Supabase client returns a promise-like object
       const query = supabase.from('agencies').select('*') as any;
-      const result = await query.catch((err: any) => ({ caught: true, error: err }));
+      const result = await query.catch((err: any) => ({
+        caught: true,
+        error: err,
+      }));
 
       expect(result).toBeDefined();
     });

@@ -112,10 +112,31 @@ function createChainableQueryBuilder<T = any>(
 
   // Chain methods - all return 'this' for chaining
   const chainMethods = [
-    'from', 'select', 'insert', 'update', 'upsert', 'delete',
-    'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'ilike',
-    'is', 'in', 'contains', 'containedBy', 'or', 'not', 'match',
-    'filter', 'order', 'limit', 'range'
+    'from',
+    'select',
+    'insert',
+    'update',
+    'upsert',
+    'delete',
+    'eq',
+    'neq',
+    'gt',
+    'gte',
+    'lt',
+    'lte',
+    'like',
+    'ilike',
+    'is',
+    'in',
+    'contains',
+    'containedBy',
+    'or',
+    'not',
+    'match',
+    'filter',
+    'order',
+    'limit',
+    'range',
   ];
 
   chainMethods.forEach((method) => {
@@ -124,27 +145,38 @@ function createChainableQueryBuilder<T = any>(
 
   // Execution methods
   queryBuilder.single = jest.fn(() =>
-    responsePromise.then((res) => ({
-      ...res,
-      data: Array.isArray(res.data) ? res.data[0] || null : null,
-    }) as PostgrestSingleResponse<T>)
+    responsePromise.then(
+      (res) =>
+        ({
+          ...res,
+          data: Array.isArray(res.data) ? res.data[0] || null : null,
+        }) as PostgrestSingleResponse<T>
+    )
   ) as jest.Mock<Promise<PostgrestSingleResponse<T>>>;
 
   queryBuilder.maybeSingle = jest.fn(() =>
-    responsePromise.then((res) => ({
-      ...res,
-      data: Array.isArray(res.data) ? res.data[0] || null : null,
-    }) as PostgrestMaybeSingleResponse<T>)
+    responsePromise.then(
+      (res) =>
+        ({
+          ...res,
+          data: Array.isArray(res.data) ? res.data[0] || null : null,
+        }) as PostgrestMaybeSingleResponse<T>
+    )
   ) as jest.Mock<Promise<PostgrestMaybeSingleResponse<T>>>;
 
   queryBuilder.csv = jest.fn(() =>
-    responsePromise.then((res) => ({
-      ...res,
-      data: res.data ? 'id,name\n1,test' : null,
-    }) as PostgrestResponse<string>)
+    responsePromise.then(
+      (res) =>
+        ({
+          ...res,
+          data: res.data ? 'id,name\n1,test' : null,
+        }) as PostgrestResponse<string>
+    )
   ) as jest.Mock<Promise<PostgrestResponse<string>>>;
 
-  queryBuilder.execute = jest.fn(() => responsePromise) as jest.Mock<Promise<PostgrestResponse<T[]>>>;
+  queryBuilder.execute = jest.fn(() => responsePromise) as jest.Mock<
+    Promise<PostgrestResponse<T[]>>
+  >;
 
   // Promise-like methods
   queryBuilder.then = (onfulfilled, onrejected) =>
