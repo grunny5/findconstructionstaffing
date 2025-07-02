@@ -12,37 +12,48 @@ describe('RecruiterLayout', () => {
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
-  it('should have proper layout structure', () => {
+  it('should render children directly without wrapper', () => {
     const { container } = render(<RecruiterLayout>{mockChildren}</RecruiterLayout>);
 
-    // Layout should provide consistent structure
-    const layoutWrapper = container.firstChild;
-    expect(layoutWrapper).toBeInTheDocument();
+    // Since the layout returns children directly, the test content should be the first child
+    const testContent = screen.getByTestId('child-content');
+    expect(testContent).toBeInTheDocument();
+    
+    // The layout doesn't add any wrapper elements
+    expect(container.firstChild).toBe(testContent);
   });
 
   it('should not interfere with child content', () => {
     const complexChildren = (
-      <div>
+      <div data-testid="complex-wrapper">
         <h1>Heading</h1>
         <p>Paragraph</p>
         <button>Button</button>
       </div>
     );
 
-    render(<RecruiterLayout>{complexChildren}</RecruiterLayout>);
+    const { container } = render(<RecruiterLayout>{complexChildren}</RecruiterLayout>);
 
     expect(screen.getByRole('heading')).toBeInTheDocument();
     expect(screen.getByText('Paragraph')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
+    
+    // Verify the layout doesn't wrap the content
+    expect(container.firstChild).toBe(screen.getByTestId('complex-wrapper'));
   });
 
-  it('should apply any layout-specific styles or structure', () => {
-    const { container } = render(<RecruiterLayout>{mockChildren}</RecruiterLayout>);
+  it('should be a minimal layout that only provides metadata', () => {
+    // The RecruiterLayout component only exports metadata and returns children as-is
+    // This test documents that behavior
+    const { container } = render(
+      <RecruiterLayout>
+        <main data-testid="main-content">Main Content</main>
+      </RecruiterLayout>
+    );
 
-    // Check if layout adds any wrapper divs or styling
-    const wrapper = container.querySelector('div');
-    
-    // Layout should exist even if it's minimal
-    expect(wrapper).toBeInTheDocument();
+    // Children should be rendered directly without any layout wrapper
+    const mainContent = screen.getByTestId('main-content');
+    expect(container.firstChild).toBe(mainContent);
+    expect(container.children).toHaveLength(1);
   });
 });
