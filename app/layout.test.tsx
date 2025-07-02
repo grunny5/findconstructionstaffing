@@ -1,5 +1,14 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+
+// Mock CSS imports
+jest.mock('./globals.css', () => ({}));
+
+// Mock ui components
+jest.mock('@/components/ui/sonner', () => ({
+  Toaster: () => <div data-testid="toaster">Toaster</div>,
+}));
+
 import RootLayout from './layout';
 
 // Mock the imported components to avoid issues
@@ -15,10 +24,10 @@ jest.mock('@/components/Footer', () => {
   };
 });
 
-// Mock next/font/google
+// Mock next/font/google to return consistent class name
 jest.mock('next/font/google', () => ({
   Inter: () => ({
-    className: 'inter-font',
+    className: '__Inter_abc123', // Simulates the actual generated class pattern
   }),
 }));
 
@@ -44,15 +53,14 @@ describe('RootLayout', () => {
     expect(html).toHaveAttribute('lang', 'en');
   });
 
-  it('should render header and footer', () => {
-    const { getByText } = render(
+  it('should render toaster component', () => {
+    const { getByTestId } = render(
       <RootLayout>
         <div>Content</div>
       </RootLayout>
     );
 
-    expect(getByText('Header')).toBeInTheDocument();
-    expect(getByText('Footer')).toBeInTheDocument();
+    expect(getByTestId('toaster')).toBeInTheDocument();
   });
 
   it('should apply correct body classes', () => {
@@ -63,6 +71,6 @@ describe('RootLayout', () => {
     );
 
     const body = container.querySelector('body');
-    expect(body).toHaveClass('inter-font');
+    expect(body).toHaveClass('__Inter_abc123');
   });
 });

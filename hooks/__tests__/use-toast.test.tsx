@@ -2,6 +2,11 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useToast } from '../use-toast';
 
+// Import implementation constants if they were exported
+// Since they're not exported, we define them here to match the implementation
+const TOAST_LIMIT = 1;
+const TOAST_REMOVE_DELAY = 1000000; // Must match the value in use-toast.ts
+
 describe('useToast', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -127,7 +132,6 @@ describe('useToast', () => {
 
   it('should limit number of toasts to TOAST_LIMIT', () => {
     const { result } = renderHook(() => useToast());
-    const TOAST_LIMIT = 1; // Based on the hook implementation
 
     act(() => {
       result.current.toast({ title: 'Toast 1' });
@@ -139,21 +143,32 @@ describe('useToast', () => {
     expect(result.current.toasts[0].title).toBe('Toast 2');
   });
 
-  it('should auto-dismiss toasts after timeout', () => {
+  it('should remove toast from state after dismiss and delay', () => {
     const { result } = renderHook(() => useToast());
 
     act(() => {
-      result.current.toast({ title: 'Auto-dismiss Toast' });
+      result.current.toast({ title: 'Test Toast' });
     });
 
     expect(result.current.toasts).toHaveLength(1);
+    const toastId = result.current.toasts[0].id;
 
-    // Fast-forward time to trigger auto-dismiss
+    // Dismiss the toast
     act(() => {
-      jest.advanceTimersByTime(5000); // Assuming 5s timeout
+      result.current.dismiss(toastId);
     });
 
-    // Toast should be dismissed
+    // Toast should be marked as closed but still in the array
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0].open).toBe(false);
+
+    // Fast-forward time to trigger removal from state
+    // Using TOAST_REMOVE_DELAY constant defined at the top of this file
+    act(() => {
+      jest.advanceTimersByTime(TOAST_REMOVE_DELAY);
+    });
+
+    // Toast should be removed from state
     expect(result.current.toasts).toHaveLength(0);
   });
 

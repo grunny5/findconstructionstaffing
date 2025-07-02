@@ -175,6 +175,7 @@ describe('Page Load Performance Tests', () => {
         error: null,
         isLoading: false,
         isValidating: false,
+        mutate: jest.fn(),
       });
 
       const startTime = performance.now();
@@ -202,6 +203,7 @@ describe('Page Load Performance Tests', () => {
         error: null,
         isLoading: false,
         isValidating: false,
+        mutate: jest.fn(),
       });
 
       rerender(<HomePage />);
@@ -233,6 +235,7 @@ describe('Page Load Performance Tests', () => {
         error: null,
         isLoading: false,
         isValidating: true, // Searching
+        mutate: jest.fn(),
       });
 
       rerender(<HomePage />);

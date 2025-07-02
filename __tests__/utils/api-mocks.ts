@@ -36,17 +36,16 @@ export function createMockNextRequest(
     }
   });
 
-  // Create headers with proper get method
-  const mockHeaders = new Map(Object.entries(headers));
-  // Add get method if it doesn't exist (for compatibility with MockHeaders)
-  if (!mockHeaders.get) {
-    (mockHeaders as any).get = Map.prototype.get;
-  }
+  // Create headers that are compatible with Headers interface
+  const mockHeaders = new Headers();
+  Object.entries(headers).forEach(([key, value]) => {
+    mockHeaders.set(key, value);
+  });
   
   // Create a base request object
   const baseRequest = new Request(testUrl.toString(), {
     method,
-    headers: mockHeaders as any,
+    headers: mockHeaders,
   });
 
   // Create mock NextURL object
@@ -201,21 +200,30 @@ export function createMockSupabaseQuery(
 ) {
   const { data = [], error = null, count = 0 } = mockData;
 
-  return {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    ilike: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    // Final resolve
-    then: jest.fn().mockResolvedValue({ data, error, count }),
-    // Direct await support
-    [Symbol.toStringTag]: 'Promise',
+  // Create the mock query object with chainable methods
+  const mockQuery = {
+    from: jest.fn(),
+    select: jest.fn(),
+    eq: jest.fn(),
+    in: jest.fn(),
+    ilike: jest.fn(),
+    or: jest.fn(),
+    range: jest.fn(),
+    order: jest.fn(),
+    limit: jest.fn(),
+    single: jest.fn(),
   };
+
+  // Create a promise that resolves with the mock data
+  const resultPromise = Promise.resolve({ data, error, count });
+
+  // Make all methods return the promise for proper chaining
+  Object.keys(mockQuery).forEach(key => {
+    mockQuery[key] = jest.fn(() => resultPromise);
+  });
+
+  // Return the promise directly for final resolution
+  return Object.assign(resultPromise, mockQuery);
 }
 
 /**

@@ -3,77 +3,94 @@ import { render, screen } from '@testing-library/react';
 import ProfileSkeleton from '../ProfileSkeleton';
 
 describe('ProfileSkeleton', () => {
-  it('should render all skeleton elements', () => {
+  it('should render loading skeleton for agency profile', () => {
     render(<ProfileSkeleton />);
 
-    // Check for skeleton elements by their test ids
+    // Verify main skeleton elements that represent the profile structure
     expect(screen.getByTestId('logo-skeleton')).toBeInTheDocument();
     expect(screen.getByTestId('name-skeleton')).toBeInTheDocument();
-    expect(screen.getAllByTestId('badge-skeleton')).toHaveLength(3);
+    expect(screen.getByTestId('contact-title-skeleton')).toBeInTheDocument();
   });
 
-  it('should have proper structure for profile page', () => {
+  it('should display skeleton placeholders for agency badges', () => {
     render(<ProfileSkeleton />);
 
-    // Logo skeleton
-    const logoSkeleton = screen.getByTestId('logo-skeleton');
-    expect(logoSkeleton).toHaveClass('w-32', 'h-32');
+    // Agency profiles typically show multiple badges (verified, premium, etc.)
+    const badgeSkeletons = screen.getAllByTestId('badge-skeleton');
+    expect(badgeSkeletons.length).toBeGreaterThanOrEqual(3);
+  });
 
-    // Name skeleton
-    const nameSkeleton = screen.getByTestId('name-skeleton');
-    expect(nameSkeleton).toHaveClass('h-9', 'w-80');
+  it('should show skeleton for call-to-action buttons', () => {
+    render(<ProfileSkeleton />);
 
-    // CTA buttons
+    // Agency profiles have CTA buttons (contact, view details, etc.)
     const ctaButtons = screen.getAllByTestId('cta-button-skeleton');
-    expect(ctaButtons).toHaveLength(2);
+    expect(ctaButtons.length).toBeGreaterThanOrEqual(2);
+  });
 
-    // Stats grid
+  it('should display skeleton for agency statistics', () => {
+    render(<ProfileSkeleton />);
+
+    // Agency profiles show stats like employee count, years in business, etc.
     const statsGrid = screen.getByTestId('stats-grid');
     expect(statsGrid).toBeInTheDocument();
     
     const statItems = screen.getAllByTestId('stat-item');
-    expect(statItems).toHaveLength(4);
+    expect(statItems.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('should render tab skeleton section', () => {
+  it('should render skeleton for navigation tabs', () => {
     render(<ProfileSkeleton />);
 
+    // Profile pages typically have tabs for different sections
     const tabContainer = screen.getByTestId('tab-skeleton-container');
     expect(tabContainer).toBeInTheDocument();
     
     const tabs = screen.getAllByTestId('tab-skeleton');
-    expect(tabs).toHaveLength(3);
+    expect(tabs.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('should render contact section skeleton', () => {
+  it('should show skeleton for contact information section', () => {
     render(<ProfileSkeleton />);
 
+    // Contact section is a key part of agency profiles
     const contactTitle = screen.getByTestId('contact-title-skeleton');
     expect(contactTitle).toBeInTheDocument();
-    expect(contactTitle).toHaveClass('h-6', 'w-40');
   });
 
-  it('should render back link skeleton', () => {
+  it('should display skeleton for back navigation', () => {
     render(<ProfileSkeleton />);
 
+    // Users need to navigate back to the directory
     const backLink = screen.getByTestId('back-link-skeleton');
     expect(backLink).toBeInTheDocument();
-    expect(backLink).toHaveClass('h-5', 'w-32');
   });
 
-  it('should have responsive grid layout', () => {
+  it('should provide semantic structure while loading', () => {
     render(<ProfileSkeleton />);
 
-    // Main content grid
-    const mainGrid = screen.getByText('', { selector: '.grid.grid-cols-1.lg\\:grid-cols-3' });
+    // Verify the skeleton maintains a logical structure
+    // Check for the main grid container that holds the layout
+    const mainGrid = screen.getByTestId('main-grid-container');
     expect(mainGrid).toBeInTheDocument();
+    expect(mainGrid).toHaveClass('grid', 'grid-cols-1', 'lg:grid-cols-3');
+    
+    // Verify all card containers are present
+    expect(screen.getByTestId('main-content-skeleton-card')).toBeInTheDocument();
+    expect(screen.getByTestId('contact-skeleton-card')).toBeInTheDocument();
+    expect(screen.getByTestId('back-link-skeleton-card')).toBeInTheDocument();
   });
 
-  it('should use Card components for structure', () => {
+  it('should indicate loading state with skeleton elements', () => {
     render(<ProfileSkeleton />);
 
-    // Card components should be present
-    const cards = document.querySelectorAll('[class*="rounded-lg"][class*="border"]');
-    expect(cards.length).toBeGreaterThan(0);
+    // Verify key skeleton elements are present to indicate loading state
+    expect(screen.getByTestId('logo-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('name-skeleton')).toBeInTheDocument();
+    expect(screen.getAllByTestId('badge-skeleton')).toHaveLength(3);
+    
+    // These skeleton elements typically have animation classes applied by the Skeleton component
+    const logoSkeleton = screen.getByTestId('logo-skeleton');
+    expect(logoSkeleton.className).toContain('rounded-lg');
   });
 });

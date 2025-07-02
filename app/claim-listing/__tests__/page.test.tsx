@@ -2,22 +2,20 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ClaimListingPage from '../page';
 
-// Mock react-hook-form
+// Mock react-hook-form with simpler approach
+const mockRegister = jest.fn();
+const mockHandleSubmit = jest.fn((fn) => (e) => {
+  e?.preventDefault();
+  fn({}); // Let individual tests provide data if needed
+});
+const mockSetValue = jest.fn();
+
 jest.mock('react-hook-form', () => ({
   useForm: () => ({
-    register: jest.fn(),
-    handleSubmit: (fn: any) => (e: any) => {
-      e?.preventDefault();
-      return fn({
-        agencyName: 'Test Agency',
-        contactEmail: 'test@example.com',
-        contactName: 'John Doe',
-        jobTitle: 'Owner',
-        verificationDetails: 'I am the owner of this agency',
-      });
-    },
+    register: mockRegister,
+    handleSubmit: mockHandleSubmit,
     formState: { errors: {} },
-    setValue: jest.fn(),
+    setValue: mockSetValue,
   }),
 }));
 
@@ -43,6 +41,9 @@ jest.mock('sonner', () => ({
 }));
 
 describe('ClaimListingPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
   it('should render the page title', () => {
     render(<ClaimListingPage />);
 
@@ -81,27 +82,82 @@ describe('ClaimListingPage', () => {
     fireEvent.change(searchInput, { target: { value: 'Industrial' } });
 
     // Should show search results
-    expect(screen.getByText('Industrial Staffing Inc')).toBeInTheDocument();
+    expect(screen.getByText('Industrial Staffing Solutions')).toBeInTheDocument();
   });
 
-  it('should handle form submission', async () => {
+  it('should handle agency selection', () => {
     render(<ClaimListingPage />);
 
-    // Search and select an agency
+    // Search for an agency
     const searchInput = screen.getByPlaceholderText('Type your agency name...');
     fireEvent.change(searchInput, { target: { value: 'Industrial' } });
     
-    const agency = screen.getByText('Industrial Staffing Inc');
+    // Select an agency from search results
+    const agency = screen.getByText('Industrial Staffing Solutions');
     fireEvent.click(agency);
 
-    // Submit form
+    // Verify agency was selected - setValue should be called with agency name
+    expect(mockSetValue).toHaveBeenCalledWith('agencyName', expect.stringContaining('Industrial'));
+  });
+
+  it('should handle form submission', async () => {
+    // Mock the form submission to trigger the onSubmit callback
+    mockHandleSubmit.mockImplementation((onSubmit) => (e) => {
+      e?.preventDefault();
+      onSubmit({}); // This will trigger the actual onSubmit function
+    });
+    
+    render(<ClaimListingPage />);
+
+    // First, select an agency (required for submission)
+    const searchInput = screen.getByPlaceholderText('Type your agency name...');
+    fireEvent.change(searchInput, { target: { value: 'Industrial' } });
+    
+    // Wait for search results and select an agency
+    await waitFor(() => {
+      expect(screen.getByText('Industrial Staffing Solutions')).toBeInTheDocument();
+    });
+    
+    const agency = screen.getByText('Industrial Staffing Solutions');
+    fireEvent.click(agency);
+
+    // Wait for submit button to be enabled
     const submitButton = screen.getByRole('button', { name: /Submit Claim Request/i });
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
+
+    // Now submit the form
     fireEvent.click(submitButton);
 
-    // Should show success message after submission
+    // Verify handleSubmit was called
+    expect(mockHandleSubmit).toHaveBeenCalled();
+
+    // Should show success message after submission (after the 2s timeout)
     await waitFor(() => {
       expect(screen.getByText('Claim Request Submitted!')).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
+  });
+
+  it('should show search results when typing', () => {
+    render(<ClaimListingPage />);
+
+    // Initially no search results shown
+    expect(screen.queryByText('Industrial Staffing Solutions')).not.toBeInTheDocument();
+
+    // Start typing to trigger search
+    const searchInput = screen.getByPlaceholderText('Type your agency name...');
+    fireEvent.change(searchInput, { target: { value: 'Industrial' } });
+
+    // Should show matching agency
+    expect(screen.getByText('Industrial Staffing Solutions')).toBeInTheDocument();
+  });
+
+  it('should show empty state when no search term', () => {
+    render(<ClaimListingPage />);
+
+    // Should show search prompt when no search term
+    expect(screen.getByText(/Start typing to search for your agency/i)).toBeInTheDocument();
   });
 
   it('should show free to claim alert', () => {
