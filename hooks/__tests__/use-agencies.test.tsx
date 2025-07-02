@@ -82,11 +82,13 @@ const mockAgenciesResponse: AgenciesApiResponse = {
 
 // Wrapper component for SWR
 const createWrapper = () => {
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <SWRConfig value={{ dedupingInterval: 0, provider: () => new Map() }}>
       {children}
     </SWRConfig>
   );
+  Wrapper.displayName = 'SWRWrapper';
+  return Wrapper;
 };
 
 describe('useAgencies', () => {

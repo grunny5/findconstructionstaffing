@@ -89,7 +89,7 @@ function makeRequest(url) {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
     const parsedUrl = new URL(url);
-    const module = parsedUrl.protocol === 'https:' ? https : http;
+    const httpModule = parsedUrl.protocol === 'https:' ? https : http;
 
     const options = {
       hostname: parsedUrl.hostname,
@@ -101,7 +101,7 @@ function makeRequest(url) {
       },
     };
 
-    const req = module.request(options, (res) => {
+    const req = httpModule.request(options, (res) => {
       let data = '';
 
       res.on('data', (chunk) => {

@@ -122,7 +122,7 @@ export function setup() {
   return { totalAgencies: data.pagination.total };
 }
 
-export default function (data) {
+function mainScenario(data) {
   // Select a random scenario
   const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
   const url = `${API_ENDPOINT}${scenario.params}`;
@@ -190,6 +190,8 @@ export default function (data) {
   // Small random delay between requests (0-100ms)
   sleep(Math.random() * 0.1);
 }
+
+export default mainScenario;
 
 export function handleSummary(data) {
   // Custom summary output with defensive checks

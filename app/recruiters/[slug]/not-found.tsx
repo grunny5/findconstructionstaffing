@@ -22,7 +22,7 @@ export default function AgencyNotFound() {
             </h1>
 
             <p className="text-gray-600 mb-8">
-              We couldn't find the staffing agency you're looking for. It may
+              We couldn&apos;t find the staffing agency you&apos;re looking for. It may
               have been removed or the link might be incorrect.
             </p>
 
