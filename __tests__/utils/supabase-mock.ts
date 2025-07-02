@@ -396,7 +396,7 @@ export function createSupabaseMock(config?: SupabaseMockConfig) {
 }
 
 // Helper to reset mock to default state
-export function resetSupabaseMock(mock) {
+export function resetSupabaseMock(mock: any) {
   // Clear all mock calls
   const methods = Object.keys(mock);
   methods.forEach((method) => {
@@ -430,7 +430,7 @@ export function setupSupabaseMockRuntime(config?: SupabaseMockConfig) {
 }
 
 // Helper to configure mock for specific test scenarios
-export function configureSupabaseMock(mock, config) {
+export function configureSupabaseMock(mock: any, config: any) {
   // Reset state
   mock._error = null;
   mock._throwError = false;
@@ -454,7 +454,7 @@ export function configureSupabaseMock(mock, config) {
       _isCountQuery: isCountQuery,
 
       // Copy all methods from mock
-      ...Object.keys(mock).reduce((acc, key) => {
+      ...Object.keys(mock).reduce((acc: any, key) => {
         if (typeof mock[key] === 'function' && jest.isMockFunction(mock[key])) {
           acc[key] = jest.fn((...args) => {
             // Call the original mock to track calls
@@ -552,7 +552,7 @@ export function configureSupabaseMock(mock, config) {
   });
 
   // Update select method to handle count queries and return proxy
-  mock.select.mockImplementation((columns, options = {}) => {
+  mock.select.mockImplementation((columns: any, options: any = {}) => {
     const isCountQuery = options.count === 'exact' && options.head;
     const queryChain = createQueryChain(isCountQuery);
     return createThenableProxy(queryChain);
@@ -577,12 +577,12 @@ export function configureSupabaseMock(mock, config) {
 // Assertion helpers for testing mock calls
 export const supabaseMockHelpers = {
   // Assert that a query was made with specific table
-  expectTableQueried: (mock, tableName: string) => {
+  expectTableQueried: (mock: any, tableName: string) => {
     expect(mock.from).toHaveBeenCalledWith(tableName);
   },
 
   // Assert that select was called with specific columns
-  expectSelectCalled: (mock, columns?: string) => {
+  expectSelectCalled: (mock: any, columns?: string) => {
     if (columns !== undefined) {
       expect(mock.select).toHaveBeenCalledWith(columns);
     } else {
@@ -591,22 +591,22 @@ export const supabaseMockHelpers = {
   },
 
   // Assert specific filter was applied
-  expectFilterApplied: (mock, method: string, ...args: any[]) => {
+  expectFilterApplied: (mock: any, method: string, ...args: any[]) => {
     expect(mock[method]).toHaveBeenCalledWith(...args);
   },
 
   // Assert method call count
-  expectMethodCallCount: (mock, method: string, count: number) => {
+  expectMethodCallCount: (mock: any, method: string, count: number) => {
     expect(mock[method]).toHaveBeenCalledTimes(count);
   },
 
   // Get the nth call arguments for a method
-  getMethodCallArgs: (mock, method: string, callIndex = 0) => {
+  getMethodCallArgs: (mock: any, method: string, callIndex = 0) => {
     return mock[method].mock.calls[callIndex];
   },
 
   // Assert complete query chain
-  expectQueryChain: (mock, expectedChain: string[]) => {
+  expectQueryChain: (mock: any, expectedChain: string[]) => {
     expectedChain.forEach((method) => {
       expect(mock[method]).toHaveBeenCalled();
     });
@@ -667,7 +667,7 @@ export const supabaseMockHelpers = {
  * ```
  */
 export function configureMockForFilters(
-  mock,
+  mock: any,
   config: {
     trades?: {
       slugs: string[];
@@ -685,7 +685,7 @@ export function configureMockForFilters(
   const configuredResponse = mock._defaultData || [];
   const configuredCount = mock._defaultCount || 0;
 
-  mock.from.mockImplementation((table) => {
+  mock.from.mockImplementation((table: any) => {
     // Handle filter tables
     if (
       table === 'trades' ||
@@ -693,29 +693,29 @@ export function configureMockForFilters(
       table === 'regions' ||
       table === 'agency_regions'
     ) {
-      const filterMock = {
+      const filterMock: any = {
         select: jest.fn(() => filterMock),
         in: jest.fn(() => filterMock),
         eq: jest.fn(() => filterMock),
         or: jest.fn(() => filterMock),
         range: jest.fn(() => filterMock),
         order: jest.fn(() => filterMock),
-        then: (onFulfilled) => {
+        then: (onFulfilled: any) => {
           let result = { data: null, error: null };
 
           // Return appropriate data based on table and configuration
           if (table === 'trades' && config.trades) {
-            result.data = config.trades.ids.map((id) => ({ id }));
+            result.data = config.trades.ids.map((id) => ({ id })) as any;
           } else if (table === 'agency_trades' && config.trades) {
             result.data = config.trades.agencyIds.map((agency_id) => ({
               agency_id,
-            }));
+            })) as any;
           } else if (table === 'regions' && config.states) {
-            result.data = config.states.regionIds.map((id) => ({ id }));
+            result.data = config.states.regionIds.map((id) => ({ id })) as any;
           } else if (table === 'agency_regions' && config.states) {
             result.data = config.states.agencyIds.map((agency_id) => ({
               agency_id,
-            }));
+            })) as any;
           }
 
           return Promise.resolve(result).then(onFulfilled);
@@ -725,14 +725,14 @@ export function configureMockForFilters(
     }
 
     // For main agencies query, create a full mock chain
-    const queryChain = {
+    const queryChain: any = {
       select: jest.fn(() => queryChain),
       eq: jest.fn(() => queryChain),
       in: jest.fn(() => queryChain),
       or: jest.fn(() => queryChain),
       range: jest.fn(() => queryChain),
       order: jest.fn(() => queryChain),
-      then: (onFulfilled) => {
+      then: (onFulfilled: any) => {
         const result = {
           data: configuredResponse,
           error: null,
@@ -748,7 +748,7 @@ export function configureMockForFilters(
         jest.isMockFunction(queryChain[method]) &&
         jest.isMockFunction(mock[method])
       ) {
-        queryChain[method].mockImplementation((...args) => {
+        queryChain[method].mockImplementation((...args: any[]) => {
           mock[method](...args);
           return queryChain;
         });

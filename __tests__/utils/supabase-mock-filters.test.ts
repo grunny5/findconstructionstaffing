@@ -203,7 +203,7 @@ describe('configureMockForFilters', () => {
       });
 
       // Execute a main query
-      await supabase
+      const response = await supabase
         .from('agencies')
         .select('*')
         .eq('is_active', true)
