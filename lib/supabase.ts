@@ -28,3 +28,6 @@ export type { Agency, Trade, Region, Lead } from '@/types/supabase';
 
 // Re-export utility functions from shared location
 export { createSlug, formatPhoneNumber } from '@/lib/utils/formatting';
+
+// Re-export createClient for testing purposes
+export { createClient };

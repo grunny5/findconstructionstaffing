@@ -5,9 +5,6 @@ import type {
   PostgrestSingleResponse,
   PostgrestMaybeSingleResponse,
   SupabaseClient as SupabaseClientType,
-  PostgrestQueryBuilder,
-  PostgrestFilterBuilder,
-  PostgrestBuilder,
 } from '@supabase/supabase-js';
 
 // Sample test data for mocking
@@ -56,10 +53,35 @@ function createPostgrestError(
 
 // Type for chainable query builder
 type ChainableQueryBuilder<T = any> = {
-  [K in keyof PostgrestFilterBuilder<any, any, T[], string, unknown>]: (
-    ...args: any[]
-  ) => ChainableQueryBuilder<T>;
-} & {
+  from: jest.Mock<ChainableQueryBuilder<T>>;
+  select: jest.Mock<ChainableQueryBuilder<T>>;
+  insert: jest.Mock<ChainableQueryBuilder<T>>;
+  update: jest.Mock<ChainableQueryBuilder<T>>;
+  upsert: jest.Mock<ChainableQueryBuilder<T>>;
+  delete: jest.Mock<ChainableQueryBuilder<T>>;
+  eq: jest.Mock<ChainableQueryBuilder<T>>;
+  neq: jest.Mock<ChainableQueryBuilder<T>>;
+  gt: jest.Mock<ChainableQueryBuilder<T>>;
+  gte: jest.Mock<ChainableQueryBuilder<T>>;
+  lt: jest.Mock<ChainableQueryBuilder<T>>;
+  lte: jest.Mock<ChainableQueryBuilder<T>>;
+  like: jest.Mock<ChainableQueryBuilder<T>>;
+  ilike: jest.Mock<ChainableQueryBuilder<T>>;
+  is: jest.Mock<ChainableQueryBuilder<T>>;
+  in: jest.Mock<ChainableQueryBuilder<T>>;
+  contains: jest.Mock<ChainableQueryBuilder<T>>;
+  containedBy: jest.Mock<ChainableQueryBuilder<T>>;
+  or: jest.Mock<ChainableQueryBuilder<T>>;
+  not: jest.Mock<ChainableQueryBuilder<T>>;
+  match: jest.Mock<ChainableQueryBuilder<T>>;
+  filter: jest.Mock<ChainableQueryBuilder<T>>;
+  order: jest.Mock<ChainableQueryBuilder<T>>;
+  limit: jest.Mock<ChainableQueryBuilder<T>>;
+  range: jest.Mock<ChainableQueryBuilder<T>>;
+  single: jest.Mock<Promise<PostgrestSingleResponse<T>>>;
+  maybeSingle: jest.Mock<Promise<PostgrestMaybeSingleResponse<T>>>;
+  csv: jest.Mock<Promise<PostgrestResponse<string>>>;
+  execute: jest.Mock<Promise<PostgrestResponse<T[]>>>;
   then<TResult1 = PostgrestResponse<T[]>, TResult2 = never>(
     onfulfilled?:
       | ((value: PostgrestResponse<T[]>) => TResult1 | PromiseLike<TResult1>)
@@ -86,44 +108,53 @@ function createChainableQueryBuilder<T = any>(
     statusText: mockError ? 'Bad Request' : 'OK',
   });
 
-  // Create a proxy that returns itself for all method calls
-  const handler: ProxyHandler<any> = {
-    get(target, prop) {
-      // Handle promise methods
-      if (prop === 'then') {
-        return responsePromise.then.bind(responsePromise);
-      }
-      if (prop === 'catch') {
-        return responsePromise.catch.bind(responsePromise);
-      }
-      if (prop === 'finally') {
-        return responsePromise.finally.bind(responsePromise);
-      }
+  const queryBuilder: ChainableQueryBuilder<T> = {} as ChainableQueryBuilder<T>;
 
-      // Handle special execution methods
-      if (prop === 'single' || prop === 'maybeSingle') {
-        return jest.fn(() =>
-          responsePromise.then((res) => ({
-            ...res,
-            data: res.data?.[0] || null,
-          }))
-        );
-      }
-      if (prop === 'csv') {
-        return jest.fn(() =>
-          responsePromise.then((res) => ({
-            ...res,
-            data: res.data ? 'id,name\n1,test' : null,
-          }))
-        );
-      }
+  // Chain methods - all return 'this' for chaining
+  const chainMethods = [
+    'from', 'select', 'insert', 'update', 'upsert', 'delete',
+    'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'ilike',
+    'is', 'in', 'contains', 'containedBy', 'or', 'not', 'match',
+    'filter', 'order', 'limit', 'range'
+  ];
 
-      // All other methods return the proxy for chaining
-      return jest.fn(() => new Proxy({}, handler));
-    },
-  };
+  chainMethods.forEach((method) => {
+    (queryBuilder as any)[method] = jest.fn(() => queryBuilder);
+  });
 
-  return new Proxy({}, handler) as ChainableQueryBuilder<T>;
+  // Execution methods
+  queryBuilder.single = jest.fn(() =>
+    responsePromise.then((res) => ({
+      ...res,
+      data: Array.isArray(res.data) ? res.data[0] || null : null,
+    }) as PostgrestSingleResponse<T>)
+  ) as jest.Mock<Promise<PostgrestSingleResponse<T>>>;
+
+  queryBuilder.maybeSingle = jest.fn(() =>
+    responsePromise.then((res) => ({
+      ...res,
+      data: Array.isArray(res.data) ? res.data[0] || null : null,
+    }) as PostgrestMaybeSingleResponse<T>)
+  ) as jest.Mock<Promise<PostgrestMaybeSingleResponse<T>>>;
+
+  queryBuilder.csv = jest.fn(() =>
+    responsePromise.then((res) => ({
+      ...res,
+      data: res.data ? 'id,name\n1,test' : null,
+    }) as PostgrestResponse<string>)
+  ) as jest.Mock<Promise<PostgrestResponse<string>>>;
+
+  queryBuilder.execute = jest.fn(() => responsePromise) as jest.Mock<Promise<PostgrestResponse<T[]>>>;
+
+  // Promise-like methods
+  queryBuilder.then = (onfulfilled, onrejected) =>
+    responsePromise.then(onfulfilled, onrejected);
+
+  queryBuilder.catch = (onrejected) => responsePromise.catch(onrejected);
+
+  queryBuilder.finally = (onfinally) => responsePromise.finally(onfinally);
+
+  return queryBuilder;
 }
 
 // Create the mock Supabase client
@@ -233,6 +264,5 @@ export type {
   PostgrestError,
   PostgrestSingleResponse,
   PostgrestMaybeSingleResponse,
-  SupabaseClient,
-  SupabaseClientType,
+  SupabaseClientType as SupabaseClient,
 };

@@ -65,13 +65,22 @@ export function createMockSingleResponse<T>(
   data: T | null,
   error: MockPostgrestError | null = null
 ): PostgrestSingleResponse<T> {
+  if (error) {
+    return {
+      data: null,
+      error,
+      count: null,
+      status: 400,
+      statusText: 'Bad Request',
+    } as PostgrestSingleResponse<T>;
+  }
   return {
-    data: error ? null : data,
-    error,
+    data,
+    error: null,
     count: null,
-    status: error ? 400 : 200,
-    statusText: error ? 'Bad Request' : 'OK',
-  };
+    status: 200,
+    statusText: 'OK',
+  } as PostgrestSingleResponse<T>;
 }
 
 // Helper for array responses
@@ -86,5 +95,5 @@ export function createMockArrayResponse<T>(
     count: error ? null : count ?? (data ? data.length : null),
     status: error ? 400 : 200,
     statusText: error ? 'Bad Request' : 'OK',
-  };
+  } as PostgrestResponse<T[]>;
 }
