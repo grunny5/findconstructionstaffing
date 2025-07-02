@@ -9,10 +9,7 @@ const createSupabaseClient = () => {
   if (!supabaseUrl || !supabaseAnonKey) {
     // Return a dummy URL and key for build time
     // These will never actually connect to anything
-    return createClient(
-      'https://dummy.supabase.co',
-      'dummy-anon-key'
-    );
+    return createClient('https://dummy.supabase.co', 'dummy-anon-key');
   }
   return createClient(supabaseUrl, supabaseAnonKey);
 };
