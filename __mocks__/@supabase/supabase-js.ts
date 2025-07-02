@@ -1,8 +1,13 @@
-// Enhanced mock for @supabase/supabase-js with TypeScript interfaces
+// Enhanced mock for @supabase/supabase-js with full TypeScript support
 import type {
   PostgrestResponse,
   PostgrestError,
+  PostgrestSingleResponse,
+  PostgrestMaybeSingleResponse,
   SupabaseClient as SupabaseClientType,
+  PostgrestQueryBuilder,
+  PostgrestFilterBuilder,
+  PostgrestBuilder,
 } from '@supabase/supabase-js';
 
 // Sample test data for mocking
@@ -13,6 +18,7 @@ const mockAgencyData = [
     slug: 'mock-construction-staffing',
     description: 'Test agency for mocking',
     is_active: true,
+    is_claimed: false,
     offers_per_diem: true,
     is_union: false,
     created_at: new Date().toISOString(),
@@ -24,6 +30,7 @@ const mockAgencyData = [
     slug: 'test-builders-inc',
     description: 'Another test agency',
     is_active: true,
+    is_claimed: false,
     offers_per_diem: false,
     is_union: true,
     created_at: new Date().toISOString(),
@@ -31,195 +38,117 @@ const mockAgencyData = [
   },
 ];
 
-// Define the query builder interface
-interface SupabaseQueryBuilder<T = any> {
-  // Query building methods
-  from: jest.Mock<SupabaseQueryBuilder<T>>;
-  select: jest.Mock<SupabaseQueryBuilder<T>>;
-  insert: jest.Mock<SupabaseQueryBuilder<T>>;
-  update: jest.Mock<SupabaseQueryBuilder<T>>;
-  upsert: jest.Mock<SupabaseQueryBuilder<T>>;
-  delete: jest.Mock<SupabaseQueryBuilder<T>>;
+// Create a complete PostgrestError
+function createPostgrestError(
+  message: string,
+  code: string = 'PGRST000',
+  details: string = '',
+  hint: string = ''
+): PostgrestError {
+  return {
+    message,
+    code,
+    details,
+    hint,
+    name: 'PostgrestError',
+  } as PostgrestError;
+}
 
-  // Filter methods
-  eq: jest.Mock<SupabaseQueryBuilder<T>>;
-  neq: jest.Mock<SupabaseQueryBuilder<T>>;
-  gt: jest.Mock<SupabaseQueryBuilder<T>>;
-  gte: jest.Mock<SupabaseQueryBuilder<T>>;
-  lt: jest.Mock<SupabaseQueryBuilder<T>>;
-  lte: jest.Mock<SupabaseQueryBuilder<T>>;
-  like: jest.Mock<SupabaseQueryBuilder<T>>;
-  ilike: jest.Mock<SupabaseQueryBuilder<T>>;
-  is: jest.Mock<SupabaseQueryBuilder<T>>;
-  in: jest.Mock<SupabaseQueryBuilder<T>>;
-  contains: jest.Mock<SupabaseQueryBuilder<T>>;
-  containedBy: jest.Mock<SupabaseQueryBuilder<T>>;
-  or: jest.Mock<SupabaseQueryBuilder<T>>;
-  not: jest.Mock<SupabaseQueryBuilder<T>>;
-  match: jest.Mock<SupabaseQueryBuilder<T>>;
-  filter: jest.Mock<SupabaseQueryBuilder<T>>;
-
-  // Modifier methods
-  order: jest.Mock<SupabaseQueryBuilder<T>>;
-  limit: jest.Mock<SupabaseQueryBuilder<T>>;
-  range: jest.Mock<SupabaseQueryBuilder<T>>;
-
-  // Execution methods that return promises
-  single: jest.Mock<Promise<PostgrestResponse<T>>>;
-  maybeSingle: jest.Mock<Promise<PostgrestResponse<T>>>;
-  csv: jest.Mock<Promise<PostgrestResponse<string>>>;
-  execute: jest.Mock<Promise<PostgrestResponse<T[]>>>;
-
-  // Promise-like methods for thenable behavior
-  then: <TResult1 = PostgrestResponse<T[]>, TResult2 = never>(
+// Type for chainable query builder
+type ChainableQueryBuilder<T = any> = {
+  [K in keyof PostgrestFilterBuilder<any, any, T[], string, unknown>]: (
+    ...args: any[]
+  ) => ChainableQueryBuilder<T>;
+} & {
+  then<TResult1 = PostgrestResponse<T[]>, TResult2 = never>(
     onfulfilled?:
       | ((value: PostgrestResponse<T[]>) => TResult1 | PromiseLike<TResult1>)
       | null,
     onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
-  ) => Promise<TResult1 | TResult2>;
-
-  catch: <TResult = never>(
+  ): Promise<TResult1 | TResult2>;
+  catch<TResult = never>(
     onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null
-  ) => Promise<PostgrestResponse<T[]> | TResult>;
+  ): Promise<PostgrestResponse<T[]> | TResult>;
+  finally(onfinally?: (() => void) | null): Promise<PostgrestResponse<T[]>>;
+};
 
-  finally: (onfinally?: (() => void) | null) => Promise<PostgrestResponse<T[]>>;
+// Helper to create a chainable query builder
+function createChainableQueryBuilder<T = any>(
+  mockData: T[] = [],
+  mockError: PostgrestError | null = null
+): ChainableQueryBuilder<T> {
+  // Create the promise that will be returned
+  const responsePromise = Promise.resolve<PostgrestResponse<T[]>>({
+    data: mockError ? null : mockData,
+    error: mockError,
+    count: mockError ? null : mockData.length,
+    status: mockError ? 400 : 200,
+    statusText: mockError ? 'Bad Request' : 'OK',
+  });
 
-  // Internal state for testing
-  _mockData?: T[];
-  _mockError?: PostgrestError;
-  _shouldResolve?: boolean;
-}
+  // Create a proxy that returns itself for all method calls
+  const handler: ProxyHandler<any> = {
+    get(target, prop) {
+      // Handle promise methods
+      if (prop === 'then') {
+        return responsePromise.then.bind(responsePromise);
+      }
+      if (prop === 'catch') {
+        return responsePromise.catch.bind(responsePromise);
+      }
+      if (prop === 'finally') {
+        return responsePromise.finally.bind(responsePromise);
+      }
 
-// Helper to create a promise-like query builder
-function createQueryBuilder<T = any>(
-  defaultData: T[] = mockAgencyData as any,
-  defaultError: PostgrestError | null = null
-): SupabaseQueryBuilder<T> {
-  // Internal state
-  let mockData = defaultData;
-  let mockError = defaultError;
-  let shouldResolve = true;
-
-  // The base response promise
-  const getResponse = (): Promise<PostgrestResponse<T[]>> => {
-    return Promise.resolve({
-      data: mockError ? null : mockData,
-      error: mockError,
-      count: mockError ? null : mockData.length,
-      status: mockError ? 400 : 200,
-      statusText: mockError ? 'Bad Request' : 'OK',
-    } as PostgrestResponse<T[]>);
-  };
-
-  // Create the query builder object
-  const queryBuilder: SupabaseQueryBuilder<T> = {
-    // Query building methods - all return 'this' for chaining
-    from: jest.fn(() => queryBuilder),
-    select: jest.fn(() => queryBuilder),
-    insert: jest.fn(() => queryBuilder),
-    update: jest.fn(() => queryBuilder),
-    upsert: jest.fn(() => queryBuilder),
-    delete: jest.fn(() => queryBuilder),
-
-    // Filter methods - all return 'this' for chaining
-    eq: jest.fn(() => queryBuilder),
-    neq: jest.fn(() => queryBuilder),
-    gt: jest.fn(() => queryBuilder),
-    gte: jest.fn(() => queryBuilder),
-    lt: jest.fn(() => queryBuilder),
-    lte: jest.fn(() => queryBuilder),
-    like: jest.fn(() => queryBuilder),
-    ilike: jest.fn(() => queryBuilder),
-    is: jest.fn(() => queryBuilder),
-    in: jest.fn(() => queryBuilder),
-    contains: jest.fn(() => queryBuilder),
-    containedBy: jest.fn(() => queryBuilder),
-    or: jest.fn(() => queryBuilder),
-    not: jest.fn(() => queryBuilder),
-    match: jest.fn(() => queryBuilder),
-    filter: jest.fn(() => queryBuilder),
-
-    // Modifier methods - all return 'this' for chaining
-    order: jest.fn(() => queryBuilder),
-    limit: jest.fn(() => queryBuilder),
-    range: jest.fn(() => queryBuilder),
-
-    // Execution methods that return promises
-    single: jest.fn(() =>
-      getResponse().then(
-        (res) =>
-          ({
+      // Handle special execution methods
+      if (prop === 'single' || prop === 'maybeSingle') {
+        return jest.fn(() =>
+          responsePromise.then((res) => ({
             ...res,
             data: res.data?.[0] || null,
-          }) as PostgrestResponse<T>
-      )
-    ) as jest.Mock<Promise<PostgrestResponse<T>>>,
-
-    maybeSingle: jest.fn(() =>
-      getResponse().then(
-        (res) =>
-          ({
-            ...res,
-            data: res.data?.[0] || null,
-          }) as PostgrestResponse<T>
-      )
-    ) as jest.Mock<Promise<PostgrestResponse<T>>>,
-
-    csv: jest.fn(() =>
-      getResponse().then(
-        (res) =>
-          ({
+          }))
+        );
+      }
+      if (prop === 'csv') {
+        return jest.fn(() =>
+          responsePromise.then((res) => ({
             ...res,
             data: res.data ? 'id,name\n1,test' : null,
-          }) as PostgrestResponse<string>
-      )
-    ) as jest.Mock<Promise<PostgrestResponse<string>>>,
+          }))
+        );
+      }
 
-    execute: jest.fn(() => getResponse()),
-
-    // Promise-like methods
-    then: (onfulfilled, onrejected) =>
-      getResponse().then(onfulfilled, onrejected),
-    catch: (onrejected) => getResponse().catch(onrejected),
-    finally: (onfinally) => getResponse().finally(onfinally),
-
-    // Internal state for testing
-    _mockData: mockData,
-    _mockError: mockError as PostgrestError | undefined,
-    _shouldResolve: shouldResolve,
+      // All other methods return the proxy for chaining
+      return jest.fn(() => new Proxy({}, handler));
+    },
   };
 
-  return queryBuilder;
+  return new Proxy({}, handler) as ChainableQueryBuilder<T>;
 }
 
-// Create a mock client interface that has our test helper methods
-interface SupabaseClient {
-  from: <T = any>(table: string) => SupabaseQueryBuilder<T>;
-  auth: any;
-  storage: any;
-  functions: any;
-  // Helper method for tests to set mock data
+// Create the mock Supabase client
+interface MockSupabaseClient extends SupabaseClientType {
   _setMockData: (data: any[]) => void;
   _setMockError: (error: PostgrestError | null) => void;
 }
 
-// Export the createClient mock
+// Create client factory
 export const createClient = jest.fn(
-  (url: string, key: string): SupabaseClient => {
-    let currentMockData = mockAgencyData;
+  (url: string, key: string): MockSupabaseClient => {
+    let currentMockData: any[] = mockAgencyData;
     let currentMockError: PostgrestError | null = null;
 
-    const client: SupabaseClient = {
-      from: jest.fn((table: string) =>
-        createQueryBuilder(currentMockData as any, currentMockError)
-      ) as <T = any>(table: string) => SupabaseQueryBuilder<T>,
+    const client = {
+      from: jest.fn((table: string) => {
+        return createChainableQueryBuilder(currentMockData, currentMockError);
+      }),
 
       auth: {
         signUp: jest.fn().mockResolvedValue({
           data: { user: { id: 'mock-user-id' }, session: null },
           error: null,
         }),
-        signIn: jest.fn().mockResolvedValue({
+        signInWithPassword: jest.fn().mockResolvedValue({
           data: {
             user: { id: 'mock-user-id' },
             session: { access_token: 'mock-token' },
@@ -235,18 +164,37 @@ export const createClient = jest.fn(
           data: { session: { access_token: 'mock-token' } },
           error: null,
         }),
+        // Add other auth methods as needed
+        signInWithOAuth: jest.fn(),
+        signInWithOtp: jest.fn(),
+        verifyOtp: jest.fn(),
+        updateUser: jest.fn(),
+        resetPasswordForEmail: jest.fn(),
+        onAuthStateChange: jest.fn(),
       },
 
       storage: {
-        from: jest.fn().mockReturnValue({
-          upload: jest
-            .fn()
-            .mockResolvedValue({ data: { path: 'mock-path' }, error: null }),
-          download: jest
-            .fn()
-            .mockResolvedValue({ data: new Blob(), error: null }),
-          remove: jest.fn().mockResolvedValue({ data: [], error: null }),
-        }),
+        from: jest.fn((bucket: string) => ({
+          upload: jest.fn().mockResolvedValue({
+            data: { path: 'mock-path' },
+            error: null,
+          }),
+          download: jest.fn().mockResolvedValue({
+            data: new Blob(),
+            error: null,
+          }),
+          remove: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+          list: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+          getPublicUrl: jest.fn().mockReturnValue({
+            data: { publicUrl: 'https://example.com/mock-file' },
+          }),
+        })),
       },
 
       functions: {
@@ -256,18 +204,35 @@ export const createClient = jest.fn(
         }),
       },
 
-      // Helper methods for tests
+      realtime: {
+        channels: [],
+        setAuth: jest.fn(),
+        removeAllChannels: jest.fn(),
+        removeChannel: jest.fn(),
+      },
+
+      // Helper methods for testing
       _setMockData: (data: any[]) => {
         currentMockData = data;
       },
       _setMockError: (error: PostgrestError | null) => {
         currentMockError = error;
       },
-    };
+    } as unknown as MockSupabaseClient;
 
     return client;
   }
 );
 
-// Export types for use in tests
-export type { SupabaseQueryBuilder, SupabaseClient };
+// Export helper to create errors
+export { createPostgrestError };
+
+// Export types
+export type {
+  PostgrestResponse,
+  PostgrestError,
+  PostgrestSingleResponse,
+  PostgrestMaybeSingleResponse,
+  SupabaseClient,
+  SupabaseClientType,
+};
