@@ -10,16 +10,16 @@ describe('Supabase Runtime Mock', () => {
     // Setup runtime mock with custom data
     const mockData = [
       { id: 'runtime-1', name: 'Runtime Agency 1' },
-      { id: 'runtime-2', name: 'Runtime Agency 2' }
+      { id: 'runtime-2', name: 'Runtime Agency 2' },
     ];
-    
+
     const mockSupabase = setupSupabaseMockRuntime({
-      defaultData: mockData
+      defaultData: mockData,
     });
 
     // Now require the module after mocking
     const { supabase } = require('@/lib/supabase');
-    
+
     // Verify the mock is in place
     expect(supabase).toBe(mockSupabase);
     expect(supabase.from).toBeDefined();
@@ -29,7 +29,7 @@ describe('Supabase Runtime Mock', () => {
   it('should allow changing mock behavior at runtime', async () => {
     // First setup
     const firstMock = setupSupabaseMockRuntime({
-      defaultData: [{ id: '1', name: 'First' }]
+      defaultData: [{ id: '1', name: 'First' }],
     });
 
     let { supabase } = require('@/lib/supabase');
@@ -40,7 +40,7 @@ describe('Supabase Runtime Mock', () => {
 
     // Second setup with different data
     const secondMock = setupSupabaseMockRuntime({
-      defaultData: [{ id: '2', name: 'Second' }]
+      defaultData: [{ id: '2', name: 'Second' }],
     });
 
     // Re-require after reset
@@ -50,23 +50,23 @@ describe('Supabase Runtime Mock', () => {
 
   it('should handle error configuration at runtime', () => {
     const testError = new Error('Runtime error');
-    
+
     const mockSupabase = setupSupabaseMockRuntime({
       error: testError,
-      throwError: true
+      throwError: true,
     });
 
     const { supabase } = require('@/lib/supabase');
-    
+
     expect(supabase._error).toBe(testError);
     expect(supabase._throwError).toBe(true);
   });
 
   it('should preserve utility functions when using runtime mock', () => {
     setupSupabaseMockRuntime();
-    
+
     const { createSlug, formatPhoneNumber } = require('@/lib/supabase');
-    
+
     expect(createSlug).toBeDefined();
     expect(formatPhoneNumber).toBeDefined();
     expect(createSlug('Test Slug')).toBe('test-slug');

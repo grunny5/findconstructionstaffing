@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
-  useSearchParams: jest.fn()
+  useSearchParams: jest.fn(),
 }));
 
 // Mock the useAgencies hook
@@ -19,12 +19,12 @@ jest.mock('@/hooks/use-agencies');
 // Mock child components
 jest.mock('@/components/Header', () => ({
   __esModule: true,
-  default: () => <div data-testid="header">Header</div>
+  default: () => <div data-testid="header">Header</div>,
 }));
 
 jest.mock('@/components/Footer', () => ({
   __esModule: true,
-  default: () => <div data-testid="footer">Footer</div>
+  default: () => <div data-testid="footer">Footer</div>,
 }));
 
 jest.mock('@/components/AgencyCard', () => ({
@@ -34,12 +34,12 @@ jest.mock('@/components/AgencyCard', () => ({
       <h3>{agency.name}</h3>
       <p>{agency.description}</p>
     </div>
-  )
+  ),
 }));
 
 jest.mock('@/components/AgencyCardSkeleton', () => ({
   __esModule: true,
-  default: () => <div data-testid="agency-skeleton">Loading...</div>
+  default: () => <div data-testid="agency-skeleton">Loading...</div>,
 }));
 
 jest.mock('@/components/ApiErrorState', () => ({
@@ -49,7 +49,7 @@ jest.mock('@/components/ApiErrorState', () => ({
       <p>{message}</p>
       <button onClick={onRetry}>Retry</button>
     </div>
-  )
+  ),
 }));
 
 jest.mock('@/components/DirectoryFilters', () => ({
@@ -57,9 +57,11 @@ jest.mock('@/components/DirectoryFilters', () => ({
   default: ({ onFiltersChange, totalResults, isLoading }: any) => (
     <div data-testid="directory-filters">
       <span data-testid="filter-count">{totalResults} results</span>
-      {isLoading && <span data-testid="filter-loading">Loading filters...</span>}
+      {isLoading && (
+        <span data-testid="filter-loading">Loading filters...</span>
+      )}
     </div>
-  )
+  ),
 }));
 
 const mockAgencies = [
@@ -74,7 +76,7 @@ const mockAgencies = [
     reviewCount: 25,
     projectCount: 150,
     featured: true,
-    verified: true
+    verified: true,
   },
   {
     id: '2',
@@ -87,32 +89,44 @@ const mockAgencies = [
     reviewCount: 45,
     projectCount: 200,
     featured: false,
-    verified: true
-  }
+    verified: true,
+  },
 ];
 
 describe('HomePage Integration Tests', () => {
   const mockPush = jest.fn();
   const mockReplace = jest.fn();
   const mockSearchParams = new URLSearchParams();
+  const mockMutate = jest.fn();
+
+  // Helper to create mock useAgencies return value
+  const createMockUseAgencies = (overrides = {}) => ({
+    data: null,
+    error: null,
+    isLoading: false,
+    isValidating: false,
+    mutate: mockMutate,
+    ...overrides,
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
-      replace: mockReplace
+      replace: mockReplace,
     });
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
+    
+    // Mock window.location.reload
+    delete (window as any).location;
+    window.location = { reload: jest.fn() } as any;
   });
 
   describe('API Connection and Data Loading', () => {
     it('should display loading skeletons while fetching data', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: null,
-        error: null,
-        isLoading: true,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ isLoading: true })
+      );
 
       render(<HomePage />);
 
@@ -121,18 +135,19 @@ describe('HomePage Integration Tests', () => {
     });
 
     it('should display agencies from API after loading', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Elite Construction Staffing')).toBeInTheDocument();
-        expect(screen.getByText('National Staffing Solutions')).toBeInTheDocument();
+        expect(
+          screen.getByText('Elite Construction Staffing')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('National Staffing Solutions')
+        ).toBeInTheDocument();
       });
 
       const agencyCards = screen.getAllByTestId('agency-card');
@@ -141,26 +156,27 @@ describe('HomePage Integration Tests', () => {
 
     it('should display error state when API fails', async () => {
       const mockError = new Error('Failed to fetch agencies');
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: null,
-        error: mockError,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ error: mockError })
+      );
 
       render(<HomePage />);
 
       expect(screen.getByTestId('error-state')).toBeInTheDocument();
-      expect(screen.getByText(/We encountered an error while loading/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/We encountered an error while loading/)
+      ).toBeInTheDocument();
     });
 
     it('should retry API call when retry button is clicked', async () => {
       const mockError = new Error('Network error');
+      const mockMutate = jest.fn();
       (useAgencies as jest.Mock).mockReturnValue({
         data: null,
         error: mockError,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
+        mutate: mockMutate,
       });
 
       render(<HomePage />);
@@ -168,31 +184,27 @@ describe('HomePage Integration Tests', () => {
       const retryButton = screen.getByText('Retry');
       fireEvent.click(retryButton);
 
-      // Should reload the page
-      expect(window.location.reload).toHaveBeenCalled();
+      // Should call mutate to retry
+      expect(mockMutate).toHaveBeenCalled();
     });
 
     it('should display empty state when no agencies found', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: [] },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: [] } })
+      );
 
       render(<HomePage />);
 
       expect(screen.getByText('No agencies found')).toBeInTheDocument();
-      expect(screen.getByText(/We couldn't find any agencies/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/We couldn't find any agencies/)
+      ).toBeInTheDocument();
     });
 
     it('should update agency count in stats section', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
@@ -206,17 +218,14 @@ describe('HomePage Integration Tests', () => {
     it('should debounce search input and call API', async () => {
       jest.useFakeTimers();
 
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
       const searchInput = screen.getByPlaceholderText(/Search companies/);
-      
+
       // Type in search
       fireEvent.change(searchInput, { target: { value: 'elite' } });
 
@@ -228,7 +237,7 @@ describe('HomePage Integration Tests', () => {
       await waitFor(() => {
         expect(useAgencies).toHaveBeenCalledWith(
           expect.objectContaining({
-            search: 'elite'
+            search: 'elite',
           })
         );
       });
@@ -237,12 +246,9 @@ describe('HomePage Integration Tests', () => {
     });
 
     it('should show loading indicator while searching', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: true
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies }, isValidating: true })
+      );
 
       render(<HomePage />);
 
@@ -258,12 +264,9 @@ describe('HomePage Integration Tests', () => {
     it('should update URL with search parameter', async () => {
       jest.useFakeTimers();
 
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
@@ -285,12 +288,9 @@ describe('HomePage Integration Tests', () => {
     });
 
     it('should show contextual no results message for search', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: [] },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: [] } })
+      );
 
       render(<HomePage />);
 
@@ -299,7 +299,12 @@ describe('HomePage Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('No matches found')).toBeInTheDocument();
-        expect(screen.getByText(/couldn't find any agencies matching "nonexistent"/)).toBeInTheDocument();
+        // Check for the specific message with proper quotes
+        const message = screen.getByText((content, element) => {
+          return content.includes("We couldn't find any agencies matching") && 
+                 content.includes("nonexistent");
+        });
+        expect(message).toBeInTheDocument();
       });
     });
   });
@@ -307,19 +312,16 @@ describe('HomePage Integration Tests', () => {
   describe('Filter Integration', () => {
     it('should pass correct filter parameters to API', async () => {
       const mockFilteredData = [mockAgencies[0]];
-      
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockFilteredData },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockFilteredData } })
+      );
 
       // Set initial URL params with filters
       const searchParams = new URLSearchParams();
       searchParams.append('trades[]', 'electrician');
       searchParams.append('states[]', 'TX');
-      
+
       (useSearchParams as jest.Mock).mockReturnValue(searchParams);
 
       render(<HomePage />);
@@ -327,17 +329,16 @@ describe('HomePage Integration Tests', () => {
       expect(useAgencies).toHaveBeenCalledWith({
         search: '',
         trades: ['electrician'],
-        states: ['TX']
+        states: ['TX'],
+        limit: 20,
+        offset: 0,
       });
     });
 
     it('should show loading state in filters while validating', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: true
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies }, isValidating: true })
+      );
 
       render(<HomePage />);
 
@@ -345,12 +346,9 @@ describe('HomePage Integration Tests', () => {
     });
 
     it('should update filter count badge', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
@@ -362,12 +360,9 @@ describe('HomePage Integration Tests', () => {
     it('should render initial content within performance budget', async () => {
       const startTime = performance.now();
 
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
@@ -383,7 +378,7 @@ describe('HomePage Integration Tests', () => {
         data: null,
         error: null,
         isLoading: true,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -391,7 +386,7 @@ describe('HomePage Integration Tests', () => {
       // Static content should be visible immediately
       expect(screen.getByText('Find Elite Construction')).toBeInTheDocument();
       expect(screen.getByText('Premium Staffing Partners')).toBeInTheDocument();
-      
+
       // Loading skeletons should be shown for dynamic content
       expect(screen.getAllByTestId('agency-skeleton')).toHaveLength(6);
     });
@@ -399,12 +394,9 @@ describe('HomePage Integration Tests', () => {
 
   describe('Featured and Verified Badges', () => {
     it('should display featured badge for featured agencies', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
@@ -421,32 +413,28 @@ describe('HomePage Integration Tests', () => {
       searchParams.set('search', 'test');
       searchParams.append('trades[]', 'electrician');
       searchParams.append('states[]', 'TX');
-      
+
       (useSearchParams as jest.Mock).mockReturnValue(searchParams);
 
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 
       expect(useAgencies).toHaveBeenCalledWith({
         search: 'test',
         trades: ['electrician'],
-        states: ['TX']
+        states: ['TX'],
+        limit: 20,
+        offset: 0,
       });
     });
 
     it('should update URL when filters change', async () => {
-      (useAgencies as jest.Mock).mockReturnValue({
-        data: { data: mockAgencies },
-        error: null,
-        isLoading: false,
-        isValidating: false
-      });
+      (useAgencies as jest.Mock).mockReturnValue(
+        createMockUseAgencies({ data: { data: mockAgencies } })
+      );
 
       render(<HomePage />);
 

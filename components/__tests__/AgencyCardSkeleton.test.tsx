@@ -7,7 +7,7 @@ import AgencyCardSkeleton from '../AgencyCardSkeleton';
 describe('AgencyCardSkeleton', () => {
   it('renders skeleton elements with correct structure', () => {
     const { container } = render(<AgencyCardSkeleton />);
-    
+
     // Check for skeleton elements (Skeleton component uses animate-pulse class)
     const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
@@ -15,11 +15,11 @@ describe('AgencyCardSkeleton', () => {
 
   it('renders with proper layout structure', () => {
     render(<AgencyCardSkeleton />);
-    
+
     // Check for card structure
     const card = screen.getByTestId('agency-card-skeleton');
     expect(card).toBeInTheDocument();
-    
+
     // Check for flex layout
     const flexContainer = screen.getByTestId('skeleton-flex-container');
     expect(flexContainer).toBeInTheDocument();
@@ -27,7 +27,7 @@ describe('AgencyCardSkeleton', () => {
 
   it('renders logo skeleton', () => {
     render(<AgencyCardSkeleton />);
-    
+
     // Check for logo skeleton
     const logoSkeleton = screen.getByTestId('skeleton-logo');
     expect(logoSkeleton).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe('AgencyCardSkeleton', () => {
 
   it('renders correct number of stat skeletons', () => {
     render(<AgencyCardSkeleton />);
-    
+
     // Should have 4 stat items in the grid
     const statGrid = screen.getByTestId('skeleton-stats-grid');
     expect(statGrid).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('AgencyCardSkeleton', () => {
 
   it('renders action button skeletons', () => {
     render(<AgencyCardSkeleton />);
-    
+
     // Should have 2 button skeletons
     const button1 = screen.getByTestId('skeleton-button-1');
     const button2 = screen.getByTestId('skeleton-button-2');
@@ -57,13 +57,15 @@ describe('AgencyCardSkeleton', () => {
 
   it('has no layout shift potential', () => {
     const { container } = render(<AgencyCardSkeleton />);
-    
+
     // Check that all skeletons have defined dimensions
-    const allSkeletons = container.querySelectorAll('[class*="h-"][class*="w-"]');
+    const allSkeletons = container.querySelectorAll(
+      '[class*="h-"][class*="w-"]'
+    );
     expect(allSkeletons.length).toBeGreaterThan(0);
-    
+
     // Each skeleton should have both height and width classes
-    allSkeletons.forEach(skeleton => {
+    allSkeletons.forEach((skeleton) => {
       const classes = skeleton.className;
       expect(classes).toMatch(/h-\d+|h-\[/);
       expect(classes).toMatch(/w-\d+|w-\[|w-full|w-\d+\/\d+/);

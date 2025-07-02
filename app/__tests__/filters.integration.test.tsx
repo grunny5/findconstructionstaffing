@@ -10,7 +10,7 @@ import { allTrades, allStates } from '@/lib/mock-data';
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
-  useSearchParams: jest.fn()
+  useSearchParams: jest.fn(),
 }));
 
 // Mock the useAgencies hook
@@ -19,12 +19,12 @@ jest.mock('@/hooks/use-agencies');
 // Mock components
 jest.mock('@/components/Header', () => ({
   __esModule: true,
-  default: () => null
+  default: () => null,
 }));
 
 jest.mock('@/components/Footer', () => ({
   __esModule: true,
-  default: () => null
+  default: () => null,
 }));
 
 jest.mock('@/components/AgencyCard', () => ({
@@ -39,12 +39,12 @@ jest.mock('@/components/AgencyCard', () => ({
         {agency.regions.map((r: any) => r.name).join(', ')}
       </div>
     </div>
-  )
+  ),
 }));
 
 jest.mock('@/components/AgencyCardSkeleton', () => ({
   __esModule: true,
-  default: () => <div data-testid="skeleton">Loading...</div>
+  default: () => <div data-testid="skeleton">Loading...</div>,
 }));
 
 // Mock DirectoryFilters with actual functionality
@@ -54,9 +54,9 @@ jest.mock('@/components/DirectoryFilters', () => ({
     const handleTradeFilter = (trade: string) => {
       onFiltersChange((prev: any) => ({
         ...prev,
-        trades: prev.trades.includes(trade) 
+        trades: prev.trades.includes(trade)
           ? prev.trades.filter((t: string) => t !== trade)
-          : [...prev.trades, trade]
+          : [...prev.trades, trade],
       }));
     };
 
@@ -65,7 +65,7 @@ jest.mock('@/components/DirectoryFilters', () => ({
         ...prev,
         states: prev.states.includes(state)
           ? prev.states.filter((s: string) => s !== state)
-          : [...prev.states, state]
+          : [...prev.states, state],
       }));
     };
 
@@ -73,13 +73,17 @@ jest.mock('@/components/DirectoryFilters', () => ({
       <div data-testid="directory-filters">
         <div data-testid="filter-results">{totalResults} results</div>
         {isLoading && <div data-testid="filter-loading">Loading...</div>}
-        
+
         <div data-testid="trade-filters">
-          <button onClick={() => handleTradeFilter('electrician')}>Electrician</button>
+          <button onClick={() => handleTradeFilter('electrician')}>
+            Electrician
+          </button>
           <button onClick={() => handleTradeFilter('plumber')}>Plumber</button>
-          <button onClick={() => handleTradeFilter('carpenter')}>Carpenter</button>
+          <button onClick={() => handleTradeFilter('carpenter')}>
+            Carpenter
+          </button>
         </div>
-        
+
         <div data-testid="state-filters">
           <button onClick={() => handleStateFilter('TX')}>Texas</button>
           <button onClick={() => handleStateFilter('CA')}>California</button>
@@ -87,7 +91,7 @@ jest.mock('@/components/DirectoryFilters', () => ({
         </div>
       </div>
     );
-  }
+  },
 }));
 
 const mockAgencies = {
@@ -99,17 +103,17 @@ const mockAgencies = {
       description: 'Premier construction staffing',
       trades: [
         { id: 't1', name: 'Electrician', slug: 'electrician' },
-        { id: 't2', name: 'Plumber', slug: 'plumber' }
+        { id: 't2', name: 'Plumber', slug: 'plumber' },
       ],
       regions: [
         { id: 'r1', name: 'Texas', code: 'TX' },
-        { id: 'r2', name: 'California', code: 'CA' }
+        { id: 'r2', name: 'California', code: 'CA' },
       ],
       rating: 4.5,
       reviewCount: 25,
       projectCount: 150,
       featured: true,
-      verified: true
+      verified: true,
     },
     {
       id: '2',
@@ -118,35 +122,31 @@ const mockAgencies = {
       description: 'Nationwide construction staffing',
       trades: [
         { id: 't3', name: 'Carpenter', slug: 'carpenter' },
-        { id: 't1', name: 'Electrician', slug: 'electrician' }
+        { id: 't1', name: 'Electrician', slug: 'electrician' },
       ],
       regions: [
         { id: 'r3', name: 'New York', code: 'NY' },
-        { id: 'r2', name: 'California', code: 'CA' }
+        { id: 'r2', name: 'California', code: 'CA' },
       ],
       rating: 4.2,
       reviewCount: 45,
       projectCount: 200,
       featured: false,
-      verified: true
+      verified: true,
     },
     {
       id: '3',
       name: 'Texas Trade Specialists',
       slug: 'texas-trade-specialists',
       description: 'Texas-focused staffing',
-      trades: [
-        { id: 't2', name: 'Plumber', slug: 'plumber' }
-      ],
-      regions: [
-        { id: 'r1', name: 'Texas', code: 'TX' }
-      ],
+      trades: [{ id: 't2', name: 'Plumber', slug: 'plumber' }],
+      regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
       rating: 4.0,
       reviewCount: 20,
       projectCount: 80,
       featured: false,
-      verified: true
-    }
+      verified: true,
+    },
   ],
   electricians: [
     {
@@ -156,17 +156,17 @@ const mockAgencies = {
       description: 'Premier construction staffing',
       trades: [
         { id: 't1', name: 'Electrician', slug: 'electrician' },
-        { id: 't2', name: 'Plumber', slug: 'plumber' }
+        { id: 't2', name: 'Plumber', slug: 'plumber' },
       ],
       regions: [
         { id: 'r1', name: 'Texas', code: 'TX' },
-        { id: 'r2', name: 'California', code: 'CA' }
+        { id: 'r2', name: 'California', code: 'CA' },
       ],
       rating: 4.5,
       reviewCount: 25,
       projectCount: 150,
       featured: true,
-      verified: true
+      verified: true,
     },
     {
       id: '2',
@@ -175,18 +175,18 @@ const mockAgencies = {
       description: 'Nationwide construction staffing',
       trades: [
         { id: 't3', name: 'Carpenter', slug: 'carpenter' },
-        { id: 't1', name: 'Electrician', slug: 'electrician' }
+        { id: 't1', name: 'Electrician', slug: 'electrician' },
       ],
       regions: [
         { id: 'r3', name: 'New York', code: 'NY' },
-        { id: 'r2', name: 'California', code: 'CA' }
+        { id: 'r2', name: 'California', code: 'CA' },
       ],
       rating: 4.2,
       reviewCount: 45,
       projectCount: 200,
       featured: false,
-      verified: true
-    }
+      verified: true,
+    },
   ],
   texas: [
     {
@@ -196,36 +196,32 @@ const mockAgencies = {
       description: 'Premier construction staffing',
       trades: [
         { id: 't1', name: 'Electrician', slug: 'electrician' },
-        { id: 't2', name: 'Plumber', slug: 'plumber' }
+        { id: 't2', name: 'Plumber', slug: 'plumber' },
       ],
       regions: [
         { id: 'r1', name: 'Texas', code: 'TX' },
-        { id: 'r2', name: 'California', code: 'CA' }
+        { id: 'r2', name: 'California', code: 'CA' },
       ],
       rating: 4.5,
       reviewCount: 25,
       projectCount: 150,
       featured: true,
-      verified: true
+      verified: true,
     },
     {
       id: '3',
       name: 'Texas Trade Specialists',
       slug: 'texas-trade-specialists',
       description: 'Texas-focused staffing',
-      trades: [
-        { id: 't2', name: 'Plumber', slug: 'plumber' }
-      ],
-      regions: [
-        { id: 'r1', name: 'Texas', code: 'TX' }
-      ],
+      trades: [{ id: 't2', name: 'Plumber', slug: 'plumber' }],
+      regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
       rating: 4.0,
       reviewCount: 20,
       projectCount: 80,
       featured: false,
-      verified: true
-    }
-  ]
+      verified: true,
+    },
+  ],
 };
 
 describe('Filter Integration Tests', () => {
@@ -235,33 +231,31 @@ describe('Filter Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockSearchParams = new URLSearchParams();
-    
+
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
-      replace: mockReplace
+      replace: mockReplace,
     });
-    
+
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
-    
+
     // Mock window.location.reload
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { reload: jest.fn() }
-    });
+    delete (window as any).location;
+    window.location = { reload: jest.fn() } as any;
   });
 
   describe('Trade Filter Integration', () => {
     it('should filter agencies by single trade', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Start with all agencies
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       const { rerender } = render(<HomePage />);
@@ -275,7 +269,7 @@ describe('Filter Integration Tests', () => {
         data: { data: mockAgencies.electricians },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       rerender(<HomePage />);
@@ -284,7 +278,7 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: '',
           trades: ['electrician'],
-          states: []
+          states: [],
         });
       });
 
@@ -296,12 +290,12 @@ describe('Filter Integration Tests', () => {
 
     it('should filter agencies by multiple trades (OR logic)', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -314,19 +308,19 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: '',
           trades: ['electrician', 'plumber'],
-          states: []
+          states: [],
         });
       });
     });
 
     it('should convert trade names to slugs for API', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -335,19 +329,20 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Electrician'));
 
       await waitFor(() => {
-        const lastCall = mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
+        const lastCall =
+          mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
         expect(lastCall.trades).toEqual(['electrician']); // Slug format
       });
     });
 
     it('should update URL with trade filter parameters', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -371,13 +366,13 @@ describe('Filter Integration Tests', () => {
   describe('State Filter Integration', () => {
     it('should filter agencies by single state', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Start with all agencies
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       const { rerender } = render(<HomePage />);
@@ -390,7 +385,7 @@ describe('Filter Integration Tests', () => {
         data: { data: mockAgencies.texas },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       rerender(<HomePage />);
@@ -399,7 +394,7 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: '',
           trades: [],
-          states: ['TX']
+          states: ['TX'],
         });
       });
 
@@ -411,12 +406,12 @@ describe('Filter Integration Tests', () => {
 
     it('should filter agencies by multiple states (OR logic)', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -429,19 +424,19 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: '',
           trades: [],
-          states: ['TX', 'CA']
+          states: ['TX', 'CA'],
         });
       });
     });
 
     it('should use 2-letter state codes for API', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -450,19 +445,20 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('New York'));
 
       await waitFor(() => {
-        const lastCall = mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
+        const lastCall =
+          mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
         expect(lastCall.states).toEqual(['TX', 'NY']); // 2-letter codes
       });
     });
 
     it('should update URL with state filter parameters', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -486,15 +482,15 @@ describe('Filter Integration Tests', () => {
   describe('Combined Filter Logic', () => {
     it('should combine trade and state filters (AND logic)', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Filter result: only agencies with electricians in Texas
       const filteredAgencies = [mockAgencies.all[0]]; // Elite has electricians and is in Texas
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: filteredAgencies },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -507,7 +503,7 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: '',
           trades: ['electrician'],
-          states: ['TX']
+          states: ['TX'],
         });
       });
 
@@ -519,12 +515,12 @@ describe('Filter Integration Tests', () => {
 
     it('should combine search with filters', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: [mockAgencies.all[0]] },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -541,19 +537,19 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: 'elite',
           trades: ['electrician'],
-          states: ['TX']
+          states: ['TX'],
         });
       });
     });
 
     it('should show correct filter count badge', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -572,12 +568,12 @@ describe('Filter Integration Tests', () => {
 
     it('should clear all filters', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -594,7 +590,7 @@ describe('Filter Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: '',
           trades: [],
-          states: []
+          states: [],
         });
       });
     });
@@ -603,12 +599,12 @@ describe('Filter Integration Tests', () => {
   describe('Filter Loading States', () => {
     it('should show loading indicator while filters are being applied', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: true // Validating means filters are being applied
+        isValidating: true, // Validating means filters are being applied
       });
 
       render(<HomePage />);
@@ -618,18 +614,20 @@ describe('Filter Integration Tests', () => {
 
     it('should update result count after filtering', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Start with all agencies
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       const { rerender } = render(<HomePage />);
 
-      expect(screen.getByTestId('filter-results')).toHaveTextContent('3 results');
+      expect(screen.getByTestId('filter-results')).toHaveTextContent(
+        '3 results'
+      );
 
       // Apply filter
       fireEvent.click(screen.getByText('Electrician'));
@@ -639,13 +637,15 @@ describe('Filter Integration Tests', () => {
         data: { data: mockAgencies.electricians },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       rerender(<HomePage />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('filter-results')).toHaveTextContent('2 results');
+        expect(screen.getByTestId('filter-results')).toHaveTextContent(
+          '2 results'
+        );
       });
     });
   });
@@ -655,13 +655,13 @@ describe('Filter Integration Tests', () => {
       mockSearchParams.append('trades[]', 'electrician');
       mockSearchParams.append('trades[]', 'plumber');
       mockSearchParams.append('states[]', 'TX');
-      
+
       const mockUseAgencies = useAgencies as jest.Mock;
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -669,18 +669,18 @@ describe('Filter Integration Tests', () => {
       expect(mockUseAgencies).toHaveBeenCalledWith({
         search: '',
         trades: ['electrician', 'plumber'],
-        states: ['TX']
+        states: ['TX'],
       });
     });
 
     it('should maintain filter state across navigation', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -701,12 +701,12 @@ describe('Filter Integration Tests', () => {
   describe('Complex Filter Scenarios', () => {
     it('should handle removing individual filters', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -720,7 +720,8 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Plumber'));
 
       await waitFor(() => {
-        const lastCall = mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
+        const lastCall =
+          mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
         expect(lastCall.trades).toEqual(['electrician', 'carpenter']);
         expect(lastCall.trades).not.toContain('plumber');
       });
@@ -728,12 +729,12 @@ describe('Filter Integration Tests', () => {
 
     it('should handle rapid filter changes', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockAgencies.all },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -746,19 +747,20 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Plumber')); // Toggle off
 
       await waitFor(() => {
-        const lastCall = mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
+        const lastCall =
+          mockUseAgencies.mock.calls[mockUseAgencies.mock.calls.length - 1][0];
         expect(lastCall.trades).toEqual(['electrician']); // Only electrician should be on
       });
     });
 
     it('should handle edge case with no matching results', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: [] },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -769,7 +771,9 @@ describe('Filter Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('No agencies found')).toBeInTheDocument();
-        expect(screen.getByText(/Try adjusting your criteria/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Try adjusting your criteria/)
+        ).toBeInTheDocument();
       });
     });
   });

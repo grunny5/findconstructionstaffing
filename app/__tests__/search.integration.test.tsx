@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
-  useSearchParams: jest.fn()
+  useSearchParams: jest.fn(),
 }));
 
 // Mock the useAgencies hook
@@ -19,29 +19,29 @@ jest.mock('@/hooks/use-agencies');
 // Mock components to focus on search functionality
 jest.mock('@/components/Header', () => ({
   __esModule: true,
-  default: () => null
+  default: () => null,
 }));
 
 jest.mock('@/components/Footer', () => ({
   __esModule: true,
-  default: () => null
+  default: () => null,
 }));
 
 jest.mock('@/components/AgencyCard', () => ({
   __esModule: true,
   default: ({ agency }: { agency: any }) => (
     <div data-testid={`agency-${agency.id}`}>{agency.name}</div>
-  )
+  ),
 }));
 
 jest.mock('@/components/AgencyCardSkeleton', () => ({
   __esModule: true,
-  default: () => <div data-testid="skeleton">Loading...</div>
+  default: () => <div data-testid="skeleton">Loading...</div>,
 }));
 
 jest.mock('@/components/DirectoryFilters', () => ({
   __esModule: true,
-  default: () => null
+  default: () => null,
 }));
 
 const mockSearchResults = {
@@ -57,8 +57,8 @@ const mockSearchResults = {
       reviewCount: 25,
       projectCount: 150,
       featured: true,
-      verified: true
-    }
+      verified: true,
+    },
   ],
   partial: [
     {
@@ -72,7 +72,7 @@ const mockSearchResults = {
       reviewCount: 25,
       projectCount: 150,
       featured: true,
-      verified: true
+      verified: true,
     },
     {
       id: '2',
@@ -85,10 +85,10 @@ const mockSearchResults = {
       reviewCount: 15,
       projectCount: 100,
       featured: false,
-      verified: true
-    }
+      verified: true,
+    },
   ],
-  empty: []
+  empty: [],
 };
 
 describe('Search Functionality Integration Tests', () => {
@@ -99,21 +99,19 @@ describe('Search Functionality Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    
+
     mockSearchParams = new URLSearchParams();
-    
+
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
-      replace: mockReplace
+      replace: mockReplace,
     });
-    
+
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
-    
+
     // Mock window.location.reload
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { reload: jest.fn() }
-    });
+    delete (window as any).location;
+    window.location = { reload: jest.fn() } as any;
   });
 
   afterEach(() => {
@@ -123,18 +121,18 @@ describe('Search Functionality Integration Tests', () => {
   describe('Search Debouncing', () => {
     it('should debounce search input by 300ms', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
 
       const searchInput = screen.getByPlaceholderText(/Search companies/);
-      
+
       // Type quickly
       fireEvent.change(searchInput, { target: { value: 'e' } });
       fireEvent.change(searchInput, { target: { value: 'el' } });
@@ -170,21 +168,21 @@ describe('Search Functionality Integration Tests', () => {
 
     it('should cancel pending search when new input arrives', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
 
       const searchInput = screen.getByPlaceholderText(/Search companies/);
-      
+
       // First search
       fireEvent.change(searchInput, { target: { value: 'elite' } });
-      
+
       // Advance timer by 200ms
       act(() => {
         jest.advanceTimersByTime(200);
@@ -220,13 +218,13 @@ describe('Search Functionality Integration Tests', () => {
   describe('Search Loading States', () => {
     it('should show loading spinner while searching', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Start with no search
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       const { rerender } = render(<HomePage />);
@@ -239,14 +237,14 @@ describe('Search Functionality Integration Tests', () => {
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: true
+        isValidating: true,
       });
 
       rerender(<HomePage />);
 
       // Check for loading indicator
       expect(screen.getByText('Searching agencies')).toBeInTheDocument();
-      
+
       // Loading spinner should be visible
       const spinner = screen.getByTestId('filter-loading');
       expect(spinner).toBeInTheDocument();
@@ -254,13 +252,13 @@ describe('Search Functionality Integration Tests', () => {
 
     it('should maintain previous results while searching', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Initial state with results
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       const { rerender } = render(<HomePage />);
@@ -278,7 +276,7 @@ describe('Search Functionality Integration Tests', () => {
         data: { data: mockSearchResults.partial }, // Same data
         error: null,
         isLoading: false,
-        isValidating: true // Now validating
+        isValidating: true, // Now validating
       });
 
       rerender(<HomePage />);
@@ -292,18 +290,20 @@ describe('Search Functionality Integration Tests', () => {
   describe('Search Results', () => {
     it('should display exact match results', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.exact },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
 
       const searchInput = screen.getByPlaceholderText(/Search companies/);
-      fireEvent.change(searchInput, { target: { value: 'Elite Construction Staffing' } });
+      fireEvent.change(searchInput, {
+        target: { value: 'Elite Construction Staffing' },
+      });
 
       act(() => {
         jest.advanceTimersByTime(300);
@@ -311,18 +311,20 @@ describe('Search Functionality Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('agency-1')).toBeInTheDocument();
-        expect(screen.getByText('Elite Construction Staffing')).toBeInTheDocument();
+        expect(
+          screen.getByText('Elite Construction Staffing')
+        ).toBeInTheDocument();
       });
     });
 
     it('should display partial match results', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -342,13 +344,13 @@ describe('Search Functionality Integration Tests', () => {
 
     it('should show no results message with search term', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       // Mock initial call
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       const { rerender } = render(<HomePage />);
@@ -365,25 +367,27 @@ describe('Search Functionality Integration Tests', () => {
         data: { data: mockSearchResults.empty },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       rerender(<HomePage />);
 
       await waitFor(() => {
         expect(screen.getByText('No matches found')).toBeInTheDocument();
-        expect(screen.getByText(/couldn't find any agencies matching "nonexistent"/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/couldn't find any agencies matching "nonexistent"/)
+        ).toBeInTheDocument();
       });
     });
 
     it('should provide clear search button in no results state', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.empty },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -398,9 +402,9 @@ describe('Search Functionality Integration Tests', () => {
       await waitFor(() => {
         const clearButton = screen.getByText('Clear Search');
         expect(clearButton).toBeInTheDocument();
-        
+
         fireEvent.click(clearButton);
-        
+
         expect(searchInput).toHaveValue('');
       });
     });
@@ -409,12 +413,12 @@ describe('Search Functionality Integration Tests', () => {
   describe('Search URL Synchronization', () => {
     it('should update URL with search parameter', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -436,35 +440,37 @@ describe('Search Functionality Integration Tests', () => {
 
     it('should initialize search from URL parameter', () => {
       mockSearchParams.set('search', 'initial search');
-      
+
       const mockUseAgencies = useAgencies as jest.Mock;
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
 
-      const searchInput = screen.getByPlaceholderText(/Search companies/) as HTMLInputElement;
+      const searchInput = screen.getByPlaceholderText(
+        /Search companies/
+      ) as HTMLInputElement;
       expect(searchInput.value).toBe('initial search');
     });
 
     it('should clear search parameter from URL when search is cleared', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
 
       const searchInput = screen.getByPlaceholderText(/Search companies/);
-      
+
       // Add search
       fireEvent.change(searchInput, { target: { value: 'test' } });
       act(() => {
@@ -489,13 +495,13 @@ describe('Search Functionality Integration Tests', () => {
   describe('Search with Filters', () => {
     it('should combine search with trade filters', async () => {
       mockSearchParams.append('trades[]', 'electrician');
-      
+
       const mockUseAgencies = useAgencies as jest.Mock;
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.exact },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -511,7 +517,7 @@ describe('Search Functionality Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: 'elite',
           trades: ['electrician'],
-          states: []
+          states: [],
         });
       });
     });
@@ -519,13 +525,13 @@ describe('Search Functionality Integration Tests', () => {
     it('should combine search with state filters', async () => {
       mockSearchParams.append('states[]', 'TX');
       mockSearchParams.append('states[]', 'CA');
-      
+
       const mockUseAgencies = useAgencies as jest.Mock;
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -541,7 +547,7 @@ describe('Search Functionality Integration Tests', () => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
           search: 'construction',
           trades: [],
-          states: ['TX', 'CA']
+          states: ['TX', 'CA'],
         });
       });
     });
@@ -551,12 +557,12 @@ describe('Search Functionality Integration Tests', () => {
     it('should handle search API errors gracefully', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
       const mockError = new Error('Search API failed');
-      
+
       mockUseAgencies.mockReturnValue({
         data: null,
         error: mockError,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
@@ -575,18 +581,20 @@ describe('Search Functionality Integration Tests', () => {
 
     it('should sanitize special characters in search', async () => {
       const mockUseAgencies = useAgencies as jest.Mock;
-      
+
       mockUseAgencies.mockReturnValue({
         data: { data: mockSearchResults.partial },
         error: null,
         isLoading: false,
-        isValidating: false
+        isValidating: false,
       });
 
       render(<HomePage />);
 
       const searchInput = screen.getByPlaceholderText(/Search companies/);
-      fireEvent.change(searchInput, { target: { value: '<script>alert("xss")</script>' } });
+      fireEvent.change(searchInput, {
+        target: { value: '<script>alert("xss")</script>' },
+      });
 
       act(() => {
         jest.advanceTimersByTime(300);
@@ -595,7 +603,7 @@ describe('Search Functionality Integration Tests', () => {
       await waitFor(() => {
         expect(mockUseAgencies).toHaveBeenCalledWith(
           expect.objectContaining({
-            search: '<script>alert("xss")</script>'
+            search: '<script>alert("xss")</script>',
           })
         );
       });
