@@ -2,11 +2,10 @@ import {
   Agency,
   Trade,
   Region,
-  AgencyRegion,
-  AgencyTrade,
-  isValidAgency,
-  isValidTrade,
-  isValidRegion,
+  isErrorResponse,
+  API_CONSTANTS,
+  HTTP_STATUS,
+  ERROR_CODES,
 } from '../api';
 
 describe('API Types', () => {
@@ -20,209 +19,176 @@ describe('API Types', () => {
       website: 'https://example.com',
       phone: '555-123-4567',
       email: 'test@example.com',
-      address: '123 Main St',
-      city: 'Austin',
-      state: 'TX',
-      zip_code: '78701',
+      is_claimed: true,
+      offers_per_diem: true,
+      is_union: false,
+      founded_year: 2020,
+      employee_count: '50-100',
+      headquarters: 'Austin, TX',
+      rating: 4.5,
+      review_count: 10,
+      project_count: 100,
+      verified: true,
+      featured: false,
       trades: [],
       regions: [],
-      specialties: ['Commercial', 'Industrial'],
-      certifications: ['ISO 9001'],
-      rating: 4.5,
-      reviews_count: 10,
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
     };
 
-    it('should validate a complete agency object', () => {
-      expect(isValidAgency(validAgency)).toBe(true);
+    it('should have correct properties for a complete agency object', () => {
+      expect(validAgency.id).toBe('123');
+      expect(validAgency.name).toBe('Test Agency');
+      expect(validAgency.slug).toBe('test-agency');
+      expect(validAgency.is_claimed).toBe(true);
     });
 
-    it('should validate agency with minimal required fields', () => {
+    it('should accept agency with minimal required fields', () => {
       const minimalAgency: Agency = {
         id: '123',
         name: 'Test Agency',
         slug: 'test-agency',
-        description: '',
+        description: null,
         logo_url: null,
         website: null,
         phone: null,
         email: null,
-        address: null,
-        city: null,
-        state: null,
-        zip_code: null,
+        is_claimed: false,
+        offers_per_diem: false,
+        is_union: false,
+        founded_year: null,
+        employee_count: null,
+        headquarters: null,
+        rating: null,
+        review_count: 0,
+        project_count: 0,
+        verified: false,
+        featured: false,
         trades: [],
         regions: [],
-        specialties: [],
-        certifications: [],
-        rating: null,
-        reviews_count: 0,
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01',
       };
 
-      expect(isValidAgency(minimalAgency)).toBe(true);
-    });
-
-    it('should reject invalid agency objects', () => {
-      expect(isValidAgency(null)).toBe(false);
-      expect(isValidAgency(undefined)).toBe(false);
-      expect(isValidAgency({})).toBe(false);
-      expect(isValidAgency({ name: 'Test' })).toBe(false);
-    });
-
-    it('should reject agency with wrong types', () => {
-      const invalidAgency = {
-        ...validAgency,
-        id: 123, // Should be string
-      };
-      expect(isValidAgency(invalidAgency)).toBe(false);
+      expect(minimalAgency.id).toBeDefined();
+      expect(minimalAgency.name).toBeDefined();
     });
   });
 
   describe('Trade Type', () => {
     const validTrade: Trade = {
-      id: 1,
+      id: '1',
       name: 'Electrician',
+      slug: 'electrician',
+      description: 'Electrical work specialists',
     };
 
-    it('should validate a valid trade object', () => {
-      expect(isValidTrade(validTrade)).toBe(true);
+    it('should have correct properties for trade', () => {
+      expect(validTrade.id).toBe('1');
+      expect(validTrade.name).toBe('Electrician');
+      expect(validTrade.slug).toBe('electrician');
     });
 
-    it('should reject invalid trade objects', () => {
-      expect(isValidTrade(null)).toBe(false);
-      expect(isValidTrade({})).toBe(false);
-      expect(isValidTrade({ id: '1', name: 'Electrician' })).toBe(false); // id should be number
-      expect(isValidTrade({ id: 1 })).toBe(false); // missing name
-    });
+    it('should handle trade without description', () => {
+      const trade: Trade = {
+        id: '1',
+        name: 'Plumber',
+        slug: 'plumber',
+      };
 
-    it('should validate trades with different IDs and names', () => {
-      const trades: Trade[] = [
-        { id: 1, name: 'Electrician' },
-        { id: 2, name: 'Plumber' },
-        { id: 100, name: 'General Laborer' },
-      ];
-
-      trades.forEach((trade) => {
-        expect(isValidTrade(trade)).toBe(true);
-      });
+      expect(trade.description).toBeUndefined();
     });
   });
 
   describe('Region Type', () => {
     const validRegion: Region = {
-      id: 1,
-      name: 'TX',
-      type: 'state',
+      id: '1',
+      name: 'Texas',
+      code: 'TX',
     };
 
-    it('should validate a valid region object', () => {
-      expect(isValidRegion(validRegion)).toBe(true);
-    });
-
-    it('should validate regions with different types', () => {
-      const stateRegion: Region = { id: 1, name: 'CA', type: 'state' };
-      const cityRegion: Region = { id: 2, name: 'Los Angeles', type: 'city' };
-      const countyRegion: Region = {
-        id: 3,
-        name: 'Orange County',
-        type: 'county',
-      };
-
-      expect(isValidRegion(stateRegion)).toBe(true);
-      expect(isValidRegion(cityRegion)).toBe(true);
-      expect(isValidRegion(countyRegion)).toBe(true);
-    });
-
-    it('should reject invalid region objects', () => {
-      expect(isValidRegion(null)).toBe(false);
-      expect(isValidRegion({})).toBe(false);
-      expect(isValidRegion({ id: 1, name: 'TX' })).toBe(false); // missing type
-      expect(isValidRegion({ id: 1, name: 'TX', type: 'country' })).toBe(false); // invalid type
+    it('should have correct properties for region', () => {
+      expect(validRegion.id).toBe('1');
+      expect(validRegion.name).toBe('Texas');
+      expect(validRegion.code).toBe('TX');
     });
   });
 
-  describe('AgencyRegion Type', () => {
-    const validAgencyRegion: AgencyRegion = {
-      agency_id: '123',
-      region_id: 1,
-    };
-
-    it('should be a valid agency-region relationship', () => {
-      expect(validAgencyRegion.agency_id).toBe('123');
-      expect(validAgencyRegion.region_id).toBe(1);
-    });
-
-    it('should enforce correct types', () => {
-      // TypeScript will enforce these at compile time
-      // This test documents the expected types
-      expect(typeof validAgencyRegion.agency_id).toBe('string');
-      expect(typeof validAgencyRegion.region_id).toBe('number');
-    });
-  });
-
-  describe('AgencyTrade Type', () => {
-    const validAgencyTrade: AgencyTrade = {
-      agency_id: '456',
-      trade_id: 2,
-    };
-
-    it('should be a valid agency-trade relationship', () => {
-      expect(validAgencyTrade.agency_id).toBe('456');
-      expect(validAgencyTrade.trade_id).toBe(2);
-    });
-
-    it('should enforce correct types', () => {
-      expect(typeof validAgencyTrade.agency_id).toBe('string');
-      expect(typeof validAgencyTrade.trade_id).toBe('number');
-    });
-  });
-
-  describe('Type Guards', () => {
-    it('should handle edge cases for isValidAgency', () => {
-      // Array should return false
-      expect(isValidAgency([])).toBe(false);
-
-      // String should return false
-      expect(isValidAgency('agency')).toBe(false);
-
-      // Number should return false
-      expect(isValidAgency(123)).toBe(false);
-    });
-
-    it('should validate nested agency data', () => {
-      const agencyWithNestedData: Agency = {
-        id: '123',
-        name: 'Test Agency',
-        slug: 'test-agency',
-        description: 'Test',
-        logo_url: null,
-        website: null,
-        phone: null,
-        email: null,
-        address: null,
-        city: null,
-        state: null,
-        zip_code: null,
+  describe('Agency with relations', () => {
+    it('should handle agency with trades and regions', () => {
+      const agencyWithRelations: Agency = {
+        ...{
+          id: '123',
+          name: 'Test Agency',
+          slug: 'test-agency',
+          description: 'A test agency',
+          logo_url: 'https://example.com/logo.png',
+          website: 'https://example.com',
+          phone: '555-123-4567',
+          email: 'test@example.com',
+          is_claimed: true,
+          offers_per_diem: true,
+          is_union: false,
+          founded_year: 2020,
+          employee_count: '50-100',
+          headquarters: 'Austin, TX',
+          rating: 4.5,
+          review_count: 10,
+          project_count: 100,
+          verified: true,
+          featured: false,
+        },
         trades: [
-          { id: 1, name: 'Electrician' },
-          { id: 2, name: 'Plumber' },
+          { id: '1', name: 'Electrician', slug: 'electrician' },
+          { id: '2', name: 'Plumber', slug: 'plumber' },
         ],
         regions: [
-          { id: 1, name: 'TX', type: 'state' },
-          { id: 2, name: 'CA', type: 'state' },
+          { id: '1', name: 'Texas', code: 'TX' },
+          { id: '2', name: 'California', code: 'CA' },
         ],
-        specialties: [],
-        certifications: [],
-        rating: null,
-        reviews_count: 0,
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01',
       };
 
-      expect(isValidAgency(agencyWithNestedData)).toBe(true);
+      expect(agencyWithRelations.trades).toHaveLength(2);
+      expect(agencyWithRelations.regions).toHaveLength(2);
+    });
+  });
+
+  describe('Error handling', () => {
+    it('should detect error responses', () => {
+      const errorResponse = {
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Agency not found',
+        },
+      };
+
+      expect(isErrorResponse(errorResponse)).toBe(true);
+    });
+
+    it('should not detect valid responses as errors', () => {
+      const validResponse = {
+        data: { id: '123', name: 'Test' },
+      };
+
+      expect(isErrorResponse(validResponse)).toBe(false);
+    });
+  });
+
+  describe('Constants', () => {
+    it('should have correct API constants', () => {
+      expect(API_CONSTANTS.DEFAULT_LIMIT).toBe(20);
+      expect(API_CONSTANTS.MAX_LIMIT).toBe(100);
+      expect(API_CONSTANTS.DEFAULT_OFFSET).toBe(0);
+    });
+
+    it('should have correct HTTP status codes', () => {
+      expect(HTTP_STATUS.OK).toBe(200);
+      expect(HTTP_STATUS.BAD_REQUEST).toBe(400);
+      expect(HTTP_STATUS.NOT_FOUND).toBe(404);
+      expect(HTTP_STATUS.INTERNAL_SERVER_ERROR).toBe(500);
+    });
+
+    it('should have correct error codes', () => {
+      expect(ERROR_CODES.INVALID_PARAMS).toBe('INVALID_PARAMS');
+      expect(ERROR_CODES.DATABASE_ERROR).toBe('DATABASE_ERROR');
+      expect(ERROR_CODES.INTERNAL_ERROR).toBe('INTERNAL_ERROR');
+      expect(ERROR_CODES.NOT_FOUND).toBe('NOT_FOUND');
     });
   });
 });

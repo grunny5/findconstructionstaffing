@@ -30,7 +30,9 @@ describe('Profile Page Loading State', () => {
     // Logo skeleton should be 32x32
     const logoSkeleton = screen.getByTestId('logo-skeleton');
     expect(logoSkeleton).toBeInTheDocument();
-    expect(logoSkeleton).toHaveClass('w-32', 'h-32', 'rounded-lg');
+    expect(logoSkeleton).toHaveClass('w-32');
+    expect(logoSkeleton).toHaveClass('h-32');
+    expect(logoSkeleton).toHaveClass('rounded-lg');
   });
 
   it('should show skeleton for agency name and badges', () => {
@@ -39,13 +41,15 @@ describe('Profile Page Loading State', () => {
     // Name skeleton
     const nameSkeleton = screen.getByTestId('name-skeleton');
     expect(nameSkeleton).toBeInTheDocument();
-    expect(nameSkeleton).toHaveClass('h-9', 'w-80');
+    expect(nameSkeleton).toHaveClass('h-9');
+    expect(nameSkeleton).toHaveClass('w-80');
 
     // Badge skeletons
     const badgeSkeletons = screen.getAllByTestId('badge-skeleton');
     expect(badgeSkeletons).toHaveLength(3);
     badgeSkeletons.forEach((badge) => {
-      expect(badge).toHaveClass('h-6', 'w-20');
+      expect(badge).toHaveClass('h-6');
+      expect(badge).toHaveClass('w-20');
     });
   });
 
@@ -78,7 +82,8 @@ describe('Profile Page Loading State', () => {
     // Contact card should have title skeleton
     const contactTitleSkeleton = screen.getByTestId('contact-title-skeleton');
     expect(contactTitleSkeleton).toBeInTheDocument();
-    expect(contactTitleSkeleton).toHaveClass('h-6', 'w-40');
+    expect(contactTitleSkeleton).toHaveClass('h-6');
+    expect(contactTitleSkeleton).toHaveClass('w-40');
 
     // Should have contact item skeletons (verify by structure)
     const { container } = render(<ProfileLoading />);
@@ -94,7 +99,8 @@ describe('Profile Page Loading State', () => {
     const buttonSkeletons = screen.getAllByTestId('cta-button-skeleton');
     expect(buttonSkeletons).toHaveLength(2);
     buttonSkeletons.forEach((button) => {
-      expect(button).toHaveClass('h-12', 'w-[200px]');
+      expect(button).toHaveClass('h-12');
+      expect(button).toHaveClass('w-[200px]');
     });
   });
 

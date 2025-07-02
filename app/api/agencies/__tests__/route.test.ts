@@ -193,7 +193,7 @@ describe('GET /api/agencies', () => {
 
       await GET(mockRequest);
 
-      expect(supabase.eq).toHaveBeenCalledWith('is_active', true);
+      expect((supabase as any).eq).toHaveBeenCalledWith('is_active', true);
     });
 
     it('should apply default pagination', async () => {
@@ -203,7 +203,7 @@ describe('GET /api/agencies', () => {
 
       await GET(mockRequest);
 
-      expect(supabase.range).toHaveBeenCalledWith(
+      expect((supabase as any).range).toHaveBeenCalledWith(
         0,
         API_CONSTANTS.DEFAULT_LIMIT - 1
       );
@@ -216,7 +216,9 @@ describe('GET /api/agencies', () => {
 
       await GET(mockRequest);
 
-      expect(supabase.order).toHaveBeenCalledWith('name', { ascending: true });
+      expect((supabase as any).order).toHaveBeenCalledWith('name', {
+        ascending: true,
+      });
     });
   });
 

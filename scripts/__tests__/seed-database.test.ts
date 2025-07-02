@@ -20,7 +20,7 @@ afterAll(() => {
 // Mock process.exit
 const mockExit = jest
   .spyOn(process, 'exit')
-  .mockImplementation((code?: number) => {
+  .mockImplementation((code?: string | number | null | undefined) => {
     throw new Error(`Process.exit called with code ${code}`);
   });
 

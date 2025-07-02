@@ -47,7 +47,7 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify that or() was called with ilike for search
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%construction%,description.ilike.%construction%'
       );
     });
@@ -60,7 +60,7 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify that or() was not called
-      expect(supabase.or).not.toHaveBeenCalled();
+      expect((supabase as any).or).not.toHaveBeenCalled();
     });
 
     it('should sanitize search input before applying filters', async () => {
@@ -73,7 +73,7 @@ describe('GET /api/agencies - Search Functionality', () => {
 
       // Verify that dangerous characters and keywords are removed
       // The sanitizer removes 'script' keyword, brackets, quotes, and other special chars
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%xss%,description.ilike.%xss%'
       );
     });
@@ -87,7 +87,7 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify partial matching is used
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%elect%,description.ilike.%elect%'
       );
     });
@@ -101,7 +101,7 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify search term is processed correctly
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%construction staffing%,description.ilike.%construction staffing%'
       );
     });
@@ -115,7 +115,7 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify trimmed search term
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%construction%,description.ilike.%construction%'
       );
     });
@@ -131,12 +131,12 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify main query uses search
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%electrical%,description.ilike.%electrical%'
       );
 
       // The or() method should be called twice - once for main query, once for count query
-      expect(supabase.or).toHaveBeenCalledTimes(2);
+      expect((supabase as any).or).toHaveBeenCalledTimes(2);
     });
 
     it('should combine search with other filters correctly', async () => {
@@ -152,15 +152,15 @@ describe('GET /api/agencies - Search Functionality', () => {
       await GET(mockRequest);
 
       // Verify active filter is applied
-      expect(supabase.eq).toHaveBeenCalledWith('is_active', true);
+      expect((supabase as any).eq).toHaveBeenCalledWith('is_active', true);
 
       // Verify search filter is applied
-      expect(supabase.or).toHaveBeenCalledWith(
+      expect((supabase as any).or).toHaveBeenCalledWith(
         'name.ilike.%plumbing%,description.ilike.%plumbing%'
       );
 
       // Verify pagination is applied
-      expect(supabase.range).toHaveBeenCalledWith(20, 29);
+      expect((supabase as any).range).toHaveBeenCalledWith(20, 29);
     });
   });
 });

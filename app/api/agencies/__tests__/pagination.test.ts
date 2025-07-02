@@ -46,7 +46,7 @@ describe('GET /api/agencies - Pagination', () => {
       await GET(mockRequest);
 
       // Should use default limit (20)
-      expect(supabase.range).toHaveBeenCalledWith(
+      expect((supabase as any).range).toHaveBeenCalledWith(
         0,
         API_CONSTANTS.DEFAULT_LIMIT - 1
       );
@@ -60,7 +60,10 @@ describe('GET /api/agencies - Pagination', () => {
       await GET(mockRequest);
 
       // Should use default offset (0)
-      expect(supabase.range).toHaveBeenCalledWith(0, expect.any(Number));
+      expect((supabase as any).range).toHaveBeenCalledWith(
+        0,
+        expect.any(Number)
+      );
     });
 
     it('should use custom limit when provided', async () => {
@@ -72,7 +75,7 @@ describe('GET /api/agencies - Pagination', () => {
       await GET(mockRequest);
 
       // Should use custom limit
-      expect(supabase.range).toHaveBeenCalledWith(0, 9);
+      expect((supabase as any).range).toHaveBeenCalledWith(0, 9);
     });
 
     it('should use custom offset when provided', async () => {
@@ -87,7 +90,7 @@ describe('GET /api/agencies - Pagination', () => {
       await GET(mockRequest);
 
       // Should use custom offset
-      expect(supabase.range).toHaveBeenCalledWith(40, 59);
+      expect((supabase as any).range).toHaveBeenCalledWith(40, 59);
     });
   });
 
@@ -290,8 +293,8 @@ describe('GET /api/agencies - Pagination', () => {
       await GET(mockRequest);
 
       // Should apply search first, then pagination
-      expect(supabase.or).toHaveBeenCalled();
-      expect(supabase.range).toHaveBeenCalledWith(0, 4);
+      expect((supabase as any).or).toHaveBeenCalled();
+      expect((supabase as any).range).toHaveBeenCalledWith(0, 4);
     });
 
     it('should apply pagination after all filters', async () => {
@@ -333,8 +336,8 @@ describe('GET /api/agencies - Pagination', () => {
 
       // Verify key methods were called
       expect(supabase.from).toHaveBeenCalled();
-      expect(supabase.select).toHaveBeenCalled();
-      expect(supabase.range).toHaveBeenCalledWith(10, 14); // Pagination
+      expect((supabase as any).select).toHaveBeenCalled();
+      expect((supabase as any).range).toHaveBeenCalledWith(10, 14); // Pagination
     });
 
     it('should count total with filters applied', async () => {

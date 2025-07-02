@@ -355,7 +355,7 @@ jest.mock('@/lib/supabase', () => {
 
   // Set up terminal methods to return promises
   ['single', 'maybeSingle', 'csv'].forEach((method) => {
-    mockSupabase[method].mockResolvedValue({
+    (mockSupabase as any)[method].mockResolvedValue({
       data: null,
       error: null,
       count: null,

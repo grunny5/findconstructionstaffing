@@ -131,7 +131,9 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       expect(isErrorResponse(data)).toBe(false);
 
       // Should not query regions or agency_regions tables
-      const fromCalls = supabase.from.mock.calls.map((call) => call[0]);
+      const fromCalls = (supabase.from as any).mock.calls.map(
+        (call: any) => call[0]
+      );
       expect(fromCalls).not.toContain('regions');
       expect(fromCalls).not.toContain('agency_regions');
     });
@@ -317,17 +319,17 @@ describe('GET /api/agencies - State/Region Filtering', () => {
 
     it('should handle OR logic for multiple states', async () => {
       // Track the regions query
-      let regionsInCall;
+      let regionsInCall: any;
 
-      supabase.from.mockImplementation((table) => {
+      (supabase.from as any).mockImplementation((table: any) => {
         if (table === 'regions') {
-          const filterMock = {
+          const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn((column, values) => {
               regionsInCall = { column, values };
               return filterMock;
             }),
-            then: (onFulfilled) =>
+            then: (onFulfilled: any) =>
               Promise.resolve({
                 data: [
                   { id: 'region-tx' },
@@ -339,10 +341,10 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           };
           return filterMock;
         } else if (table === 'agency_regions') {
-          const filterMock = {
+          const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn(() => filterMock),
-            then: (onFulfilled) =>
+            then: (onFulfilled: any) =>
               Promise.resolve({
                 data: [
                   { agency_id: 'agency-1' },
@@ -355,18 +357,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           return filterMock;
         }
         // Return a basic mock chain for the main query
-        const queryChain = {
+        const queryChain: any = {
           select: jest.fn(() => queryChain),
           eq: jest.fn(() => queryChain),
           in: jest.fn(() => queryChain),
           or: jest.fn(() => queryChain),
           range: jest.fn(() => queryChain),
           order: jest.fn(() => queryChain),
-          then: (onFulfilled) => {
+          then: (onFulfilled: any) => {
             const result = {
-              data: supabase._defaultData || [],
+              data: (supabase as any)._defaultData || [],
               error: null,
-              count: supabase._defaultCount || 0,
+              count: (supabase as any)._defaultCount || 0,
             };
             return Promise.resolve(result).then(onFulfilled);
           },
@@ -376,10 +378,10 @@ describe('GET /api/agencies - State/Region Filtering', () => {
         Object.keys(queryChain).forEach((method) => {
           if (
             jest.isMockFunction(queryChain[method]) &&
-            jest.isMockFunction(supabase[method])
+            jest.isMockFunction((supabase as any)[method])
           ) {
-            queryChain[method].mockImplementation((...args) => {
-              supabase[method](...args);
+            queryChain[method].mockImplementation((...args: any[]) => {
+              (supabase as any)[method](...args);
               return queryChain;
             });
           }
@@ -475,15 +477,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       expect(isErrorResponse(data)).toBe(false);
 
       // Verify both filters were applied
-      expect(supabase.or).toHaveBeenCalled(); // Search filter
+      expect((supabase as any).or).toHaveBeenCalled(); // Search filter
       expect(supabase.from).toHaveBeenCalledWith('regions'); // State filter queries
     });
 
     it('should combine state and trade filters', async () => {
       // Track table queries
-      const tableQueries = [];
+      const tableQueries: any[] = [];
 
-      supabase.from.mockImplementation((table) => {
+      (supabase.from as any).mockImplementation((table: any) => {
         tableQueries.push(table);
 
         // Use the helper function's mock data
@@ -493,15 +495,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           table === 'trades' ||
           table === 'agency_trades'
         ) {
-          const filterMock = {
+          const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn(() => filterMock),
             eq: jest.fn(() => filterMock),
             or: jest.fn(() => filterMock),
             range: jest.fn(() => filterMock),
             order: jest.fn(() => filterMock),
-            then: (onFulfilled) => {
-              let result = { data: null, error: null };
+            then: (onFulfilled: any) => {
+              let result: any = { data: null, error: null };
 
               if (table === 'trades') {
                 result.data = [{ id: 'trade-1' }];
@@ -520,18 +522,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
         }
 
         // Return a basic mock chain for the main query
-        const queryChain = {
+        const queryChain: any = {
           select: jest.fn(() => queryChain),
           eq: jest.fn(() => queryChain),
           in: jest.fn(() => queryChain),
           or: jest.fn(() => queryChain),
           range: jest.fn(() => queryChain),
           order: jest.fn(() => queryChain),
-          then: (onFulfilled) => {
+          then: (onFulfilled: any) => {
             const result = {
-              data: supabase._defaultData || [],
+              data: (supabase as any)._defaultData || [],
               error: null,
-              count: supabase._defaultCount || 0,
+              count: (supabase as any)._defaultCount || 0,
             };
             return Promise.resolve(result).then(onFulfilled);
           },
@@ -541,10 +543,10 @@ describe('GET /api/agencies - State/Region Filtering', () => {
         Object.keys(queryChain).forEach((method) => {
           if (
             jest.isMockFunction(queryChain[method]) &&
-            jest.isMockFunction(supabase[method])
+            jest.isMockFunction((supabase as any)[method])
           ) {
-            queryChain[method].mockImplementation((...args) => {
-              supabase[method](...args);
+            queryChain[method].mockImplementation((...args: any[]) => {
+              (supabase as any)[method](...args);
               return queryChain;
             });
           }
@@ -585,7 +587,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       });
 
       // Setup complex filter mocks using a more robust approach
-      supabase.from.mockImplementation((table) => {
+      (supabase.from as any).mockImplementation((table: any) => {
         // Handle filter tables
         if (
           table === 'regions' ||
@@ -593,15 +595,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           table === 'trades' ||
           table === 'agency_trades'
         ) {
-          const filterMock = {
+          const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn(() => filterMock),
             eq: jest.fn(() => filterMock),
             or: jest.fn(() => filterMock),
             range: jest.fn(() => filterMock),
             order: jest.fn(() => filterMock),
-            then: (onFulfilled) => {
-              let result = { data: null, error: null };
+            then: (onFulfilled: any) => {
+              let result: any = { data: null, error: null };
 
               if (table === 'trades') {
                 result.data = [{ id: 'trade-1' }, { id: 'trade-2' }];
@@ -621,18 +623,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
 
         // For main agencies query, use the centralized mock
         // Return a basic mock chain for the main query
-        const queryChain = {
+        const queryChain: any = {
           select: jest.fn(() => queryChain),
           eq: jest.fn(() => queryChain),
           in: jest.fn(() => queryChain),
           or: jest.fn(() => queryChain),
           range: jest.fn(() => queryChain),
           order: jest.fn(() => queryChain),
-          then: (onFulfilled) => {
+          then: (onFulfilled: any) => {
             const result = {
-              data: supabase._defaultData || [],
+              data: (supabase as any)._defaultData || [],
               error: null,
-              count: supabase._defaultCount || 0,
+              count: (supabase as any)._defaultCount || 0,
             };
             return Promise.resolve(result).then(onFulfilled);
           },
@@ -642,10 +644,10 @@ describe('GET /api/agencies - State/Region Filtering', () => {
         Object.keys(queryChain).forEach((method) => {
           if (
             jest.isMockFunction(queryChain[method]) &&
-            jest.isMockFunction(supabase[method])
+            jest.isMockFunction((supabase as any)[method])
           ) {
-            queryChain[method].mockImplementation((...args) => {
-              supabase[method](...args);
+            queryChain[method].mockImplementation((...args: any[]) => {
+              (supabase as any)[method](...args);
               return queryChain;
             });
           }
@@ -673,10 +675,10 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       expect(isErrorResponse(data)).toBe(false);
 
       // Check key methods were called
-      expect(supabase.or).toHaveBeenCalled(); // Search
+      expect((supabase as any).or).toHaveBeenCalled(); // Search
       expect(supabase.from).toHaveBeenCalledWith('trades'); // Trade filter
       expect(supabase.from).toHaveBeenCalledWith('regions'); // State filter
-      expect(supabase.range).toHaveBeenCalledWith(10, 14); // Pagination
+      expect((supabase as any).range).toHaveBeenCalledWith(10, 14); // Pagination
 
       if (!isErrorResponse(data)) {
         expect(data.data).toHaveLength(5);

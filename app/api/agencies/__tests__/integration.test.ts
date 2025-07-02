@@ -244,7 +244,7 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     });
 
     // Mock select method to handle count queries
-    queryBuilder.select.mockImplementation((fields, options) => {
+    queryBuilder.select.mockImplementation((fields: any, options: any) => {
       if (options && options.count === 'exact' && options.head === true) {
         isCountQuery = true;
         // For count queries, return a special query builder that resolves immediately

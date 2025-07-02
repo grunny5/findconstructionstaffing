@@ -4,7 +4,7 @@ import ClaimListingPage from '../page';
 
 // Mock react-hook-form with simpler approach
 const mockRegister = jest.fn();
-const mockHandleSubmit = jest.fn((fn) => (e) => {
+const mockHandleSubmit = jest.fn((fn) => (e: any) => {
   e?.preventDefault();
   fn({}); // Let individual tests provide data if needed
 });

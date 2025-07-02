@@ -132,9 +132,9 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      supabase.from.mockReturnValue(supabase);
-      supabase.select.mockReturnValue(supabase);
-      supabase.limit.mockReturnValue(
+      (supabase as any).from.mockReturnValue(supabase);
+      (supabase as any).select.mockReturnValue(supabase);
+      (supabase as any).limit.mockReturnValue(
         Promise.resolve({
           data: [{ id: '1' }],
           error: null,
@@ -155,9 +155,9 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      supabase.from.mockReturnValue(supabase);
-      supabase.select.mockReturnValue(supabase);
-      supabase.limit.mockReturnValue(
+      (supabase as any).from.mockReturnValue(supabase);
+      (supabase as any).select.mockReturnValue(supabase);
+      (supabase as any).limit.mockReturnValue(
         Promise.resolve({
           data: [{ id: '1' }],
           error: null,

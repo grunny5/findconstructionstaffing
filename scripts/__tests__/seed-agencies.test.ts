@@ -121,13 +121,9 @@ describe('Agency Seeding Functions', () => {
         expect(insertedAgency.updated_at).toBeDefined();
         expect(insertedAgency.created_at).toBe(insertedAgency.updated_at);
 
-        // Verify null handling for optional fields
-        if (!originalAgency?.phone) {
-          expect(insertedAgency.phone).toBeNull();
-        }
-        if (!originalAgency?.email) {
-          expect(insertedAgency.email).toBeNull();
-        }
+        // Verify null handling for optional fields (not available in mock data)
+        expect(insertedAgency.phone).toBeNull();
+        expect(insertedAgency.email).toBeNull();
 
         // Verify other fields are preserved
         expect(insertedAgency.offers_per_diem).toBe(
