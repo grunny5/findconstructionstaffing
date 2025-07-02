@@ -105,7 +105,7 @@ describe('API Types', () => {
         { id: 100, name: 'General Laborer' },
       ];
 
-      trades.forEach(trade => {
+      trades.forEach((trade) => {
         expect(isValidTrade(trade)).toBe(true);
       });
     });
@@ -125,7 +125,11 @@ describe('API Types', () => {
     it('should validate regions with different types', () => {
       const stateRegion: Region = { id: 1, name: 'CA', type: 'state' };
       const cityRegion: Region = { id: 2, name: 'Los Angeles', type: 'city' };
-      const countyRegion: Region = { id: 3, name: 'Orange County', type: 'county' };
+      const countyRegion: Region = {
+        id: 3,
+        name: 'Orange County',
+        type: 'county',
+      };
 
       expect(isValidRegion(stateRegion)).toBe(true);
       expect(isValidRegion(cityRegion)).toBe(true);
@@ -180,10 +184,10 @@ describe('API Types', () => {
     it('should handle edge cases for isValidAgency', () => {
       // Array should return false
       expect(isValidAgency([])).toBe(false);
-      
+
       // String should return false
       expect(isValidAgency('agency')).toBe(false);
-      
+
       // Number should return false
       expect(isValidAgency(123)).toBe(false);
     });

@@ -26,19 +26,32 @@ export default function PrivacyPage() {
                 Last updated: {new Date().toLocaleDateString()}
               </p>
               <p className="text-gray-600 mb-4">
-                FindConstructionStaffing ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website.
+                FindConstructionStaffing ("we," "our," or "us") is committed to
+                protecting your privacy. This Privacy Policy explains how we
+                collect, use, and safeguard your information when you visit our
+                website.
               </p>
-              <h3 className="text-xl font-semibold mb-3 mt-6">Information We Collect</h3>
+              <h3 className="text-xl font-semibold mb-3 mt-6">
+                Information We Collect
+              </h3>
               <p className="text-gray-600 mb-4">
-                We may collect information about you in a variety of ways. The information we may collect on the Site includes personal data you provide to us, such as your name, email address, and company information when you claim a listing or submit a contact form.
+                We may collect information about you in a variety of ways. The
+                information we may collect on the Site includes personal data
+                you provide to us, such as your name, email address, and company
+                information when you claim a listing or submit a contact form.
               </p>
-              <h3 className="text-xl font-semibold mb-3 mt-6">Use of Your Information</h3>
+              <h3 className="text-xl font-semibold mb-3 mt-6">
+                Use of Your Information
+              </h3>
               <p className="text-gray-600 mb-4">
-                We use the information we collect to operate and maintain our website, improve user experience, and communicate with you about your listing or inquiries.
+                We use the information we collect to operate and maintain our
+                website, improve user experience, and communicate with you about
+                your listing or inquiries.
               </p>
               <h3 className="text-xl font-semibold mb-3 mt-6">Contact Us</h3>
               <p className="text-gray-600">
-                If you have questions about this Privacy Policy, please contact us at privacy@findconstructionstaffing.com
+                If you have questions about this Privacy Policy, please contact
+                us at privacy@findconstructionstaffing.com
               </p>
             </div>
           </div>

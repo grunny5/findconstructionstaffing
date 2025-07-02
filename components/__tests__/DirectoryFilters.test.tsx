@@ -105,7 +105,7 @@ describe('DirectoryFilters', () => {
 
   it('should preserve existing filters when adding new ones', () => {
     mockSearchParams.set('state', 'TX');
-    
+
     render(
       <DirectoryFilters
         states={mockStates}
@@ -128,7 +128,7 @@ describe('DirectoryFilters', () => {
 
   it('should clear search when empty', async () => {
     mockSearchParams.set('search', 'test');
-    
+
     render(
       <DirectoryFilters
         states={mockStates}
@@ -166,7 +166,7 @@ describe('DirectoryFilters', () => {
 
   it('should reset to page 1 when filters change', async () => {
     mockSearchParams.set('page', '3');
-    
+
     render(
       <DirectoryFilters
         states={mockStates}
@@ -191,7 +191,7 @@ describe('DirectoryFilters', () => {
   it('should handle clearing state filter', () => {
     mockSearchParams.set('state', 'TX');
     mockSearchParams.set('trade', 'Electrician');
-    
+
     render(
       <DirectoryFilters
         states={mockStates}
@@ -215,7 +215,7 @@ describe('DirectoryFilters', () => {
   it('should handle clearing trade filter', () => {
     mockSearchParams.set('state', 'CA');
     mockSearchParams.set('trade', 'Plumber');
-    
+
     render(
       <DirectoryFilters
         states={mockStates}

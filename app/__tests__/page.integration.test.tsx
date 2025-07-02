@@ -116,7 +116,7 @@ describe('HomePage Integration Tests', () => {
       replace: mockReplace,
     });
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
-    
+
     // Mock window.location.reload
     delete (window as any).location;
     window.location = { reload: jest.fn() } as any;
@@ -247,7 +247,10 @@ describe('HomePage Integration Tests', () => {
 
     it('should show loading indicator while searching', async () => {
       (useAgencies as jest.Mock).mockReturnValue(
-        createMockUseAgencies({ data: { data: mockAgencies }, isValidating: true })
+        createMockUseAgencies({
+          data: { data: mockAgencies },
+          isValidating: true,
+        })
       );
 
       render(<HomePage />);
@@ -301,8 +304,10 @@ describe('HomePage Integration Tests', () => {
         expect(screen.getByText('No matches found')).toBeInTheDocument();
         // Check for the specific message with proper quotes
         const message = screen.getByText((content, element) => {
-          return content.includes("We couldn't find any agencies matching") && 
-                 content.includes("nonexistent");
+          return (
+            content.includes("We couldn't find any agencies matching") &&
+            content.includes('nonexistent')
+          );
         });
         expect(message).toBeInTheDocument();
       });
@@ -337,7 +342,10 @@ describe('HomePage Integration Tests', () => {
 
     it('should show loading state in filters while validating', async () => {
       (useAgencies as jest.Mock).mockReturnValue(
-        createMockUseAgencies({ data: { data: mockAgencies }, isValidating: true })
+        createMockUseAgencies({
+          data: { data: mockAgencies },
+          isValidating: true,
+        })
       );
 
       render(<HomePage />);

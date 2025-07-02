@@ -21,7 +21,8 @@ export default function PricingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-gray-600">
-              This page is currently under development. Check back soon for our premium pricing options.
+              This page is currently under development. Check back soon for our
+              premium pricing options.
             </p>
           </div>
         </div>

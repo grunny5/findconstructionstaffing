@@ -13,12 +13,14 @@ describe('RecruiterLayout', () => {
   });
 
   it('should render children directly without wrapper', () => {
-    const { container } = render(<RecruiterLayout>{mockChildren}</RecruiterLayout>);
+    const { container } = render(
+      <RecruiterLayout>{mockChildren}</RecruiterLayout>
+    );
 
     // Since the layout returns children directly, the test content should be the first child
     const testContent = screen.getByTestId('child-content');
     expect(testContent).toBeInTheDocument();
-    
+
     // The layout doesn't add any wrapper elements
     expect(container.firstChild).toBe(testContent);
   });
@@ -32,12 +34,14 @@ describe('RecruiterLayout', () => {
       </div>
     );
 
-    const { container } = render(<RecruiterLayout>{complexChildren}</RecruiterLayout>);
+    const { container } = render(
+      <RecruiterLayout>{complexChildren}</RecruiterLayout>
+    );
 
     expect(screen.getByRole('heading')).toBeInTheDocument();
     expect(screen.getByText('Paragraph')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
-    
+
     // Verify the layout doesn't wrap the content
     expect(container.firstChild).toBe(screen.getByTestId('complex-wrapper'));
   });

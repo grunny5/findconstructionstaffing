@@ -127,6 +127,6 @@ Or run SQL queries directly:
 - [ ] Performance meets requirements
 - [ ] Security policies working correctly
 
-**Verified by:** ******\_\_\_******  
-**Date:** ******\_\_\_******  
-**Notes:** ******\_\_\_******
+**Verified by:** **\*\***\_\_\_**\*\***  
+**Date:** **\*\***\_\_\_**\*\***  
+**Notes:** **\*\***\_\_\_**\*\***

@@ -119,7 +119,7 @@ describe('GET /api/agencies/[slug]', () => {
 
   it('should handle special characters in slug', async () => {
     const specialSlug = 'test-agency-123';
-    
+
     mockSupabase.single.mockResolvedValue({
       data: { id: '1', slug: specialSlug },
       error: null,

@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import RequestLaborPage from '../page';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -84,8 +90,12 @@ describe('RequestLaborPage', () => {
     // Note: Select components don't have associated form controls in the same way as inputs
     // Check for the select trigger instead
     expect(screen.getByText(/Select trade specialty/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Number of Workers Needed/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/City \/ Project Location/i)).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Number of Workers Needed/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/City \/ Project Location/i)
+    ).toBeInTheDocument();
     // Check for the state select trigger
     expect(screen.getByText(/Select state/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Start Date/i)).toBeInTheDocument();
@@ -103,7 +113,9 @@ describe('RequestLaborPage', () => {
   it('should have submit button', () => {
     render(<RequestLaborPage />);
 
-    const submitButton = screen.getByRole('button', { name: /Submit Labor Request/i });
+    const submitButton = screen.getByRole('button', {
+      name: /Submit Labor Request/i,
+    });
     expect(submitButton).toBeInTheDocument();
   });
 
@@ -134,18 +146,23 @@ describe('RequestLaborPage', () => {
 
     render(<RequestLaborPage />);
 
-    const submitButton = screen.getByRole('button', { name: /Submit Labor Request/i });
-    
+    const submitButton = screen.getByRole('button', {
+      name: /Submit Labor Request/i,
+    });
+
     await act(async () => {
       fireEvent.click(submitButton);
     });
 
     // Wait for the async operations to complete
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith(
-        'Labor request submitted successfully! Agencies will be notified within 24 hours.'
-      );
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(toast.success).toHaveBeenCalledWith(
+          'Labor request submitted successfully! Agencies will be notified within 24 hours.'
+        );
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should show success page after form submission', async () => {
@@ -174,21 +191,34 @@ describe('RequestLaborPage', () => {
 
     render(<RequestLaborPage />);
 
-    const submitButton = screen.getByRole('button', { name: /Submit Labor Request/i });
-    
+    const submitButton = screen.getByRole('button', {
+      name: /Submit Labor Request/i,
+    });
+
     await act(async () => {
       fireEvent.click(submitButton);
     });
 
     // Wait for the success page to appear (after the 2s simulated API call)
-    await waitFor(() => {
-      expect(screen.getByText('Request Submitted Successfully!')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('Request Submitted Successfully!')
+        ).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
 
     // Verify success page content
-    expect(screen.getByText(/Your labor request has been sent to qualified staffing agencies/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Your labor request has been sent to qualified staffing agencies/i
+      )
+    ).toBeInTheDocument();
     expect(screen.getByText(/What happens next/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Return to Directory/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /Return to Directory/i })
+    ).toBeInTheDocument();
   });
 
   it('should have proper page structure', () => {
@@ -219,46 +249,58 @@ describe('RequestLaborPage', () => {
       // Mock form with validation errors
       (useForm as jest.Mock).mockReturnValue({
         ...mockFormDefaults,
-        formState: { 
-          errors: { 
+        formState: {
+          errors: {
             contactEmail: { message: 'Invalid email format' },
             projectName: { message: 'Project name is required' },
             headcount: { message: 'Headcount must be at least 1' },
-            contactPhone: { message: 'Please enter a valid phone number' }
-          } 
+            contactPhone: { message: 'Please enter a valid phone number' },
+          },
         },
       });
 
       render(<RequestLaborPage />);
-      
+
       expect(screen.getByText('Invalid email format')).toBeInTheDocument();
       expect(screen.getByText('Project name is required')).toBeInTheDocument();
-      expect(screen.getByText('Headcount must be at least 1')).toBeInTheDocument();
-      expect(screen.getByText('Please enter a valid phone number')).toBeInTheDocument();
+      expect(
+        screen.getByText('Headcount must be at least 1')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Please enter a valid phone number')
+      ).toBeInTheDocument();
     });
 
     it('should show individual field validation errors', () => {
       // Test individual field errors
       (useForm as jest.Mock).mockReturnValue({
         ...mockFormDefaults,
-        formState: { 
-          errors: { 
+        formState: {
+          errors: {
             tradeNeeded: { message: 'Please select a trade specialty' },
             location: { message: 'Location must be at least 2 characters' },
             state: { message: 'Please select a state' },
             startDate: { message: 'Please select a start date' },
-            duration: { message: 'Please specify project duration' }
-          } 
+            duration: { message: 'Please specify project duration' },
+          },
         },
       });
 
       render(<RequestLaborPage />);
-      
-      expect(screen.getByText('Please select a trade specialty')).toBeInTheDocument();
-      expect(screen.getByText('Location must be at least 2 characters')).toBeInTheDocument();
+
+      expect(
+        screen.getByText('Please select a trade specialty')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Location must be at least 2 characters')
+      ).toBeInTheDocument();
       expect(screen.getByText('Please select a state')).toBeInTheDocument();
-      expect(screen.getByText('Please select a start date')).toBeInTheDocument();
-      expect(screen.getByText('Please specify project duration')).toBeInTheDocument();
+      expect(
+        screen.getByText('Please select a start date')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Please specify project duration')
+      ).toBeInTheDocument();
     });
 
     it('should handle form submission with errors gracefully', async () => {
@@ -279,8 +321,10 @@ describe('RequestLaborPage', () => {
 
       render(<RequestLaborPage />);
 
-      const submitButton = screen.getByRole('button', { name: /Submit Labor Request/i });
-      
+      const submitButton = screen.getByRole('button', {
+        name: /Submit Labor Request/i,
+      });
+
       // Form submission should not crash the app
       expect(() => fireEvent.click(submitButton)).not.toThrow();
     });
@@ -289,33 +333,35 @@ describe('RequestLaborPage', () => {
       // Mock form that simulates loading state
       (useForm as jest.Mock).mockReturnValue({
         ...mockFormDefaults,
-        formState: { 
+        formState: {
           errors: {},
-          isSubmitting: true 
+          isSubmitting: true,
         },
       });
 
       render(<RequestLaborPage />);
 
       // Submit button should show loading state or be disabled
-      const submitButton = screen.getByRole('button', { name: /Submit Labor Request/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Submit Labor Request/i,
+      });
       expect(submitButton).toBeInTheDocument();
-      
+
       // Check for loading indicator or disabled state
       // The exact implementation depends on how the form handles loading state
     });
 
     it('should prevent submission when form has validation errors', () => {
       const mockHandleSubmitNoCall = jest.fn(() => jest.fn());
-      
+
       (useForm as jest.Mock).mockReturnValue({
         register: jest.fn(),
         handleSubmit: mockHandleSubmitNoCall,
-        formState: { 
-          errors: { 
+        formState: {
+          errors: {
             contactEmail: { message: 'Invalid email format' },
-            projectName: { message: 'Project name is required' }
-          } 
+            projectName: { message: 'Project name is required' },
+          },
         },
         setValue: jest.fn(),
         watch: jest.fn(),
@@ -323,7 +369,9 @@ describe('RequestLaborPage', () => {
 
       render(<RequestLaborPage />);
 
-      const submitButton = screen.getByRole('button', { name: /Submit Labor Request/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Submit Labor Request/i,
+      });
       fireEvent.click(submitButton);
 
       // With errors present, handleSubmit should still be called but validation should prevent actual submission
@@ -336,24 +384,24 @@ describe('RequestLaborPage', () => {
       (useForm as jest.Mock).mockReturnValue({
         register: jest.fn(),
         handleSubmit: createMockHandleSubmit(),
-        formState: { 
-          errors: { 
-            contactEmail: { message: 'Invalid email format' }
-          } 
+        formState: {
+          errors: {
+            contactEmail: { message: 'Invalid email format' },
+          },
         },
         setValue: jest.fn(),
         watch: jest.fn(),
       });
 
       render(<RequestLaborPage />);
-      
+
       // Error message should be associated with the field for screen readers
       const emailField = screen.getByLabelText(/Email Address/i);
       const errorMessage = screen.getByText('Invalid email format');
-      
+
       expect(emailField).toBeInTheDocument();
       expect(errorMessage).toBeInTheDocument();
-      
+
       // In a real implementation, these would be connected via aria-describedby
       // This test documents the expectation for accessibility
     });
@@ -365,12 +413,12 @@ describe('RequestLaborPage', () => {
       expect(screen.getByLabelText(/Project Name/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/Contact Name/i)).toBeInTheDocument();
-      
+
       // Check for asterisks in the labels by looking for text containing *
       const projectNameLabel = screen.getByText(/Project Name \*/i);
       const emailLabel = screen.getByText(/Email Address \*/i);
       const contactNameLabel = screen.getByText(/Contact Name \*/i);
-      
+
       expect(projectNameLabel).toBeInTheDocument();
       expect(emailLabel).toBeInTheDocument();
       expect(contactNameLabel).toBeInTheDocument();

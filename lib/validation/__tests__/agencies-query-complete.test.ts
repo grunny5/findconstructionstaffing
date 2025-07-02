@@ -5,8 +5,8 @@ describe('agenciesQuerySchema - Complete Tests', () => {
   describe('state parameter', () => {
     it('should accept valid US state codes', () => {
       const validStates = ['CA', 'TX', 'NY', 'FL', 'AZ'];
-      
-      validStates.forEach(state => {
+
+      validStates.forEach((state) => {
         const result = agenciesQuerySchema.safeParse({ state });
         expect(result.success).toBe(true);
         if (result.success) {
@@ -43,8 +43,8 @@ describe('agenciesQuerySchema - Complete Tests', () => {
   describe('limit parameter', () => {
     it('should accept valid limit values', () => {
       const validLimits = [1, 10, 50, 100];
-      
-      validLimits.forEach(limit => {
+
+      validLimits.forEach((limit) => {
         const result = agenciesQuerySchema.safeParse({ limit });
         expect(result.success).toBe(true);
         if (result.success) {
@@ -84,8 +84,8 @@ describe('agenciesQuerySchema - Complete Tests', () => {
   describe('offset parameter', () => {
     it('should accept valid offset values', () => {
       const validOffsets = [0, 10, 100, 1000];
-      
-      validOffsets.forEach(offset => {
+
+      validOffsets.forEach((offset) => {
         const result = agenciesQuerySchema.safeParse({ offset });
         expect(result.success).toBe(true);
         if (result.success) {

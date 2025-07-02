@@ -11,19 +11,42 @@ jest.mock('next/link', () => {
 
 // Mock Radix UI Sheet component for better mobile menu testing
 jest.mock('@/components/ui/sheet', () => ({
-  Sheet: ({ children, open, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => (
+  Sheet: ({
+    children,
+    open,
+    onOpenChange,
+  }: {
+    children: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }) => (
     <div data-testid="sheet" data-open={open}>
       {children}
     </div>
   ),
-  SheetContent: ({ children, side }: { children: React.ReactNode; side?: string }) => (
+  SheetContent: ({
+    children,
+    side,
+  }: {
+    children: React.ReactNode;
+    side?: string;
+  }) => (
     <div data-testid="sheet-content" data-side={side}>
       {children}
     </div>
   ),
-  SheetTrigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => (
-    asChild ? children : <button data-testid="sheet-trigger">{children}</button>
-  ),
+  SheetTrigger: ({
+    children,
+    asChild,
+  }: {
+    children: React.ReactNode;
+    asChild?: boolean;
+  }) =>
+    asChild ? (
+      children
+    ) : (
+      <button data-testid="sheet-trigger">{children}</button>
+    ),
 }));
 
 describe('Header', () => {
@@ -37,16 +60,27 @@ describe('Header', () => {
   it('should render desktop navigation links', () => {
     render(<Header />);
 
-    expect(screen.getByRole('link', { name: /browse directory/i })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: /request labor/i })).toHaveAttribute('href', '/request-labor');
-    expect(screen.getByRole('link', { name: /resources/i })).toHaveAttribute('href', '/resources');
+    expect(
+      screen.getByRole('link', { name: /browse directory/i })
+    ).toHaveAttribute('href', '/');
+    expect(
+      screen.getByRole('link', { name: /request labor/i })
+    ).toHaveAttribute('href', '/request-labor');
+    expect(screen.getByRole('link', { name: /resources/i })).toHaveAttribute(
+      'href',
+      '/resources'
+    );
   });
 
   it('should render action buttons on desktop', () => {
     render(<Header />);
 
-    expect(screen.getByRole('link', { name: /claim listing/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /get started/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /claim listing/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /get started/i })
+    ).toBeInTheDocument();
   });
 
   it('should have proper header styling', () => {
@@ -78,7 +112,7 @@ describe('Header', () => {
     // Verify Sheet components are rendered with proper structure
     expect(screen.getByTestId('sheet')).toBeInTheDocument();
     expect(screen.getByTestId('sheet-content')).toBeInTheDocument();
-    
+
     // Verify mobile menu button exists
     const mobileMenuButton = screen.getByRole('button');
     expect(mobileMenuButton).toBeInTheDocument();
@@ -90,7 +124,7 @@ describe('Header', () => {
     // The mobile menu should contain the same navigation items
     const sheetContent = screen.getByTestId('sheet-content');
     expect(sheetContent).toBeInTheDocument();
-    
+
     // Mobile menu should have navigation links (multiple instances due to desktop + mobile)
     expect(screen.getAllByText('Browse Directory').length).toBeGreaterThan(1);
     expect(screen.getAllByText('Request Labor').length).toBeGreaterThan(1);

@@ -90,7 +90,8 @@ export default function Footer() {
 
         <div className="border-t border-slate-700 mt-16 pt-8 text-center text-slate-400">
           <p>
-            &copy; {new Date().getFullYear()} Construction Recruiter Directory. All rights reserved.
+            &copy; {new Date().getFullYear()} Construction Recruiter Directory.
+            All rights reserved.
           </p>
         </div>
       </div>

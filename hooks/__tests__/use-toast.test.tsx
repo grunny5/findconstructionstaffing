@@ -30,7 +30,7 @@ describe('useToast', () => {
         title: 'Test Toast',
         description: 'This is a test',
       });
-      
+
       expect(result.current.toasts).toHaveLength(1);
       expect(result.current.toasts[0]).toMatchObject({
         id,
@@ -105,7 +105,7 @@ describe('useToast', () => {
       result.current.toast({
         title: 'Default Toast',
       });
-      
+
       result.current.toast({
         title: 'Destructive Toast',
         variant: 'destructive',

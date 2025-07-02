@@ -38,14 +38,18 @@ describe('Supabase Client', () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
-    expect(() => createClient()).toThrow('Missing env.NEXT_PUBLIC_SUPABASE_URL');
+    expect(() => createClient()).toThrow(
+      'Missing env.NEXT_PUBLIC_SUPABASE_URL'
+    );
   });
 
   it('should throw error when NEXT_PUBLIC_SUPABASE_ANON_KEY is missing', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    expect(() => createClient()).toThrow('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    expect(() => createClient()).toThrow(
+      'Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    );
   });
 
   it('should cache the client instance', () => {

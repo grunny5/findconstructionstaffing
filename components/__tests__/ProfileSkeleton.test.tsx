@@ -34,7 +34,7 @@ describe('ProfileSkeleton', () => {
     // Agency profiles show stats like employee count, years in business, etc.
     const statsGrid = screen.getByTestId('stats-grid');
     expect(statsGrid).toBeInTheDocument();
-    
+
     const statItems = screen.getAllByTestId('stat-item');
     expect(statItems.length).toBeGreaterThanOrEqual(4);
   });
@@ -45,7 +45,7 @@ describe('ProfileSkeleton', () => {
     // Profile pages typically have tabs for different sections
     const tabContainer = screen.getByTestId('tab-skeleton-container');
     expect(tabContainer).toBeInTheDocument();
-    
+
     const tabs = screen.getAllByTestId('tab-skeleton');
     expect(tabs.length).toBeGreaterThanOrEqual(3);
   });
@@ -74,9 +74,11 @@ describe('ProfileSkeleton', () => {
     const mainGrid = screen.getByTestId('main-grid-container');
     expect(mainGrid).toBeInTheDocument();
     expect(mainGrid).toHaveClass('grid', 'grid-cols-1', 'lg:grid-cols-3');
-    
+
     // Verify all card containers are present
-    expect(screen.getByTestId('main-content-skeleton-card')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('main-content-skeleton-card')
+    ).toBeInTheDocument();
     expect(screen.getByTestId('contact-skeleton-card')).toBeInTheDocument();
     expect(screen.getByTestId('back-link-skeleton-card')).toBeInTheDocument();
   });
@@ -88,7 +90,7 @@ describe('ProfileSkeleton', () => {
     expect(screen.getByTestId('logo-skeleton')).toBeInTheDocument();
     expect(screen.getByTestId('name-skeleton')).toBeInTheDocument();
     expect(screen.getAllByTestId('badge-skeleton')).toHaveLength(3);
-    
+
     // These skeleton elements typically have animation classes applied by the Skeleton component
     const logoSkeleton = screen.getByTestId('logo-skeleton');
     expect(logoSkeleton.className).toContain('rounded-lg');

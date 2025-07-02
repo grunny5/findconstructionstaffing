@@ -1,17 +1,21 @@
 # Prettier-specific ignores
 # Most patterns inherited from .gitignore via --ignore-path flag
 
+# Directories
+.bolt/
+supabase/.temp/
+
 # Files without parsers
-.bolt/ignore
-.bolt/prompt
-.env.example
-.env.local.template
-.env.staging.template
+.env*
 .gitattributes
 .gitignore
+.prettierignore
 *.sql
 *.ps1
 *.sh
 *.bat
 *.toml
-.github/workflows/performance-monitor.yml
+test-output.txt
+# Ignore all GitHub workflow files
+.github/workflows/*.yml
+.github/workflows/*.yaml

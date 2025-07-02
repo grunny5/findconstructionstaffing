@@ -41,7 +41,7 @@ export function createMockNextRequest(
   Object.entries(headers).forEach(([key, value]) => {
     mockHeaders.set(key, value);
   });
-  
+
   // Create a base request object
   const baseRequest = new Request(testUrl.toString(), {
     method,
@@ -218,7 +218,7 @@ export function createMockSupabaseQuery(
   const resultPromise = Promise.resolve({ data, error, count });
 
   // Make all methods return the promise for proper chaining
-  Object.keys(mockQuery).forEach(key => {
+  Object.keys(mockQuery).forEach((key) => {
     mockQuery[key] = jest.fn(() => resultPromise);
   });
 

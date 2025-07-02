@@ -9,13 +9,13 @@ describe('cn utility', () => {
   it('should handle conditional classes', () => {
     const isActive = true;
     const isDisabled = false;
-    
+
     const result = cn(
       'base-class',
       isActive && 'active',
       isDisabled && 'disabled'
     );
-    
+
     expect(result).toBe('base-class active');
   });
 
@@ -41,34 +41,25 @@ describe('cn utility', () => {
 
   it('should handle objects with boolean values', () => {
     const result = cn('base', {
-      'active': true,
-      'disabled': false,
-      'highlighted': true,
+      active: true,
+      disabled: false,
+      highlighted: true,
     });
     expect(result).toBe('base active highlighted');
   });
 
   it('should handle complex Tailwind utility merging', () => {
-    const result = cn(
-      'text-red-500 bg-blue-500 p-4',
-      'text-green-500 p-2'
-    );
+    const result = cn('text-red-500 bg-blue-500 p-4', 'text-green-500 p-2');
     expect(result).toBe('bg-blue-500 text-green-500 p-2');
   });
 
   it('should handle responsive Tailwind utilities', () => {
-    const result = cn(
-      'md:p-4 lg:p-6',
-      'md:p-2'
-    );
+    const result = cn('md:p-4 lg:p-6', 'md:p-2');
     expect(result).toBe('lg:p-6 md:p-2');
   });
 
   it('should handle hover and other state utilities', () => {
-    const result = cn(
-      'hover:bg-red-500 focus:ring-2',
-      'hover:bg-blue-500'
-    );
+    const result = cn('hover:bg-red-500 focus:ring-2', 'hover:bg-blue-500');
     expect(result).toBe('focus:ring-2 hover:bg-blue-500');
   });
 
@@ -90,18 +81,12 @@ describe('cn utility', () => {
   });
 
   it('should handle arbitrary values in Tailwind', () => {
-    const result = cn(
-      'w-[100px] h-[200px]',
-      'w-[150px]'
-    );
+    const result = cn('w-[100px] h-[200px]', 'w-[150px]');
     expect(result).toBe('h-[200px] w-[150px]');
   });
 
   it('should preserve important modifiers', () => {
-    const result = cn(
-      '!text-red-500',
-      'text-blue-500'
-    );
+    const result = cn('!text-red-500', 'text-blue-500');
     // The important modifier should be preserved
     expect(result).toContain('!text-red-500');
   });

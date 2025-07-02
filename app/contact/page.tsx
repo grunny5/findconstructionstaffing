@@ -8,9 +8,7 @@ export default function ContactPage() {
       <section className="construction-hero py-16 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Contact Us
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Contact Us</h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
               We're here to help with your questions
             </p>
@@ -21,7 +19,8 @@ export default function ContactPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-gray-600">
-              Contact form coming soon. In the meantime, reach out to us at info@findconstructionstaffing.com
+              Contact form coming soon. In the meantime, reach out to us at
+              info@findconstructionstaffing.com
             </p>
           </div>
         </div>

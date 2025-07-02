@@ -75,7 +75,11 @@ describe('AgencyCard', () => {
   });
 
   it('should not render rating if not available', () => {
-    const agencyWithoutRating = { ...mockAgency, rating: null, reviews_count: 0 };
+    const agencyWithoutRating = {
+      ...mockAgency,
+      rating: null,
+      reviews_count: 0,
+    };
     render(<AgencyCard agency={agencyWithoutRating} />);
 
     expect(screen.queryByText('4.5')).not.toBeInTheDocument();
@@ -119,14 +123,14 @@ describe('AgencyCard', () => {
         { id: 5, name: 'Mason' },
       ],
     };
-    
+
     render(<AgencyCard agency={agencyWithManyTrades} />);
 
     // Should show first 3 trades
     expect(screen.getByText('Electrician')).toBeInTheDocument();
     expect(screen.getByText('Plumber')).toBeInTheDocument();
     expect(screen.getByText('Carpenter')).toBeInTheDocument();
-    
+
     // Should show +2 more indicator
     expect(screen.getByText('+2 more')).toBeInTheDocument();
   });
@@ -144,7 +148,7 @@ describe('AgencyCard', () => {
 
     // Should not render the logo image
     expect(screen.queryByAltText('Test Agency logo')).not.toBeInTheDocument();
-    
+
     // Should render initials (first letters of agency name)
     // "Test Agency" should show "TA"
     expect(screen.getByText('TA')).toBeInTheDocument();
@@ -154,10 +158,10 @@ describe('AgencyCard', () => {
     render(<AgencyCard agency={mockAgency} />);
 
     const logo = screen.getByAltText('Test Agency logo');
-    
+
     // Simulate image load error
     fireEvent.error(logo);
-    
+
     // After error, should show initials instead
     expect(screen.getByText('TA')).toBeInTheDocument();
   });

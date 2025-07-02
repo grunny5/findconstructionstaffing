@@ -7,7 +7,9 @@ describe('Footer', () => {
     render(<Footer />);
 
     const currentYear = new Date().getFullYear();
-    const copyrightText = screen.getByText(new RegExp(`© ${currentYear} Construction Recruiter Directory`, 'i'));
+    const copyrightText = screen.getByText(
+      new RegExp(`© ${currentYear} Construction Recruiter Directory`, 'i')
+    );
     expect(copyrightText).toBeInTheDocument();
   });
 
@@ -16,25 +18,43 @@ describe('Footer', () => {
 
     expect(screen.getByText('Construction')).toBeInTheDocument();
     expect(screen.getByText('Recruiter Directory')).toBeInTheDocument();
-    expect(screen.getByText(/The premier directory connecting construction professionals/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /The premier directory connecting construction professionals/i
+      )
+    ).toBeInTheDocument();
   });
 
   it('should render "For Companies" section with links', () => {
     render(<Footer />);
 
     expect(screen.getByText('For Companies')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /add your listing/i })).toHaveAttribute('href', '/claim-listing');
-    expect(screen.getByRole('link', { name: /premium features/i })).toHaveAttribute('href', '/pricing');
-    expect(screen.getByRole('link', { name: /success stories/i })).toHaveAttribute('href', '/success-stories');
+    expect(
+      screen.getByRole('link', { name: /add your listing/i })
+    ).toHaveAttribute('href', '/claim-listing');
+    expect(
+      screen.getByRole('link', { name: /premium features/i })
+    ).toHaveAttribute('href', '/pricing');
+    expect(
+      screen.getByRole('link', { name: /success stories/i })
+    ).toHaveAttribute('href', '/success-stories');
   });
 
   it('should render "Support" section with links', () => {
     render(<Footer />);
 
     expect(screen.getByText('Support')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /help center/i })).toHaveAttribute('href', '/help');
-    expect(screen.getByRole('link', { name: /contact us/i })).toHaveAttribute('href', '/contact');
-    expect(screen.getByRole('link', { name: /privacy policy/i })).toHaveAttribute('href', '/privacy');
+    expect(screen.getByRole('link', { name: /help center/i })).toHaveAttribute(
+      'href',
+      '/help'
+    );
+    expect(screen.getByRole('link', { name: /contact us/i })).toHaveAttribute(
+      'href',
+      '/contact'
+    );
+    expect(
+      screen.getByRole('link', { name: /privacy policy/i })
+    ).toHaveAttribute('href', '/privacy');
   });
 
   it('should have proper footer structure', () => {
