@@ -1,0 +1,133 @@
+name: Deploy to Vercel (Optimized)
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    # Only deploy on certain paths to reduce deployments
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.js'
+      - 'tailwind.config.ts'
+      - 'tsconfig.json'
+  workflow_dispatch:
+
+# Cancel in-progress deployments on same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Check if we should deploy
+  should-deploy:
+    name: Check Deployment Conditions
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    steps:
+      - name: Check conditions
+        id: check
+        run: |
+          # Always deploy main and staging
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # For PRs, only deploy if not draft
+          if [[ "${{ github.event.pull_request.draft }}" == "true" ]]; then
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "Skipping deployment for draft PR"
+            exit 0
+          fi
+          
+          # Skip if only docs/tests changed
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: should-deploy
+    if: needs.should-deploy.outputs.should-deploy == 'true'
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          # Add retry logic for rate limit errors
+          for i in {1..3}; do
+            if DEPLOYMENT_URL=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
+              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+              echo "Preview deployed to: $DEPLOYMENT_URL"
+              break
+            elif echo "$DEPLOYMENT_URL" | grep -q "api-deployments-free-per-day"; then
+              echo "Hit Vercel rate limit. This is deployment attempt $i of 3."
+              if [ $i -lt 3 ]; then
+                echo "Waiting 5 minutes before retry..."
+                sleep 300
+              else
+                echo "::warning::Vercel deployment rate limit reached. Please upgrade to Pro or wait for limit reset."
+                echo "deployment_url=rate-limited" >> $GITHUB_OUTPUT
+                exit 0  # Don't fail the workflow
+              fi
+            else
+              echo "Deployment failed with error: $DEPLOYMENT_URL"
+              exit 1
+            fi
+          done
+
+      - name: Create deployment status
+        if: github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment_url = '${{ steps.deploy.outputs.deployment_url }}';
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🚀 Preview deployment ready at: ${deployment_url}`
+            });
+
+      - name: Rate limit warning
+        if: steps.deploy.outputs.deployment_url == 'rate-limited'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            if (context.eventName === 'pull_request') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `⚠️ Vercel deployment rate limit reached (100 deployments/day on free tier). The build passed but preview deployment was skipped.\n\nOptions:\n1. Wait a few hours for the limit to reset\n2. Upgrade to Vercel Pro for unlimited deployments\n3. Deploy manually using \`vercel\` CLI`
+              });
+            }

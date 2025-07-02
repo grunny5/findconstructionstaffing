@@ -1,9 +1,9 @@
 import { GET } from '../route';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 // Mock Supabase
 jest.mock('@/lib/supabase', () => ({
-  createClient: jest.fn(),
+  supabase: null, // Will be set in each test
 }));
 
 // Mock NextResponse
@@ -25,7 +25,9 @@ describe('GET /api/test-supabase', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (createClient as jest.Mock).mockReturnValue(mockSupabase);
+    // Set the mocked supabase client
+    const supabaseMock = require('@/lib/supabase');
+    supabaseMock.supabase = mockSupabase;
   });
 
   it('should return success when connection works', async () => {
@@ -108,5 +110,23 @@ describe('GET /api/test-supabase', () => {
 
     expect(data.success).toBe(true);
     expect(data.tables.agencies.count).toBe(0);
+  });
+
+  it('should handle when supabase client is not initialized', async () => {
+    // Set supabase to null
+    const supabaseMock = require('@/lib/supabase');
+    supabaseMock.supabase = null;
+
+    const response = await GET();
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data).toEqual({
+      error: 'Supabase client not initialized',
+      env: {
+        url: 'Not set',
+        key: 'Not set',
+      },
+    });
   });
 });

@@ -16,42 +16,44 @@ export async function GET() {
       );
     }
 
-    // Try a simple query
-    const { data, error } = await supabase.from('test').select('*').limit(1);
-
-    if (
-      error &&
-      error.message.includes('relation "public.test" does not exist')
-    ) {
-      // This is actually good - it means we connected but the table doesn't exist
-      return NextResponse.json({
-        status: 'Connected',
-        message:
-          'Successfully connected to Supabase (table does not exist yet, which is expected)',
-      });
-    }
+    // Try to query agencies table to test connection
+    const { data, error } = await supabase
+      .from('agencies')
+      .select('*')
+      .limit(1);
 
     if (error) {
       return NextResponse.json(
         {
-          status: 'Error',
-          error: error.message,
-          code: error.code,
-          details: error,
+          success: false,
+          message: 'Failed to connect to Supabase',
+          error: error,
+          tables: {
+            agencies: {
+              connected: false,
+              error: error,
+            },
+          },
         },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
-      status: 'Connected',
+      success: true,
       message: 'Successfully connected to Supabase',
-      data,
+      tables: {
+        agencies: {
+          connected: true,
+          count: data?.length || 0,
+        },
+      },
     });
   } catch (error: any) {
     return NextResponse.json(
       {
-        status: 'Error',
+        success: false,
+        message: 'Connection test failed',
         error: error.message,
       },
       { status: 500 }

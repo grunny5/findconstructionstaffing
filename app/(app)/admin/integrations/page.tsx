@@ -1,0 +1,148 @@
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+
+// Type definitions for the integration data
+interface IntegrationSummary {
+  id: string;
+  name: string;
+  created_at: string;
+  config: {
+    is_active: boolean;
+    last_sync_at: string | null;
+    created_at: string;
+    updated_at: string;
+  } | null;
+  last_sync: {
+    status: string;
+    created_at: string;
+  } | null;
+}
+
+export default async function AdminIntegrationsPage() {
+  const supabase = createClient();
+
+  // Check authentication and admin status
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (!user || authError) {
+    redirect('/login');
+  }
+
+  // Check if user is admin (you'll need to implement this based on your auth setup)
+  // For example:
+  // const { data: profile } = await supabase
+  //   .from('profiles')
+  //   .select('is_admin')
+  //   .eq('id', user.id)
+  //   .single();
+  
+  // if (!profile?.is_admin) {
+  //   redirect('/');
+  // }
+
+  // Option 1: Single query with joins (recommended for PostgreSQL)
+  const { data: integrationsData, error } = await supabase
+    .from('companies')
+    .select(`
+      id,
+      name,
+      created_at,
+      roaddog_jobs_configs!left (
+        company_id,
+        is_active,
+        last_sync_at,
+        created_at,
+        updated_at
+      )
+    `)
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching integrations:', error);
+    return <div>Error loading integrations</div>;
+  }
+
+  // Get latest sync status for each company with a config
+  const companiesWithConfigs = integrationsData
+    ?.filter(company => company.roaddog_jobs_configs?.length > 0)
+    .map(company => company.id) || [];
+
+  let syncLogs: any[] = [];
+  if (companiesWithConfigs.length > 0) {
+    // Get latest sync log for each company
+    const { data: logs } = await supabase
+      .from('roaddog_jobs_sync_logs')
+      .select('company_id, status, created_at')
+      .in('company_id', companiesWithConfigs)
+      .order('created_at', { ascending: false });
+
+    // Group by company_id and get the latest for each
+    const latestSyncByCompany = new Map();
+    logs?.forEach(log => {
+      if (!latestSyncByCompany.has(log.company_id)) {
+        latestSyncByCompany.set(log.company_id, log);
+      }
+    });
+    syncLogs = Array.from(latestSyncByCompany.values());
+  }
+
+  // Transform data into the format needed for the UI
+  const integrations: IntegrationSummary[] = integrationsData?.map(company => {
+    const config = company.roaddog_jobs_configs?.[0] || null;
+    const lastSync = syncLogs.find(log => log.company_id === company.id) || null;
+
+    return {
+      id: company.id,
+      name: company.name,
+      created_at: company.created_at,
+      config: config ? {
+        is_active: config.is_active,
+        last_sync_at: config.last_sync_at,
+        created_at: config.created_at,
+        updated_at: config.updated_at,
+      } : null,
+      last_sync: lastSync ? {
+        status: lastSync.status,
+        created_at: lastSync.created_at,
+      } : null,
+    };
+  }) || [];
+
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Integration Management</h1>
+      
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul className="divide-y divide-gray-200">
+          {integrations.map((integration) => (
+            <li key={integration.id} className="px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">{integration.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    Created: {new Date(integration.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    integration.config?.is_active 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {integration.config?.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                  {integration.last_sync && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      Last sync: {integration.last_sync.status} - 
+                      {new Date(integration.last_sync.created_at).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
