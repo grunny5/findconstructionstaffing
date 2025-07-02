@@ -119,9 +119,7 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
         code: 'NETWORK_ERROR',
       });
 
-      const result = await (supabase
-        .from('agencies')
-        .select('*') as any)
+      const result = await (supabase.from('agencies').select('*') as any)
         .then((res: any) => {
           if (res.error) throw res.error;
           return res.data;
