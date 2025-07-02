@@ -25,12 +25,7 @@ describe('DirectoryFilters', () => {
   const mockTrades = ['Electrician', 'Plumber', 'Carpenter'];
 
   it('should render all filter components', () => {
-    render(
-      <DirectoryFilters
-        onFiltersChange={jest.fn()}
-        totalResults={0}
-      />
-    );
+    render(<DirectoryFilters onFiltersChange={jest.fn()} totalResults={0} />);
 
     expect(screen.getByPlaceholderText(/search agencies/i)).toBeInTheDocument();
     expect(screen.getByText(/all states/i)).toBeInTheDocument();
@@ -54,7 +49,7 @@ describe('DirectoryFilters', () => {
       () => {
         expect(mockOnFiltersChange).toHaveBeenCalledWith(
           expect.objectContaining({
-            search: 'test agency'
+            search: 'test agency',
           })
         );
       },
@@ -81,7 +76,7 @@ describe('DirectoryFilters', () => {
 
     expect(mockOnFiltersChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        states: ['TX']
+        states: ['TX'],
       })
     );
   });
@@ -105,7 +100,7 @@ describe('DirectoryFilters', () => {
 
     expect(mockOnFiltersChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        trades: ['electrician']
+        trades: ['electrician'],
       })
     );
   });
@@ -148,7 +143,7 @@ describe('DirectoryFilters', () => {
       () => {
         expect(mockOnFiltersChange).toHaveBeenCalledWith(
           expect.objectContaining({
-            search: ''
+            search: '',
           })
         );
       },
@@ -187,7 +182,7 @@ describe('DirectoryFilters', () => {
       () => {
         expect(mockOnFiltersChange).toHaveBeenCalledWith(
           expect.objectContaining({
-            search: 'new search'
+            search: 'new search',
           })
         );
       },

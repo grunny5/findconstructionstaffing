@@ -4,7 +4,9 @@ import AgencyCard from '../AgencyCard';
 import { Agency } from '@/types/api';
 
 // Helper to convert Agency type to AgencyCard props
-function toAgencyCardProps(agency: Agency): Parameters<typeof AgencyCard>[0]['agency'] {
+function toAgencyCardProps(
+  agency: Agency
+): Parameters<typeof AgencyCard>[0]['agency'] {
   return {
     id: agency.id,
     name: agency.name,
@@ -17,8 +19,8 @@ function toAgencyCardProps(agency: Agency): Parameters<typeof AgencyCard>[0]['ag
     is_claimed: agency.is_claimed,
     offers_per_diem: agency.offers_per_diem,
     is_union: agency.is_union,
-    trades: agency.trades.map(t => t.name),
-    regions: agency.regions.map(r => r.code),
+    trades: agency.trades.map((t) => t.name),
+    regions: agency.regions.map((r) => r.code),
     rating: agency.rating ?? undefined,
     reviewCount: agency.review_count,
     projectCount: agency.project_count,
@@ -140,7 +142,9 @@ describe('AgencyCard', () => {
   });
 
   it('should have proper card structure', () => {
-    const { container } = render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+    const { container } = render(
+      <AgencyCard agency={toAgencyCardProps(mockAgency)} />
+    );
 
     const card = container.querySelector('.rounded-lg.border');
     expect(card).toBeInTheDocument();
