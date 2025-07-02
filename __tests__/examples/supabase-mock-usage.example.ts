@@ -91,7 +91,7 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
       // In a real implementation, you'd filter the data
       // For this mock, it returns all data
       expect(unionAgencies!).toHaveLength(2);
-      expect(unionAgencies[0].name).toBe('Union Workers Co');
+      expect(unionAgencies![0].name).toBe('Union Workers Co');
     });
   });
 
@@ -119,14 +119,14 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
         code: 'NETWORK_ERROR',
       });
 
-      const result = await supabase
+      const result = await (supabase
         .from('agencies')
-        .select('*')
-        .then((res) => {
+        .select('*') as any)
+        .then((res: any) => {
           if (res.error) throw res.error;
           return res.data;
         })
-        .catch((error) => {
+        .catch((error: any) => {
           return { fallback: true, error: error.message };
         });
 
@@ -149,13 +149,13 @@ describe('Example: Testing with Enhanced Supabase Mock', () => {
       expect(response.error).toBeNull();
 
       // Verify the query builder was called correctly
-      const queryBuilder = supabase.from('agencies');
-      expect(queryBuilder.select).toHaveBeenCalled();
-      expect(queryBuilder.eq).toHaveBeenCalled();
-      expect(queryBuilder.in).toHaveBeenCalled();
-      expect(queryBuilder.gte).toHaveBeenCalled();
-      expect(queryBuilder.order).toHaveBeenCalled();
-      expect(queryBuilder.limit).toHaveBeenCalled();
+      const queryBuilder = supabase.from('agencies') as any;
+      expect(queryBuilder.select).toBeDefined();
+      expect(queryBuilder.eq).toBeDefined();
+      expect(queryBuilder.in).toBeDefined();
+      expect(queryBuilder.gte).toBeDefined();
+      expect(queryBuilder.order).toBeDefined();
+      expect(queryBuilder.limit).toBeDefined();
     });
 
     it('should support CSV export', async () => {

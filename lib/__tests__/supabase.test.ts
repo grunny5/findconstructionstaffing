@@ -1,10 +1,8 @@
-import { createClient } from '../supabase';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase, createClient } from '../supabase';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-// Mock @supabase/ssr
-jest.mock('@supabase/ssr', () => ({
-  createBrowserClient: jest.fn(),
-}));
+// Mock @supabase/supabase-js
+jest.mock('@supabase/supabase-js');
 
 describe('Supabase Client', () => {
   const originalEnv = process.env;
@@ -18,16 +16,30 @@ describe('Supabase Client', () => {
     process.env = originalEnv;
   });
 
-  it('should create a browser client with correct URL and anon key', () => {
+  it('should export a supabase client instance', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
     const mockClient = { from: jest.fn() };
-    (createBrowserClient as jest.Mock).mockReturnValue(mockClient);
+    (createSupabaseClient as jest.Mock).mockReturnValue(mockClient);
 
-    const client = createClient();
+    // Re-import to trigger module execution
+    jest.resetModules();
+    const { supabase } = require('../supabase');
 
-    expect(createBrowserClient).toHaveBeenCalledWith(
+    expect(supabase).toBeDefined();
+  });
+
+  it('should call createClient with correct parameters', () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+    const mockClient = { from: jest.fn() };
+    (createSupabaseClient as jest.Mock).mockReturnValue(mockClient);
+
+    const client = createClient('https://test.supabase.co', 'test-anon-key');
+
+    expect(createSupabaseClient).toHaveBeenCalledWith(
       'https://test.supabase.co',
       'test-anon-key'
     );
@@ -38,8 +50,10 @@ describe('Supabase Client', () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
-    expect(() => createClient()).toThrow(
-      'Missing env.NEXT_PUBLIC_SUPABASE_URL'
+    // Re-import to trigger error
+    jest.resetModules();
+    expect(() => require('../supabase')).toThrow(
+      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL'
     );
   });
 
@@ -47,24 +61,11 @@ describe('Supabase Client', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    expect(() => createClient()).toThrow(
-      'Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    // Re-import to trigger error
+    jest.resetModules();
+    expect(() => require('../supabase')).toThrow(
+      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY'
     );
-  });
-
-  it('should cache the client instance', () => {
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-
-    const mockClient = { from: jest.fn() };
-    (createBrowserClient as jest.Mock).mockReturnValue(mockClient);
-
-    const client1 = createClient();
-    const client2 = createClient();
-
-    // Should only create one client
-    expect(createBrowserClient).toHaveBeenCalledTimes(1);
-    expect(client1).toBe(client2);
   });
 
   it('should handle different environment configurations', () => {
@@ -85,11 +86,13 @@ describe('Supabase Client', () => {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = config.key;
 
       const mockClient = { from: jest.fn() };
-      (createBrowserClient as jest.Mock).mockReturnValue(mockClient);
+      (createSupabaseClient as jest.Mock).mockReturnValue(mockClient);
 
-      createClient();
+      // Re-import with new env vars
+      jest.resetModules();
+      const { supabase } = require('../supabase');
 
-      expect(createBrowserClient).toHaveBeenCalledWith(config.url, config.key);
+      expect(createSupabaseClient).toHaveBeenCalledWith(config.url, config.key);
     });
   });
 });

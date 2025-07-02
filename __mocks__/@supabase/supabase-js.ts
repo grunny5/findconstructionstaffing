@@ -106,7 +106,7 @@ function createChainableQueryBuilder<T = any>(
     count: mockError ? null : mockData.length,
     status: mockError ? 400 : 200,
     statusText: mockError ? 'Bad Request' : 'OK',
-  });
+  } as PostgrestResponse<T[]>);
 
   const queryBuilder: ChainableQueryBuilder<T> = {} as ChainableQueryBuilder<T>;
 
