@@ -12,35 +12,38 @@ This guide covers environment setup for the FindConstructionStaffing platform, i
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | `https://abc123.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anonymous key for Supabase | `eyJhbGc...` |
+| Variable                        | Description                       | Example                      |
+| ------------------------------- | --------------------------------- | ---------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Your Supabase project URL         | `https://abc123.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anonymous key for Supabase | `eyJhbGc...`                 |
 
 ### Optional Variables (Future)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_APP_URL` | Application URL | `http://localhost:3000` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server-side only) | - |
-| `NEXT_PUBLIC_ENABLE_ANALYTICS` | Enable analytics tracking | `false` |
+| Variable                       | Description                         | Default                 |
+| ------------------------------ | ----------------------------------- | ----------------------- |
+| `NEXT_PUBLIC_APP_URL`          | Application URL                     | `http://localhost:3000` |
+| `SUPABASE_SERVICE_ROLE_KEY`    | Service role key (server-side only) | -                       |
+| `NEXT_PUBLIC_ENABLE_ANALYTICS` | Enable analytics tracking           | `false`                 |
 
 ## Setup by Environment
 
 ### Local Development
 
 1. Create `.env.local` file:
+
 ```bash
 cp .env.example .env.local
 ```
 
 2. Add your credentials:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 3. Verify setup:
+
 ```bash
 node scripts/test-supabase-connection.js
 ```
@@ -48,6 +51,7 @@ node scripts/test-supabase-connection.js
 ### Staging Environment
 
 For Vercel deployment:
+
 1. Go to Project Settings → Environment Variables
 2. Add each variable for "Preview" environment
 3. Redeploy to apply changes
@@ -64,6 +68,7 @@ For Vercel deployment:
 ## Security Best Practices
 
 ### DO:
+
 - ✅ Keep `.env.local` in `.gitignore`
 - ✅ Use different credentials per environment
 - ✅ Rotate keys periodically
@@ -71,6 +76,7 @@ For Vercel deployment:
 - ✅ Store service role keys securely (never in client code)
 
 ### DON'T:
+
 - ❌ Commit real credentials to version control
 - ❌ Share credentials in public channels
 - ❌ Use production credentials in development
@@ -80,14 +86,18 @@ For Vercel deployment:
 ## Loading Environment Variables
 
 ### Next.js (Automatic)
+
 Next.js automatically loads from `.env.local`:
+
 ```javascript
 // Automatically available
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 ```
 
 ### Node.js Scripts
+
 For standalone scripts, load manually:
+
 ```javascript
 const fs = require('fs');
 const path = require('path');
@@ -96,10 +106,10 @@ const path = require('path');
 const envPath = path.join(__dirname, '..', '.env.local');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
+  envContent.split('\n').forEach((line) => {
     line = line.trim();
     if (!line || line.startsWith('#')) return;
-    
+
     const equalIndex = line.indexOf('=');
     if (equalIndex > 0) {
       const key = line.substring(0, equalIndex).trim();
@@ -113,6 +123,7 @@ if (fs.existsSync(envPath)) {
 ## Debugging Environment Issues
 
 ### Check Loaded Variables
+
 ```javascript
 // Debug script
 console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -136,6 +147,7 @@ console.log('Has Anon Key:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 ## CI/CD Configuration
 
 ### GitHub Actions
+
 ```yaml
 env:
   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -143,9 +155,11 @@ env:
 ```
 
 ### Vercel
+
 Set in Project Settings → Environment Variables
 
 ### Docker
+
 ```dockerfile
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -157,17 +171,15 @@ ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ## Validation Script
 
 Create `scripts/validate-env.js`:
-```javascript
-const required = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY'
-];
 
-const missing = required.filter(key => !process.env[key]);
+```javascript
+const required = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+
+const missing = required.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
   console.error('❌ Missing environment variables:');
-  missing.forEach(key => console.error(`  - ${key}`));
+  missing.forEach((key) => console.error(`  - ${key}`));
   process.exit(1);
 } else {
   console.log('✅ All required environment variables are set');
@@ -177,6 +189,7 @@ if (missing.length > 0) {
 ## Migration Guide
 
 When adding new environment variables:
+
 1. Add to `.env.example` with description
 2. Update this documentation
 3. Add to validation script

@@ -3,6 +3,7 @@
 This runbook covers production deployment procedures, monitoring, and incident response for FindConstructionStaffing.
 
 ## Table of Contents
+
 1. [Normal Deployment Process](#normal-deployment-process)
 2. [Deployment Monitoring](#deployment-monitoring)
 3. [Health Checks](#health-checks)
@@ -39,6 +40,7 @@ This runbook covers production deployment procedures, monitoring, and incident r
 ### Manual Deployment Trigger
 
 If needed, trigger deployment manually:
+
 ```bash
 gh workflow run deploy.yml --ref main
 ```
@@ -74,6 +76,7 @@ gh workflow run deploy.yml --ref main
 ### Automated Health Checks
 
 The system automatically checks:
+
 1. **Main Page** - HTTP 200 response
 2. **API Endpoint** - `/api/agencies` availability
 3. **Critical Pages** - `/recruiters` accessibility
@@ -94,6 +97,7 @@ curl -I https://findconstructionstaffing.com/recruiters
 ### Health Check Failures
 
 If health checks fail:
+
 1. GitHub issue created automatically
 2. Deployment marked as failed
 3. Team notified via issue mention
@@ -104,6 +108,7 @@ If health checks fail:
 ### Automatic Rollback Trigger
 
 Use the GitHub Actions UI:
+
 1. Go to [Actions → Production Rollback](../../actions/workflows/production-rollback.yml)
 2. Click "Run workflow"
 3. Enter rollback reason
@@ -135,24 +140,28 @@ vercel rollback
 ### Severity Levels
 
 **P0 - Critical**
+
 - Site completely down
 - Data loss occurring
 - Security breach
 - Immediate rollback required
 
 **P1 - High**
+
 - Major functionality broken
 - Performance severely degraded
 - Affecting majority of users
 - Rollback within 1 hour
 
 **P2 - Medium**
+
 - Some features not working
 - Performance degraded
 - Affecting subset of users
-- Fix forward or rollback
+- Apply a forward-fix or perform a rollback
 
 **P3 - Low**
+
 - Minor issues
 - Cosmetic problems
 - Not affecting core functionality
@@ -161,6 +170,7 @@ vercel rollback
 ### Response Procedures
 
 #### 1. Assess the Situation
+
 ```bash
 # Check deployment status
 gh run view
@@ -173,16 +183,19 @@ git log --oneline -10
 ```
 
 #### 2. Communicate
+
 - Create incident issue in GitHub
 - Notify team via Slack/Discord
 - Update status page if available
 
 #### 3. Take Action
+
 - **P0/P1**: Immediate rollback
 - **P2**: Assess rollback vs hotfix
 - **P3**: Plan fix for next release
 
 #### 4. Document
+
 - Record timeline of events
 - Document root cause
 - Create post-mortem for P0/P1
@@ -227,6 +240,7 @@ git log --oneline -10
 ### Success Criteria
 
 Deployment is considered successful when:
+
 - ✅ All health checks pass
 - ✅ No increase in error rates
 - ✅ Performance metrics stable
@@ -236,6 +250,7 @@ Deployment is considered successful when:
 ## Common Issues and Solutions
 
 ### Build Failures
+
 ```bash
 # Check build logs
 vercel logs [deployment-url]
@@ -246,11 +261,13 @@ npm run build
 ```
 
 ### Environment Variable Issues
+
 - Verify in Vercel dashboard
 - Check for typos in variable names
 - Ensure secrets are set in GitHub
 
 ### Cache Issues
+
 ```bash
 # Clear build cache
 vercel --force
@@ -260,6 +277,7 @@ vercel --force
 ```
 
 ### Performance Degradation
+
 1. Check bundle size
 2. Review recent code changes
 3. Check database queries

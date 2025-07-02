@@ -7,6 +7,7 @@ The API includes built-in performance monitoring and metrics collection to ensur
 ## Performance Monitoring
 
 Every API request is automatically monitored for:
+
 - Response time
 - Database query time
 - Error rates
@@ -113,6 +114,7 @@ When deploying to Vercel, add the `MONITORING_API_KEY` environment variable thro
 ## Alerts
 
 The performance monitoring system automatically logs warnings when:
+
 - Response time exceeds 80ms (approaching the 100ms target)
 - Query time exceeds 50ms (database query performance requirement)
 - Error rates exceed thresholds

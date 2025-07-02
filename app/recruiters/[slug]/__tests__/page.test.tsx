@@ -7,8 +7,8 @@ import { Agency } from '@/types/api';
 // Mock Supabase
 jest.mock('@/lib/supabase', () => ({
   supabase: {
-    from: jest.fn()
-  }
+    from: jest.fn(),
+  },
 }));
 
 const mockAgency: Agency = {
@@ -34,17 +34,13 @@ const mockAgency: Agency = {
   featured: true,
   created_at: '2024-01-01',
   updated_at: '2024-01-01',
-  trades: [
-    { id: 't1', name: 'Electricians', slug: 'electricians' }
-  ],
-  regions: [
-    { id: 'r1', name: 'Texas', code: 'TX' }
-  ]
+  trades: [{ id: 't1', name: 'Electricians', slug: 'electricians' }],
+  regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
 };
 
 describe('Agency Profile Page API Tests', () => {
   const { supabase } = require('@/lib/supabase');
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -56,22 +52,35 @@ describe('Agency Profile Page API Tests', () => {
       single: jest.fn().mockResolvedValue({
         data: {
           ...mockAgency,
-          agency_trades: [{
-            trade: { id: 't1', name: 'Electricians', slug: 'electricians' }
-          }],
-          agency_regions: [{
-            region: { id: 'r1', name: 'Texas', state_code: 'TX', slug: 'texas' }
-          }]
+          agency_trades: [
+            {
+              trade: { id: 't1', name: 'Electricians', slug: 'electricians' },
+            },
+          ],
+          agency_regions: [
+            {
+              region: {
+                id: 'r1',
+                name: 'Texas',
+                state_code: 'TX',
+                slug: 'texas',
+              },
+            },
+          ],
         },
-        error: null
-      })
+        error: null,
+      }),
     };
 
     supabase.from.mockReturnValue(mockQueryBuilder);
 
-    const request = new Request('http://localhost:3000/api/agencies/elite-construction-staffing');
-    const response = await GET(request as any, { params: { slug: 'elite-construction-staffing' } });
-    
+    const request = new Request(
+      'http://localhost:3000/api/agencies/elite-construction-staffing'
+    );
+    const response = await GET(request as any, {
+      params: { slug: 'elite-construction-staffing' },
+    });
+
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.data).toBeDefined();
@@ -86,15 +95,19 @@ describe('Agency Profile Page API Tests', () => {
       eq: jest.fn().mockReturnThis(),
       single: jest.fn().mockResolvedValue({
         data: null,
-        error: { code: 'PGRST116', message: 'No rows found' }
-      })
+        error: { code: 'PGRST116', message: 'No rows found' },
+      }),
     };
 
     supabase.from.mockReturnValue(mockQueryBuilder);
 
-    const request = new Request('http://localhost:3000/api/agencies/non-existent');
-    const response = await GET(request as any, { params: { slug: 'non-existent' } });
-    
+    const request = new Request(
+      'http://localhost:3000/api/agencies/non-existent'
+    );
+    const response = await GET(request as any, {
+      params: { slug: 'non-existent' },
+    });
+
     expect(response.status).toBe(404);
     const data = await response.json();
     expect(data.error).toBeDefined();
@@ -107,15 +120,19 @@ describe('Agency Profile Page API Tests', () => {
       eq: jest.fn().mockReturnThis(),
       single: jest.fn().mockResolvedValue({
         data: null,
-        error: { code: 'DATABASE_ERROR', message: 'Connection failed' }
-      })
+        error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+      }),
     };
 
     supabase.from.mockReturnValue(mockQueryBuilder);
 
-    const request = new Request('http://localhost:3000/api/agencies/elite-construction-staffing');
-    const response = await GET(request as any, { params: { slug: 'elite-construction-staffing' } });
-    
+    const request = new Request(
+      'http://localhost:3000/api/agencies/elite-construction-staffing'
+    );
+    const response = await GET(request as any, {
+      params: { slug: 'elite-construction-staffing' },
+    });
+
     expect(response.status).toBe(500);
     const data = await response.json();
     expect(data.error).toBeDefined();
@@ -125,7 +142,7 @@ describe('Agency Profile Page API Tests', () => {
   it('should validate slug parameter', async () => {
     const request = new Request('http://localhost:3000/api/agencies/');
     const response = await GET(request as any, { params: { slug: '' } });
-    
+
     expect(response.status).toBe(400);
     const data = await response.json();
     expect(data.error).toBeDefined();
@@ -140,17 +157,21 @@ describe('Agency Profile Page API Tests', () => {
         data: {
           ...mockAgency,
           agency_trades: [],
-          agency_regions: []
+          agency_regions: [],
         },
-        error: null
-      })
+        error: null,
+      }),
     };
 
     supabase.from.mockReturnValue(mockQueryBuilder);
 
-    const request = new Request('http://localhost:3000/api/agencies/elite-construction-staffing');
-    const response = await GET(request as any, { params: { slug: 'elite-construction-staffing' } });
-    
+    const request = new Request(
+      'http://localhost:3000/api/agencies/elite-construction-staffing'
+    );
+    const response = await GET(request as any, {
+      params: { slug: 'elite-construction-staffing' },
+    });
+
     expect(response.headers.get('Cache-Control')).toContain('public');
     expect(response.headers.get('Cache-Control')).toContain('s-maxage=60');
   });

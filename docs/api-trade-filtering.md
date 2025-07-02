@@ -9,6 +9,7 @@ The agencies API endpoint supports filtering by trade specialties, allowing cons
 ### Query Parameter Format
 
 The API accepts trade filters using array notation:
+
 - Single trade: `?trades[]=electricians`
 - Multiple trades: `?trades[]=electricians&trades[]=plumbers`
 - Alternative format: `?trades=electricians` (automatically converted to array)
@@ -16,38 +17,39 @@ The API accepts trade filters using array notation:
 ### Filter Logic
 
 **OR Logic**: When multiple trades are specified, agencies matching ANY of the trades are returned.
+
 - Example: `?trades[]=electricians&trades[]=plumbers` returns agencies offering electricians OR plumbers
 
 ### Database Structure
 
 Trade filtering uses the junction table approach:
+
 ```sql
 agencies -> agency_trades -> trades
 ```
 
 The filtering is implemented using efficient subqueries:
+
 ```typescript
-query.in('id',
+query.in(
+  'id',
   supabase
     .from('agency_trades')
     .select('agency_id')
-    .in('trade_id', 
-      supabase
-        .from('trades')
-        .select('id')
-        .in('slug', trades)
-    )
-)
+    .in('trade_id', supabase.from('trades').select('id').in('slug', trades))
+);
 ```
 
 ## API Usage Examples
 
 ### Filter by Single Trade
+
 ```http
 GET /api/agencies?trades[]=electricians
 ```
 
 Response includes only agencies offering electrician staffing:
+
 ```json
 {
   "data": [
@@ -68,6 +70,7 @@ Response includes only agencies offering electrician staffing:
 ```
 
 ### Filter by Multiple Trades
+
 ```http
 GET /api/agencies?trades[]=electricians&trades[]=plumbers&trades[]=hvac-technicians
 ```
@@ -75,11 +78,13 @@ GET /api/agencies?trades[]=electricians&trades[]=plumbers&trades[]=hvac-technici
 Returns agencies offering ANY of the specified trades.
 
 ### Combined with Other Filters
+
 ```http
 GET /api/agencies?search=construction&trades[]=carpenters&limit=10
 ```
 
 Applies all filters together:
+
 - Search for "construction" in name/description
 - Must offer carpenter staffing
 - Return max 10 results
@@ -87,14 +92,17 @@ Applies all filters together:
 ## Trade Validation
 
 ### Valid Trade Slugs
+
 Trade slugs must match existing trades in the database. Invalid trades are silently ignored to provide graceful degradation.
 
 ### Parameter Limits
+
 - Maximum 10 trades per request (prevents query complexity)
 - Empty trade values are filtered out
 - Whitespace is trimmed from trade slugs
 
 ### Validation Errors
+
 ```json
 {
   "error": {
@@ -115,18 +123,23 @@ Trade slugs must match existing trades in the database. Invalid trades are silen
 ## Performance Considerations
 
 ### Database Indexes
+
 Optimized indexes ensure fast trade filtering:
+
 - `idx_agency_trades_agency_id` - Fast agency lookups
 - `idx_agency_trades_trade_id` - Fast trade lookups
 - `idx_trades_slug` - Fast slug matching
 
 ### Query Optimization
+
 - Subqueries are optimized by PostgreSQL query planner
 - Junction table joins are efficient with proper indexes
 - Trade details are included in main query to avoid N+1 queries
 
 ### Pagination
+
 Trade filters are applied before pagination:
+
 1. Filter by trades (and other criteria)
 2. Count total matching agencies
 3. Apply pagination limits
@@ -135,6 +148,7 @@ Trade filters are applied before pagination:
 ## Response Format
 
 Filtered responses maintain the standard format with trade relationships:
+
 ```json
 {
   "data": [
@@ -153,7 +167,7 @@ Filtered responses maintain the standard format with trade relationships:
           "name": "Plumbers",
           "slug": "plumbers"
         }
-      ],
+      ]
       // ... other agency fields
     }
   ],
@@ -169,6 +183,7 @@ Filtered responses maintain the standard format with trade relationships:
 ## Common Trade Slugs
 
 Example trade slugs in the system:
+
 - `electricians`
 - `plumbers`
 - `carpenters`
@@ -182,13 +197,17 @@ Example trade slugs in the system:
 ## Error Handling
 
 ### No Matching Trades
+
 When no agencies match the specified trades:
+
 - Returns 200 OK with empty data array
 - Not an error condition
 - Pagination shows total: 0
 
 ### Invalid Trade Slugs
+
 When invalid trade slugs are provided:
+
 - Invalid slugs are ignored
 - Valid slugs are still processed
 - If all slugs are invalid, returns all agencies
@@ -196,11 +215,13 @@ When invalid trade slugs are provided:
 ## Implementation Notes
 
 ### Code Locations
+
 - Route handler: `app/api/agencies/route.ts`
 - Parameter validation: `lib/validation/agencies-query.ts`
 - Trade filtering logic: Lines 107-123 in route handler
 
 ### Filter Application Order
+
 1. Active agencies filter (`is_active = true`)
 2. Search filter (if provided)
 3. Trade filter (if provided)
@@ -208,7 +229,9 @@ When invalid trade slugs are provided:
 5. Pagination
 
 ### Count Query
+
 The same trade filter is applied to both:
+
 - Main data query (for results)
 - Count query (for pagination metadata)
 

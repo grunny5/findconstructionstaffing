@@ -68,11 +68,13 @@ Current coverage: **85.87%** (exceeds PKD requirement of 80%)
 ## Test Patterns
 
 ### Mocking Strategy
+
 - Supabase client mocking for unit tests
 - Controlled data responses
 - Error simulation
 
 ### Test Organization
+
 - Describe blocks for each function
 - Clear test names
 - Comprehensive coverage of:
@@ -82,6 +84,7 @@ Current coverage: **85.87%** (exceeds PKD requirement of 80%)
   - Performance requirements
 
 ### Assertions
+
 - Data integrity checks
 - Count validations
 - Performance benchmarks
@@ -106,22 +109,26 @@ npm test scripts/__tests__ -- --watch
 ## Key Test Scenarios
 
 ### Idempotency
+
 - Running seed script multiple times produces identical results
 - No duplicates created
 - Existing data preserved
 
 ### Error Handling
+
 - Database connection failures
 - Foreign key violations
 - Invalid data handling
 - Graceful error recovery
 
 ### Performance
+
 - Batch processing efficiency
 - Sub-second execution for most operations
 - Scalable to larger datasets
 
 ### Data Integrity
+
 - All relationships maintained
 - Correct data transformations
 - Validation of seeded data
@@ -129,6 +136,7 @@ npm test scripts/__tests__ -- --watch
 ## Continuous Integration
 
 These tests should be run in CI/CD pipeline to ensure:
+
 - No regressions in seeding functionality
 - Consistent behavior across environments
 - Performance standards maintained

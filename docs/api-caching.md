@@ -7,11 +7,13 @@ The agencies API endpoint implements HTTP caching to improve performance and red
 ## Cache Headers
 
 ### Successful Responses (200 OK)
+
 - `Cache-Control: public, max-age=300, must-revalidate`
 - `ETag: {md5-hash-of-response}`
 - `Vary: Accept-Encoding`
 
 ### Error Responses (4xx, 5xx)
+
 - `Cache-Control: no-cache, no-store, must-revalidate`
 - `Pragma: no-cache`
 - `Expires: 0`
@@ -19,6 +21,7 @@ The agencies API endpoint implements HTTP caching to improve performance and red
 ## ETag Implementation
 
 ETags are generated using MD5 hash of the JSON response:
+
 ```typescript
 import { createHash } from 'crypto';
 
@@ -48,17 +51,22 @@ The API supports conditional requests using `If-None-Match` header:
 ## Implementation Details
 
 ### Cache Key Factors
+
 ETags change when:
+
 - Agency data changes
 - Pagination parameters change
 - Query results change
 
 ### Cache Invalidation
+
 - Automatic: After 5 minutes (max-age)
 - Manual: Server returns new ETag when data changes
 
 ### Error Handling
+
 Error responses are never cached to ensure:
+
 - Fresh error information
 - Proper debugging capability
 - No stale error states
@@ -66,9 +74,11 @@ Error responses are never cached to ensure:
 ## Testing
 
 Cache functionality is tested in:
+
 - `app/api/agencies/__tests__/caching.test.ts`
 
 Test coverage includes:
+
 - Header presence and values
 - ETag generation consistency
 - Conditional request behavior

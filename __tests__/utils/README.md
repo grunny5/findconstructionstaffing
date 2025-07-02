@@ -27,6 +27,7 @@ describe('My Test', () => {
 #### 2. Runtime Mock (Dynamic)
 
 Use `setupSupabaseMockRuntime()` when you need to:
+
 - Change mock behavior during test execution
 - Set up different mocks for different tests in the same file
 - Dynamically configure mock responses
@@ -41,12 +42,12 @@ describe('Dynamic Mock Test', () => {
 
   it('should use custom data', () => {
     const mockSupabase = setupSupabaseMockRuntime({
-      defaultData: [{ id: '1', name: 'Test' }]
+      defaultData: [{ id: '1', name: 'Test' }],
     });
-    
+
     // Must require AFTER setting up the mock
     const { supabase } = require('@/lib/supabase');
-    
+
     // Use your mock...
   });
 });

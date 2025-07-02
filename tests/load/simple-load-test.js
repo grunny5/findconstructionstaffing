@@ -1,7 +1,7 @@
 /**
  * Simple load test for agencies API
  * No external dependencies required - uses built-in Node.js modules
- * 
+ *
  * Run with: node tests/load/simple-load-test.js
  */
 
@@ -13,13 +13,21 @@ const path = require('path');
 
 // Configuration
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-const CONCURRENT_USERS = Math.min(Math.max(parseInt(process.env.CONCURRENT_USERS) || 100, 1), 1000);
-const TEST_DURATION = Math.min(Math.max(parseInt(process.env.TEST_DURATION) || 60, 1), 3600); // Max 1 hour
+const CONCURRENT_USERS = Math.min(
+  Math.max(parseInt(process.env.CONCURRENT_USERS) || 100, 1),
+  1000
+);
+const TEST_DURATION = Math.min(
+  Math.max(parseInt(process.env.TEST_DURATION) || 60, 1),
+  3600
+); // Max 1 hour
 const RESULTS_DIR = path.join(__dirname, 'results');
 
 // Validate configuration
 if (isNaN(CONCURRENT_USERS) || isNaN(TEST_DURATION)) {
-  console.error('❌ Invalid configuration: CONCURRENT_USERS and TEST_DURATION must be valid numbers');
+  console.error(
+    '❌ Invalid configuration: CONCURRENT_USERS and TEST_DURATION must be valid numbers'
+  );
   process.exit(1);
 }
 
@@ -35,9 +43,15 @@ const scenarios = [
   { name: 'all_agencies', path: '/api/agencies' },
   { name: 'search', path: '/api/agencies?search=construction' },
   { name: 'single_trade', path: '/api/agencies?trades[]=electricians' },
-  { name: 'multiple_trades', path: '/api/agencies?trades[]=electricians&trades[]=plumbers' },
+  {
+    name: 'multiple_trades',
+    path: '/api/agencies?trades[]=electricians&trades[]=plumbers',
+  },
   { name: 'state_filter', path: '/api/agencies?states[]=TX' },
-  { name: 'combined', path: '/api/agencies?search=elite&trades[]=electricians&states[]=TX' },
+  {
+    name: 'combined',
+    path: '/api/agencies?search=elite&trades[]=electricians&states[]=TX',
+  },
   { name: 'pagination', path: '/api/agencies?limit=10&offset=20' },
 ];
 
@@ -59,7 +73,7 @@ const client = baseUrl.protocol === 'https:' ? https : http;
 async function makeRequest() {
   const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
   const startTime = Date.now();
-  
+
   return new Promise((resolve) => {
     const options = {
       hostname: baseUrl.hostname,
@@ -67,51 +81,56 @@ async function makeRequest() {
       path: scenario.path,
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       timeout: 30000, // 30 second timeout for load testing
     };
-    
+
     const req = client.request(options, (res) => {
       let data = '';
       let dataSize = 0;
       const maxResponseSize = 1024 * 1024; // 1MB limit for safety during load testing
       let truncated = false;
-      
+
       res.on('data', (chunk) => {
         dataSize += chunk.length;
         if (dataSize <= maxResponseSize) {
           data += chunk;
         } else if (!truncated) {
           truncated = true;
-          console.warn(`⚠️  Response truncated at ${maxResponseSize} bytes for ${scenario.name}`);
+          console.warn(
+            `⚠️  Response truncated at ${maxResponseSize} bytes for ${scenario.name}`
+          );
         }
       });
-      
+
       res.on('end', () => {
         const responseTime = Date.now() - startTime;
         metrics.totalRequests++;
         metrics.responseTimes.push(responseTime);
-        
+
         if (res.statusCode === 200) {
           metrics.successfulRequests++;
-          
+
           // Log slow requests
           if (responseTime > 100) {
-            console.log(`⚠️  Slow request: ${scenario.name} took ${responseTime}ms`);
+            console.log(
+              `⚠️  Slow request: ${scenario.name} took ${responseTime}ms`
+            );
           }
         } else {
           metrics.failedRequests++;
-          
+
           // Parse response body for error details
           let errorDetails = '';
           try {
             const parsedData = JSON.parse(data);
-            errorDetails = parsedData.error?.message || parsedData.message || '';
+            errorDetails =
+              parsedData.error?.message || parsedData.message || '';
           } catch (e) {
             errorDetails = data.substring(0, 200); // First 200 chars of response
           }
-          
+
           metrics.errors.push({
             scenario: scenario.name,
             status: res.statusCode,
@@ -121,18 +140,20 @@ async function makeRequest() {
             headers: res.headers,
             time: new Date().toISOString(),
           });
-          console.error(`❌ Error: ${scenario.name} returned ${res.statusCode} - ${errorDetails}`);
+          console.error(
+            `❌ Error: ${scenario.name} returned ${res.statusCode} - ${errorDetails}`
+          );
         }
-        
+
         resolve();
       });
     });
-    
+
     req.on('error', (error) => {
       const responseTime = Date.now() - startTime;
       metrics.totalRequests++;
       metrics.failedRequests++;
-      
+
       // Determine error type and add detailed information
       let errorType = 'NetworkError';
       if (error.code === 'ECONNREFUSED') {
@@ -142,7 +163,7 @@ async function makeRequest() {
       } else if (error.code === 'ENOTFOUND') {
         errorType = 'DNSLookupFailed';
       }
-      
+
       metrics.errors.push({
         scenario: scenario.name,
         errorType: errorType,
@@ -155,10 +176,12 @@ async function makeRequest() {
         stack: error.stack,
         time: new Date().toISOString(),
       });
-      console.error(`❌ Request error: ${errorType} - ${error.message} (${scenario.name})`);
+      console.error(
+        `❌ Request error: ${errorType} - ${error.message} (${scenario.name})`
+      );
       resolve();
     });
-    
+
     req.on('timeout', () => {
       const responseTime = Date.now() - startTime;
       req.destroy();
@@ -172,21 +195,23 @@ async function makeRequest() {
         responseTime: responseTime,
         time: new Date().toISOString(),
       });
-      console.error(`❌ Timeout: ${scenario.name} timed out after ${responseTime}ms`);
+      console.error(
+        `❌ Timeout: ${scenario.name} timed out after ${responseTime}ms`
+      );
       resolve();
     });
-    
+
     req.end();
   });
 }
 
 async function runUser() {
-  const endTime = metrics.startTime + (TEST_DURATION * 1000);
-  
+  const endTime = metrics.startTime + TEST_DURATION * 1000;
+
   while (Date.now() < endTime) {
     await makeRequest();
     // Small random delay between requests (0-100ms)
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
   }
 }
 
@@ -198,7 +223,7 @@ async function verifyApiAccessibility() {
   const scenario = scenarios[0]; // Use the simple agencies list endpoint
   const baseUrl = new URL(BASE_URL);
   const client = baseUrl.protocol === 'https:' ? https : http;
-  
+
   return new Promise((resolve, reject) => {
     const options = {
       hostname: baseUrl.hostname,
@@ -206,36 +231,40 @@ async function verifyApiAccessibility() {
       path: scenario.path,
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       timeout: 10000, // 10 second timeout for verification
     };
-    
+
     const req = client.request(options, (res) => {
       let data = '';
-      
+
       res.on('data', (chunk) => {
         data += chunk;
       });
-      
+
       res.on('end', () => {
         if (res.statusCode === 200) {
           resolve();
         } else {
-          reject(new Error(`API returned status ${res.statusCode}: ${res.statusMessage}`));
+          reject(
+            new Error(
+              `API returned status ${res.statusCode}: ${res.statusMessage}`
+            )
+          );
         }
       });
     });
-    
+
     req.on('error', (error) => {
       reject(error);
     });
-    
+
     req.on('timeout', () => {
       req.destroy();
       reject(new Error('API verification timed out after 10 seconds'));
     });
-    
+
     req.end();
   });
 }
@@ -249,14 +278,18 @@ async function ensureResultsDir() {
       console.error(`❌ Failed to create results directory: ${error.message}`);
       console.error(`   Path: ${RESULTS_DIR}`);
       console.error(`   Error code: ${error.code}`);
-      
+
       // Handle specific error cases
       if (error.code === 'EACCES') {
-        console.error('   Permission denied. Check write permissions for the parent directory.');
+        console.error(
+          '   Permission denied. Check write permissions for the parent directory.'
+        );
       } else if (error.code === 'ENOSPC') {
-        console.error('   No space left on device. Free up disk space and try again.');
+        console.error(
+          '   No space left on device. Free up disk space and try again.'
+        );
       }
-      
+
       // Re-throw to prevent silent failures
       throw error;
     }
@@ -266,18 +299,18 @@ async function ensureResultsDir() {
 function calculatePercentile(arr, percentile) {
   if (arr.length === 0) return 0;
   const sorted = arr.slice().sort((a, b) => a - b);
-  
+
   // Calculate exact position using linear interpolation
   const pos = (percentile / 100) * (sorted.length - 1);
   const lower = Math.floor(pos);
   const upper = Math.ceil(pos);
   const weight = pos - lower;
-  
+
   // If position is exact, return that value
   if (lower === upper) {
     return sorted[lower];
   }
-  
+
   // Otherwise, interpolate between lower and upper values
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
@@ -285,8 +318,11 @@ function calculatePercentile(arr, percentile) {
 function calculateStats() {
   const duration = (metrics.endTime - metrics.startTime) / 1000;
   const throughput = duration > 0 ? metrics.totalRequests / duration : 0;
-  const errorRate = metrics.totalRequests > 0 ? metrics.failedRequests / metrics.totalRequests : 0;
-  
+  const errorRate =
+    metrics.totalRequests > 0
+      ? metrics.failedRequests / metrics.totalRequests
+      : 0;
+
   return {
     duration,
     totalRequests: metrics.totalRequests,
@@ -295,11 +331,21 @@ function calculateStats() {
     throughput: throughput.toFixed(2),
     errorRate: (errorRate * 100).toFixed(2),
     responseTimes: {
-      min: metrics.responseTimes.length > 0 ? Math.min(...metrics.responseTimes) : 0,
-      max: metrics.responseTimes.length > 0 ? Math.max(...metrics.responseTimes) : 0,
-      avg: metrics.responseTimes.length > 0 
-        ? (metrics.responseTimes.reduce((a, b) => a + b, 0) / metrics.responseTimes.length).toFixed(2)
-        : '0',
+      min:
+        metrics.responseTimes.length > 0
+          ? Math.min(...metrics.responseTimes)
+          : 0,
+      max:
+        metrics.responseTimes.length > 0
+          ? Math.max(...metrics.responseTimes)
+          : 0,
+      avg:
+        metrics.responseTimes.length > 0
+          ? (
+              metrics.responseTimes.reduce((a, b) => a + b, 0) /
+              metrics.responseTimes.length
+            ).toFixed(2)
+          : '0',
       p50: calculatePercentile(metrics.responseTimes, 50),
       p90: calculatePercentile(metrics.responseTimes, 90),
       p95: calculatePercentile(metrics.responseTimes, 95),
@@ -310,34 +356,47 @@ function calculateStats() {
 
 async function saveResults(stats) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const resultFile = path.join(RESULTS_DIR, `simple-load-test_${timestamp}.json`);
-  const summaryFile = path.join(RESULTS_DIR, `simple-load-test-summary_${timestamp}.md`);
-  
+  const resultFile = path.join(
+    RESULTS_DIR,
+    `simple-load-test_${timestamp}.json`
+  );
+  const summaryFile = path.join(
+    RESULTS_DIR,
+    `simple-load-test-summary_${timestamp}.md`
+  );
+
   // Save raw results
-  await fs.writeFile(resultFile, JSON.stringify({
-    config: {
-      baseUrl: BASE_URL,
-      concurrentUsers: CONCURRENT_USERS,
-      duration: TEST_DURATION,
-    },
-    stats,
-    errors: metrics.errors.slice(0, 100), // Limit error logs
-  }, null, 2));
-  
+  await fs.writeFile(
+    resultFile,
+    JSON.stringify(
+      {
+        config: {
+          baseUrl: BASE_URL,
+          concurrentUsers: CONCURRENT_USERS,
+          duration: TEST_DURATION,
+        },
+        stats,
+        errors: metrics.errors.slice(0, 100), // Limit error logs
+      },
+      null,
+      2
+    )
+  );
+
   // Generate summary report
   let report = `# Load Test Results\n\n`;
   report += `**Date:** ${new Date().toISOString()}\n`;
   report += `**Base URL:** ${BASE_URL}\n`;
   report += `**Concurrent Users:** ${CONCURRENT_USERS}\n`;
   report += `**Duration:** ${TEST_DURATION} seconds\n\n`;
-  
+
   report += `## Results Summary\n\n`;
   report += `- **Total Requests:** ${stats.totalRequests}\n`;
   report += `- **Successful:** ${stats.successfulRequests}\n`;
   report += `- **Failed:** ${stats.failedRequests}\n`;
   report += `- **Throughput:** ${stats.throughput} req/sec\n`;
   report += `- **Error Rate:** ${stats.errorRate}%\n\n`;
-  
+
   report += `## Response Times\n\n`;
   report += `- **Min:** ${stats.responseTimes.min}ms\n`;
   report += `- **Average:** ${stats.responseTimes.avg}ms\n`;
@@ -346,14 +405,14 @@ async function saveResults(stats) {
   report += `- **95th percentile:** ${stats.responseTimes.p95}ms\n`;
   report += `- **99th percentile:** ${stats.responseTimes.p99}ms\n`;
   report += `- **Max:** ${stats.responseTimes.max}ms\n\n`;
-  
+
   report += `## Performance Targets\n\n`;
   const p95Target = stats.responseTimes.p95 < 100;
   const errorTarget = parseFloat(stats.errorRate) < 1;
-  
+
   report += `- ${p95Target ? '✅' : '❌'} 95% of requests < 100ms (actual: ${stats.responseTimes.p95}ms)\n`;
   report += `- ${errorTarget ? '✅' : '❌'} Error rate < 1% (actual: ${stats.errorRate}%)\n\n`;
-  
+
   if (!p95Target || !errorTarget) {
     report += `## Recommendations\n\n`;
     if (!p95Target) {
@@ -370,9 +429,9 @@ async function saveResults(stats) {
       report += `  - Rate limiting issues\n`;
     }
   }
-  
+
   await fs.writeFile(summaryFile, report);
-  
+
   console.log(`\n📄 Results saved to:`);
   console.log(`   - JSON: ${resultFile}`);
   console.log(`   - Summary: ${summaryFile}`);
@@ -384,10 +443,10 @@ async function main() {
   console.log(`Concurrent Users: ${CONCURRENT_USERS}`);
   console.log(`Test Duration: ${TEST_DURATION} seconds`);
   console.log('');
-  
+
   // Ensure results directory exists
   await ensureResultsDir();
-  
+
   // Verify API is accessible
   console.log('🔍 Verifying API accessibility...');
   try {
@@ -397,41 +456,45 @@ async function main() {
     console.error('❌ Cannot access API:', error.message);
     process.exit(1);
   }
-  
+
   // Reset metrics
   metrics.totalRequests = 0;
   metrics.successfulRequests = 0;
   metrics.failedRequests = 0;
   metrics.responseTimes = [];
   metrics.errors = [];
-  
+
   // Start the test
-  console.log(`🚀 Starting load test with ${CONCURRENT_USERS} concurrent users...`);
+  console.log(
+    `🚀 Starting load test with ${CONCURRENT_USERS} concurrent users...`
+  );
   metrics.startTime = Date.now();
-  
+
   // Create concurrent users
   const users = [];
   for (let i = 0; i < CONCURRENT_USERS; i++) {
     users.push(runUser());
   }
-  
+
   // Show progress
   const progressInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - metrics.startTime) / 1000);
-    const progress = (elapsed / TEST_DURATION * 100).toFixed(0);
-    process.stdout.write(`\r⏱️  Progress: ${progress}% (${elapsed}/${TEST_DURATION}s) - Requests: ${metrics.totalRequests}`);
+    const progress = ((elapsed / TEST_DURATION) * 100).toFixed(0);
+    process.stdout.write(
+      `\r⏱️  Progress: ${progress}% (${elapsed}/${TEST_DURATION}s) - Requests: ${metrics.totalRequests}`
+    );
   }, 1000);
-  
+
   // Wait for all users to complete
   await Promise.all(users);
   clearInterval(progressInterval);
-  
+
   metrics.endTime = Date.now();
   console.log('\n\n✅ Load test completed!\n');
-  
+
   // Calculate and display results
   const stats = calculateStats();
-  
+
   console.log('📊 Results Summary:');
   console.log(`- Total Requests: ${stats.totalRequests}`);
   console.log(`- Successful: ${stats.successfulRequests}`);
@@ -440,11 +503,13 @@ async function main() {
   console.log(`- Avg Response Time: ${stats.responseTimes.avg}ms`);
   console.log(`- 95th Percentile: ${stats.responseTimes.p95}ms`);
   console.log(`- 99th Percentile: ${stats.responseTimes.p99}ms`);
-  
+
   // Check targets
   const p95Target = stats.responseTimes.p95 < 100;
-  console.log(`\n${p95Target ? '✅' : '❌'} Performance Target Met: 95% < 100ms`);
-  
+  console.log(
+    `\n${p95Target ? '✅' : '❌'} Performance Target Met: 95% < 100ms`
+  );
+
   // Save results
   await saveResults(stats);
 }
@@ -461,7 +526,7 @@ process.on('SIGINT', () => {
 
 // Run the test
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('❌ Test failed:', error);
     process.exit(1);
   });

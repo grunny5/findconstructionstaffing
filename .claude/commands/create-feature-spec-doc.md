@@ -20,77 +20,93 @@ Act as a diligent and detail-oriented Product Manager. Your role is to ensure th
 ## Guided Discovery Questions (For the AI to Ask)
 
 ### 0. Identification & Association
-* "To get started, what is the sequential number for this new feature specification? (e.g., 1, 2, 15)."
-* "Looking at the `PROJECT-PKD.md`, which **Core Epic** does this new feature belong to? If it doesn't fit an existing one, should we define a new Epic?"
+
+- "To get started, what is the sequential number for this new feature specification? (e.g., 1, 2, 15)."
+- "Looking at the `PROJECT-PKD.md`, which **Core Epic** does this new feature belong to? If it doesn't fit an existing one, should we define a new Epic?"
 
 ### 1. The "Why"
-* "How does this feature contribute to the 'Project Overview & Vision' described in the PKD? What specific 'North Star' metric will it influence?"
-* "Which of the **User Personas** defined in the PKD is the primary beneficiary of this feature?"
-* "How will we measure the success of this feature specifically?"
+
+- "How does this feature contribute to the 'Project Overview & Vision' described in the PKD? What specific 'North Star' metric will it influence?"
+- "Which of the **User Personas** defined in the PKD is the primary beneficiary of this feature?"
+- "How will we measure the success of this feature specifically?"
 
 ### 2. The "What" (User Stories)
-* "Great. Now, let's write the User Stories for the `[Identified Persona]`. We'll use the format: 'As a `[Persona from PKD]`, I want `[to do something]`, so that `[I get some value]`.'"
-* (For each story) "Excellent. Now let's write the testable Acceptance Criteria for that story using the 'Given, When, Then' format."
+
+- "Great. Now, let's write the User Stories for the `[Identified Persona]`. We'll use the format: 'As a `[Persona from PKD]`, I want `[to do something]`, so that `[I get some value]`.'"
+- (For each story) "Excellent. Now let's write the testable Acceptance Criteria for that story using the 'Given, When, Then' format."
 
 ### 3. The "How" (Technical & Design)
-* "Referring to the 'Non-Functional Requirements' in the PKD, are there any that are especially critical for this feature (e.g., data must load in under 500ms, this page must be WCAG 2.2 AA compliant)?"
-* "How might this feature impact the 'Technical Architecture' or 'Data Model' defined in the PKD? Will it require new services, database tables, or API endpoints?"
-* "Do you have any wireframes or design mockups ready? If so, please provide a link (e.g., to Figma)."
+
+- "Referring to the 'Non-Functional Requirements' in the PKD, are there any that are especially critical for this feature (e.g., data must load in under 500ms, this page must be WCAG 2.2 AA compliant)?"
+- "How might this feature impact the 'Technical Architecture' or 'Data Model' defined in the PKD? Will it require new services, database tables, or API endpoints?"
+- "Do you have any wireframes or design mockups ready? If so, please provide a link (e.g., to Figma)."
 
 ### 4. The Boundaries
-* "To ensure we stay aligned with the PKD's MVP scope, what is explicitly **out of scope** for this first version of the feature?"
-* "Are there any open questions or dependencies on other teams or services we need to resolve?"
+
+- "To ensure we stay aligned with the PKD's MVP scope, what is explicitly **out of scope** for this first version of the feature?"
+- "Are there any open questions or dependencies on other teams or services we need to resolve?"
 
 ## Feature Specification Document (FSD) Template (The Output)
 
 # FSD: \[Feature Name]
 
-* **ID:** \[FEATURE_NUMBER]
-* **Status:** Draft
-* **Related Epic (from PKD):** \[Link to the parent Epic, e.g., 'User Profile Management']
-* **Author:** \[User's Name]
-* **Last Updated:** \[Date]
-* **Designs:** \[Link to Figma, Sketch, or 'TBD']
+- **ID:** \[FEATURE_NUMBER]
+- **Status:** Draft
+- **Related Epic (from PKD):** \[Link to the parent Epic, e.g., 'User Profile Management']
+- **Author:** \[User's Name]
+- **Last Updated:** \[Date]
+- **Designs:** \[Link to Figma, Sketch, or 'TBD']
 
 ## 1. Problem & Goal
 
 ### Problem Statement
-*A brief, user-centric description of the problem this feature solves, referencing a specific persona from the PKD.*
+
+_A brief, user-centric description of the problem this feature solves, referencing a specific persona from the PKD._
 
 ### Goal & Hypothesis
-*We believe that by building \[this feature] for the **[Persona from PKD]**, we will achieve \[a specific outcome]. We will know this is true when we see \[a specific metric from the PKD change].*
+
+_We believe that by building \[this feature] for the **[Persona from PKD]**, we will achieve \[a specific outcome]. We will know this is true when we see \[a specific metric from the PKD change]._
 
 ## 2. User Stories & Acceptance Criteria
 
 ### Story 1: \[Short Title of Story]
+
 > As a **\[Persona from PKD]**, I want **\[to perform an action]**, so that **\[I can achieve a benefit]**.
 
 **Acceptance Criteria:**
-* \[ ] **Given** \[a precondition], **When** \[I perform an action], **Then** \[an expected outcome occurs].
-* \[ ] **Given** \[another precondition], **When** \[I do something else], **Then** \[another outcome occurs].
 
-*(Add more stories as needed)*
+- \[ ] **Given** \[a precondition], **When** \[I perform an action], **Then** \[an expected outcome occurs].
+- \[ ] **Given** \[another precondition], **When** \[I do something else], **Then** \[another outcome occurs].
+
+_(Add more stories as needed)_
 
 ## 3. Technical & Design Requirements
 
 ### UX/UI Requirements
-* \[Link to specific Figma frames or screen mockups]
-* \[List key UI components required]
+
+- \[Link to specific Figma frames or screen mockups]
+- \[List key UI components required]
 
 ### Technical Impact Analysis
-*This section describes how this feature aligns with or extends the architecture defined in the PKD.*
-* **Data Model:** \[Describes changes to the database schema, e.g., "Add `avatar_url` to the `Users` table as per PKD data standards."]
-* **API Endpoints:** \[Lists new or modified API endpoints, noting adherence to the project's API style guide.]
-* **Non-Functional Requirements:** \[Highlights specific NFRs from the PKD that apply here, e.g., "All PII must be encrypted at rest."]
+
+_This section describes how this feature aligns with or extends the architecture defined in the PKD._
+
+- **Data Model:** \[Describes changes to the database schema, e.g., "Add `avatar_url` to the `Users` table as per PKD data standards."]
+- **API Endpoints:** \[Lists new or modified API endpoints, noting adherence to the project's API style guide.]
+- **Non-Functional Requirements:** \[Highlights specific NFRs from the PKD that apply here, e.g., "All PII must be encrypted at rest."]
 
 ## 4. Scope
 
 ### Out of Scope
-*What this feature will NOT do in its first iteration.*
-* \[e.g., Users cannot edit their email address directly.]
-* \[e.g., Does not include an admin-level view.]
+
+_What this feature will NOT do in its first iteration._
+
+- \[e.g., Users cannot edit their email address directly.]
+- \[e.g., Does not include an admin-level view.]
 
 ### Open Questions
-*A list of questions that need answers before or during development.*
-* \[ ] What is the final copy for the confirmation email?
-* \[ ] Does this require a new entry in the Ops Runbook defined in the PKD?
+
+_A list of questions that need answers before or during development._
+
+- \[ ] What is the final copy for the confirmation email?
+- \[ ] Does this require a new entry in the Ops Runbook defined in the PKD?

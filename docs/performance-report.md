@@ -13,6 +13,7 @@ This report documents the performance characteristics of the `/api/agencies` end
 ## Test Methodology
 
 ### Test Environment
+
 - **Server**: Next.js 13 with App Router
 - **Database**: Supabase (PostgreSQL)
 - **Test Tool**: Custom performance testing script
@@ -40,7 +41,7 @@ Existing indexes that optimize query performance:
 CREATE INDEX idx_agencies_name_lower ON agencies(LOWER(name));
 
 -- Filter optimization
-CREATE INDEX idx_agencies_active_featured ON agencies(is_active, featured) 
+CREATE INDEX idx_agencies_active_featured ON agencies(is_active, featured)
 WHERE is_active = true;
 
 -- Junction table indexes
@@ -58,6 +59,7 @@ CREATE INDEX idx_regions_state_name ON regions(state_code, name);
 ### 2. Query Optimization
 
 #### Efficient Joins
+
 ```typescript
 // Single query with all relations
 .select(`
@@ -72,11 +74,13 @@ CREATE INDEX idx_regions_state_name ON regions(state_code, name);
 ```
 
 #### Selective Field Loading
+
 - Only load necessary fields
-- Avoid SELECT * where possible
+- Avoid SELECT \* where possible
 - Use Supabase's nested select syntax
 
 #### Filter Application Order
+
 1. Active filter first (most selective)
 2. Search/text filters
 3. Trade/state filters
@@ -85,6 +89,7 @@ CREATE INDEX idx_regions_state_name ON regions(state_code, name);
 ### 3. HTTP Caching
 
 #### Response Headers
+
 ```typescript
 // Successful responses cached for 5 minutes
 'Cache-Control': 'public, max-age=300, must-revalidate'
@@ -97,6 +102,7 @@ CREATE INDEX idx_regions_state_name ON regions(state_code, name);
 ```
 
 #### Conditional Requests
+
 - Support `If-None-Match` header
 - Return 304 Not Modified when content unchanged
 - Reduces bandwidth and processing
@@ -104,20 +110,23 @@ CREATE INDEX idx_regions_state_name ON regions(state_code, name);
 ### 4. Application-Level Optimizations
 
 #### Connection Pooling
+
 Supabase client uses connection pooling by default:
+
 ```typescript
 // lib/supabase.ts
 export const supabase = createClient(url, key, {
   db: {
-    schema: 'public'
+    schema: 'public',
   },
   auth: {
-    persistSession: false
-  }
+    persistSession: false,
+  },
 });
 ```
 
 #### Response Size Optimization
+
 - Pagination limits (max 100 per request)
 - Efficient JSON structure
 - No unnecessary nested data
@@ -126,22 +135,22 @@ export const supabase = createClient(url, key, {
 
 ### Expected Response Times
 
-| Scenario | Target | Expected | Notes |
-|----------|--------|----------|-------|
-| Basic request | <100ms | 40-60ms | Cached active agencies query |
-| Search (simple) | <100ms | 50-80ms | Text search with indexes |
-| Single filter | <100ms | 45-70ms | Indexed lookups |
-| Multiple filters | <100ms | 60-90ms | Combined indexes |
-| Complex query | <100ms | 70-100ms | May approach limit |
-| Large pagination | <100ms | 50-80ms | Offset performance |
+| Scenario         | Target | Expected | Notes                        |
+| ---------------- | ------ | -------- | ---------------------------- |
+| Basic request    | <100ms | 40-60ms  | Cached active agencies query |
+| Search (simple)  | <100ms | 50-80ms  | Text search with indexes     |
+| Single filter    | <100ms | 45-70ms  | Indexed lookups              |
+| Multiple filters | <100ms | 60-90ms  | Combined indexes             |
+| Complex query    | <100ms | 70-100ms | May approach limit           |
+| Large pagination | <100ms | 50-80ms  | Offset performance           |
 
 ### Response Size Estimates
 
-| Limit | Avg Size | Compressed | Notes |
-|-------|----------|------------|-------|
-| 20 (default) | ~15KB | ~3KB | Typical response |
-| 50 | ~40KB | ~8KB | Medium response |
-| 100 (max) | ~80KB | ~15KB | Maximum response |
+| Limit        | Avg Size | Compressed | Notes            |
+| ------------ | -------- | ---------- | ---------------- |
+| 20 (default) | ~15KB    | ~3KB       | Typical response |
+| 50           | ~40KB    | ~8KB       | Medium response  |
+| 100 (max)    | ~80KB    | ~15KB      | Maximum response |
 
 ## Monitoring and Alerts
 
@@ -172,18 +181,21 @@ export const supabase = createClient(url, key, {
 ## Optimization Recommendations
 
 ### Short Term (Implemented)
+
 - ✅ Database indexes on all filter fields
 - ✅ HTTP caching with ETags
 - ✅ Efficient query structure
 - ✅ Pagination limits
 
 ### Medium Term (Planned)
+
 - [ ] Redis caching layer for common queries
 - [ ] Query result caching (5-minute TTL)
 - [ ] Database read replicas for scaling
 - [ ] CDN integration for API responses
 
 ### Long Term (Future)
+
 - [ ] Elasticsearch for advanced search
 - [ ] GraphQL with DataLoader for optimal queries
 - [ ] Cursor-based pagination for large datasets

@@ -9,6 +9,7 @@ This document describes how FindConstructionStaffing protects user privacy by se
 ### Hashing Algorithm
 
 We use SHA-256 cryptographic hashing with salt to ensure:
+
 - **One-way transformation**: IP addresses cannot be reverse-engineered from the hash
 - **Consistency**: The same IP always produces the same hash (necessary for rate limiting)
 - **Security**: Different salts produce different hashes
@@ -26,11 +27,13 @@ const hash = createHash('sha256')
 ### Salt Configuration
 
 The salt is configured via environment variable:
+
 ```bash
 IP_HASH_SALT=your-random-salt-here
 ```
 
-**Important**: 
+**Important**:
+
 - Generate a unique, random salt for each environment
 - Never use the default salt in production
 - Keep the salt secret - it should be treated like a password
@@ -51,6 +54,7 @@ IP_HASH_SALT=your-random-salt-here
 ## Unknown IPs
 
 For requests where the IP cannot be determined:
+
 - A time-based component is added (5-minute windows)
 - This prevents all unknown IPs from being treated as one user
 - Format: Hash of `unknown-{timeSlot}` + salt
@@ -79,7 +83,7 @@ import { hashIpForRateLimiting, getClientIp } from '@/lib/utils/ip-extraction';
 export async function GET(request: NextRequest) {
   const clientIp = getClientIp(request);
   const hashedIp = hashIpForRateLimiting(clientIp);
-  
+
   // Use hashedIp for rate limiting, logging, etc.
   await rateLimiter.check(hashedIp);
 }

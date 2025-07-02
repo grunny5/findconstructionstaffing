@@ -20,6 +20,7 @@ The `vercel.json` file restricts deployment to the `iad1` region (US East - Wash
 ### Future Considerations
 
 If global distribution is needed:
+
 1. Consider using Vercel Edge Functions for static content
 2. Implement database read replicas in other regions
 3. Use caching strategies to reduce database load

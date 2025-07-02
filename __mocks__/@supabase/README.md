@@ -5,11 +5,13 @@ This directory contains an enhanced mock for `@supabase/supabase-js` that provid
 ## Features
 
 ### 1. **Full TypeScript Support**
+
 - Comprehensive interfaces matching the actual Supabase client
 - Type-safe query builder with proper return types
 - Exported types for use in your tests
 
 ### 2. **Promise-Like Behavior**
+
 The mock supports both promise patterns:
 
 ```typescript
@@ -17,16 +19,15 @@ The mock supports both promise patterns:
 const result = await supabase
   .from('agencies')
   .select('*')
-  .then(res => res.data)
-  .catch(err => console.error(err));
+  .then((res) => res.data)
+  .catch((err) => console.error(err));
 
 // Using async/await
-const response = await supabase
-  .from('agencies')
-  .select('*');
+const response = await supabase.from('agencies').select('*');
 ```
 
 ### 3. **Method Chaining**
+
 All query builder methods support chaining:
 
 ```typescript
@@ -39,6 +40,7 @@ const query = supabase
 ```
 
 ### 4. **Execution Methods**
+
 - `single()` - Returns a single record
 - `maybeSingle()` - Returns a single record or null
 - `csv()` - Returns data in CSV format
@@ -54,20 +56,19 @@ const response = await supabase.from('agencies').select('*');
 // Returns 2 mock agencies
 
 // Set custom data
-supabase._setMockData([
-  { id: '1', name: 'Custom Agency' }
-]);
+supabase._setMockData([{ id: '1', name: 'Custom Agency' }]);
 
 // Simulate errors
 supabase._setMockError({
   message: 'Database error',
-  code: 'DB_ERROR'
+  code: 'DB_ERROR',
 });
 ```
 
 ## Available Methods
 
 ### Query Building
+
 - `from(table)` - Start a query
 - `select(columns)` - Select columns
 - `insert(data)` - Insert records
@@ -76,6 +77,7 @@ supabase._setMockError({
 - `delete()` - Delete records
 
 ### Filters
+
 - `eq(column, value)` - Equal
 - `neq(column, value)` - Not equal
 - `gt(column, value)` - Greater than
@@ -94,11 +96,13 @@ supabase._setMockError({
 - `filter(column, operator, value)` - Custom filter
 
 ### Modifiers
+
 - `order(column, options)` - Order results
 - `limit(count)` - Limit results
 - `range(from, to)` - Select range
 
 ### Auth Methods
+
 - `auth.signUp()` - Mock user registration
 - `auth.signIn()` - Mock user login
 - `auth.signOut()` - Mock user logout
@@ -106,12 +110,14 @@ supabase._setMockError({
 - `auth.getSession()` - Get current session
 
 ### Storage Methods
+
 - `storage.from(bucket)` - Access storage bucket
 - `upload()` - Mock file upload
 - `download()` - Mock file download
 - `remove()` - Mock file deletion
 
 ### Functions
+
 - `functions.invoke(name, options)` - Mock edge function calls
 
 ## Response Format
@@ -141,9 +147,7 @@ describe('My Test', () => {
   });
 
   it('should fetch data', async () => {
-    const { data, error } = await supabase
-      .from('agencies')
-      .select('*');
+    const { data, error } = await supabase.from('agencies').select('*');
 
     expect(error).toBeNull();
     expect(data).toHaveLength(2);
@@ -154,6 +158,7 @@ describe('My Test', () => {
 ## Limitations
 
 While comprehensive, this mock has some limitations:
+
 - Filter methods don't actually filter the returned data
 - Transactions are not supported
 - Real-time subscriptions are not implemented

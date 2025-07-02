@@ -2,23 +2,22 @@
  * @jest-environment node
  */
 // Import centralized mock first
-import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import {
+  configureSupabaseMock,
+  supabaseMockHelpers,
+  resetSupabaseMock,
+} from '@/__tests__/utils/supabase-mock';
 import { supabase } from '@/lib/supabase';
-import { 
-  API_CONSTANTS,
-  HTTP_STATUS 
-} from '@/types/api';
-import { 
-  createMockNextRequest 
-} from '@/__tests__/utils/api-mocks';
+import { API_CONSTANTS, HTTP_STATUS } from '@/types/api';
+import { createMockNextRequest } from '@/__tests__/utils/api-mocks';
 
 // Mock the crypto module to generate consistent ETags for testing
 const mockDigest = jest.fn();
 jest.mock('crypto', () => ({
   createHash: jest.fn(() => ({
     update: jest.fn().mockReturnThis(),
-    digest: mockDigest
-  }))
+    digest: mockDigest,
+  })),
 }));
 
 // Mock NextResponse
@@ -27,23 +26,23 @@ jest.mock('next/server', () => ({
     status: number;
     headers: Headers;
     body: any;
-    
+
     constructor(body: any, init?: ResponseInit) {
       this.body = body;
       this.status = init?.status || 200;
       this.headers = new Headers(init?.headers);
     }
-    
+
     static json(data: any, init?: ResponseInit) {
       const response = new MockNextResponse(data, init);
       response.json = async () => data;
       return response;
     }
-    
+
     json() {
       return Promise.resolve(this.body);
     }
-  }
+  },
 }));
 
 // Mock performance monitoring to avoid console logs in tests
@@ -53,14 +52,14 @@ jest.mock('@/lib/monitoring/performance', () => ({
     endQuery: jest.fn(),
     complete: jest.fn().mockReturnValue({
       responseTime: 0,
-      queryTime: undefined
-    })
+      queryTime: undefined,
+    }),
   })),
   ErrorRateTracker: {
     getInstance: jest.fn().mockReturnValue({
-      recordRequest: jest.fn()
-    })
-  }
+      recordRequest: jest.fn(),
+    }),
+  },
 }));
 
 // Import the route AFTER mocks are set up
@@ -70,10 +69,10 @@ describe('GET /api/agencies - Caching', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetSupabaseMock(supabase);
-    
+
     // Reset crypto mock to return consistent ETags by default
     mockDigest.mockReturnValue('consistent-etag-for-testing');
-    
+
     // Setup default successful response
     configureSupabaseMock(supabase, {
       defaultData: [
@@ -81,26 +80,28 @@ describe('GET /api/agencies - Caching', () => {
           id: '1',
           name: 'Test Agency',
           trades: [],
-          regions: []
-        }
+          regions: [],
+        },
       ],
-      defaultCount: 1
+      defaultCount: 1,
     });
   });
 
   describe('Cache Headers', () => {
     it('should include proper cache headers in successful response', async () => {
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      
+
       const headers = response.headers;
       expect(headers.get('Cache-Control')).toContain('public');
-      expect(headers.get('Cache-Control')).toContain(`max-age=${API_CONSTANTS.CACHE_MAX_AGE}`);
+      expect(headers.get('Cache-Control')).toContain(
+        `max-age=${API_CONSTANTS.CACHE_MAX_AGE}`
+      );
       expect(headers.get('Cache-Control')).toContain('must-revalidate');
       expect(headers.get('ETag')).toBeDefined();
       expect(headers.get('Vary')).toBe('Accept-Encoding');
@@ -109,26 +110,28 @@ describe('GET /api/agencies - Caching', () => {
     it('should include no-cache headers in error responses', async () => {
       // Configure mock to return an error
       configureSupabaseMock(supabase, {
-        error: { message: 'Database error', code: 'PGRST001' }
+        error: { message: 'Database error', code: 'PGRST001' },
       });
 
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      
+
       const headers = response.headers;
-      expect(headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate');
+      expect(headers.get('Cache-Control')).toBe(
+        'no-cache, no-store, must-revalidate'
+      );
       expect(headers.get('Pragma')).toBe('no-cache');
       expect(headers.get('Expires')).toBe('0');
     });
 
     it('should generate consistent ETags for identical responses', async () => {
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response1 = await GET(mockRequest);
@@ -136,7 +139,7 @@ describe('GET /api/agencies - Caching', () => {
 
       const etag1 = response1.headers.get('ETag');
       const etag2 = response2.headers.get('ETag');
-      
+
       expect(etag1).toBeDefined();
       expect(etag2).toBeDefined();
       expect(etag1).toBe(etag2);
@@ -147,15 +150,15 @@ describe('GET /api/agencies - Caching', () => {
       mockDigest
         .mockReturnValueOnce('etag-for-agency-1')
         .mockReturnValueOnce('etag-for-agency-2');
-      
+
       // First request
       configureSupabaseMock(supabase, {
         defaultData: [{ id: '1', name: 'Agency 1', trades: [], regions: [] }],
-        defaultCount: 1
+        defaultCount: 1,
       });
 
       const mockRequest1 = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response1 = await GET(mockRequest1);
@@ -163,18 +166,18 @@ describe('GET /api/agencies - Caching', () => {
       // Second request with different data
       configureSupabaseMock(supabase, {
         defaultData: [{ id: '2', name: 'Agency 2', trades: [], regions: [] }],
-        defaultCount: 1
+        defaultCount: 1,
       });
 
       const mockRequest2 = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response2 = await GET(mockRequest2);
 
       const etag1 = response1.headers.get('ETag');
       const etag2 = response2.headers.get('ETag');
-      
+
       expect(etag1).not.toBe(etag2);
     });
   });
@@ -183,7 +186,7 @@ describe('GET /api/agencies - Caching', () => {
     it('should return 304 when ETag matches', async () => {
       // First request to get ETag
       const mockRequest1 = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response1 = await GET(mockRequest1);
@@ -193,8 +196,8 @@ describe('GET /api/agencies - Caching', () => {
       const mockRequest2 = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         headers: {
-          'if-none-match': etag!
-        }
+          'if-none-match': etag!,
+        },
       });
 
       const response2 = await GET(mockRequest2);
@@ -208,14 +211,14 @@ describe('GET /api/agencies - Caching', () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         headers: {
-          'if-none-match': 'different-etag'
-        }
+          'if-none-match': 'different-etag',
+        },
       });
 
       const response = await GET(mockRequest);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      
+
       const data = await response.json();
       expect(data.data).toBeDefined();
       expect(data.pagination).toBeDefined();
@@ -229,7 +232,7 @@ describe('GET /api/agencies - Caching', () => {
 
     it('should set appropriate cache directives', async () => {
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);

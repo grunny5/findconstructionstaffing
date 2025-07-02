@@ -19,7 +19,10 @@ describe('Enhanced Supabase Mock', () => {
     });
 
     it('should track createClient calls', () => {
-      expect(createClient).toHaveBeenCalledWith('https://test.supabase.co', 'test-key');
+      expect(createClient).toHaveBeenCalledWith(
+        'https://test.supabase.co',
+        'test-key'
+      );
       expect(createClient).toHaveBeenCalledTimes(1);
     });
   });
@@ -41,7 +44,7 @@ describe('Enhanced Supabase Mock', () => {
       const result = await supabase
         .from('agencies')
         .select('*')
-        .then(res => res);
+        .then((res) => res);
 
       expect(result.data).toBeDefined();
       expect(result.error).toBeNull();
@@ -53,9 +56,9 @@ describe('Enhanced Supabase Mock', () => {
       // Set up an error scenario
       const mockError: PostgrestError = {
         message: 'Test error',
-        code: 'TEST_ERROR'
+        code: 'TEST_ERROR',
       };
-      
+
       if (supabase._setMockError) {
         supabase._setMockError(mockError);
       }
@@ -63,7 +66,7 @@ describe('Enhanced Supabase Mock', () => {
       const result = await supabase
         .from('agencies')
         .select('*')
-        .catch(err => ({ caught: true, error: err }));
+        .catch((err) => ({ caught: true, error: err }));
 
       expect(result).toBeDefined();
     });
@@ -107,10 +110,7 @@ describe('Enhanced Supabase Mock', () => {
     });
 
     it('should support csv() method', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('id,name')
-        .csv();
+      const result = await supabase.from('agencies').select('id,name').csv();
 
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe('string');
@@ -118,10 +118,7 @@ describe('Enhanced Supabase Mock', () => {
     });
 
     it('should support execute() method', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('*')
-        .execute();
+      const result = await supabase.from('agencies').select('*').execute();
 
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data)).toBe(true);
@@ -131,20 +128,19 @@ describe('Enhanced Supabase Mock', () => {
 
   describe('Mock Data', () => {
     it('should return sample test data by default', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.data).toBeDefined();
       expect(result.data.length).toBe(2);
-      expect(result.data[0]).toHaveProperty('name', 'Mock Construction Staffing');
+      expect(result.data[0]).toHaveProperty(
+        'name',
+        'Mock Construction Staffing'
+      );
       expect(result.data[1]).toHaveProperty('name', 'Test Builders Inc');
     });
 
     it('should include count in response', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.count).toBe(2);
     });
@@ -153,16 +149,14 @@ describe('Enhanced Supabase Mock', () => {
       const customData = [
         { id: 'custom-1', name: 'Custom Agency 1' },
         { id: 'custom-2', name: 'Custom Agency 2' },
-        { id: 'custom-3', name: 'Custom Agency 3' }
+        { id: 'custom-3', name: 'Custom Agency 3' },
       ];
 
       if (supabase._setMockData) {
         supabase._setMockData(customData);
       }
 
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.data).toHaveLength(3);
       expect(result.data[0]).toHaveProperty('name', 'Custom Agency 1');
@@ -173,16 +167,14 @@ describe('Enhanced Supabase Mock', () => {
         message: 'Database connection failed',
         code: 'CONNECTION_ERROR',
         details: 'Connection refused',
-        hint: 'Check your database configuration'
+        hint: 'Check your database configuration',
       };
 
       if (supabase._setMockError) {
         supabase._setMockError(mockError);
       }
 
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.data).toBeNull();
       expect(result.error).toEqual(mockError);
@@ -194,7 +186,7 @@ describe('Enhanced Supabase Mock', () => {
     it('should mock signUp', async () => {
       const result = await supabase.auth.signUp({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
       });
 
       expect(result.data.user).toBeDefined();
@@ -205,7 +197,7 @@ describe('Enhanced Supabase Mock', () => {
     it('should mock signIn', async () => {
       const result = await supabase.auth.signIn({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
       });
 
       expect(result.data.session).toBeDefined();
@@ -235,7 +227,7 @@ describe('Enhanced Supabase Mock', () => {
   describe('Functions Methods', () => {
     it('should mock function invocation', async () => {
       const result = await supabase.functions.invoke('my-function', {
-        body: { input: 'test' }
+        body: { input: 'test' },
       });
 
       expect(result.data).toBeDefined();
@@ -250,12 +242,25 @@ describe('Enhanced Supabase Mock', () => {
 
       // Test that all filter methods exist and return the query builder
       const filters = [
-        'eq', 'neq', 'gt', 'gte', 'lt', 'lte',
-        'like', 'ilike', 'is', 'in', 'contains',
-        'containedBy', 'or', 'not', 'match', 'filter'
+        'eq',
+        'neq',
+        'gt',
+        'gte',
+        'lt',
+        'lte',
+        'like',
+        'ilike',
+        'is',
+        'in',
+        'contains',
+        'containedBy',
+        'or',
+        'not',
+        'match',
+        'filter',
       ];
 
-      filters.forEach(filter => {
+      filters.forEach((filter) => {
         expect(query[filter]).toBeDefined();
         expect(typeof query[filter]).toBe('function');
         expect(query[filter]('test', 'value')).toBe(query);

@@ -36,6 +36,7 @@
 ## Troubleshooting
 
 If you're getting a 401 error, check:
+
 - ✅ You're copying the "anon public" key, not "service_role"
 - ✅ You're copying the ENTIRE key (check for truncation)
 - ✅ Your project is active (not paused)

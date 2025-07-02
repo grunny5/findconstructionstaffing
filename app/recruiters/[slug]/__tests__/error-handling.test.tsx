@@ -11,7 +11,7 @@ const originalEnv = process.env.NODE_ENV;
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn()
+  useRouter: jest.fn(),
 }));
 
 // Mock console.error to prevent test output noise
@@ -37,7 +37,11 @@ describe('Profile Page Error Handling', () => {
       render(<ProfileError error={mockError} reset={mockReset} />);
 
       expect(screen.getByText('Something went wrong!')).toBeInTheDocument();
-      expect(screen.getByText(/We encountered an error while loading this agency profile/)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /We encountered an error while loading this agency profile/
+        )
+      ).toBeInTheDocument();
     });
 
     it('should show Try Again button that calls reset', () => {
@@ -60,7 +64,10 @@ describe('Profile Page Error Handling', () => {
     it('should log error to console', () => {
       render(<ProfileError error={mockError} reset={mockReset} />);
 
-      expect(console.error).toHaveBeenCalledWith('Profile page error:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Profile page error:',
+        mockError
+      );
     });
 
     it('should show error details in development mode', () => {
@@ -68,7 +75,7 @@ describe('Profile Page Error Handling', () => {
       // However, Jest runs in test environment, so we'll check the component structure
       const errorWithDigest = {
         ...mockError,
-        digest: 'error-123'
+        digest: 'error-123',
       };
 
       render(<ProfileError error={errorWithDigest} reset={mockReset} />);
@@ -76,30 +83,39 @@ describe('Profile Page Error Handling', () => {
       // In test environment, the development code path may not execute
       // So we'll just verify the basic error UI components are present
       expect(screen.getByText('Something went wrong!')).toBeInTheDocument();
-      expect(screen.getByText(/We encountered an error while loading this agency profile/)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /We encountered an error while loading this agency profile/
+        )
+      ).toBeInTheDocument();
       expect(screen.getByText('Try Again')).toBeInTheDocument();
       expect(screen.getByText('Back to Directory')).toBeInTheDocument();
-      
+
       // Verify the error is logged to console
-      expect(console.error).toHaveBeenCalledWith('Profile page error:', errorWithDigest);
+      expect(console.error).toHaveBeenCalledWith(
+        'Profile page error:',
+        errorWithDigest
+      );
     });
 
     it('should not show error details in production mode', () => {
-      Object.defineProperty(process.env, 'NODE_ENV', { 
-        value: 'production', 
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
         configurable: true,
-        writable: true 
+        writable: true,
       });
 
       render(<ProfileError error={mockError} reset={mockReset} />);
 
-      expect(screen.queryByText(`Error: ${mockError.message}`)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(`Error: ${mockError.message}`)
+      ).not.toBeInTheDocument();
 
       // Restore original environment
-      Object.defineProperty(process.env, 'NODE_ENV', { 
-        value: originalEnv, 
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalEnv,
         configurable: true,
-        writable: true 
+        writable: true,
       });
     });
   });
@@ -110,7 +126,7 @@ describe('Profile Page Error Handling', () => {
       // Mock window.history.back
       Object.defineProperty(window, 'history', {
         configurable: true,
-        value: { back: jest.fn() }
+        value: { back: jest.fn() },
       });
     });
 
@@ -118,7 +134,9 @@ describe('Profile Page Error Handling', () => {
       render(<AgencyNotFound />);
 
       expect(screen.getByText('Agency Not Found')).toBeInTheDocument();
-      expect(screen.getByText(/We couldn't find the staffing agency/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/We couldn't find the staffing agency/)
+      ).toBeInTheDocument();
     });
 
     it('should show Browse All Agencies link', () => {
@@ -141,7 +159,9 @@ describe('Profile Page Error Handling', () => {
     it('should show helpful tip', () => {
       render(<AgencyNotFound />);
 
-      expect(screen.getByText(/Try searching for the agency by name/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Try searching for the agency by name/)
+      ).toBeInTheDocument();
     });
   });
 
@@ -152,7 +172,9 @@ describe('Profile Page Error Handling', () => {
 
       expect(screen.getByText('404')).toBeInTheDocument();
       expect(screen.getByText('Page Not Found')).toBeInTheDocument();
-      expect(screen.getByText(/The page you're looking for doesn't exist/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/The page you're looking for doesn't exist/)
+      ).toBeInTheDocument();
     });
 
     it('should show navigation options', () => {

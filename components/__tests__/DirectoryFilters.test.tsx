@@ -57,7 +57,7 @@ describe('DirectoryFilters', () => {
       () => {
         expect(mockPush).toHaveBeenCalledWith('/?search=test+agency');
       },
-      { timeout: 600 }
+      { timeout: 350 }
     );
   });
 
@@ -146,7 +146,7 @@ describe('DirectoryFilters', () => {
       () => {
         expect(mockPush).toHaveBeenCalledWith('/?');
       },
-      { timeout: 600 }
+      { timeout: 350 }
     );
   });
 
@@ -184,7 +184,7 @@ describe('DirectoryFilters', () => {
       () => {
         expect(mockPush).toHaveBeenCalledWith('/?search=new+search');
       },
-      { timeout: 600 }
+      { timeout: 350 }
     );
   });
 

@@ -11,6 +11,7 @@ This guide helps resolve common issues with the GitHub Actions CI/CD pipeline.
 **Common Causes & Solutions**:
 
 #### Missing Type Definitions
+
 ```bash
 # Error: Cannot find type definition file for 'jest'
 npm install --save-dev @types/jest
@@ -20,6 +21,7 @@ npm install --save-dev @types/jest
 ```
 
 #### Strict Mode Violations
+
 ```typescript
 // Error: Object is possibly 'null'
 // Add null checks:
@@ -28,10 +30,11 @@ if (data) {
 }
 
 // Or use non-null assertion (use carefully):
-data!.property
+data!.property;
 ```
 
 #### Environment Type Issues
+
 ```typescript
 // Error: Cannot assign to 'NODE_ENV' because it is a read-only property
 // Use type assertion in tests:
@@ -45,6 +48,7 @@ data!.property
 **Common Issues**:
 
 #### React Unescaped Entities
+
 ```jsx
 // Error: `'` can be escaped with `&apos;`
 // Bad:
@@ -57,6 +61,7 @@ data!.property
 ```
 
 #### Missing Display Names
+
 ```jsx
 // Error: Component definition is missing display name
 // Add display name to anonymous components:
@@ -67,12 +72,13 @@ MyComponent.displayName = 'MyComponent';
 ```
 
 #### Next.js Image Optimization
+
 ```jsx
 // Warning: Using `<img>` could result in slower LCP
 // Use Next.js Image component:
 import Image from 'next/image';
 
-<Image src="/logo.png" alt="Logo" width={100} height={100} />
+<Image src="/logo.png" alt="Logo" width={100} height={100} />;
 ```
 
 ### 3. Prettier Formatting Failures
@@ -80,6 +86,7 @@ import Image from 'next/image';
 **Symptom**: `npm run format:check` fails in CI
 
 **Solution**:
+
 ```bash
 # Auto-fix all formatting issues locally
 npm run format
@@ -98,6 +105,7 @@ npx prettier --write "src/**/*.ts"
 **Common Causes**:
 
 #### Environment Variables
+
 ```javascript
 // Ensure test environment variables are set
 // Check jest.setup.js includes:
@@ -106,6 +114,7 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 ```
 
 #### Timing Issues
+
 ```javascript
 // Use waitFor for async operations
 import { waitFor } from '@testing-library/react';
@@ -116,6 +125,7 @@ await waitFor(() => {
 ```
 
 #### Mock Inconsistencies
+
 ```javascript
 // Clear mocks between tests
 beforeEach(() => {
@@ -130,6 +140,7 @@ beforeEach(() => {
 **Solutions**:
 
 #### Fix Vulnerabilities
+
 ```bash
 # Try automatic fix
 npm audit fix
@@ -142,6 +153,7 @@ npm update package-name
 ```
 
 #### Temporary Workaround (use carefully)
+
 ```bash
 # For non-critical dev dependencies
 npm audit --production
@@ -154,6 +166,7 @@ npm audit --production
 **Common Issues**:
 
 #### Missing Environment Variables
+
 ```bash
 # Ensure build-time env vars are in GitHub Secrets:
 # - NEXT_PUBLIC_SUPABASE_URL
@@ -161,6 +174,7 @@ npm audit --production
 ```
 
 #### Import Errors
+
 ```typescript
 // Ensure all imports exist
 // Check case sensitivity (CI is case-sensitive)
@@ -170,12 +184,14 @@ import Component from './Component'; // not './component'
 ## CI Pipeline Debugging
 
 ### View Detailed Logs
+
 1. Go to Actions tab in GitHub
 2. Click on the failed workflow run
 3. Click on the failed job
 4. Expand the failed step
 
 ### Re-run Failed Jobs
+
 1. In the failed workflow run
 2. Click "Re-run failed jobs"
 3. Or "Re-run all jobs" if needed
@@ -183,6 +199,7 @@ import Component from './Component'; // not './component'
 ### Running CI Checks Locally
 
 Simulate the CI environment:
+
 ```bash
 # Run all checks in sequence (like CI)
 npm run type-check && npm run lint && npm run format:check && npm test && npm run build
@@ -191,6 +208,7 @@ npm run type-check && npm run lint && npm run format:check && npm test && npm ru
 ### Debug Specific Job
 
 #### Quality Checks Job
+
 ```bash
 npm ci                    # Clean install
 npm run type-check       # TypeScript
@@ -199,12 +217,14 @@ npm run format:check    # Prettier
 ```
 
 #### Test Job
+
 ```bash
 npm ci                          # Clean install
 npm test -- --coverage --ci    # Jest with coverage
 ```
 
 #### Security Job
+
 ```bash
 npm ci                    # Clean install
 npm audit --audit-level=moderate
@@ -212,6 +232,7 @@ npm audit --production
 ```
 
 #### Build Job
+
 ```bash
 npm ci                    # Clean install
 npm run build            # Next.js build
@@ -222,6 +243,7 @@ npm run build            # Next.js build
 ### Can't Merge Despite Green Checks
 
 **Possible Causes**:
+
 1. Branch not up to date with main
    - Solution: Merge or rebase main into your branch
 2. Required review not approved
@@ -232,6 +254,7 @@ npm run build            # Next.js build
 ### Setting Up Branch Protection
 
 If branch protection isn't working:
+
 ```bash
 # Use the provided script
 ./scripts/setup-branch-protection.sh
@@ -245,6 +268,7 @@ If branch protection isn't working:
 ### Slow CI Pipeline
 
 **Optimizations**:
+
 1. Check cache hit rates in logs
 2. Ensure `cache: 'npm'` is set in actions/setup-node
 3. Run jobs in parallel where possible
@@ -253,6 +277,7 @@ If branch protection isn't working:
 ### Timeout Issues
 
 If jobs timeout:
+
 1. Check for infinite loops in tests
 2. Add timeout to long-running operations
 3. Split large test suites
@@ -270,11 +295,13 @@ If jobs timeout:
 ## Preventive Measures
 
 1. **Always run checks locally before pushing**:
+
    ```bash
    npm run type-check && npm run lint && npm run format:check && npm test
    ```
 
 2. **Keep dependencies updated**:
+
    ```bash
    npm outdated
    npm update
@@ -295,11 +322,13 @@ If jobs timeout:
 ### Preview Deployment Failed
 
 **Error**: "Project not found"
+
 ```
 Error: Project not found
 ```
 
 **Solution**:
+
 1. Verify VERCEL_PROJECT_ID in GitHub secrets
 2. Ensure project exists in Vercel organization
 3. Check organization permissions
@@ -307,11 +336,13 @@ Error: Project not found
 ---
 
 **Error**: "Invalid token"
+
 ```
 Error: Invalid token
 ```
 
 **Solution**:
+
 1. Regenerate token in Vercel dashboard
 2. Update VERCEL_TOKEN in GitHub secrets
 3. Ensure token has proper scopes
@@ -323,6 +354,7 @@ Error: Invalid token
 **Issue**: Merge to main doesn't deploy
 
 **Solution**:
+
 1. Check if CI workflow passed:
    ```bash
    gh run list --workflow=ci.yml
@@ -340,6 +372,7 @@ Error: Invalid token
 **Error**: "Alias already exists"
 
 **Solution**:
+
 1. Manually remove old alias:
    ```bash
    vercel alias rm findconstructionstaffing-pr-123

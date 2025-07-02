@@ -7,11 +7,13 @@ Your Vercel deployment is failing because environment variables are not configur
 ### Option 1: Using Vercel CLI (Recommended)
 
 1. Install Vercel CLI if not already installed:
+
    ```bash
    npm i -g vercel
    ```
 
 2. Link your project:
+
    ```bash
    vercel link
    ```
@@ -29,14 +31,17 @@ Your Vercel deployment is failing because environment variables are not configur
 4. Add the following variables:
 
 #### Required for Build (All Environments):
+
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key
 
 #### Required for API Routes (Production/Preview):
+
 - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
 - `DATABASE_URL` - Your Supabase database connection string
 
 #### Optional:
+
 - `MONITORING_API_KEY` - For /api/metrics endpoint protection (Production only)
 
 ### Option 3: Quick Command Line Setup
@@ -61,6 +66,7 @@ vercel env add MONITORING_API_KEY production
 After adding environment variables:
 
 1. Check they're configured:
+
    ```bash
    vercel env ls
    ```

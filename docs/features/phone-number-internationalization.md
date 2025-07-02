@@ -13,15 +13,20 @@ For comprehensive international phone number support, integrate the `libphonenum
 ### Implementation Plan
 
 1. **Install the library**
+
    ```bash
    npm install libphonenumber-js
    ```
 
 2. **Update the function** to support multiple formats:
+
    ```typescript
    import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 
-   export const formatPhoneNumber = (phone: string, country: string = 'US'): string => {
+   export const formatPhoneNumber = (
+     phone: string,
+     country: string = 'US'
+   ): string => {
      if (!phone || typeof phone !== 'string') {
        return '';
      }
@@ -72,6 +77,7 @@ For comprehensive international phone number support, integrate the `libphonenum
 ### Testing Considerations
 
 Add test cases for:
+
 - UK numbers: +44 20 7946 0958
 - Canada: +1 416 555 0123
 - Australia: +61 2 9876 5432

@@ -2,7 +2,7 @@ name: Production Health Check
 
 on:
   workflow_run:
-    workflows: ["Deploy to Vercel"]
+    workflows: ['Deploy to Vercel']
     types:
       - completed
     branches:
@@ -13,28 +13,28 @@ jobs:
     name: Verify Production Deployment
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
-    
+
     steps:
       - name: Wait for deployment propagation
         run: sleep 30
-        
+
       - name: Health check production site
         id: health
         run: |
           PRODUCTION_URL="https://findconstructionstaffing.com"
-          
+
           # Check main page
           MAIN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $PRODUCTION_URL)
           echo "main-status=$MAIN_STATUS" >> $GITHUB_OUTPUT
-          
+
           # Check API endpoint
           API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $PRODUCTION_URL/api/agencies)
           echo "api-status=$API_STATUS" >> $GITHUB_OUTPUT
-          
+
           # Check critical pages
           RECRUITERS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $PRODUCTION_URL/recruiters)
           echo "recruiters-status=$RECRUITERS_STATUS" >> $GITHUB_OUTPUT
-          
+
           # Determine overall health
           if [ "$MAIN_STATUS" = "200" ] && [ "$API_STATUS" = "200" ] && [ "$RECRUITERS_STATUS" = "200" ]; then
             echo "health=healthy" >> $GITHUB_OUTPUT
@@ -46,14 +46,14 @@ jobs:
             echo "API: $API_STATUS"
             echo "Recruiters page: $RECRUITERS_STATUS"
           fi
-          
+
       - name: Update deployment status
         uses: actions/github-script@v7
         with:
           script: |
             const health = '${{ steps.health.outputs.health }}';
             const isHealthy = health === 'healthy';
-            
+
             // Get the latest deployment
             const { data: deployments } = await github.rest.repos.listDeployments({
               owner: context.repo.owner,
@@ -61,7 +61,7 @@ jobs:
               environment: 'production',
               per_page: 1
             });
-            
+
             if (deployments.length > 0) {
               await github.rest.repos.createDeploymentStatus({
                 owner: context.repo.owner,
@@ -74,7 +74,7 @@ jobs:
                 environment_url: 'https://findconstructionstaffing.com'
               });
             }
-            
+
       - name: Create issue if unhealthy
         if: steps.health.outputs.health == 'unhealthy'
         uses: actions/github-script@v7

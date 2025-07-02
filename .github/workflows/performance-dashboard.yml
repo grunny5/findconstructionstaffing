@@ -11,32 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Collect metrics
         uses: actions/github-script@v7
         id: collect
         with:
           script: |
             const { owner, repo } = context.repo;
-            
+
             // Get metrics for the past 30 days
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
+
             const allRuns = await github.paginate(
               github.rest.actions.listWorkflowRuns,
               { owner, repo, workflow_id: 'ci.yml', per_page: 100 },
               response => response.data
             );
             const runs = allRuns.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
-            
+
             // Group by date
             const dailyMetrics = {};
-            
+
             for (const run of runs) {
               if (run.status !== 'completed') continue;
               
@@ -58,9 +58,9 @@ jobs:
                 dailyMetrics[date].totalDuration += duration / 1000 / 60;
               }
             }
-            
+
             return dailyMetrics;
-            
+
       - name: Generate dashboard
         env:
           METRICS_DATA: ${{ steps.collect.outputs.result }}
@@ -68,19 +68,19 @@ jobs:
           # Generate dashboard header
           cat > docs/ci-cd-dashboard.md << 'EOF'
           # CI/CD Performance Dashboard
-          
+
           Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          
+
           ## 30-Day Performance Overview
-          
+
           ![CI/CD Pipeline](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg)
-          
+
           ## Daily Metrics
-          
+
           | Date | Runs | Success Rate | Avg Duration |
           |------|------|--------------|--------------|
           EOF
-          
+
           # Process metrics and add to table
           node -e "
             const metrics = JSON.parse(process.env.METRICS_DATA || '{}');
@@ -112,13 +112,13 @@ jobs:
             console.log(\`- **Overall Success Rate**: \${overallRate}\`);
             console.log(\`- **Data Collection Period**: \${dates[dates.length - 1]} to \${dates[0]}\`);
           " >> docs/ci-cd-dashboard.md
-          
+
           echo "" >> docs/ci-cd-dashboard.md
           echo "---" >> docs/ci-cd-dashboard.md
           echo "*Dashboard updated automatically by GitHub Actions*" >> docs/ci-cd-dashboard.md
-          
+
           echo "Dashboard generated at docs/ci-cd-dashboard.md"
-          
+
       - name: Commit dashboard
         run: |
           git config --local user.email "action@github.com"

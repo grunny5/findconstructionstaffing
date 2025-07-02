@@ -5,28 +5,33 @@ This document provides instructions for setting up branch protection rules on Gi
 ## Required Configuration for `main` Branch
 
 ### Access Settings
+
 1. Go to Settings → Branches in your GitHub repository
 2. Click "Add rule" or edit existing rule for `main` branch
 
 ### Protection Rules
 
 #### 1. Require Pull Request Reviews
+
 - ✅ **Require a pull request before merging**
   - ✅ **Require approvals**: 1
   - ✅ **Dismiss stale pull request approvals when new commits are pushed**
   - ✅ **Require review from CODEOWNERS** (if applicable)
 
 #### 2. Require Status Checks
+
 - ✅ **Require status checks to pass before merging**
   - ✅ **Require branches to be up to date before merging**
-  
+
 Required status checks (add these):
+
 - `Code Quality Checks`
 - `Run Tests`
 - `Security Scanning`
 - `Build Application`
 
 #### 3. Additional Settings
+
 - ✅ **Include administrators** (recommended for consistency)
 - ✅ **Restrict who can dismiss pull request reviews** (optional)
 - ❌ **Allow force pushes** (should be disabled)
@@ -65,6 +70,7 @@ After setup, verify the protection rules:
 ## Status Check Names
 
 The status check names must match exactly with the job names in `.github/workflows/ci.yml`:
+
 - `Code Quality Checks` (from `quality-checks` job)
 - `Run Tests` (from `test` job)
 - `Security Scanning` (from `security` job)
@@ -73,11 +79,13 @@ The status check names must match exactly with the job names in `.github/workflo
 ## Troubleshooting
 
 ### Status checks not appearing
+
 - Push a commit to trigger the workflow
 - Wait for the workflow to complete at least once
 - Refresh the branch protection settings page
 
 ### Can't find status check names
+
 - Go to a recent PR
 - Look at the "Checks" tab
 - Use the exact names shown there
@@ -85,6 +93,7 @@ The status check names must match exactly with the job names in `.github/workflo
 ## For Repository Admins
 
 Even with "Include administrators" enabled, admins can:
+
 - Temporarily disable protection if needed
 - Force merge in emergencies (not recommended)
 

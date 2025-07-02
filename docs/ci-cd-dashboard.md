@@ -9,7 +9,7 @@ Last updated: Not yet generated
 ## Daily Metrics
 
 | Date | Runs | Success Rate | Avg Duration |
-|------|------|--------------|--------------|
+| ---- | ---- | ------------ | ------------ |
 
 ## Summary Statistics
 
@@ -19,10 +19,10 @@ Last updated: Not yet generated
 
 ---
 
-*This dashboard will be automatically updated daily by GitHub Actions once the CI/CD pipeline is active. The performance-dashboard.yml workflow collects metrics from the past 30 days and updates this file with:*
+_This dashboard will be automatically updated daily by GitHub Actions once the CI/CD pipeline is active. The performance-dashboard.yml workflow collects metrics from the past 30 days and updates this file with:_
 
 - Daily run counts and success rates
 - Average pipeline duration trends
-- Overall performance statistics
+- The overall performance statistics
 
-*First update will occur after the workflow is merged and runs on schedule (daily at midnight UTC) or can be triggered manually.*
+_First update will occur after the workflow is merged and runs on schedule (daily at midnight UTC) or can be triggered manually._

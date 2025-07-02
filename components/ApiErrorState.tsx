@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -28,13 +28,15 @@ export default function ApiErrorState({
   children,
 }: ApiErrorStateProps) {
   // Determine error type and appropriate messaging
-  const errorTitle = title || (isNetworkError ? 'Connection Problem' : 'Something went wrong');
-  
-  const errorMessage = message || (
-    isNetworkError
+  const errorTitle =
+    title || (isNetworkError ? 'Connection Problem' : 'Something went wrong');
+
+  const errorMessage =
+    message ||
+    (isNetworkError
       ? 'Unable to connect to our servers. Please check your internet connection and try again.'
-      : error?.message || 'We encountered an error while loading the data. Please try again.'
-  );
+      : error?.message ||
+        'We encountered an error while loading the data. Please try again.');
 
   return (
     <Alert className="bg-red-50 border-red-200">
@@ -53,13 +55,9 @@ export default function ApiErrorState({
           <AlertDescription className="text-red-700">
             {errorMessage}
           </AlertDescription>
-          
-          {children && (
-            <div className="mt-4">
-              {children}
-            </div>
-          )}
-          
+
+          {children && <div className="mt-4">{children}</div>}
+
           {onRetry && (
             <Button
               variant="outline"

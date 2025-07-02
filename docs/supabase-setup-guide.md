@@ -3,6 +3,7 @@
 This guide provides comprehensive instructions for setting up and maintaining the Supabase database infrastructure for the FindConstructionStaffing platform.
 
 ## Table of Contents
+
 1. [Prerequisites](#prerequisites)
 2. [Initial Setup](#initial-setup)
 3. [Environment Configuration](#environment-configuration)
@@ -17,6 +18,7 @@ This guide provides comprehensive instructions for setting up and maintaining th
 ## Prerequisites
 
 Before starting, ensure you have:
+
 - Node.js 18+ installed
 - npm or yarn package manager
 - A Supabase account (free tier is sufficient for development)
@@ -40,6 +42,7 @@ Before starting, ensure you have:
 ### 2. Obtain Project Credentials
 
 Once your project is ready:
+
 1. Go to Settings → API
 2. Copy these values:
    - Project URL (looks like: `https://[project-id].supabase.co`)
@@ -49,6 +52,7 @@ Once your project is ready:
 ### 3. Install Supabase CLI (Optional but Recommended)
 
 For Windows:
+
 ```bash
 # Download from https://github.com/supabase/cli/releases
 # Choose supabase_windows_amd64.tar.gz for most systems
@@ -57,6 +61,7 @@ For Windows:
 ```
 
 For macOS/Linux:
+
 ```bash
 brew install supabase/tap/supabase
 ```
@@ -84,6 +89,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ### 3. Verify Git Ignore
 
 Ensure `.gitignore` contains:
+
 ```
 .env.local
 .env*.local
@@ -155,12 +161,14 @@ CREATE TABLE agency_regions (
 ### 2. Apply Migrations
 
 Using Supabase Dashboard:
+
 1. Go to SQL Editor
 2. Create a new query
 3. Paste the migration SQL
 4. Click "Run"
 
 Using Supabase CLI:
+
 ```bash
 # Initialize Supabase in your project
 supabase init
@@ -217,8 +225,8 @@ CREATE POLICY "Public can read all regions" ON regions
 CREATE POLICY "Public can read agency trades" ON agency_trades
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM agencies 
-            WHERE agencies.id = agency_trades.agency_id 
+            SELECT 1 FROM agencies
+            WHERE agencies.id = agency_trades.agency_id
             AND agencies.is_active = true
         )
     );
@@ -226,8 +234,8 @@ CREATE POLICY "Public can read agency trades" ON agency_trades
 CREATE POLICY "Public can read agency regions" ON agency_regions
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM agencies 
-            WHERE agencies.id = agency_regions.agency_id 
+            SELECT 1 FROM agencies
+            WHERE agencies.id = agency_regions.agency_id
             AND agencies.is_active = true
         )
     );
@@ -238,11 +246,13 @@ CREATE POLICY "Public can read agency regions" ON agency_regions
 ### 1. Connection Testing
 
 Run the connection test script:
+
 ```bash
 node scripts/test-supabase-connection.js
 ```
 
 Expected output:
+
 ```
 ✅ Successfully connected to Supabase!
 Project URL: https://your-project-id.supabase.co
@@ -252,11 +262,13 @@ Environment: local
 ### 2. Security Testing
 
 Run the security test suite:
+
 ```bash
 node scripts/security-tests.js
 ```
 
 All tests should pass:
+
 ```
 ✅ All critical security tests passed
 🛡️  The database is properly secured
@@ -265,12 +277,10 @@ All tests should pass:
 ### 3. Manual Testing
 
 Test basic queries in your application:
+
 ```javascript
 // Test read access
-const { data, error } = await supabase
-  .from('agencies')
-  .select('*')
-  .limit(10);
+const { data, error } = await supabase.from('agencies').select('*').limit(10);
 
 // Test write access (should fail)
 const { error: writeError } = await supabase
@@ -284,13 +294,15 @@ const { error: writeError } = await supabase
 ### Common Issues and Solutions
 
 #### 1. "Invalid API Key" Error
+
 - **Cause**: Incorrect or malformed API key
-- **Solution**: 
+- **Solution**:
   - Verify the key in Supabase dashboard
   - Check for extra spaces or line breaks in .env.local
   - Ensure you're using the anon key, not service role key
 
 #### 2. "relation does not exist" Error
+
 - **Cause**: Tables not created or migrations not run
 - **Solution**:
   - Check SQL Editor history in Supabase dashboard
@@ -298,6 +310,7 @@ const { error: writeError } = await supabase
   - Verify table names match exactly (case-sensitive)
 
 #### 3. Empty Query Results
+
 - **Cause**: RLS policies blocking access or no data
 - **Solution**:
   - Check if RLS is enabled without policies
@@ -305,6 +318,7 @@ const { error: writeError } = await supabase
   - Test with service role key (development only)
 
 #### 4. Connection Timeouts
+
 - **Cause**: Network issues or incorrect URL
 - **Solution**:
   - Verify NEXT_PUBLIC_SUPABASE_URL format
@@ -312,6 +326,7 @@ const { error: writeError } = await supabase
   - Try different region if persistent
 
 #### 5. Environment Variables Not Loading
+
 - **Cause**: Incorrect file location or format
 - **Solution**:
   - Ensure .env.local is in project root
@@ -357,11 +372,13 @@ curl https://your-project-id.supabase.co/rest/v1/agencies \
 Supabase provides automatic daily backups on paid plans. For additional safety:
 
 1. Export schema regularly:
+
 ```bash
 supabase db dump -f schema.sql
 ```
 
 2. Export data for critical tables:
+
 ```bash
 supabase db dump -f data.sql --data-only
 ```
@@ -369,6 +386,7 @@ supabase db dump -f data.sql --data-only
 ### Monitoring
 
 Set up monitoring for:
+
 - Query performance (aim for <100ms)
 - Error rates
 - Connection pool usage
@@ -377,6 +395,7 @@ Set up monitoring for:
 ## Architecture Decisions
 
 ### Why Supabase?
+
 - Built on PostgreSQL for reliability
 - Real-time capabilities for future features
 - Generous free tier for development
@@ -384,6 +403,7 @@ Set up monitoring for:
 - Built-in authentication (future enhancement)
 
 ### Design Choices
+
 1. **UUID Primary Keys**: Globally unique, better for distributed systems
 2. **Slugs for URLs**: SEO-friendly, human-readable URLs
 3. **Soft Delete Pattern**: is_active flag instead of hard deletes
@@ -391,6 +411,7 @@ Set up monitoring for:
 5. **RLS by Default**: Security-first approach
 
 ### Performance Considerations
+
 - Indexes on frequently queried columns
 - Composite primary keys on junction tables
 - NUMERIC type for precise ratings
@@ -399,12 +420,14 @@ Set up monitoring for:
 ## Next Steps
 
 After completing this setup:
+
 1. Run data migration scripts to import agencies
 2. Implement API endpoints using Supabase client
 3. Set up real-time subscriptions (optional)
 4. Configure authentication (future sprint)
 
 For questions or issues, consult:
+
 - [Supabase Documentation](https://supabase.com/docs)
 - Project issue tracker
 - Team Slack channel #backend

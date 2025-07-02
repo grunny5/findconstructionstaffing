@@ -13,51 +13,51 @@ jobs:
     name: Create Preview Alias
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
-          
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-        
+
       - name: Create PR-specific alias
         id: alias
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           ALIAS_NAME="findconstructionstaffing-pr-${PR_NUMBER}"
           echo "alias-name=$ALIAS_NAME" >> $GITHUB_OUTPUT
-          
+
           # Note: The actual alias will be created after deployment in deploy.yml
           echo "Preview alias will be: https://${ALIAS_NAME}.vercel.app"
-          
+
   cleanup-alias:
     name: Cleanup Preview
     runs-on: ubuntu-latest
     if: github.event.action == 'closed'
-    
+
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
-          
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-        
+
       - name: Remove PR alias
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           ALIAS_NAME="findconstructionstaffing-pr-${PR_NUMBER}"
-          
+
           echo "Removing alias: ${ALIAS_NAME}"
           vercel alias rm ${ALIAS_NAME} --token=${{ secrets.VERCEL_TOKEN }} --yes || echo "Alias already removed"
-          
+
       - name: Update deployment status
         uses: actions/github-script@v7
         with:
@@ -69,7 +69,7 @@ jobs:
               environment: 'preview',
               ref: context.payload.pull_request.head.sha
             });
-            
+
             // Mark all preview deployments as inactive
             for (const deployment of deployments) {
               await github.rest.repos.createDeploymentStatus({
@@ -80,15 +80,15 @@ jobs:
                 description: 'Preview environment removed'
               });
             }
-          
+
       - name: Comment on PR
         uses: actions/github-script@v7
         with:
           script: |
             const comment = `### 🧹 Preview Deployment Cleaned Up
-            
+
             The preview deployment for this PR has been removed.`;
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

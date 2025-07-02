@@ -34,11 +34,14 @@ const mockAgenciesResponse: AgenciesApiResponse = {
       verified: true,
       featured: false,
       trades: [
-        { id: '1', name: 'Electricians', slug: 'electricians', description: null }
+        {
+          id: '1',
+          name: 'Electricians',
+          slug: 'electricians',
+          description: null,
+        },
       ],
-      regions: [
-        { id: '1', name: 'Texas', code: 'TX' }
-      ],
+      regions: [{ id: '1', name: 'Texas', code: 'TX' }],
     },
     {
       id: '2',
@@ -61,11 +64,11 @@ const mockAgenciesResponse: AgenciesApiResponse = {
       verified: false,
       featured: true,
       trades: [
-        { id: '2', name: 'Plumbers', slug: 'plumbers', description: null }
+        { id: '2', name: 'Plumbers', slug: 'plumbers', description: null },
       ],
       regions: [
         { id: '1', name: 'Texas', code: 'TX' },
-        { id: '2', name: 'California', code: 'CA' }
+        { id: '2', name: 'California', code: 'CA' },
       ],
     },
   ],
@@ -114,7 +117,9 @@ describe('useAgencies', () => {
 
     expect(result.current.data).toEqual(mockAgenciesResponse);
     expect(result.current.error).toBeUndefined();
-    expect(global.fetch).toHaveBeenCalledWith('/api/agencies?limit=20&offset=0');
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/agencies?limit=20&offset=0'
+    );
   });
 
   it('should handle query parameters correctly', async () => {
@@ -124,13 +129,14 @@ describe('useAgencies', () => {
     });
 
     const { result } = renderHook(
-      () => useAgencies({
-        search: 'construction',
-        trades: ['electricians', 'plumbers'],
-        states: ['TX', 'CA'],
-        limit: 10,
-        offset: 20,
-      }),
+      () =>
+        useAgencies({
+          search: 'construction',
+          trades: ['electricians', 'plumbers'],
+          states: ['TX', 'CA'],
+          limit: 10,
+          offset: 20,
+        }),
       { wrapper: createWrapper() }
     );
 
@@ -167,7 +173,9 @@ describe('useAgencies', () => {
   });
 
   it('should handle network errors', async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    (global.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error('Network error')
+    );
 
     const { result } = renderHook(() => useAgencies(), {
       wrapper: createWrapper(),
@@ -183,10 +191,9 @@ describe('useAgencies', () => {
   });
 
   it('should not fetch when disabled', async () => {
-    const { result } = renderHook(
-      () => useAgencies({ enabled: false }),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useAgencies({ enabled: false }), {
+      wrapper: createWrapper(),
+    });
 
     // Should not be loading when disabled
     expect(result.current.isLoading).toBe(false);
@@ -202,11 +209,12 @@ describe('useAgencies', () => {
     });
 
     const { result } = renderHook(
-      () => useAgencies({
-        search: '',
-        trades: [],
-        states: [],
-      }),
+      () =>
+        useAgencies({
+          search: '',
+          trades: [],
+          states: [],
+        }),
       { wrapper: createWrapper() }
     );
 
@@ -215,7 +223,9 @@ describe('useAgencies', () => {
     });
 
     // Should not include empty parameters in the URL
-    expect(global.fetch).toHaveBeenCalledWith('/api/agencies?limit=20&offset=0');
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/agencies?limit=20&offset=0'
+    );
   });
 
   it('should provide mutate function', async () => {
@@ -246,17 +256,21 @@ describe('useAgencies', () => {
       });
 
     const { result } = renderHook(
-      () => useAgencies({
-        swrOptions: {
-          errorRetryInterval: 10, // Fast retry for testing
-        },
-      }),
+      () =>
+        useAgencies({
+          swrOptions: {
+            errorRetryInterval: 10, // Fast retry for testing
+          },
+        }),
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      expect(result.current.data).toEqual(mockAgenciesResponse);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.data).toEqual(mockAgenciesResponse);
+      },
+      { timeout: 5000 }
+    );
 
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
@@ -284,10 +298,9 @@ describe('useAgency', () => {
       json: async () => singleAgencyResponse,
     });
 
-    const { result } = renderHook(
-      () => useAgency('test-agency-1'),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useAgency('test-agency-1'), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -301,10 +314,9 @@ describe('useAgency', () => {
   });
 
   it('should handle undefined slug', async () => {
-    const { result } = renderHook(
-      () => useAgency(undefined),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useAgency(undefined), {
+      wrapper: createWrapper(),
+    });
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.agency).toBeUndefined();
@@ -328,10 +340,9 @@ describe('useAgency', () => {
       json: async () => emptyResponse,
     });
 
-    const { result } = renderHook(
-      () => useAgency('non-existent-agency'),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useAgency('non-existent-agency'), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);

@@ -13,22 +13,25 @@ The `createSlug` function in `lib/utils/formatting.ts` provides:
 ## Limitations
 
 ### Character Support
+
 - Characters that cannot be decomposed using NFD (like Ø, Æ, Đ) are removed entirely
 - Non-Latin scripts (Cyrillic, Arabic, Chinese, etc.) are removed
 - This can lead to empty or truncated slugs for non-Latin content
 
 ### Examples of Current Behavior
+
 ```typescript
-createSlug('Café')        // 'cafe' ✓
-createSlug('São Paulo')   // 'sao-paulo' ✓
-createSlug('Øresund')     // 'resund' ⚠️
-createSlug('北京')        // '' ⚠️
-createSlug('Москва')      // '' ⚠️
+createSlug('Café'); // 'cafe' ✓
+createSlug('São Paulo'); // 'sao-paulo' ✓
+createSlug('Øresund'); // 'resund' ⚠️
+createSlug('北京'); // '' ⚠️
+createSlug('Москва'); // '' ⚠️
 ```
 
 ## Recommended Enhancement: Transliteration
 
 ### Option 1: Use `slugify` Library
+
 ```bash
 npm install slugify
 ```
@@ -40,16 +43,17 @@ export const createSlug = (text: string): string => {
   if (!text || typeof text !== 'string') {
     return '';
   }
-  
+
   return slugify(text, {
     lower: true,
     strict: true,
-    locale: 'en' // Can be customized per user locale
+    locale: 'en', // Can be customized per user locale
   });
 };
 ```
 
 ### Option 2: Use `transliteration` Library
+
 ```bash
 npm install transliteration
 ```
@@ -61,23 +65,25 @@ export const createSlug = (text: string): string => {
   if (!text || typeof text !== 'string') {
     return '';
   }
-  
+
   return slugify(text);
 };
 ```
 
 ### Benefits of Library Approach
+
 - Proper transliteration of non-Latin scripts
 - Configurable locale support
 - Better handling of edge cases
 - Maintained character mappings
 
 ### Examples with Transliteration
+
 ```typescript
-createSlug('Øresund')     // 'oresund' ✓
-createSlug('北京')        // 'bei-jing' ✓
-createSlug('Москва')      // 'moskva' ✓
-createSlug('Æther')       // 'aether' ✓
+createSlug('Øresund'); // 'oresund' ✓
+createSlug('北京'); // 'bei-jing' ✓
+createSlug('Москва'); // 'moskva' ✓
+createSlug('Æther'); // 'aether' ✓
 ```
 
 ## Implementation Considerations
@@ -101,6 +107,7 @@ createSlug('Æther')       // 'aether' ✓
 ## Testing Requirements
 
 Add comprehensive tests for:
+
 - All Latin-1 supplement characters
 - Common European languages (German, French, Spanish, etc.)
 - Cyrillic scripts (Russian, Ukrainian, etc.)

@@ -15,11 +15,15 @@ describe('Formatting Utilities', () => {
     });
 
     it('should handle multiple spaces', () => {
-      expect(createSlug('test   multiple   spaces')).toBe('test-multiple-spaces');
+      expect(createSlug('test   multiple   spaces')).toBe(
+        'test-multiple-spaces'
+      );
     });
 
     it('should handle multiple hyphens', () => {
-      expect(createSlug('test---multiple---hyphens')).toBe('test-multiple-hyphens');
+      expect(createSlug('test---multiple---hyphens')).toBe(
+        'test-multiple-hyphens'
+      );
     });
 
     it('should trim whitespace', () => {
@@ -70,7 +74,9 @@ describe('Formatting Utilities', () => {
 
     it('should preserve existing hyphens', () => {
       expect(createSlug('pre-existing-hyphens')).toBe('pre-existing-hyphens');
-      expect(createSlug('mix-of spaces-and-hyphens')).toBe('mix-of-spaces-and-hyphens');
+      expect(createSlug('mix-of spaces-and-hyphens')).toBe(
+        'mix-of-spaces-and-hyphens'
+      );
     });
   });
 

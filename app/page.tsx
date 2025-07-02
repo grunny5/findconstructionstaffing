@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,12 +11,18 @@ import DirectoryFilters, { FilterState } from '@/components/DirectoryFilters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { createSlug } from '@/lib/utils/formatting';
-import { 
-  Building2, 
-  Users, 
-  Target, 
+import {
+  Building2,
+  Users,
+  Target,
   Clock,
   ArrowRight,
   Filter,
@@ -27,17 +33,17 @@ import {
   Award,
   Briefcase,
   Zap,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Agency } from '@/types/api';
 import Link from 'next/link';
 
-export default function HomePage() {
+function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [filters, setFilters] = useState<FilterState>({
     search: searchParams.get('search') || '',
     trades: searchParams.getAll('trades[]') || [],
@@ -52,56 +58,68 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState('name');
   const [limit, setLimit] = useState(20);
   const [offset, setOffset] = useState(0);
-  
+
   // Debounce the search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(filters.search, 300);
-  
+
   // Track if we're in a searching state (user has typed but debounce hasn't fired)
   const isSearching = filters.search !== debouncedSearchQuery;
 
   // Fetch agencies from API with debounced search and filters
-  const { data: apiResponse, error, isLoading, isValidating, mutate } = useAgencies({
+  const {
+    data: apiResponse,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+  } = useAgencies({
     search: debouncedSearchQuery,
     trades: filters.trades,
     states: filters.states,
     limit,
     offset,
   });
-  
+
   // Update URL when search or filters change
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
-    
+
     // Handle search
     if (debouncedSearchQuery) {
       params.set('search', debouncedSearchQuery);
     } else {
       params.delete('search');
     }
-    
+
     // Handle trades filter
     if (filters.trades.length > 0) {
       params.delete('trades[]'); // Clear existing
-      filters.trades.forEach(trade => {
+      filters.trades.forEach((trade) => {
         params.append('trades[]', trade);
       });
     } else {
       params.delete('trades[]');
     }
-    
+
     // Handle states filter
     if (filters.states.length > 0) {
       params.delete('states[]'); // Clear existing
-      filters.states.forEach(state => {
+      filters.states.forEach((state) => {
         params.append('states[]', state);
       });
     } else {
       params.delete('states[]');
     }
-    
+
     // Use replace to avoid adding to browser history on every change
     router.replace(`?${params.toString()}`, { scroll: false });
-  }, [debouncedSearchQuery, filters.trades, filters.states, router, searchParams]);
+  }, [
+    debouncedSearchQuery,
+    filters.trades,
+    filters.states,
+    router,
+    searchParams,
+  ]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -110,7 +128,7 @@ export default function HomePage() {
 
   // Process API data and accumulate results for pagination
   const [allAgencies, setAllAgencies] = useState<Agency[]>([]);
-  
+
   useEffect(() => {
     if (apiResponse?.data) {
       if (offset === 0) {
@@ -118,7 +136,7 @@ export default function HomePage() {
         setAllAgencies(apiResponse.data);
       } else {
         // Append new agencies for pagination
-        setAllAgencies(prev => [...prev, ...apiResponse.data]);
+        setAllAgencies((prev) => [...prev, ...apiResponse.data]);
       }
     }
   }, [apiResponse?.data, offset]);
@@ -137,20 +155,20 @@ export default function HomePage() {
       headquarters: agency.headquarters || undefined,
       rating: agency.rating || undefined,
       // Map trades to string array for AgencyCard component
-      trades: agency.trades?.map(t => t.name) || [],
+      trades: agency.trades?.map((t) => t.name) || [],
       // Map regions to string array for AgencyCard component
-      regions: agency.regions?.map(r => r.name) || [],
+      regions: agency.regions?.map((r) => r.name) || [],
       // Add any additional fields needed for UI
-      reviewCount: agency.review_count || 12 + (index * 7) % 88,
-      projectCount: agency.project_count || 45 + (index * 13) % 455,
-      verified: agency.verified ?? (index % 3 === 0),
-      featured: agency.featured ?? (index < 3),
+      reviewCount: agency.review_count || 12 + ((index * 7) % 88),
+      projectCount: agency.project_count || 45 + ((index * 13) % 455),
+      verified: agency.verified ?? index % 3 === 0,
+      featured: agency.featured ?? index < 3,
     }));
   }, [allAgencies]);
 
   // Filter agencies based on current filters (API handles search/trades/states)
   const filteredAgencies = useMemo(() => {
-    let filtered = agencies.filter(agency => {
+    let filtered = agencies.filter((agency) => {
       // Client-side filters for properties not handled by API
       if (filters.perDiem !== null) {
         if (agency.offers_per_diem !== filters.perDiem) return false;
@@ -195,17 +213,16 @@ export default function HomePage() {
     return filtered;
   }, [agencies, filters, sortBy]);
 
-  const activeFilterCount = 
-    filters.trades.length + 
-    filters.states.length + 
-    (filters.perDiem !== null ? 1 : 0) + 
-    (filters.union !== null ? 1 : 0) + 
+  const activeFilterCount =
+    filters.trades.length +
+    filters.states.length +
+    (filters.perDiem !== null ? 1 : 0) +
+    (filters.union !== null ? 1 : 0) +
     (filters.claimedOnly ? 1 : 0) +
     filters.companySize.length +
     filters.focusAreas.length;
-    
-  const hasActiveFilters = filters.search || 
-    activeFilterCount > 0;
+
+  const hasActiveFilters = filters.search || activeFilterCount > 0;
 
   const clearAllFilters = () => {
     setFilters({
@@ -233,20 +250,21 @@ export default function HomePage() {
           {/* Trust Indicator */}
           <div className="trust-indicator mb-8 mx-auto w-fit">
             <Zap className="h-4 w-4 text-yellow-400" />
-            <span className="text-sm font-medium text-white">Trusted by 10,000+ construction professionals</span>
+            <span className="text-sm font-medium text-white">
+              Trusted by 10,000+ construction professionals
+            </span>
           </div>
 
           {/* Hero Title */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text-hero leading-tight">
             Find Elite Construction
             <br />
-            <span className="gradient-text-accent">
-              Staffing Partners
-            </span>
+            <span className="gradient-text-accent">Staffing Partners</span>
           </h1>
-          
+
           <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Connect with premium staffing agencies specializing in construction trades and skilled labor across North America
+            Connect with premium staffing agencies specializing in construction
+            trades and skilled labor across North America
           </p>
 
           {/* Modern Search Bar */}
@@ -258,7 +276,12 @@ export default function HomePage() {
                   <Input
                     placeholder="Search companies, specialties, or locations..."
                     value={filters.search}
-                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        search: e.target.value,
+                      }))
+                    }
                     className="modern-input pl-12 pr-12 h-14 text-lg"
                   />
                   {/* Loading indicator for search */}
@@ -269,13 +292,15 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
-                <Select onValueChange={(value) => {
-                  if (value === 'all') {
-                    setFilters(prev => ({ ...prev, states: [] }));
-                  } else {
-                    setFilters(prev => ({ ...prev, states: [value] }));
-                  }
-                }}>
+                <Select
+                  onValueChange={(value) => {
+                    if (value === 'all') {
+                      setFilters((prev) => ({ ...prev, states: [] }));
+                    } else {
+                      setFilters((prev) => ({ ...prev, states: [value] }));
+                    }
+                  }}
+                >
                   <SelectTrigger className="modern-select w-full lg:w-56 h-14">
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
@@ -289,15 +314,17 @@ export default function HomePage() {
                     <SelectItem value="IL">Illinois</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select onValueChange={(value) => {
-                  if (value === 'all') {
-                    setFilters(prev => ({ ...prev, trades: [] }));
-                  } else {
-                    // Derive slug from the selected display name
-                    const tradeSlug = createSlug(value);
-                    setFilters(prev => ({ ...prev, trades: [tradeSlug] }));
-                  }
-                }}>
+                <Select
+                  onValueChange={(value) => {
+                    if (value === 'all') {
+                      setFilters((prev) => ({ ...prev, trades: [] }));
+                    } else {
+                      // Derive slug from the selected display name
+                      const tradeSlug = createSlug(value);
+                      setFilters((prev) => ({ ...prev, trades: [tradeSlug] }));
+                    }
+                  }}
+                >
                   <SelectTrigger className="modern-select w-full lg:w-56 h-14">
                     <SelectValue placeholder="Specialty" />
                   </SelectTrigger>
@@ -311,11 +338,12 @@ export default function HomePage() {
                     <SelectItem value="carpentry">Carpentry</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button 
+                <Button
                   className="modern-button-primary h-14 px-8 font-semibold"
                   onClick={() => {
                     // Scroll to results section
-                    const resultsSection = document.getElementById('results-section');
+                    const resultsSection =
+                      document.getElementById('results-section');
                     if (resultsSection) {
                       resultsSection.scrollIntoView({ behavior: 'smooth' });
                     }
@@ -329,23 +357,31 @@ export default function HomePage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 mb-16">
-            <Button size="lg" className="modern-button-primary h-14 px-10 text-lg" asChild>
+            <Button
+              size="lg"
+              className="modern-button-primary h-14 px-10 text-lg"
+              asChild
+            >
               <Link href="/request-labor">
                 Request Labor
                 <ArrowRight className="ml-3 h-5 w-5" />
               </Link>
             </Button>
-            <Button size="lg" className="modern-button-secondary h-14 px-10 text-lg" asChild>
-              <Link href="/claim-listing">
-                Claim Your Listing
-              </Link>
+            <Button
+              size="lg"
+              className="modern-button-secondary h-14 px-10 text-lg"
+              asChild
+            >
+              <Link href="/claim-listing">Claim Your Listing</Link>
             </Button>
           </div>
 
           {/* Stats */}
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-number">{isLoading ? '...' : agencies.length + '+'}</div>
+              <div className="stat-number">
+                {isLoading ? '...' : agencies.length + '+'}
+              </div>
               <div className="stat-label">Verified Agencies</div>
             </div>
             <div className="stat-item">
@@ -365,23 +401,25 @@ export default function HomePage() {
       </section>
 
       {/* Main Directory Section */}
-      <section id="results-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section
+        id="results-section"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
+      >
         {/* Results Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">Premium Staffing Partners</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">
+              Premium Staffing Partners
+            </h2>
             <p className="text-slate-600 text-lg">
-              {filteredAgencies.length} verified companies 
-              {activeFilterCount > 0 && ` • ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied`}
-              {filters.search && ' • Search active'}
-              • Updated daily
+              {filteredAgencies.length} verified companies
+              {activeFilterCount > 0 &&
+                ` • ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied`}
+              {filters.search && ' • Search active'}• Updated daily
             </p>
           </div>
           <div className="flex items-center gap-4 mt-6 lg:mt-0">
-            <Button
-              variant="outline"
-              className="modern-button-secondary"
-            >
+            <Button variant="outline" className="modern-button-secondary">
               <Filter className="h-4 w-4 mr-2" />
               Advanced Filters
               {activeFilterCount > 0 && (
@@ -406,7 +444,7 @@ export default function HomePage() {
         </div>
 
         {/* Filters */}
-        <DirectoryFilters 
+        <DirectoryFilters
           onFiltersChange={setFilters}
           totalResults={filteredAgencies.length}
           isLoading={isValidating || isSearching}
@@ -455,25 +493,34 @@ export default function HomePage() {
             </h3>
             <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
               {debouncedSearchQuery ? (
-                <>We couldn&apos;t find any agencies matching &ldquo;{debouncedSearchQuery}&rdquo;. Try a different search term or browse all agencies.</>
+                <>
+                  We couldn&apos;t find any agencies matching &ldquo;
+                  {debouncedSearchQuery}&rdquo;. Try a different search term or
+                  browse all agencies.
+                </>
               ) : (
-                <>We couldn&apos;t find any agencies matching your filters. Try adjusting your criteria or browse all agencies.</>
+                <>
+                  We couldn&apos;t find any agencies matching your filters. Try
+                  adjusting your criteria or browse all agencies.
+                </>
               )}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {debouncedSearchQuery && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="lg"
-                  onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
+                  onClick={() =>
+                    setFilters((prev) => ({ ...prev, search: '' }))
+                  }
                   className="px-8 modern-button-secondary"
                 >
                   Clear Search
                 </Button>
               )}
               {hasActiveFilters && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="lg"
                   onClick={clearAllFilters}
                   className="px-8 modern-button-secondary"
@@ -488,11 +535,11 @@ export default function HomePage() {
         {/* Load More Button */}
         {filteredAgencies.length > 0 && apiResponse?.pagination?.hasMore && (
           <div className="text-center mt-16">
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="px-8 modern-button-secondary"
-              onClick={() => setOffset(prev => prev + limit)}
+              onClick={() => setOffset((prev) => prev + limit)}
               disabled={isLoading || isValidating}
             >
               {isLoading || isValidating ? (
@@ -516,7 +563,8 @@ export default function HomePage() {
               Why Construction Leaders Trust Our Directory
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              We&apos;ve helped thousands of projects connect with the right staffing partners across all major construction sectors
+              We&apos;ve helped thousands of projects connect with the right
+              staffing partners across all major construction sectors
             </p>
           </div>
 
@@ -525,9 +573,12 @@ export default function HomePage() {
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/25">
                 <Target className="h-10 w-10 text-white" />
               </div>
-              <h3 className="font-semibold text-xl mb-3">Verified Specialists</h3>
+              <h3 className="font-semibold text-xl mb-3">
+                Verified Specialists
+              </h3>
               <p className="text-slate-600">
-                Every agency is vetted for construction and industrial expertise with proven track records
+                Every agency is vetted for construction and industrial expertise
+                with proven track records
               </p>
             </div>
 
@@ -537,7 +588,8 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-xl mb-3">Fast Response</h3>
               <p className="text-slate-600">
-                Verified agencies respond to requests within 24 hours with qualified candidates
+                Verified agencies respond to requests within 24 hours with
+                qualified candidates
               </p>
             </div>
 
@@ -547,7 +599,8 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-xl mb-3">Quality Matches</h3>
               <p className="text-slate-600">
-                Advanced filtering ensures perfect recruiting partnerships for your specific needs
+                Advanced filtering ensures perfect recruiting partnerships for
+                your specific needs
               </p>
             </div>
 
@@ -557,7 +610,8 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-xl mb-3">Proven Results</h3>
               <p className="text-slate-600">
-                Track record of successful placements across all trades and project types
+                Track record of successful placements across all trades and
+                project types
               </p>
             </div>
           </div>
@@ -571,19 +625,27 @@ export default function HomePage() {
             Ready to Find Your Next Staffing Partner?
           </h2>
           <p className="text-xl text-slate-300 mb-8">
-            Submit one request and get responses from multiple qualified agencies
+            Submit one request and get responses from multiple qualified
+            agencies
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-orange-600 hover:bg-orange-700 h-14 px-10 rounded-2xl shadow-lg shadow-orange-600/25" asChild>
+            <Button
+              size="lg"
+              className="bg-orange-600 hover:bg-orange-700 h-14 px-10 rounded-2xl shadow-lg shadow-orange-600/25"
+              asChild
+            >
               <Link href="/request-labor">
                 Request Labor Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-900 h-14 px-10 rounded-2xl" asChild>
-              <Link href="/claim-listing">
-                List Your Agency
-              </Link>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-slate-900 h-14 px-10 rounded-2xl"
+              asChild
+            >
+              <Link href="/claim-listing">List Your Agency</Link>
             </Button>
           </div>
         </div>
@@ -591,5 +653,36 @@ export default function HomePage() {
 
       <Footer />
     </div>
+  );
+}
+
+// Loading fallback component
+function HomePageLoading() {
+  return (
+    <div className="min-h-screen modern-gradient-bg">
+      <Header />
+      <section className="relative py-24 overflow-hidden">
+        <div className="modern-hero-bg absolute inset-0"></div>
+        <div className="hero-decoration"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 w-64 bg-slate-700 rounded mx-auto mb-8"></div>
+            <div className="h-16 w-96 bg-slate-700 rounded mx-auto mb-4"></div>
+            <div className="h-16 w-80 bg-slate-700 rounded mx-auto mb-12"></div>
+            <div className="h-14 w-full max-w-4xl bg-slate-700 rounded-lg mx-auto"></div>
+          </div>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+}
+
+// Main export with Suspense boundary
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomePageLoading />}>
+      <HomePageContent />
+    </Suspense>
   );
 }

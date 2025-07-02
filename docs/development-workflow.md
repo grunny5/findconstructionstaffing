@@ -7,6 +7,7 @@ This guide outlines common development workflows and best practices for working 
 ### When to Seed the Database
 
 **Always seed when:**
+
 - Setting up the project for the first time
 - Switching branches that may have schema changes
 - After database migrations or schema updates
@@ -14,6 +15,7 @@ This guide outlines common development workflows and best practices for working 
 - Before running integration tests
 
 **Consider seeding when:**
+
 - API responses seem incomplete or missing data
 - Frontend components aren't displaying expected data
 - Working on search/filter functionality
@@ -21,6 +23,7 @@ This guide outlines common development workflows and best practices for working 
 ### Seeding Options
 
 The seed script creates a comprehensive dataset:
+
 ```bash
 # Standard seeding (12 agencies with full relationships)
 npm run seed
@@ -31,7 +34,6 @@ npm run seed:reset
 # Verify data integrity after seeding
 npm run seed:verify
 ```
-
 
 ### Daily Development Routine
 
@@ -57,6 +59,7 @@ npm run dev
 ### Working with Database Changes
 
 #### After Schema Changes
+
 ```bash
 # 1. Reset and re-seed to ensure schema compatibility
 npm run seed:reset
@@ -66,6 +69,7 @@ npm run seed:verify
 ```
 
 #### Testing with Clean Data
+
 ```bash
 # Reset to known state before testing
 npm run seed:reset
@@ -98,6 +102,7 @@ curl "http://localhost:3000/api/agencies?state=TX"
 ### Expected Seeded Data
 
 After seeding, you should have:
+
 - **12 agencies** with complete profiles
 - **48 unique trades** across all specialties
 - **35 regions** (US states where agencies operate)
@@ -106,6 +111,7 @@ After seeding, you should have:
 ## Frontend Development Workflow
 
 ### Component Development
+
 ```bash
 # 1. Seed database for consistent data
 npm run seed
@@ -120,7 +126,9 @@ npm run dev
 ```
 
 ### Testing Search and Filters
+
 The seeded data includes agencies with diverse characteristics:
+
 - Union and non-union agencies
 - Per diem and non-per diem agencies
 - Multiple trades per agency
@@ -129,6 +137,7 @@ The seeded data includes agencies with diverse characteristics:
 ## Feature Development Workflow
 
 ### Adding New Agency Fields
+
 1. Update TypeScript interfaces in `lib/supabase.ts`
 2. Update mock data in `lib/mock-data.ts`
 3. Update seeding script in `scripts/seed-database.ts`
@@ -136,6 +145,7 @@ The seeded data includes agencies with diverse characteristics:
 5. Run `npm run seed:reset` to test with new schema
 
 ### Adding New Relationships
+
 1. Define new junction table structure
 2. Update seeding script to create relationships
 3. Add verification queries for new relationships
@@ -144,6 +154,7 @@ The seeded data includes agencies with diverse characteristics:
 ## Testing Workflow
 
 ### Unit Testing
+
 ```bash
 # Run specific test suites
 npm test lib/
@@ -152,6 +163,7 @@ npm test scripts/__tests__/
 ```
 
 ### Integration Testing
+
 ```bash
 # 1. Reset database to known state
 npm run seed:reset
@@ -164,6 +176,7 @@ npm run seed:verify
 ```
 
 ### End-to-End Testing
+
 ```bash
 # 1. Seed database with full dataset
 npm run seed
@@ -178,6 +191,7 @@ npm run test:e2e
 ## Troubleshooting Common Issues
 
 ### "No agencies found" in API responses
+
 ```bash
 # Check if database is seeded
 npm run seed:verify
@@ -187,6 +201,7 @@ npm run seed:reset
 ```
 
 ### Inconsistent test results
+
 ```bash
 # Reset to clean state before each test run
 npm run seed:reset
@@ -194,6 +209,7 @@ npm test
 ```
 
 ### Performance issues with seeding
+
 ```bash
 # Check seeding performance
 time npm run seed
@@ -205,7 +221,9 @@ time npm run seed
 ## CI/CD Workflow
 
 ### Pre-Push Checklist
+
 Before pushing code:
+
 ```bash
 # Run all quality checks
 npm run type-check    # TypeScript compilation
@@ -215,20 +233,25 @@ npm run test          # Run test suite
 ```
 
 ### Pull Request Workflow
+
 1. **Create feature branch**: `git checkout -b feat/your-feature`
 2. **Make changes and commit**: Follow conventional commits
 3. **Push branch**: `git push origin feat/your-feature`
 4. **Open PR**: CI checks will run automatically
 
 ### CI Pipeline Checks
+
 Every PR triggers:
+
 - **Code Quality Checks**: TypeScript, ESLint, Prettier
 - **Test Suite**: Jest unit tests with coverage
 - **Security Scanning**: npm audit
 - **Build Verification**: Next.js production build
 
 ### Fixing CI Failures
+
 If CI checks fail:
+
 ```bash
 # TypeScript errors
 npm run type-check
@@ -253,6 +276,7 @@ npm test
 When reviewing PRs:
 
 ### Data & API Changes
+
 - [ ] Does the PR update the mock data if the schema changed?
 - [ ] Are seeding scripts updated for new fields/relationships?
 - [ ] Do tests account for seeded data structure?
@@ -260,6 +284,7 @@ When reviewing PRs:
 - [ ] Does documentation reflect data changes?
 
 ### CI/CD Requirements
+
 - [ ] All CI checks passing (green status)
 - [ ] TypeScript compilation successful
 - [ ] No ESLint errors (warnings acceptable)
@@ -270,16 +295,19 @@ When reviewing PRs:
 ## Best Practices
 
 ### Database Seeding
+
 - Always use `npm run seed:verify` after seeding to confirm success
 - Use `npm run seed:reset` sparingly - only when you need a clean slate
 - Don't modify seeded data manually in the database - update mock data instead
 
 ### Development Environment
+
 - Keep local environment variables in `.env.local`
 - Use development database, never seed production
 - Commit changes to mock data when adding test scenarios
 
 ### Collaboration
+
 - Document any new required environment variables
 - Update README if adding new NPM scripts
 - Communicate schema changes that affect seeding to the team
@@ -287,16 +315,19 @@ When reviewing PRs:
 ## Environment-Specific Notes
 
 ### Development
+
 - Seeding is safe and encouraged
 - Use realistic but obviously fake data
 - Performance is less critical than data completeness
 
 ### Staging
+
 - Should use production-like data volume
 - Seeding should be automated in the deployment pipeline
 - Verify data integrity after deployment
 
 ### Production
+
 - Never run seed scripts against production
 - Use proper migrations and data management tools
 - Maintain separate production data import processes
@@ -304,6 +335,7 @@ When reviewing PRs:
 ## Production Safety Guidelines
 
 ### Environment Safeguards
+
 The seed script includes multiple safety mechanisms:
 
 1. **Service Role Key Requirement**: Won't run without proper authentication
@@ -314,16 +346,19 @@ The seed script includes multiple safety mechanisms:
 ### Best Practices for Safety
 
 #### Development
+
 - Use `.env.local` for credentials (never commit)
 - Run freely - designed for repeated use
 - Use `seed:verify` to check data integrity
 
 #### Staging
+
 - Future feature: Will require `--staging` flag
 - Currently: Double-check URL before running
 - Always verify with `seed:verify` after seeding
 
 #### Production
+
 - **NEVER** run seed scripts in production
 - Block service role key access in production
 - Use database migrations for schema changes
@@ -332,6 +367,7 @@ The seed script includes multiple safety mechanisms:
 ### Emergency Procedures
 
 If accidentally run in the wrong environment:
+
 1. **DO NOT** run `seed:reset` - it will delete data
 2. Check with `npm run seed:verify` to see what was added
 3. Manually review and remove test agencies if needed

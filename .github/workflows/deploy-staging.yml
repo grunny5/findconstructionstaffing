@@ -28,27 +28,27 @@ jobs:
     runs-on: ubuntu-latest
     # Only run on merged PRs or direct pushes to staging/develop
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-      
+
       # Debug step removed for security - do not log secret lengths or structure
-      
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
-      
+
       - name: Build Project Artifacts
         run: vercel build --token="${{ secrets.VERCEL_TOKEN }}"
-      
+
       - name: Deploy to Staging
         run: |
           vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}" > deployment-url.txt
           DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
           echo "DEPLOYMENT_URL=${DEPLOYMENT_URL}" >> "$GITHUB_ENV"
-      
+
       - name: Alias to Staging URL
         run: |
           DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
@@ -56,7 +56,7 @@ jobs:
             echo "::warning::Failed to set staging alias. This is non-critical and deployment continues."
             echo "::warning::Error details: $?"
           fi
-      
+
       - name: Add Deployment Summary
         run: |
           echo "## 🚀 Staging Deployment" >> $GITHUB_STEP_SUMMARY
@@ -65,7 +65,7 @@ jobs:
           echo "**URL:** ${{ env.DEPLOYMENT_URL }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-      
+
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7

@@ -12,7 +12,7 @@ jobs:
   validate-preview:
     name: Validate Preview Environment
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check PR eligibility
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
@@ -20,32 +20,32 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            
+
             // Check if PR is from a fork
             const isFromFork = pr.head.repo.full_name !== pr.base.repo.full_name;
-            
+
             // Check if PR has CI/CD label
             const labels = pr.labels.map(l => l.name);
             const hasDeployLabel = labels.includes('deploy-preview');
-            
+
             // Check PR size
             const { data: prData } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number
             });
-            
+
             const isLargePR = prData.additions + prData.deletions > 1000;
-            
+
             // Set outputs
             core.setOutput('is-fork', isFromFork);
             core.setOutput('has-label', hasDeployLabel);
             core.setOutput('is-large', isLargePR);
-            
+
             // Determine if preview should be deployed
             let shouldDeploy = true;
             let reason = '';
-            
+
             if (isFromFork) {
               shouldDeploy = false;
               reason = 'Preview deployments are disabled for forked PRs (secrets unavailable)';
@@ -53,17 +53,17 @@ jobs:
               shouldDeploy = false;
               reason = 'Large PRs (>1000 changes) require "deploy-preview" label';
             }
-            
+
             core.setOutput('should-deploy', shouldDeploy);
             core.setOutput('reason', reason);
-            
+
       - name: Update PR status
         if: steps.check.outputs.should-deploy == 'false'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const reason = '${{ steps.check.outputs.reason }}';
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -81,13 +81,13 @@ jobs:
               This helps us manage deployment resources efficiently.`
               }`
             });
-            
+
       - name: Set deployment gate
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const shouldDeploy = '${{ steps.check.outputs.should-deploy }}' === 'true';
-            
+
             await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,

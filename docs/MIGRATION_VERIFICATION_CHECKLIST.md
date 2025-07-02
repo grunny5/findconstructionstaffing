@@ -20,13 +20,13 @@ This checklist ensures data migration from mock data to Supabase is complete and
 
 Expected after full mock data migration:
 
-| Table | Expected Count | Actual Count | Status |
-|-------|----------------|--------------|--------|
-| agencies | 12 | ___ | ⬜ |
-| trades | ~30 unique | ___ | ⬜ |
-| regions | ~20 states | ___ | ⬜ |
-| agency_trades | ~60 links | ___ | ⬜ |
-| agency_regions | ~48 links | ___ | ⬜ |
+| Table          | Expected Count | Actual Count | Status |
+| -------------- | -------------- | ------------ | ------ |
+| agencies       | 12             | \_\_\_       | ⬜     |
+| trades         | ~30 unique     | \_\_\_       | ⬜     |
+| regions        | ~20 states     | \_\_\_       | ⬜     |
+| agency_trades  | ~60 links      | \_\_\_       | ⬜     |
+| agency_regions | ~48 links      | \_\_\_       | ⬜     |
 
 ### 2. Relationship Integrity
 
@@ -108,11 +108,13 @@ Test via application:
 ## Verification Queries
 
 Run the verification script:
+
 ```bash
 node scripts/data-verification-queries.js
 ```
 
 Or run SQL queries directly:
+
 ```sql
 -- See: docs/migration-verification-queries.sql
 ```
@@ -125,6 +127,6 @@ Or run SQL queries directly:
 - [ ] Performance meets requirements
 - [ ] Security policies working correctly
 
-**Verified by:** _______________  
-**Date:** _______________  
-**Notes:** _______________
+**Verified by:** ******\_\_\_******  
+**Date:** ******\_\_\_******  
+**Notes:** ******\_\_\_******

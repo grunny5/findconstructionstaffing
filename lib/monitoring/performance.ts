@@ -1,12 +1,12 @@
 /**
  * Performance monitoring utilities for API endpoints
- * 
+ *
  * Provides structured logging and metrics collection for:
  * - API response times
  * - Database query times
  * - Error tracking
  * - Performance alerts
- * 
+ *
  * Configuration:
  * - DB_QUERY_THRESHOLD_MS: Database query time threshold in milliseconds (default: 50)
  */
@@ -67,22 +67,28 @@ export class PerformanceMonitor {
    * Returns the sum of all completed queries
    */
   getQueryTime(): number | undefined {
-    const completedQueries = Array.from(this.queries.values()).filter(q => q.end);
+    const completedQueries = Array.from(this.queries.values()).filter(
+      (q) => q.end
+    );
     if (completedQueries.length === 0) {
       return undefined;
     }
-    
+
     const totalTime = completedQueries.reduce((sum, query) => {
       return sum + Math.round(query.end! - query.start);
     }, 0);
-    
+
     return totalTime;
   }
 
   /**
    * Complete monitoring and return metrics
    */
-  complete(statusCode: number, error?: string, metadata?: Record<string, any>): PerformanceMetrics {
+  complete(
+    statusCode: number,
+    error?: string,
+    metadata?: Record<string, any>
+  ): PerformanceMetrics {
     const endTime = performance.now();
     const responseTime = Math.round(endTime - this.startTime);
     const queryTime = this.getQueryTime();
@@ -95,7 +101,7 @@ export class PerformanceMonitor {
       queryTime,
       error,
       timestamp: new Date().toISOString(),
-      metadata
+      metadata,
     };
 
     // Log the metrics
@@ -111,12 +117,15 @@ export class PerformanceMonitor {
    * Log metrics in structured format
    */
   private logMetrics(metrics: PerformanceMetrics): void {
-    const logLevel = metrics.error ? 'error' : 
-                    metrics.responseTime > 80 ? 'warn' : 'info';
+    const logLevel = metrics.error
+      ? 'error'
+      : metrics.responseTime > 80
+        ? 'warn'
+        : 'info';
 
     const logData = {
       type: 'api_performance',
-      ...metrics
+      ...metrics,
     };
 
     // In production, this would send to a logging service
@@ -125,12 +134,15 @@ export class PerformanceMonitor {
       console[logLevel](JSON.stringify(logData));
     } else {
       // Development-friendly output
-      console[logLevel](`[API Performance] ${metrics.method} ${metrics.endpoint}`, {
-        responseTime: `${metrics.responseTime}ms`,
-        queryTime: metrics.queryTime ? `${metrics.queryTime}ms` : 'N/A',
-        status: metrics.statusCode,
-        ...(metrics.error && { error: metrics.error })
-      });
+      console[logLevel](
+        `[API Performance] ${metrics.method} ${metrics.endpoint}`,
+        {
+          responseTime: `${metrics.responseTime}ms`,
+          queryTime: metrics.queryTime ? `${metrics.queryTime}ms` : 'N/A',
+          status: metrics.statusCode,
+          ...(metrics.error && { error: metrics.error }),
+        }
+      );
     }
   }
 
@@ -139,10 +151,15 @@ export class PerformanceMonitor {
    */
   private checkAlerts(metrics: PerformanceMetrics): void {
     // Alert for slow database queries (configurable threshold)
-    const queryTimeThreshold = parseInt(process.env.DB_QUERY_THRESHOLD_MS || '50', 10);
+    const queryTimeThreshold = parseInt(
+      process.env.DB_QUERY_THRESHOLD_MS || '50',
+      10
+    );
     if (metrics.queryTime && metrics.queryTime > queryTimeThreshold) {
-      console.warn(`[PERFORMANCE ALERT] Slow database query: ${metrics.endpoint} query took ${metrics.queryTime}ms (threshold: ${queryTimeThreshold}ms)`);
-      
+      console.warn(
+        `[PERFORMANCE ALERT] Slow database query: ${metrics.endpoint} query took ${metrics.queryTime}ms (threshold: ${queryTimeThreshold}ms)`
+      );
+
       // In production, this would trigger actual alerts (PagerDuty, Slack, etc.)
       if (process.env.NODE_ENV === 'production') {
         // TODO: Integrate with alerting service
@@ -150,15 +167,17 @@ export class PerformanceMonitor {
           severity: 'warning',
           title: 'Slow Database Query',
           description: `${metrics.method} ${metrics.endpoint} database query took ${metrics.queryTime}ms`,
-          metrics
+          metrics,
         });
       }
     }
 
     // Alert for slow API responses (>80ms approaching 100ms target)
     if (metrics.responseTime > 80) {
-      console.warn(`[PERFORMANCE ALERT] Slow API response: ${metrics.endpoint} took ${metrics.responseTime}ms (approaching 100ms target)`);
-      
+      console.warn(
+        `[PERFORMANCE ALERT] Slow API response: ${metrics.endpoint} took ${metrics.responseTime}ms (approaching 100ms target)`
+      );
+
       // In production, this would trigger actual alerts (PagerDuty, Slack, etc.)
       if (process.env.NODE_ENV === 'production' && metrics.responseTime > 100) {
         // TODO: Integrate with alerting service
@@ -166,21 +185,23 @@ export class PerformanceMonitor {
           severity: 'warning',
           title: 'Slow API Response',
           description: `${metrics.method} ${metrics.endpoint} took ${metrics.responseTime}ms`,
-          metrics
+          metrics,
         });
       }
     }
 
     // Alert for very slow queries (>1000ms)
     if (metrics.responseTime > 1000) {
-      console.error(`[CRITICAL PERFORMANCE] Very slow API response: ${metrics.endpoint} took ${metrics.responseTime}ms`);
-      
+      console.error(
+        `[CRITICAL PERFORMANCE] Very slow API response: ${metrics.endpoint} took ${metrics.responseTime}ms`
+      );
+
       if (process.env.NODE_ENV === 'production') {
         this.sendAlert({
           severity: 'critical',
           title: 'Critical API Performance Issue',
           description: `${metrics.method} ${metrics.endpoint} took ${metrics.responseTime}ms`,
-          metrics
+          metrics,
         });
       }
     }
@@ -188,13 +209,13 @@ export class PerformanceMonitor {
     // Alert for errors
     if (metrics.error) {
       console.error(`[API ERROR] ${metrics.endpoint}: ${metrics.error}`);
-      
+
       if (process.env.NODE_ENV === 'production') {
         this.sendAlert({
           severity: 'error',
           title: 'API Error',
           description: `${metrics.method} ${metrics.endpoint} failed: ${metrics.error}`,
-          metrics
+          metrics,
         });
       }
     }
@@ -218,11 +239,11 @@ export class PerformanceMonitor {
 
 /**
  * Error rate tracker for monitoring API health
- * 
+ *
  * IMPORTANT: This tracker is per-process and does NOT synchronize across multiple
  * workers or processes. In a multi-worker environment (e.g., cluster mode), each
  * worker maintains its own separate instance with independent metrics.
- * 
+ *
  * For production environments with multiple workers, consider using:
  * - External metrics storage (Redis, Prometheus, etc.)
  * - Aggregation at the load balancer level
@@ -254,7 +275,7 @@ export class ErrorRateTracker {
 
     const key = endpoint;
     this.requestCounts.set(key, (this.requestCounts.get(key) || 0) + 1);
-    
+
     if (isError) {
       this.errorCounts.set(key, (this.errorCounts.get(key) || 0) + 1);
     }
@@ -266,9 +287,10 @@ export class ErrorRateTracker {
   private enforceMemoryLimit(): void {
     if (this.requestCounts.size >= this.MAX_ENDPOINTS) {
       // Remove endpoints with the lowest request counts
-      const entries = Array.from(this.requestCounts.entries())
-        .sort((a, b) => a[1] - b[1]);
-      
+      const entries = Array.from(this.requestCounts.entries()).sort(
+        (a, b) => a[1] - b[1]
+      );
+
       // Remove the bottom 10% of endpoints
       const toRemove = Math.ceil(this.MAX_ENDPOINTS * 0.1);
       for (let i = 0; i < toRemove && i < entries.length; i++) {
@@ -285,7 +307,7 @@ export class ErrorRateTracker {
   getErrorRate(endpoint: string): number {
     const requests = this.requestCounts.get(endpoint) || 0;
     const errors = this.errorCounts.get(endpoint) || 0;
-    
+
     if (requests === 0) return 0;
     return (errors / requests) * 100;
   }
@@ -293,17 +315,23 @@ export class ErrorRateTracker {
   /**
    * Get all error rates
    */
-  getAllErrorRates(): Record<string, { errorRate: number; totalRequests: number }> {
-    const rates: Record<string, { errorRate: number; totalRequests: number }> = {};
-    
-    for (const [endpoint, requests] of Array.from(this.requestCounts.entries())) {
+  getAllErrorRates(): Record<
+    string,
+    { errorRate: number; totalRequests: number }
+  > {
+    const rates: Record<string, { errorRate: number; totalRequests: number }> =
+      {};
+
+    for (const [endpoint, requests] of Array.from(
+      this.requestCounts.entries()
+    )) {
       const errors = this.errorCounts.get(endpoint) || 0;
       rates[endpoint] = {
         errorRate: requests > 0 ? (errors / requests) * 100 : 0,
-        totalRequests: requests
+        totalRequests: requests,
       };
     }
-    
+
     return rates;
   }
 
@@ -339,10 +367,9 @@ export class ErrorRateTracker {
 /**
  * Utility function to wrap API handlers with performance monitoring
  */
-export function withPerformanceMonitoring<T extends (...args: any[]) => Promise<Response>>(
-  handler: T,
-  endpoint: string
-): T {
+export function withPerformanceMonitoring<
+  T extends (...args: any[]) => Promise<Response>,
+>(handler: T, endpoint: string): T {
   return (async (...args: Parameters<T>) => {
     // More robust method extraction with type safety
     const request = args[0] as Request | undefined;
@@ -352,17 +379,20 @@ export function withPerformanceMonitoring<T extends (...args: any[]) => Promise<
 
     try {
       const response = await handler(...args);
-      
+
       // Record metrics
       const isError = response.status >= 400;
-      monitor.complete(response.status, isError ? `HTTP ${response.status}` : undefined);
+      monitor.complete(
+        response.status,
+        isError ? `HTTP ${response.status}` : undefined
+      );
       errorTracker.recordRequest(endpoint, isError);
-      
+
       return response;
     } catch (error) {
       // Record error metrics with better error handling
       let errorMessage: string;
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
@@ -372,10 +402,10 @@ export function withPerformanceMonitoring<T extends (...args: any[]) => Promise<
       } else {
         errorMessage = 'Unknown error';
       }
-      
+
       monitor.complete(500, errorMessage);
       errorTracker.recordRequest(endpoint, true);
-      
+
       throw error;
     }
   }) as T;

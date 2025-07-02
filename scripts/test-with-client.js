@@ -6,14 +6,14 @@ loadEnvironmentVariables();
 
 async function testSupabaseClient() {
   console.log('🔍 Testing Supabase with client library...\n');
-  
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
+
   console.log('📋 Configuration:');
   console.log(`URL: ${url || 'NOT SET'}`);
   console.log(`Key: ${key ? key.substring(0, 50) + '...' : 'NOT SET'}\n`);
-  
+
   // Validate environment variables
   const missingVars = [];
   if (!url) {
@@ -22,19 +22,21 @@ async function testSupabaseClient() {
   if (!key) {
     missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
   }
-  
+
   if (missingVars.length > 0) {
     console.error('❌ Missing required environment variables:');
-    missingVars.forEach(varName => {
+    missingVars.forEach((varName) => {
       console.error(`   - ${varName}`);
     });
     console.error('\n📋 Please set these variables in your .env.local file:');
     console.error('   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url');
     console.error('   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key');
-    console.error('\n💡 You can find these values in your Supabase project dashboard.');
+    console.error(
+      '\n💡 You can find these values in your Supabase project dashboard.'
+    );
     process.exit(1);
   }
-  
+
   // Additional validation for URL format
   try {
     new URL(url);
@@ -44,31 +46,38 @@ async function testSupabaseClient() {
     console.error('   Expected format: https://your-project.supabase.co');
     process.exit(1);
   }
-  
+
   // Validate key format (basic check for JWT structure)
   if (!key.match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/)) {
     console.error('❌ Invalid NEXT_PUBLIC_SUPABASE_ANON_KEY format');
-    console.error('   The key should be a JWT token (three parts separated by dots)');
-    console.error('   Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi...');
+    console.error(
+      '   The key should be a JWT token (three parts separated by dots)'
+    );
+    console.error(
+      '   Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi...'
+    );
     process.exit(1);
   }
-  
+
   try {
     console.log('✅ Supabase client library loaded\n');
-    
+
     // Create client
     const supabase = createClient(url, key);
-    
+
     console.log('🔄 Testing connection...');
-    
+
     // Try a simple query
     const { data, error } = await supabase
       .from('test_connection')
       .select('*')
       .limit(1);
-    
+
     if (error) {
-      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+      if (
+        error.message.includes('relation') &&
+        error.message.includes('does not exist')
+      ) {
         console.log('\n✅ Connection successful!');
         console.log('ℹ️  Table does not exist (which is expected)');
         console.log('\n🎉 Your Supabase connection is working correctly!');
@@ -85,10 +94,9 @@ async function testSupabaseClient() {
       console.log('\n✅ Connection successful!');
       console.log('Data:', data);
     }
-    
   } catch (error) {
     console.error('\n❌ Error:', error.message);
-    
+
     if (error.message.includes('Cannot find module')) {
       console.log('\nThe Supabase client is not installed. Run:');
       console.log('npm install');

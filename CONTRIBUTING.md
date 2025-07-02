@@ -14,13 +14,16 @@ Thank you for your interest in contributing to FindConstructionStaffing! This gu
 ## 🔄 Development Workflow
 
 ### Branch Naming
+
 - Feature branches: `feat/description`
 - Bug fixes: `fix/description`
 - Infrastructure: `infra/description`
 - Documentation: `docs/description`
 
 ### Commit Messages
+
 Follow conventional commits format:
+
 - `feat:` New features
 - `fix:` Bug fixes
 - `docs:` Documentation changes
@@ -34,7 +37,9 @@ Example: `feat: add agency search filtering by trade`
 ## ✅ Pull Request Process
 
 ### Before Submitting
+
 1. **Run all checks locally:**
+
    ```bash
    npm run type-check  # TypeScript compilation
    npm run lint        # ESLint checks
@@ -49,7 +54,9 @@ Example: `feat: add agency search filtering by trade`
    - All tests must pass
 
 ### PR Requirements
+
 All pull requests must:
+
 - ✅ Pass all CI/CD checks
 - ✅ Have at least 1 approval
 - ✅ Be up-to-date with main branch
@@ -57,7 +64,9 @@ All pull requests must:
 - ✅ Update documentation as needed
 
 ### CI/CD Checks
+
 Our automated pipeline runs:
+
 1. **Code Quality Checks** - TypeScript, ESLint, Prettier
 2. **Run Tests** - Jest unit tests with coverage
 3. **Security Scanning** - npm audit
@@ -65,13 +74,17 @@ Our automated pipeline runs:
 5. **Preview Deployment** - Automatic Vercel preview for PRs
 
 ### Preview Deployments
+
 Every pull request automatically gets a preview deployment:
+
 - **URL Format**: `https://findconstructionstaffing-pr-{PR_NUMBER}.vercel.app`
 - **Updates**: New commits trigger new deployments
 - **Cleanup**: Preview removed when PR is closed
 
 #### Preview Deployment Gates
+
 Large PRs or PRs from forks may require the `deploy-preview` label:
+
 - PRs from forks need explicit approval via label
 - PRs with >1000 changes need review before deployment
 - Add `deploy-preview` label to enable deployment
@@ -79,6 +92,7 @@ Large PRs or PRs from forks may require the `deploy-preview` label:
 ## 🛡️ Branch Protection
 
 The `main` branch is protected with the following rules:
+
 - Cannot push directly (must use PR)
 - All CI checks must pass
 - Requires 1 code review approval
@@ -88,21 +102,25 @@ The `main` branch is protected with the following rules:
 ## 📝 Code Standards
 
 ### TypeScript
+
 - Strict mode is enabled
 - Define types for all parameters and return values
 - Avoid `any` type unless absolutely necessary
 
 ### React/Next.js
+
 - Use functional components with hooks
 - Follow Next.js App Router patterns
 - Use server components where appropriate
 
 ### Testing
+
 - Write tests for new features
 - Maintain 80%+ code coverage
 - Use meaningful test descriptions
 
 ### Styling
+
 - Use Tailwind CSS utility classes
 - Follow existing component patterns
 - Use Shadcn/ui components when available
@@ -110,6 +128,7 @@ The `main` branch is protected with the following rules:
 ## 🐛 Reporting Issues
 
 When reporting issues, please include:
+
 - Clear description of the problem
 - Steps to reproduce
 - Expected vs actual behavior
@@ -119,6 +138,7 @@ When reporting issues, please include:
 ## 💡 Suggesting Features
 
 Feature suggestions should include:
+
 - Problem statement
 - Proposed solution
 - Alternative solutions considered
@@ -134,6 +154,7 @@ Feature suggestions should include:
 ## ❓ Questions?
 
 If you have questions about contributing:
+
 1. Check existing issues and PRs
 2. Review project documentation
 3. Ask in issue comments or discussions

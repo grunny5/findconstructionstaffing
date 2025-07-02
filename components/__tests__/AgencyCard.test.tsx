@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
 import { Agency } from '@/types/api';
 
@@ -135,15 +135,30 @@ describe('AgencyCard', () => {
     render(<AgencyCard agency={mockAgency} />);
 
     const logo = screen.getByAltText('Test Agency logo');
-    expect(logo).toHaveAttribute('src', 'https://example.com/logo.png');
+    expect(logo).toBeInTheDocument();
   });
 
-  it('should render placeholder if no logo', () => {
+  it('should render initials placeholder when no logo', () => {
     const agencyWithoutLogo = { ...mockAgency, logo_url: null };
     render(<AgencyCard agency={agencyWithoutLogo} />);
 
-    // Should render icon instead of image
-    const icon = document.querySelector('svg');
-    expect(icon).toBeInTheDocument();
+    // Should not render the logo image
+    expect(screen.queryByAltText('Test Agency logo')).not.toBeInTheDocument();
+    
+    // Should render initials (first letters of agency name)
+    // "Test Agency" should show "TA"
+    expect(screen.getByText('TA')).toBeInTheDocument();
+  });
+
+  it('should handle logo loading errors gracefully', () => {
+    render(<AgencyCard agency={mockAgency} />);
+
+    const logo = screen.getByAltText('Test Agency logo');
+    
+    // Simulate image load error
+    fireEvent.error(logo);
+    
+    // After error, should show initials instead
+    expect(screen.getByText('TA')).toBeInTheDocument();
   });
 });

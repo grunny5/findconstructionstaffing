@@ -16,25 +16,25 @@ if (fs.existsSync(envPath)) {
   console.log('✅ Found .env.local file\n');
   const envContent = fs.readFileSync(envPath, 'utf8');
   const lines = envContent.split(/\r?\n/);
-  
+
   console.log(`📄 Processing ${lines.length} lines from .env.local...`);
-  
+
   lines.forEach((line, index) => {
     const trimmedLine = line.trim();
-    
+
     // Skip empty lines and comments
     if (!trimmedLine || trimmedLine.startsWith('#')) {
       return;
     }
-    
+
     const equalIndex = trimmedLine.indexOf('=');
     if (equalIndex > 0) {
       const key = trimmedLine.substring(0, equalIndex).trim();
       const value = trimmedLine.substring(equalIndex + 1).trim();
-      
+
       // Remove quotes if present
       const cleanValue = value.replace(/^["']|["']$/g, '');
-      
+
       process.env[key] = cleanValue;
       // Log only the key name for security, not the value
       console.log(`✓ Set ${key}`);
@@ -44,7 +44,9 @@ if (fs.existsSync(envPath)) {
 } else {
   console.error('❌ .env.local file not found!');
   console.log(`Looking for file at: ${envPath}`);
-  console.log('\nPlease create a .env.local file with your Supabase credentials.');
+  console.log(
+    '\nPlease create a .env.local file with your Supabase credentials.'
+  );
   console.log('You can copy from .env.local.template:');
   console.log('  cp .env.local.template .env.local');
   process.exit(1);
@@ -55,7 +57,7 @@ async function testConnection() {
 
   // Debug: Show loaded environment variables
   console.log('📋 Loaded environment variables:');
-  Object.keys(process.env).forEach(key => {
+  Object.keys(process.env).forEach((key) => {
     if (key.includes('SUPABASE')) {
       console.log(`- ${key}: ${process.env[key] ? '✓ Set' : '✗ Not set'}`);
     }
@@ -85,9 +87,9 @@ async function testConnection() {
     console.log('\n🔄 Attempting to connect to Supabase...');
     const https = require('https');
     const url = require('url');
-    
+
     const startTime = Date.now();
-    
+
     // Validate URL format and protocol
     let parsedUrl;
     try {
@@ -99,45 +101,51 @@ async function testConnection() {
       console.error('   Example: https://your-project.supabase.co');
       process.exit(1);
     }
-    
+
     // Ensure HTTPS protocol for security
     if (parsedUrl.protocol !== 'https:') {
       console.error('❌ Security Error: URL must use HTTPS protocol!');
       console.error(`   Current protocol: ${parsedUrl.protocol}`);
       console.error('   Supabase requires HTTPS for secure connections.');
-      console.error('   Please update your NEXT_PUBLIC_SUPABASE_URL to use https://');
+      console.error(
+        '   Please update your NEXT_PUBLIC_SUPABASE_URL to use https://'
+      );
       process.exit(1);
     }
-    
+
     // Make a simple request to the Supabase REST API
     const options = {
       hostname: parsedUrl.hostname,
       path: '/rest/v1/',
       method: 'GET',
       headers: {
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`
-      }
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
     };
-    
+
     const req = https.request(options, (res) => {
       const responseTime = Date.now() - startTime;
       let data = '';
-      
+
       res.on('data', (chunk) => {
         data += chunk;
       });
-      
+
       res.on('end', () => {
         if (res.statusCode === 200 || res.statusCode === 404) {
           console.log('✅ Connection successful!');
           console.log(`⏱️  Response time: ${responseTime}ms`);
           console.log('\n📊 Connection Summary:');
           console.log('- Status: Connected');
-          console.log('- Latency: ' + (responseTime < 100 ? '✅ Good' : '⚠️  Slow') + ` (${responseTime}ms)`);
+          console.log(
+            '- Latency: ' +
+              (responseTime < 100 ? '✅ Good' : '⚠️  Slow') +
+              ` (${responseTime}ms)`
+          );
           console.log('- API Response: ' + res.statusCode);
           console.log('- Database: Ready for schema creation');
-          
+
           console.log('\n🎉 Supabase connection test passed!');
           console.log('\nNext steps:');
           console.log('1. Run `npm run dev` to start the application');
@@ -148,11 +156,13 @@ async function testConnection() {
           console.error('Response:', data);
           console.log('\nThis usually means:');
           console.log('1. The anon key is incorrect or expired');
-          console.log('2. The project URL doesn\'t match the key');
+          console.log("2. The project URL doesn't match the key");
           console.log('\nPlease verify:');
           console.log('- Your Supabase project is active');
           console.log('- The anon key from Settings > API is correct');
-          console.log('- You\'re using the anon/public key, not the service role key');
+          console.log(
+            "- You're using the anon/public key, not the service role key"
+          );
           process.exit(1);
         } else {
           console.error(`\n❌ Unexpected response: ${res.statusCode}`);
@@ -161,7 +171,7 @@ async function testConnection() {
         }
       });
     });
-    
+
     req.on('error', (error) => {
       console.error('\n❌ Connection failed!');
       console.error('Error:', error.message);
@@ -171,9 +181,8 @@ async function testConnection() {
       console.log('3. Ensure your network can reach Supabase');
       process.exit(1);
     });
-    
+
     req.end();
-    
   } catch (error) {
     console.error('\n❌ Connection failed!');
     console.error('Error:', error.message);

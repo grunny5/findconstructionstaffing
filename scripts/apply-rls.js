@@ -4,7 +4,13 @@ const path = require('path');
 console.log('🔒 Applying Row Level Security\n');
 
 // Read the RLS migration
-const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20250625_004_enable_rls.sql');
+const migrationPath = path.join(
+  __dirname,
+  '..',
+  'supabase',
+  'migrations',
+  '20250625_004_enable_rls.sql'
+);
 
 // Check if migration file exists
 if (!fs.existsSync(migrationPath)) {

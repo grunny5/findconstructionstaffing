@@ -23,10 +23,12 @@ name.fts.{search_term},description.fts.{search_term},name.ilike.%{search_term}%,
 ### Search Features
 
 #### Multi-Field Search
+
 - Searches across both `name` and `description` fields
 - Uses OR logic (matches in either field return results)
 
 #### Input Sanitization
+
 - Removes dangerous characters: `<>"'&`
 - Trims whitespace and normalizes spaces
 - Prevents SQL injection attacks
@@ -52,16 +54,19 @@ name.fts.{search_term},description.fts.{search_term},name.ilike.%{search_term}%,
 ## API Usage
 
 ### Basic Search
+
 ```http
 GET /api/agencies?search=electrical
 ```
 
 ### Search with Pagination
+
 ```http
 GET /api/agencies?search=construction&limit=10&offset=20
 ```
 
 ### Combined with Other Filters
+
 ```http
 GET /api/agencies?search=plumbing&trades[]=plumbers&states[]=TX
 ```
@@ -76,7 +81,7 @@ Search results maintain the same response structure:
     {
       "id": "uuid",
       "name": "Electrical Contractors Inc",
-      "description": "Premier electrical staffing solutions...",
+      "description": "Premier electrical staffing solutions..."
       // ... other fields
     }
   ],
@@ -92,16 +97,19 @@ Search results maintain the same response structure:
 ## Performance Considerations
 
 ### Database Indexes
+
 - Case-insensitive index on agency names: `idx_agencies_name_lower`
 - Standard indexes on description field for FTS
 - Composite indexes for filtered searches
 
 ### Query Optimization
+
 - FTS queries use PostgreSQL's optimized text search
 - ILIKE queries benefit from trigram indexes (if enabled)
 - Combined strategy provides best of both approaches
 
 ### Caching
+
 - Search results are cached using ETag headers
 - Cache keys include search parameters
 - 5-minute cache duration for search results
@@ -109,12 +117,14 @@ Search results maintain the same response structure:
 ## Search Quality
 
 ### Relevance Ranking
+
 1. **Exact matches** in name field (highest priority)
 2. **FTS matches** using PostgreSQL's ranking
 3. **Partial matches** in name field
 4. **Description matches** (lower priority)
 
 ### Edge Cases Handled
+
 - Empty search terms → Returns all results
 - Only whitespace → Treated as empty search
 - Special characters → Sanitized and searched
@@ -123,11 +133,13 @@ Search results maintain the same response structure:
 ## Implementation Details
 
 ### Code Location
+
 - Main implementation: `app/api/agencies/route.ts`
 - Validation: `lib/validation/agencies-query.ts`
 - Input sanitization: `sanitizeSearchInput()` function
 
 ### Search Logic Flow
+
 1. Parse query parameters with Zod validation
 2. Sanitize search input if provided
 3. Build Supabase query with FTS + ILIKE conditions
@@ -135,6 +147,7 @@ Search results maintain the same response structure:
 5. Execute queries and return results
 
 ### Error Handling
+
 - Invalid search parameters → 400 Bad Request
 - Database errors → 500 Internal Server Error
 - Empty results → 200 OK with empty array
@@ -143,6 +156,7 @@ Search results maintain the same response structure:
 ## Future Enhancements
 
 ### Planned Improvements
+
 - Search result highlighting
 - Search analytics and logging
 - Fuzzy search for typo tolerance
@@ -150,6 +164,7 @@ Search results maintain the same response structure:
 - Advanced ranking algorithms
 
 ### Performance Optimizations
+
 - Full-text search indexes on description
 - Search result caching layer
 - Query performance monitoring

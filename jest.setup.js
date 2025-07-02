@@ -3,13 +3,13 @@
 
 // Used for __tests__/testing-library.js
 // Learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
 
 // Mock environment variables for tests - must be set before any imports
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key'
-process.env.NODE_ENV = 'test'
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
+process.env.NODE_ENV = 'test';
 
 // Add Web API polyfills for Node.js environment tests
 if (typeof global.Request === 'undefined') {
@@ -29,7 +29,7 @@ if (typeof global.Request === 'undefined') {
         this.headers = new Map(Object.entries(options.headers || {}));
       }
     };
-    
+
     global.Response = class MockResponse {
       constructor(body, options = {}) {
         this.body = body;
@@ -37,18 +37,20 @@ if (typeof global.Request === 'undefined') {
         this.headers = new Map(Object.entries(options.headers || {}));
       }
     };
-    
+
     global.Headers = class MockHeaders extends Map {
       constructor(init) {
         super();
         if (init) {
           if (typeof init === 'object' && init.constructor === Object) {
-            Object.entries(init).forEach(([key, value]) => this.set(key, value));
+            Object.entries(init).forEach(([key, value]) =>
+              this.set(key, value)
+            );
           }
         }
       }
     };
-    
+
     global.fetch = jest.fn();
   }
 }

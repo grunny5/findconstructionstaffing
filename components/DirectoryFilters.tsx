@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -6,12 +6,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Search, 
-  Filter, 
-  X, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Search,
+  Filter,
+  X,
   ChevronDown,
   MapPin,
   Wrench,
@@ -19,9 +29,14 @@ import {
   Users,
   Award,
   Building2,
-  Target
+  Target,
 } from 'lucide-react';
-import { allTrades, allStates, companySizes, focusAreas } from '@/lib/mock-data';
+import {
+  allTrades,
+  allStates,
+  companySizes,
+  focusAreas,
+} from '@/lib/mock-data';
 
 // Helper function to convert trade names to slugs
 const tradeToSlug = (trade: string): string => {
@@ -50,7 +65,11 @@ export interface FilterState {
   focusAreas: string[];
 }
 
-export default function DirectoryFilters({ onFiltersChange, totalResults, isLoading }: DirectoryFiltersProps) {
+export default function DirectoryFilters({
+  onFiltersChange,
+  totalResults,
+  isLoading,
+}: DirectoryFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     trades: [],
@@ -61,7 +80,6 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
     companySize: [],
     focusAreas: [],
   });
-
 
   const updateFilters = (newFilters: Partial<FilterState>) => {
     const updated = { ...filters, ...newFilters };
@@ -84,11 +102,12 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
     onFiltersChange(cleared);
   };
 
-  const hasActiveFilters = filters.search || 
-    filters.trades.length > 0 || 
-    filters.states.length > 0 || 
-    filters.perDiem !== null || 
-    filters.union !== null || 
+  const hasActiveFilters =
+    filters.search ||
+    filters.trades.length > 0 ||
+    filters.states.length > 0 ||
+    filters.perDiem !== null ||
+    filters.union !== null ||
     filters.claimedOnly ||
     filters.companySize.length > 0 ||
     filters.focusAreas.length > 0;
@@ -99,10 +118,10 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
         updateFilters({ search: '' });
         break;
       case 'trade':
-        updateFilters({ trades: filters.trades.filter(t => t !== value) });
+        updateFilters({ trades: filters.trades.filter((t) => t !== value) });
         break;
       case 'state':
-        updateFilters({ states: filters.states.filter(s => s !== value) });
+        updateFilters({ states: filters.states.filter((s) => s !== value) });
         break;
       case 'perDiem':
         updateFilters({ perDiem: null });
@@ -114,31 +133,35 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
         updateFilters({ claimedOnly: false });
         break;
       case 'companySize':
-        updateFilters({ companySize: filters.companySize.filter(s => s !== value) });
+        updateFilters({
+          companySize: filters.companySize.filter((s) => s !== value),
+        });
         break;
       case 'focusArea':
-        updateFilters({ focusAreas: filters.focusAreas.filter(f => f !== value) });
+        updateFilters({
+          focusAreas: filters.focusAreas.filter((f) => f !== value),
+        });
         break;
     }
   };
 
-  const FilterPopover = ({ 
-    trigger, 
-    title, 
-    icon: Icon, 
-    children, 
-    activeCount = 0 
-  }: { 
-    trigger: string; 
-    title: string; 
-    icon: any; 
-    children: React.ReactNode; 
+  const FilterPopover = ({
+    trigger,
+    title,
+    icon: Icon,
+    children,
+    activeCount = 0,
+  }: {
+    trigger: string;
+    title: string;
+    icon: any;
+    children: React.ReactNode;
     activeCount?: number;
   }) => (
     <Popover>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="h-10 border-gray-300 hover:border-gray-400"
           disabled={isLoading}
         >
@@ -159,9 +182,7 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
             {title}
           </h4>
         </div>
-        <div className="p-4 max-h-80 overflow-y-auto">
-          {children}
-        </div>
+        <div className="p-4 max-h-80 overflow-y-auto">{children}</div>
       </PopoverContent>
     </Popover>
   );
@@ -202,13 +223,19 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
                       checked={filters.trades.includes(tradeSlug)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          updateFilters({ trades: [...filters.trades, tradeSlug] });
+                          updateFilters({
+                            trades: [...filters.trades, tradeSlug],
+                          });
                         } else {
-                          updateFilters({ trades: filters.trades.filter(t => t !== tradeSlug) });
+                          updateFilters({
+                            trades: filters.trades.filter(
+                              (t) => t !== tradeSlug
+                            ),
+                          });
                         }
                       }}
                     />
-                    <Label 
+                    <Label
                       htmlFor={`trade-${tradeSlug}`}
                       className="text-sm font-normal cursor-pointer flex-1"
                     >
@@ -235,13 +262,19 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
                     checked={filters.states.includes(state.code)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        updateFilters({ states: [...filters.states, state.code] });
+                        updateFilters({
+                          states: [...filters.states, state.code],
+                        });
                       } else {
-                        updateFilters({ states: filters.states.filter(s => s !== state.code) });
+                        updateFilters({
+                          states: filters.states.filter(
+                            (s) => s !== state.code
+                          ),
+                        });
                       }
                     }}
                   />
-                  <Label 
+                  <Label
                     htmlFor={`state-${state.code}`}
                     className="text-sm font-normal cursor-pointer flex-1"
                   >
@@ -267,13 +300,19 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
                     checked={filters.companySize.includes(size)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        updateFilters({ companySize: [...filters.companySize, size] });
+                        updateFilters({
+                          companySize: [...filters.companySize, size],
+                        });
                       } else {
-                        updateFilters({ companySize: filters.companySize.filter(s => s !== size) });
+                        updateFilters({
+                          companySize: filters.companySize.filter(
+                            (s) => s !== size
+                          ),
+                        });
                       }
                     }}
                   />
-                  <Label 
+                  <Label
                     htmlFor={`size-${size}`}
                     className="text-sm font-normal cursor-pointer flex-1"
                   >
@@ -286,10 +325,12 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
 
           {/* Per Diem Filter */}
           <Select
-            value={filters.perDiem === null ? 'any' : filters.perDiem.toString()}
+            value={
+              filters.perDiem === null ? 'any' : filters.perDiem.toString()
+            }
             onValueChange={(value) => {
-              updateFilters({ 
-                perDiem: value === 'any' ? null : value === 'true' 
+              updateFilters({
+                perDiem: value === 'any' ? null : value === 'true',
               });
             }}
           >
@@ -308,8 +349,8 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
           <Select
             value={filters.union === null ? 'any' : filters.union.toString()}
             onValueChange={(value) => {
-              updateFilters({ 
-                union: value === 'any' ? null : value === 'true' 
+              updateFilters({
+                union: value === 'any' ? null : value === 'true',
               });
             }}
           >
@@ -329,9 +370,14 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
             <Checkbox
               id="claimed-only"
               checked={filters.claimedOnly}
-              onCheckedChange={(checked) => updateFilters({ claimedOnly: checked as boolean })}
+              onCheckedChange={(checked) =>
+                updateFilters({ claimedOnly: checked as boolean })
+              }
             />
-            <Label htmlFor="claimed-only" className="text-sm font-normal cursor-pointer flex items-center">
+            <Label
+              htmlFor="claimed-only"
+              className="text-sm font-normal cursor-pointer flex items-center"
+            >
               <Award className="h-4 w-4 mr-2 text-green-600" />
               Verified Only
             </Label>
@@ -341,8 +387,11 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
         {/* Results Count and Clear Filters */}
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 flex items-center gap-2">
-            <span className={isLoading ? "opacity-60" : ""}>
-              <span className="font-semibold text-gray-900">{totalResults}</span> {totalResults === 1 ? 'agency' : 'agencies'} found
+            <span className={isLoading ? 'opacity-60' : ''}>
+              <span className="font-semibold text-gray-900">
+                {totalResults}
+              </span>{' '}
+              {totalResults === 1 ? 'agency' : 'agencies'} found
             </span>
             {isLoading && (
               <div className="flex items-center gap-2">
@@ -356,7 +405,12 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
             )}
           </div>
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-blue-600 hover:text-blue-700">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="text-blue-600 hover:text-blue-700"
+            >
               Clear All Filters
             </Button>
           )}
@@ -367,13 +421,18 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
       {hasActiveFilters && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-900 text-sm">Active Filters</h3>
+            <h3 className="font-semibold text-gray-900 text-sm">
+              Active Filters
+            </h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {filters.search && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 px-3 py-1"
+              >
                 Search: &quot;{filters.search}&quot;
-                <button 
+                <button
                   onClick={() => removeFilter('search')}
                   className="ml-2 hover:text-blue-900"
                 >
@@ -381,13 +440,19 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
                 </button>
               </Badge>
             )}
-            {filters.trades.slice(0, 3).map(tradeSlug => {
+            {filters.trades.slice(0, 3).map((tradeSlug) => {
               // Find the original trade name from the slug
-              const tradeName = allTrades.find(t => tradeToSlug(t) === tradeSlug) || tradeSlug;
+              const tradeName =
+                allTrades.find((t) => tradeToSlug(t) === tradeSlug) ||
+                tradeSlug;
               return (
-                <Badge key={tradeSlug} variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+                <Badge
+                  key={tradeSlug}
+                  variant="secondary"
+                  className="bg-blue-100 text-blue-800 px-3 py-1"
+                >
                   {tradeName}
-                  <button 
+                  <button
                     onClick={() => removeFilter('trade', tradeSlug)}
                     className="ml-2 hover:text-blue-900"
                   >
@@ -397,17 +462,25 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
               );
             })}
             {filters.trades.length > 3 && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 px-3 py-1"
+              >
                 +{filters.trades.length - 3} more trades
               </Badge>
             )}
-            {filters.states.slice(0, 2).map(stateCode => {
+            {filters.states.slice(0, 2).map((stateCode) => {
               // Find the state name from the code
-              const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
+              const stateName =
+                allStates.find((s) => s.code === stateCode)?.name || stateCode;
               return (
-                <Badge key={stateCode} variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+                <Badge
+                  key={stateCode}
+                  variant="secondary"
+                  className="bg-blue-100 text-blue-800 px-3 py-1"
+                >
                   {stateName}
-                  <button 
+                  <button
                     onClick={() => removeFilter('state', stateCode)}
                     className="ml-2 hover:text-blue-900"
                   >
@@ -417,14 +490,20 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
               );
             })}
             {filters.states.length > 2 && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 px-3 py-1"
+              >
                 +{filters.states.length - 2} more states
               </Badge>
             )}
             {filters.perDiem !== null && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 px-3 py-1"
+              >
                 {filters.perDiem ? 'Offers Per Diem' : 'No Per Diem'}
-                <button 
+                <button
                   onClick={() => removeFilter('perDiem')}
                   className="ml-2 hover:text-blue-900"
                 >
@@ -433,9 +512,12 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
               </Badge>
             )}
             {filters.union !== null && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 px-3 py-1"
+              >
                 {filters.union ? 'Union Partner' : 'Non-Union'}
-                <button 
+                <button
                   onClick={() => removeFilter('union')}
                   className="ml-2 hover:text-blue-900"
                 >
@@ -444,9 +526,12 @@ export default function DirectoryFilters({ onFiltersChange, totalResults, isLoad
               </Badge>
             )}
             {filters.claimedOnly && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 px-3 py-1"
+              >
                 Verified Only
-                <button 
+                <button
                   onClick={() => removeFilter('claimed')}
                   className="ml-2 hover:text-blue-900"
                 >

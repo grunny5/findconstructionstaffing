@@ -2,15 +2,13 @@
  * @jest-environment node
  */
 import { GET } from '../route';
-import { 
-  isErrorResponse, 
+import {
+  isErrorResponse,
   API_CONSTANTS,
   HTTP_STATUS,
-  ERROR_CODES 
+  ERROR_CODES,
 } from '@/types/api';
-import { 
-  createMockNextRequest 
-} from '@/__tests__/utils/api-mocks';
+import { createMockNextRequest } from '@/__tests__/utils/api-mocks';
 
 // Mock NextResponse
 jest.mock('next/server', () => ({
@@ -18,9 +16,9 @@ jest.mock('next/server', () => ({
     json: jest.fn((data: any, init?: ResponseInit) => ({
       status: init?.status || 200,
       json: async () => data,
-      headers: new Headers(init?.headers)
-    }))
-  }
+      headers: new Headers(init?.headers),
+    })),
+  },
 }));
 
 // Mock Supabase with comprehensive test data
@@ -48,11 +46,11 @@ const mockAgencies = [
     is_active: true,
     trades: [
       { trade: { id: 't1', name: 'Electricians', slug: 'electricians' } },
-      { trade: { id: 't2', name: 'Plumbers', slug: 'plumbers' } }
+      { trade: { id: 't2', name: 'Plumbers', slug: 'plumbers' } },
     ],
     regions: [
-      { region: { id: 'r1', name: 'Dallas-Fort Worth', state_code: 'TX' } }
-    ]
+      { region: { id: 'r1', name: 'Dallas-Fort Worth', state_code: 'TX' } },
+    ],
   },
   {
     id: '002',
@@ -77,12 +75,14 @@ const mockAgencies = [
     is_active: true,
     trades: [
       { trade: { id: 't3', name: 'Carpenters', slug: 'carpenters' } },
-      { trade: { id: 't1', name: 'Electricians', slug: 'electricians' } }
+      { trade: { id: 't1', name: 'Electricians', slug: 'electricians' } },
     ],
     regions: [
       { region: { id: 'r2', name: 'Los Angeles', state_code: 'CA' } },
-      { region: { id: 'r3', name: 'San Francisco Bay Area', state_code: 'CA' } }
-    ]
+      {
+        region: { id: 'r3', name: 'San Francisco Bay Area', state_code: 'CA' },
+      },
+    ],
   },
   {
     id: '003',
@@ -109,35 +109,40 @@ const mockAgencies = [
       { trade: { id: 't1', name: 'Electricians', slug: 'electricians' } },
       { trade: { id: 't2', name: 'Plumbers', slug: 'plumbers' } },
       { trade: { id: 't3', name: 'Carpenters', slug: 'carpenters' } },
-      { trade: { id: 't4', name: 'HVAC Technicians', slug: 'hvac-technicians' } }
+      {
+        trade: { id: 't4', name: 'HVAC Technicians', slug: 'hvac-technicians' },
+      },
     ],
     regions: [
       { region: { id: 'r1', name: 'Dallas-Fort Worth', state_code: 'TX' } },
       { region: { id: 'r2', name: 'Los Angeles', state_code: 'CA' } },
       { region: { id: 'r4', name: 'New York City', state_code: 'NY' } },
-      { region: { id: 'r5', name: 'Miami', state_code: 'FL' } }
-    ]
-  }
+      { region: { id: 'r5', name: 'Miami', state_code: 'FL' } },
+    ],
+  },
 ];
 
 // Import the centralized mock helpers
-import { createSupabaseMock, configureSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import {
+  createSupabaseMock,
+  configureSupabaseMock,
+} from '@/__tests__/utils/supabase-mock';
 
 // Use the global Supabase mock from jest.setup.js
 
 describe('GET /api/agencies - Comprehensive Integration Tests', () => {
   const { supabase } = require('@/lib/supabase');
-  
+
   // Store the query builder globally for test assertions
   let queryBuilder: any;
-  
+
   const setupMocks = (data = mockAgencies, total = mockAgencies.length) => {
     // Reset mocks
     jest.clearAllMocks();
-    
+
     // Track whether we're in a count query
     let isCountQuery = false;
-    
+
     // Set up the mock query builder object that from() returns
     queryBuilder = {
       select: jest.fn(),
@@ -163,20 +168,20 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
       range: jest.fn(),
       single: jest.fn(),
       maybeSingle: jest.fn(),
-      count: jest.fn()
+      count: jest.fn(),
     };
-    
+
     // Make all query builder methods chainable by default
-    Object.keys(queryBuilder).forEach(method => {
+    Object.keys(queryBuilder).forEach((method) => {
       if (jest.isMockFunction(queryBuilder[method])) {
         queryBuilder[method].mockReturnValue(queryBuilder);
       }
     });
-    
+
     // Mock from method to return the query builder
     supabase.from.mockImplementation((tableName: string) => {
       isCountQuery = false;
-      
+
       // Handle different table queries
       if (tableName === 'trades') {
         // Return mock trade data when querying trades table
@@ -184,15 +189,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
           ...queryBuilder,
           select: jest.fn().mockReturnValue({
             in: jest.fn().mockResolvedValue({
-              data: [
-                { id: 't1' },
-                { id: 't2' },
-                { id: 't3' },
-                { id: 't4' }
-              ],
-              error: null
-            })
-          })
+              data: [{ id: 't1' }, { id: 't2' }, { id: 't3' }, { id: 't4' }],
+              error: null,
+            }),
+          }),
         };
         return mockTradeQueryBuilder;
       } else if (tableName === 'agency_trades') {
@@ -201,10 +201,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
           ...queryBuilder,
           select: jest.fn().mockReturnValue({
             in: jest.fn().mockResolvedValue({
-              data: data.map(agency => ({ agency_id: agency.id })),
-              error: null
-            })
-          })
+              data: data.map((agency) => ({ agency_id: agency.id })),
+              error: null,
+            }),
+          }),
         };
         return mockAgencyTradeQueryBuilder;
       } else if (tableName === 'regions') {
@@ -218,11 +218,11 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
                 { id: 'r2' },
                 { id: 'r3' },
                 { id: 'r4' },
-                { id: 'r5' }
+                { id: 'r5' },
               ],
-              error: null
-            })
-          })
+              error: null,
+            }),
+          }),
         };
         return mockRegionQueryBuilder;
       } else if (tableName === 'agency_regions') {
@@ -231,18 +231,18 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
           ...queryBuilder,
           select: jest.fn().mockReturnValue({
             in: jest.fn().mockResolvedValue({
-              data: data.map(agency => ({ agency_id: agency.id })),
-              error: null
-            })
-          })
+              data: data.map((agency) => ({ agency_id: agency.id })),
+              error: null,
+            }),
+          }),
         };
         return mockAgencyRegionQueryBuilder;
       }
-      
+
       // Default to the main query builder for 'agencies' table
       return queryBuilder;
     });
-    
+
     // Mock select method to handle count queries
     queryBuilder.select.mockImplementation((fields, options) => {
       if (options && options.count === 'exact' && options.head === true) {
@@ -253,7 +253,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
           eq: jest.fn().mockReturnThis(),
           or: jest.fn().mockReturnThis(),
           in: jest.fn().mockReturnThis(),
-          then: (resolve: any) => Promise.resolve({ data: null, error: null, count: total }).then(resolve)
+          then: (resolve: any) =>
+            Promise.resolve({ data: null, error: null, count: total }).then(
+              resolve
+            ),
         };
         // Make chainable methods return the same object
         countQueryBuilder.eq.mockReturnValue(countQueryBuilder);
@@ -263,23 +266,23 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
       }
       return queryBuilder;
     });
-    
+
     // Mock the final order method to return data
     queryBuilder.order.mockImplementation(() => {
       // Ensure data has proper structure with trades and regions arrays
-      const formattedData = data.map(agency => ({
+      const formattedData = data.map((agency) => ({
         ...agency,
         trades: agency.trades || [],
-        regions: agency.regions || []
+        regions: agency.regions || [],
       }));
-      
+
       return Promise.resolve({
         data: formattedData,
         error: null,
-        count: total
+        count: total,
       });
     });
-    
+
     // Mock in method to handle both regular and count queries
     queryBuilder.in.mockImplementation(() => {
       if (isCountQuery) {
@@ -287,20 +290,19 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
         return Promise.resolve({
           data: null,
           error: null,
-          count: total
+          count: total,
         });
       }
       // For regular queries, return the chainable object
       return queryBuilder;
     });
-    
-    
+
     // Mock count method
     queryBuilder.count.mockImplementation(() => {
       return Promise.resolve({
         data: null,
         error: null,
-        count: total
+        count: total,
       });
     });
   };
@@ -308,9 +310,9 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
   describe('Basic Agency Retrieval', () => {
     it('should retrieve all active agencies with default pagination', async () => {
       setupMocks();
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
@@ -324,16 +326,16 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
           total: 3,
           limit: API_CONSTANTS.DEFAULT_LIMIT,
           offset: 0,
-          hasMore: false
+          hasMore: false,
         });
       }
     });
 
     it('should include all required fields in agency response', async () => {
       setupMocks([mockAgencies[0]], 1);
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
@@ -354,9 +356,9 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should filter out inactive agencies', async () => {
       setupMocks();
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       await GET(mockRequest);
@@ -370,10 +372,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should search agencies by name (full match)', async () => {
       const searchResults = [mockAgencies[0]]; // Elite Construction Staffing
       setupMocks(searchResults, 1);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { search: 'Elite Construction' }
+        searchParams: { search: 'Elite Construction' },
       });
 
       const response = await GET(mockRequest);
@@ -387,14 +389,14 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     });
 
     it('should search agencies by name (partial match)', async () => {
-      const searchResults = mockAgencies.filter(a => 
+      const searchResults = mockAgencies.filter((a) =>
         a.name.toLowerCase().includes('construction')
       );
       setupMocks(searchResults, searchResults.length);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { search: 'construction' }
+        searchParams: { search: 'construction' },
       });
 
       const response = await GET(mockRequest);
@@ -408,10 +410,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should return empty array when no search results', async () => {
       setupMocks([], 0);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { search: 'nonexistent' }
+        searchParams: { search: 'nonexistent' },
       });
 
       const response = await GET(mockRequest);
@@ -426,10 +428,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should sanitize dangerous search input', async () => {
       setupMocks();
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { search: '<script>alert("xss")</script>' }
+        searchParams: { search: '<script>alert("xss")</script>' },
       });
 
       await GET(mockRequest);
@@ -441,14 +443,14 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
   describe('Trade Filtering', () => {
     it('should filter agencies by single trade', async () => {
-      const electricianAgencies = mockAgencies.filter(a => 
-        a.trades.some(t => t.trade.slug === 'electricians')
+      const electricianAgencies = mockAgencies.filter((a) =>
+        a.trades.some((t) => t.trade.slug === 'electricians')
       );
       setupMocks(electricianAgencies, electricianAgencies.length);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 'trades[]': 'electricians' }
+        searchParams: { 'trades[]': 'electricians' },
       });
 
       const response = await GET(mockRequest);
@@ -461,14 +463,14 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     });
 
     it('should filter agencies by multiple trades (OR logic)', async () => {
-      const plumberOrCarpenterAgencies = mockAgencies.filter(a => 
-        a.trades.some(t => ['plumbers', 'carpenters'].includes(t.trade.slug))
+      const plumberOrCarpenterAgencies = mockAgencies.filter((a) =>
+        a.trades.some((t) => ['plumbers', 'carpenters'].includes(t.trade.slug))
       );
       setupMocks(plumberOrCarpenterAgencies, plumberOrCarpenterAgencies.length);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 'trades[]': ['plumbers', 'carpenters'] }
+        searchParams: { 'trades[]': ['plumbers', 'carpenters'] },
       });
 
       const response = await GET(mockRequest);
@@ -481,11 +483,13 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     });
 
     it('should reject too many trade filters', async () => {
-      const tooManyTrades = Array(API_CONSTANTS.MAX_TRADE_FILTERS + 1).fill('electricians');
-      
+      const tooManyTrades = Array(API_CONSTANTS.MAX_TRADE_FILTERS + 1).fill(
+        'electricians'
+      );
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 'trades[]': tooManyTrades }
+        searchParams: { 'trades[]': tooManyTrades },
       });
 
       const response = await GET(mockRequest);
@@ -498,14 +502,14 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
   describe('State Filtering', () => {
     it('should filter agencies by single state', async () => {
-      const texasAgencies = mockAgencies.filter(a => 
-        a.regions.some(r => r.region.state_code === 'TX')
+      const texasAgencies = mockAgencies.filter((a) =>
+        a.regions.some((r) => r.region.state_code === 'TX')
       );
       setupMocks(texasAgencies, texasAgencies.length);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 'states[]': 'TX' }
+        searchParams: { 'states[]': 'TX' },
       });
 
       const response = await GET(mockRequest);
@@ -518,14 +522,14 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     });
 
     it('should filter agencies by multiple states (OR logic)', async () => {
-      const multiStateAgencies = mockAgencies.filter(a => 
-        a.regions.some(r => ['TX', 'CA'].includes(r.region.state_code))
+      const multiStateAgencies = mockAgencies.filter((a) =>
+        a.regions.some((r) => ['TX', 'CA'].includes(r.region.state_code))
       );
       setupMocks(multiStateAgencies, multiStateAgencies.length);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 'states[]': ['TX', 'CA'] }
+        searchParams: { 'states[]': ['TX', 'CA'] },
       });
 
       const response = await GET(mockRequest);
@@ -540,7 +544,7 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should validate state codes are 2 letters', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 'states[]': 'TEXAS' }
+        searchParams: { 'states[]': 'TEXAS' },
       });
 
       const response = await GET(mockRequest);
@@ -557,22 +561,25 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
   describe('Pagination', () => {
     it('should apply default pagination', async () => {
       setupMocks();
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       await GET(mockRequest);
 
-      expect(queryBuilder.range).toHaveBeenCalledWith(0, API_CONSTANTS.DEFAULT_LIMIT - 1);
+      expect(queryBuilder.range).toHaveBeenCalledWith(
+        0,
+        API_CONSTANTS.DEFAULT_LIMIT - 1
+      );
     });
 
     it('should apply custom limit and offset', async () => {
       setupMocks();
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: '10', offset: '20' }
+        searchParams: { limit: '10', offset: '20' },
       });
 
       await GET(mockRequest);
@@ -582,10 +589,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should calculate hasMore correctly', async () => {
       setupMocks(mockAgencies.slice(0, 2), 50); // 2 items, 50 total
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: '20', offset: '0' }
+        searchParams: { limit: '20', offset: '0' },
       });
 
       const response = await GET(mockRequest);
@@ -599,10 +606,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should handle offset beyond total', async () => {
       setupMocks([], 10); // No items, 10 total
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { offset: '50' }
+        searchParams: { offset: '50' },
       });
 
       const response = await GET(mockRequest);
@@ -620,13 +627,13 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should combine search and trade filters', async () => {
       const filteredAgencies = [mockAgencies[0]]; // Elite with electricians
       setupMocks(filteredAgencies, 1);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 
+        searchParams: {
           search: 'elite',
-          'trades[]': 'electricians'
-        }
+          'trades[]': 'electricians',
+        },
       });
 
       const response = await GET(mockRequest);
@@ -642,16 +649,16 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should combine all filters with pagination', async () => {
       const filteredAgencies = [mockAgencies[2]]; // National
       setupMocks(filteredAgencies, 1);
-      
+
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 
+        searchParams: {
           search: 'national',
           'trades[]': ['electricians', 'plumbers'],
           'states[]': ['TX', 'NY'],
           limit: '5',
-          offset: '0'
-        }
+          offset: '0',
+        },
       });
 
       const response = await GET(mockRequest);
@@ -671,16 +678,19 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should handle database connection error', async () => {
       // Setup mocks with error
       setupMocks();
-      
+
       // Override the order method to return an error
       queryBuilder.order.mockResolvedValue({
         data: null,
-        error: { message: 'Database connection failed', code: 'CONNECTION_ERROR' },
-        count: null
+        error: {
+          message: 'Database connection failed',
+          code: 'CONNECTION_ERROR',
+        },
+        count: null,
       });
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
@@ -696,10 +706,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should handle invalid query parameters', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 
+        searchParams: {
           limit: 'invalid',
-          offset: '-10'
-        }
+          offset: '-10',
+        },
       });
 
       const response = await GET(mockRequest);
@@ -714,17 +724,17 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should handle missing Supabase client', async () => {
       jest.clearAllMocks();
-      
+
       // Mock missing Supabase
       jest.resetModules();
       jest.doMock('@/lib/supabase', () => ({
-        supabase: null
+        supabase: null,
       }));
-      
+
       const { GET: GETWithNoSupabase } = await import('../route');
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GETWithNoSupabase(mockRequest);
@@ -734,7 +744,9 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
       expect(isErrorResponse(data)).toBe(true);
       if (isErrorResponse(data)) {
         expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
-        expect(data.error.message).toContain('Database connection not initialized');
+        expect(data.error.message).toContain(
+          'Database connection not initialized'
+        );
       }
     });
   });
@@ -742,9 +754,9 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
   describe('Response Headers', () => {
     it('should include proper cache headers on success', async () => {
       setupMocks();
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
@@ -756,7 +768,7 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
     it('should not cache error responses', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: '999' }
+        searchParams: { limit: '999' },
       });
 
       const response = await GET(mockRequest);
@@ -768,10 +780,10 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should support conditional requests with ETag', async () => {
       setupMocks();
-      
+
       // First request to get ETag
       const mockRequest1 = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
       const response1 = await GET(mockRequest1);
       const etag = response1.headers.get('ETag');
@@ -779,12 +791,12 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
       // Second request with If-None-Match
       const mockRequest2 = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        headers: { 'if-none-match': etag || '' }
+        headers: { 'if-none-match': etag || '' },
       });
 
       // Mock same data for consistent ETag
       setupMocks();
-      
+
       const response2 = await GET(mockRequest2);
 
       // Would be 304 if ETags match (mock limitation prevents exact test)
@@ -795,9 +807,9 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
   describe('Data Transformation', () => {
     it('should properly transform nested trade relationships', async () => {
       setupMocks([mockAgencies[0]], 1);
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);
@@ -814,9 +826,9 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
 
     it('should properly transform nested region relationships', async () => {
       setupMocks([mockAgencies[1]], 1);
-      
+
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       const response = await GET(mockRequest);

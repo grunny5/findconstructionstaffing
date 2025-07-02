@@ -1,4 +1,8 @@
-import { extractUniqueStates, createStateMapping, seedRegions } from '../seed-database';
+import {
+  extractUniqueStates,
+  createStateMapping,
+  seedRegions,
+} from '../seed-database';
 import { mockAgencies, allStates } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
 
@@ -6,18 +10,18 @@ import { createSlug } from '../../lib/supabase';
 function createMockedSeedRegions(customAgencies: any[], customStates: any[]) {
   // Store the original allStates to restore later
   const originalAllStates = [...allStates];
-  
+
   jest.resetModules();
-  
+
   // Mock the mock-data module with custom data
   jest.doMock('../../lib/mock-data', () => ({
     mockAgencies: customAgencies,
-    allStates: customStates
+    allStates: customStates,
   }));
-  
+
   // Import the module with mocked data
   const { seedRegions: mockSeedRegions } = require('../seed-database');
-  
+
   // Return both the mocked function and a cleanup function
   return {
     seedRegions: mockSeedRegions,
@@ -26,36 +30,46 @@ function createMockedSeedRegions(customAgencies: any[], customStates: any[]) {
       jest.unmock('../../lib/mock-data');
       // Restore original allStates
       allStates.splice(0, allStates.length, ...originalAllStates);
-    }
+    },
   };
 }
 
 // Helper function to create a mock Supabase client for regions
-function createMockSupabaseClient(options: {
-  existingData?: any[],
-  insertError?: any,
-  selectError?: any,
-  customInMock?: (field: string, values: string[]) => Promise<any>
-} = {}) {
+function createMockSupabaseClient(
+  options: {
+    existingData?: any[];
+    insertError?: any;
+    selectError?: any;
+    customInMock?: (field: string, values: string[]) => Promise<any>;
+  } = {}
+) {
   const insertMock = jest.fn((data: any[]) => ({
-    select: jest.fn(() => Promise.resolve({
-      data: options.insertError ? null : data.map(d => ({ ...d, id: `id-${d.state_code}` })),
-      error: options.insertError || null
-    }))
+    select: jest.fn(() =>
+      Promise.resolve({
+        data: options.insertError
+          ? null
+          : data.map((d) => ({ ...d, id: `id-${d.state_code}` })),
+        error: options.insertError || null,
+      })
+    ),
   }));
-  
+
   const mockClient = {
     from: jest.fn(() => ({
       select: jest.fn(() => ({
-        in: options.customInMock ? jest.fn(options.customInMock) : jest.fn(() => Promise.resolve({ 
-          data: options.selectError ? null : (options.existingData || []), 
-          error: options.selectError || null 
-        }))
+        in: options.customInMock
+          ? jest.fn(options.customInMock)
+          : jest.fn(() =>
+              Promise.resolve({
+                data: options.selectError ? null : options.existingData || [],
+                error: options.selectError || null,
+              })
+            ),
       })),
-      insert: insertMock
-    }))
+      insert: insertMock,
+    })),
   };
-  
+
   return { mockClient, insertMock };
 }
 
@@ -63,13 +77,13 @@ describe('Region Seeding Functions', () => {
   describe('extractUniqueStates', () => {
     it('should extract all unique states from mock data', () => {
       const states = extractUniqueStates();
-      
+
       // Collect expected states manually
       const expectedStates = new Set<string>();
-      mockAgencies.forEach(agency => {
-        agency.regions.forEach(state => expectedStates.add(state));
+      mockAgencies.forEach((agency) => {
+        agency.regions.forEach((state) => expectedStates.add(state));
       });
-      
+
       expect(states.length).toBe(expectedStates.size);
       expect(states).toEqual(Array.from(expectedStates).sort());
     });
@@ -77,31 +91,59 @@ describe('Region Seeding Functions', () => {
     it('should return sorted state names', () => {
       const states = extractUniqueStates();
       const sortedStates = [...states].sort();
-      
+
       expect(states).toEqual(sortedStates);
     });
 
     it('should not contain duplicates', () => {
       const states = extractUniqueStates();
       const uniqueSet = new Set(states);
-      
+
       expect(states.length).toBe(uniqueSet.size);
     });
 
     it('should handle all states used in mock data', () => {
       const states = extractUniqueStates();
-      
+
       // These are all states mentioned in the mock data
       const expectedStates = [
-        'Alabama', 'Arizona', 'Arkansas', 'California', 'Colorado',
-        'Connecticut', 'Florida', 'Georgia', 'Illinois', 'Indiana',
-        'Iowa', 'Kansas', 'Louisiana', 'Massachusetts', 'Michigan',
-        'Mississippi', 'Missouri', 'Montana', 'Nevada', 'New Jersey',
-        'New Mexico', 'New York', 'North Carolina', 'North Dakota',
-        'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'South Carolina',
-        'Tennessee', 'Texas', 'Utah', 'Washington', 'Wisconsin', 'Wyoming'
+        'Alabama',
+        'Arizona',
+        'Arkansas',
+        'California',
+        'Colorado',
+        'Connecticut',
+        'Florida',
+        'Georgia',
+        'Illinois',
+        'Indiana',
+        'Iowa',
+        'Kansas',
+        'Louisiana',
+        'Massachusetts',
+        'Michigan',
+        'Mississippi',
+        'Missouri',
+        'Montana',
+        'Nevada',
+        'New Jersey',
+        'New Mexico',
+        'New York',
+        'North Carolina',
+        'North Dakota',
+        'Ohio',
+        'Oklahoma',
+        'Oregon',
+        'Pennsylvania',
+        'South Carolina',
+        'Tennessee',
+        'Texas',
+        'Utah',
+        'Washington',
+        'Wisconsin',
+        'Wyoming',
       ];
-      
+
       expect(states).toEqual(expectedStates);
     });
   });
@@ -109,7 +151,7 @@ describe('Region Seeding Functions', () => {
   describe('createStateMapping', () => {
     it('should create a complete state name to code mapping', () => {
       const mapping = createStateMapping();
-      
+
       expect(mapping.size).toBe(allStates.length);
       expect(mapping.get('Texas')).toBe('TX');
       expect(mapping.get('California')).toBe('CA');
@@ -118,8 +160,8 @@ describe('Region Seeding Functions', () => {
 
     it('should include all states from allStates', () => {
       const mapping = createStateMapping();
-      
-      allStates.forEach(state => {
+
+      allStates.forEach((state) => {
         expect(mapping.has(state.name)).toBe(true);
         expect(mapping.get(state.name)).toBe(state.code);
       });
@@ -132,7 +174,7 @@ describe('Region Seeding Functions', () => {
 
       const result = await seedRegions(mockClient as any);
       const expectedStates = extractUniqueStates();
-      
+
       expect(result.size).toBe(expectedStates.length);
       expect(mockClient.from).toHaveBeenCalledWith('regions');
     });
@@ -140,18 +182,20 @@ describe('Region Seeding Functions', () => {
     it('should skip existing regions', async () => {
       const existingRegions = [
         { id: 'existing-1', name: 'Texas', state_code: 'TX' },
-        { id: 'existing-2', name: 'California', state_code: 'CA' }
+        { id: 'existing-2', name: 'California', state_code: 'CA' },
       ];
 
       const { mockClient } = createMockSupabaseClient({
         customInMock: (field: string, values: string[]) => {
-          const matching = existingRegions.filter(r => values.includes(r.state_code));
+          const matching = existingRegions.filter((r) =>
+            values.includes(r.state_code)
+          );
           return Promise.resolve({ data: matching, error: null });
-        }
+        },
       });
 
       const result = await seedRegions(mockClient as any);
-      
+
       // Should have existing regions with their original IDs
       expect(result.get('TX')).toBe('existing-1');
       expect(result.get('CA')).toBe('existing-2');
@@ -159,26 +203,31 @@ describe('Region Seeding Functions', () => {
 
     it('should handle invalid state names gracefully', async () => {
       // Create mocked seedRegions with custom data
-      const testAgencies = [{
-        name: 'Test Agency',
-        regions: ['InvalidState', 'Texas'], // InvalidState won't be in allStates
-        trades: [],
-        description: 'Test',
-        logo_url: 'test.png',
-        website: 'https://test.com',
-        offers_per_diem: false,
-        is_union: false,
-        founded_year: 2020,
-        employee_count: '1-10',
-        headquarters: 'Test City, TX'
-      }];
-      
+      const testAgencies = [
+        {
+          name: 'Test Agency',
+          regions: ['InvalidState', 'Texas'], // InvalidState won't be in allStates
+          trades: [],
+          description: 'Test',
+          logo_url: 'test.png',
+          website: 'https://test.com',
+          offers_per_diem: false,
+          is_union: false,
+          founded_year: 2020,
+          employee_count: '1-10',
+          headquarters: 'Test City, TX',
+        },
+      ];
+
       const testStates = [
-        { name: 'Texas', code: 'TX' }
+        { name: 'Texas', code: 'TX' },
         // InvalidState is not included
       ];
-      
-      const { seedRegions: mockSeedRegions, cleanup } = createMockedSeedRegions(testAgencies, testStates);
+
+      const { seedRegions: mockSeedRegions, cleanup } = createMockedSeedRegions(
+        testAgencies,
+        testStates
+      );
       const { mockClient, insertMock } = createMockSupabaseClient();
 
       // Mock console.log to capture warning
@@ -190,8 +239,11 @@ describe('Region Seeding Functions', () => {
         await mockSeedRegions(mockClient as any);
 
         // Check that warning was logged
-        const warningCalls = logSpy.mock.calls.filter(call => 
-          call[0] && call[0].includes('Unknown state name') && call[0].includes('InvalidState')
+        const warningCalls = logSpy.mock.calls.filter(
+          (call) =>
+            call[0] &&
+            call[0].includes('Unknown state name') &&
+            call[0].includes('InvalidState')
         );
         expect(warningCalls.length).toBe(1);
 
@@ -210,10 +262,10 @@ describe('Region Seeding Functions', () => {
       const { mockClient, insertMock } = createMockSupabaseClient();
 
       await seedRegions(mockClient as any);
-      
+
       // Get all insert calls
-      const allInsertedData = insertMock.mock.calls.flatMap(call => call[0]);
-      
+      const allInsertedData = insertMock.mock.calls.flatMap((call) => call[0]);
+
       // Verify slugs are generated correctly (should be lowercase state codes)
       allInsertedData.forEach((region: any) => {
         expect(region.slug).toBe(createSlug(region.state_code));
@@ -225,10 +277,10 @@ describe('Region Seeding Functions', () => {
       const { mockClient, insertMock } = createMockSupabaseClient();
 
       await seedRegions(mockClient as any);
-      
+
       // Get all insert calls
-      const allInsertedData = insertMock.mock.calls.flatMap(call => call[0]);
-      
+      const allInsertedData = insertMock.mock.calls.flatMap((call) => call[0]);
+
       // All state codes should be exactly 2 uppercase letters
       allInsertedData.forEach((region: any) => {
         expect(region.state_code).toMatch(/^[A-Z]{2}$/);
@@ -237,7 +289,7 @@ describe('Region Seeding Functions', () => {
 
     it('should handle database errors gracefully', async () => {
       const { mockClient } = createMockSupabaseClient({
-        selectError: { message: 'Database connection failed' }
+        selectError: { message: 'Database connection failed' },
       });
 
       await expect(seedRegions(mockClient as any)).rejects.toThrow(
@@ -251,7 +303,7 @@ describe('Region Seeding Functions', () => {
       const startTime = Date.now();
       await seedRegions(mockClient as any);
       const duration = Date.now() - startTime;
-      
+
       // Should complete in under 2 seconds
       expect(duration).toBeLessThan(2000);
     });

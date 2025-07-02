@@ -5,6 +5,7 @@ This guide explains how automated deployments work with Vercel in our CI/CD pipe
 ## Overview
 
 Our deployment pipeline automatically deploys to Vercel in two scenarios:
+
 1. **Preview Deployments**: Every pull request gets a unique preview URL
 2. **Production Deployments**: Merges to `main` branch deploy to production
 
@@ -43,6 +44,7 @@ Main Branch → CI Checks Pass → GitHub Actions → Vercel CLI → Production
 - **Protection Gates**: Resource management for large PRs and forks
 
 ### Example Preview URL
+
 ```
 https://findconstructionstaffing-pr-123.vercel.app
 ```
@@ -79,27 +81,34 @@ Set in GitHub repository settings → Secrets and variables → Actions:
 ### Environment Variables
 
 Vercel automatically provides environment variables based on deployment context:
+
 - Preview deployments use preview environment
 - Production deployments use production environment
 
 ## Workflows
 
 ### deploy.yml
+
 Main deployment workflow handling both preview and production deployments.
 
 ### preview-alias.yml
+
 Manages preview deployment aliases and cleanup.
 
 ### preview-protection.yml
+
 Implements resource protection for preview deployments.
 
 ### preview-deployment-status.yml
+
 Updates deployment status and PR checks.
 
 ### production-health-check.yml
+
 Verifies production deployment health and creates issues on failure.
 
 ### production-rollback.yml
+
 Manual workflow for emergency production rollbacks.
 
 ## Preview Deployment Protection
@@ -107,15 +116,18 @@ Manual workflow for emergency production rollbacks.
 To manage resources efficiently, preview deployments have protection gates:
 
 ### Automatic Deployment
+
 - PRs from the main repository deploy automatically
 - Small to medium PRs deploy without approval
 
 ### Manual Approval Required
+
 - **Fork PRs**: Add `deploy-preview` label
 - **Large PRs**: >1000 changes need `deploy-preview` label
 - **Resource Conservation**: Helps manage Vercel build minutes
 
 ### Enabling Preview Deployment
+
 1. Add `deploy-preview` label to PR
 2. Push new commit or re-run workflow
 3. Check PR comments for deployment URL
@@ -145,14 +157,17 @@ To manage resources efficiently, preview deployments have protection gates:
 ## Common Issues
 
 ### "Project not found"
+
 - Verify `VERCEL_PROJECT_ID` matches your Vercel project
 - Ensure project exists in the organization
 
 ### "Invalid token"
+
 - Regenerate Vercel token
 - Update `VERCEL_TOKEN` secret in GitHub
 
 ### Build failures
+
 - Test build locally with `vercel build`
 - Check environment variable availability
 - Review build logs in GitHub Actions
@@ -167,6 +182,7 @@ To manage resources efficiently, preview deployments have protection gates:
 ## CLI Commands
 
 ### Local Testing
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -185,6 +201,7 @@ vercel --prod
 ```
 
 ### Debugging
+
 ```bash
 # Check project settings
 vercel project ls
@@ -208,12 +225,14 @@ The deployment workflow integrates with our CI pipeline:
 ## Monitoring
 
 ### Vercel Dashboard
+
 - View all deployments
 - Check build logs
 - Monitor performance
 - Manage domains
 
 ### GitHub Integration
+
 - Deployment status on commits
 - PR deployment comments
 - Actions workflow logs
