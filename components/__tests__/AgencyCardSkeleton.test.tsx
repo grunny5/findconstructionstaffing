@@ -31,7 +31,9 @@ describe('AgencyCardSkeleton', () => {
     // Check for logo skeleton
     const logoSkeleton = screen.getByTestId('skeleton-logo');
     expect(logoSkeleton).toBeInTheDocument();
-    expect(logoSkeleton).toHaveClass('w-20', 'h-20', 'rounded-3xl');
+    expect(logoSkeleton).toHaveClass('w-20');
+    expect(logoSkeleton).toHaveClass('h-20');
+    expect(logoSkeleton).toHaveClass('rounded-3xl');
   });
 
   it('renders correct number of stat skeletons', () => {
@@ -51,8 +53,14 @@ describe('AgencyCardSkeleton', () => {
     const button2 = screen.getByTestId('skeleton-button-2');
     expect(button1).toBeInTheDocument();
     expect(button2).toBeInTheDocument();
-    expect(button1).toHaveClass('h-10', 'w-full', 'lg:w-40', 'rounded-xl');
-    expect(button2).toHaveClass('h-10', 'w-full', 'lg:w-40', 'rounded-xl');
+    expect(button1).toHaveClass('h-10');
+    expect(button1).toHaveClass('w-full');
+    expect(button1).toHaveClass('lg:w-40');
+    expect(button1).toHaveClass('rounded-xl');
+    expect(button2).toHaveClass('h-10');
+    expect(button2).toHaveClass('w-full');
+    expect(button2).toHaveClass('lg:w-40');
+    expect(button2).toHaveClass('rounded-xl');
   });
 
   it('has no layout shift potential', () => {

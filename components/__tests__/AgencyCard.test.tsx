@@ -3,6 +3,33 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
 import { Agency } from '@/types/api';
 
+// Helper to convert Agency type to AgencyCard props
+function toAgencyCardProps(agency: Agency): Parameters<typeof AgencyCard>[0]['agency'] {
+  return {
+    id: agency.id,
+    name: agency.name,
+    slug: agency.slug,
+    description: agency.description ?? undefined,
+    logo_url: agency.logo_url ?? undefined,
+    website: agency.website ?? undefined,
+    phone: agency.phone ?? undefined,
+    email: agency.email ?? undefined,
+    is_claimed: agency.is_claimed,
+    offers_per_diem: agency.offers_per_diem,
+    is_union: agency.is_union,
+    trades: agency.trades.map(t => t.name),
+    regions: agency.regions.map(r => r.code),
+    rating: agency.rating ?? undefined,
+    reviewCount: agency.review_count,
+    projectCount: agency.project_count,
+    founded_year: agency.founded_year ?? undefined,
+    employee_count: agency.employee_count ?? undefined,
+    headquarters: agency.headquarters ?? undefined,
+    verified: agency.verified,
+    featured: agency.featured,
+  };
+}
+
 // Mock next/link
 jest.mock('next/link', () => {
   const MockLink = ({
@@ -26,55 +53,56 @@ describe('AgencyCard', () => {
     website: 'https://example.com',
     phone: '(555) 123-4567',
     email: 'test@example.com',
-    address: '123 Main St',
-    city: 'Austin',
-    state: 'TX',
-    zip_code: '78701',
+    is_claimed: true,
+    offers_per_diem: true,
+    is_union: false,
+    founded_year: 2020,
+    employee_count: '10-50',
+    headquarters: 'Austin, TX',
+    rating: 4.5,
+    review_count: 25,
+    project_count: 100,
+    verified: true,
+    featured: false,
     trades: [
-      { id: 1, name: 'Electrician' },
-      { id: 2, name: 'Plumber' },
+      { id: '1', name: 'Electrician', slug: 'electrician' },
+      { id: '2', name: 'Plumber', slug: 'plumber' },
     ],
     regions: [
-      { id: 1, name: 'TX', type: 'state' },
-      { id: 2, name: 'CA', type: 'state' },
+      { id: '1', name: 'Texas', code: 'TX' },
+      { id: '2', name: 'California', code: 'CA' },
     ],
-    specialties: [],
-    certifications: [],
-    rating: 4.5,
-    reviews_count: 25,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
   };
 
   it('should render agency information', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('Test Agency')).toBeInTheDocument();
     expect(screen.getByText('A test staffing agency')).toBeInTheDocument();
   });
 
-  it('should render agency location', () => {
-    render(<AgencyCard agency={mockAgency} />);
+  it('should render agency headquarters', () => {
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('Austin, TX')).toBeInTheDocument();
   });
 
   it('should render agency trades', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('Electrician')).toBeInTheDocument();
     expect(screen.getByText('Plumber')).toBeInTheDocument();
   });
 
   it('should render agency regions', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('TX')).toBeInTheDocument();
     expect(screen.getByText('CA')).toBeInTheDocument();
   });
 
   it('should render rating if available', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('4.5')).toBeInTheDocument();
     expect(screen.getByText('(25 reviews)')).toBeInTheDocument();
@@ -84,35 +112,35 @@ describe('AgencyCard', () => {
     const agencyWithoutRating = {
       ...mockAgency,
       rating: null,
-      reviews_count: 0,
+      review_count: 0,
     };
-    render(<AgencyCard agency={agencyWithoutRating} />);
+    render(<AgencyCard agency={toAgencyCardProps(agencyWithoutRating)} />);
 
     expect(screen.queryByText('4.5')).not.toBeInTheDocument();
     expect(screen.queryByText('reviews')).not.toBeInTheDocument();
   });
 
   it('should render phone number', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('(555) 123-4567')).toBeInTheDocument();
   });
 
   it('should render email', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('test@example.com')).toBeInTheDocument();
   });
 
   it('should link to agency profile', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     const profileLink = screen.getByRole('link', { name: /view profile/i });
     expect(profileLink).toHaveAttribute('href', '/recruiters/test-agency');
   });
 
   it('should have proper card structure', () => {
-    const { container } = render(<AgencyCard agency={mockAgency} />);
+    const { container } = render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     const card = container.querySelector('.rounded-lg.border');
     expect(card).toBeInTheDocument();
@@ -122,15 +150,15 @@ describe('AgencyCard', () => {
     const agencyWithManyTrades = {
       ...mockAgency,
       trades: [
-        { id: 1, name: 'Electrician' },
-        { id: 2, name: 'Plumber' },
-        { id: 3, name: 'Carpenter' },
-        { id: 4, name: 'Welder' },
-        { id: 5, name: 'Mason' },
+        { id: '1', name: 'Electrician', slug: 'electrician' },
+        { id: '2', name: 'Plumber', slug: 'plumber' },
+        { id: '3', name: 'Carpenter', slug: 'carpenter' },
+        { id: '4', name: 'Welder', slug: 'welder' },
+        { id: '5', name: 'Mason', slug: 'mason' },
       ],
     };
 
-    render(<AgencyCard agency={agencyWithManyTrades} />);
+    render(<AgencyCard agency={toAgencyCardProps(agencyWithManyTrades)} />);
 
     // Should show first 3 trades
     expect(screen.getByText('Electrician')).toBeInTheDocument();
@@ -142,7 +170,7 @@ describe('AgencyCard', () => {
   });
 
   it('should render logo if available', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     const logo = screen.getByAltText('Test Agency logo');
     expect(logo).toBeInTheDocument();
@@ -150,7 +178,7 @@ describe('AgencyCard', () => {
 
   it('should render initials placeholder when no logo', () => {
     const agencyWithoutLogo = { ...mockAgency, logo_url: null };
-    render(<AgencyCard agency={agencyWithoutLogo} />);
+    render(<AgencyCard agency={toAgencyCardProps(agencyWithoutLogo)} />);
 
     // Should not render the logo image
     expect(screen.queryByAltText('Test Agency logo')).not.toBeInTheDocument();
@@ -161,7 +189,7 @@ describe('AgencyCard', () => {
   });
 
   it('should handle logo loading errors gracefully', () => {
-    render(<AgencyCard agency={mockAgency} />);
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     const logo = screen.getByAltText('Test Agency logo');
 

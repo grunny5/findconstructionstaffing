@@ -93,7 +93,10 @@ describe('Header', () => {
     render(<Header />);
 
     const header = screen.getByRole('banner');
-    expect(header).toHaveClass('glass-header', 'sticky', 'top-0', 'z-50');
+    expect(header).toHaveClass('glass-header');
+    expect(header).toHaveClass('sticky');
+    expect(header).toHaveClass('top-0');
+    expect(header).toHaveClass('z-50');
   });
 
   it('should have navigation element', () => {
@@ -101,7 +104,8 @@ describe('Header', () => {
 
     const nav = screen.getByRole('navigation');
     expect(nav).toBeInTheDocument();
-    expect(nav).toHaveClass('hidden', 'md:flex');
+    expect(nav).toHaveClass('hidden');
+    expect(nav).toHaveClass('md:flex');
   });
 
   it('should render mobile menu trigger', () => {

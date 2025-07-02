@@ -201,7 +201,7 @@ export function createMockSupabaseQuery(
   const { data = [], error = null, count = 0 } = mockData;
 
   // Create the mock query object with chainable methods
-  const mockQuery = {
+  const mockQuery: Record<string, jest.Mock> = {
     from: jest.fn(),
     select: jest.fn(),
     eq: jest.fn(),

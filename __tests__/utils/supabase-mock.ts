@@ -68,7 +68,7 @@ export interface SupabaseMockConfig {
 }
 
 // Define createSupabaseMockInternal before using it in jest.mock
-function createSupabaseMockInternal() {
+function createSupabaseMockInternal(): any {
   const mockSupabase = {
     from: jest.fn(),
     select: jest.fn(),
@@ -116,19 +116,19 @@ function createSupabaseMockInternal() {
   };
 
   // Create a query chain object that tracks its own state
-  const createQueryChain = (isCountQuery = false) => {
+  const createQueryChain = (isCountQuery = false): any => {
     const queryChain = {
       _isCountQuery: isCountQuery,
 
       // Copy all methods from mockSupabase
-      ...Object.keys(mockSupabase).reduce((acc, key) => {
+      ...Object.keys(mockSupabase).reduce((acc: any, key) => {
         if (
-          typeof mockSupabase[key] === 'function' &&
-          jest.isMockFunction(mockSupabase[key])
+          typeof (mockSupabase as any)[key] === 'function' &&
+          jest.isMockFunction((mockSupabase as any)[key])
         ) {
           acc[key] = jest.fn((...args) => {
             // Call the original mock to track calls
-            mockSupabase[key](...args);
+            (mockSupabase as any)[key](...args);
             // Return the same chain for chaining
             return createThenableProxy(queryChain);
           });
@@ -147,9 +147,9 @@ function createSupabaseMockInternal() {
   };
 
   // Create a proxy wrapper that makes all methods thenable
-  const createThenableProxy = (queryChain) => {
+  const createThenableProxy = (queryChain: any) => {
     const handler = {
-      get(target, prop) {
+      get(target: any, prop: any) {
         // If accessing a promise method, resolve the query
         if (prop === 'then' || prop === 'catch' || prop === 'finally') {
           // Resolve based on query type
@@ -201,9 +201,9 @@ function createSupabaseMockInternal() {
     queryChain.select = jest.fn((columns, options) => {
       // Call original to track - only pass options if they were provided
       if (options !== undefined) {
-        mockSupabase.select(columns, options);
+        (mockSupabase as any).select(columns, options);
       } else {
-        mockSupabase.select(columns);
+        (mockSupabase as any).select(columns);
       }
 
       // Check if this is a count query
@@ -228,7 +228,7 @@ function createSupabaseMockInternal() {
 
   // Setup terminal methods that always return promises
   ['single', 'maybeSingle', 'csv'].forEach((method) => {
-    mockSupabase[method].mockImplementation(() => {
+    (mockSupabase as any)[method].mockImplementation(() => {
       if (mockSupabase._throwError && mockSupabase._error) {
         return Promise.reject(mockSupabase._error);
       }
@@ -246,7 +246,7 @@ function createSupabaseMockInternal() {
 
   // All other methods just return the mock for chaining
   const chainableMethods = Object.keys(mockSupabase).filter((key) => {
-    const value = mockSupabase[key];
+    const value = (mockSupabase as any)[key];
     return (
       typeof value === 'function' &&
       jest.isMockFunction(value) &&
@@ -256,7 +256,7 @@ function createSupabaseMockInternal() {
   });
 
   chainableMethods.forEach((method) => {
-    mockSupabase[method].mockReturnValue(mockSupabase);
+    (mockSupabase as any)[method].mockReturnValue(mockSupabase);
   });
 
   return mockSupabase;
@@ -344,7 +344,7 @@ jest.mock('@/lib/supabase', () => {
   ];
 
   chainableMethods.forEach((method) => {
-    mockSupabase[method].mockReturnValue(mockSupabase);
+    (mockSupabase as any)[method].mockReturnValue(mockSupabase);
   });
 
   // Set up from to return chainable mock
@@ -449,7 +449,7 @@ export function configureSupabaseMock(mock, config) {
   }
 
   // Need to recreate the query chain logic with updated config
-  const createQueryChain = (isCountQuery = false) => {
+  const createQueryChain = (isCountQuery = false): any => {
     const queryChain = {
       _isCountQuery: isCountQuery,
 
@@ -476,9 +476,9 @@ export function configureSupabaseMock(mock, config) {
     return queryChain;
   };
 
-  const createThenableProxy = (queryChain) => {
+  const createThenableProxy = (queryChain: any) => {
     const handler = {
-      get(target, prop) {
+      get(target: any, prop: any) {
         // If accessing a promise method, resolve the query
         if (prop === 'then' || prop === 'catch' || prop === 'finally') {
           // Resolve based on query type

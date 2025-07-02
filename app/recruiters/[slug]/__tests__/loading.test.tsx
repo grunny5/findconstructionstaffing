@@ -104,7 +104,8 @@ describe('Profile Page Loading State', () => {
     // Back link skeleton
     const backLinkSkeleton = screen.getByTestId('back-link-skeleton');
     expect(backLinkSkeleton).toBeInTheDocument();
-    expect(backLinkSkeleton).toHaveClass('h-5', 'w-32');
+    expect(backLinkSkeleton).toHaveClass('h-5');
+    expect(backLinkSkeleton).toHaveClass('w-32');
   });
 
   it('should maintain layout structure while loading', () => {

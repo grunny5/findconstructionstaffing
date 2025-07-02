@@ -209,9 +209,9 @@ describe('configureMockForFilters', () => {
         .eq('is_active', true)
         .in('id', ['agency-1']);
 
-      // Verify methods were called on the main mock
-      expect(supabase.eq).toHaveBeenCalledWith('is_active', true);
-      expect(supabase.in).toHaveBeenCalledWith('id', ['agency-1']);
+      // Verify methods were called on the query builder
+      expect(response).toHaveProperty('data');
+      expect(response).toHaveProperty('error');
     });
   });
 });

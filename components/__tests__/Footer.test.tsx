@@ -61,14 +61,16 @@ describe('Footer', () => {
     render(<Footer />);
 
     const footer = screen.getByRole('contentinfo');
-    expect(footer).toHaveClass('modern-footer-bg', 'text-white');
+    expect(footer).toHaveClass('modern-footer-bg');
+    expect(footer).toHaveClass('text-white');
   });
 
   it('should have responsive grid layout', () => {
     render(<Footer />);
 
     const gridContainer = screen.getByText('Construction').closest('.grid');
-    expect(gridContainer).toHaveClass('grid-cols-1', 'md:grid-cols-4');
+    expect(gridContainer).toHaveClass('grid-cols-1');
+    expect(gridContainer).toHaveClass('md:grid-cols-4');
   });
 
   it('should have all expected links', () => {

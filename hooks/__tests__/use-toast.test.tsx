@@ -75,16 +75,15 @@ describe('useToast', () => {
 
   it('should update a toast', () => {
     const { result } = renderHook(() => useToast());
-    let toastId: string;
+    let toastResult: ReturnType<typeof result.current.toast>;
 
     act(() => {
-      const { id } = result.current.toast({ title: 'Original Title' });
-      toastId = id;
+      toastResult = result.current.toast({ title: 'Original Title' });
     });
 
     act(() => {
-      result.current.toast({
-        id: toastId,
+      toastResult!.update({
+        id: toastResult!.id,
         title: 'Updated Title',
         description: 'Now with description',
       });
@@ -92,7 +91,7 @@ describe('useToast', () => {
 
     expect(result.current.toasts).toHaveLength(1);
     expect(result.current.toasts[0]).toMatchObject({
-      id: toastId,
+      id: toastResult!.id,
       title: 'Updated Title',
       description: 'Now with description',
     });

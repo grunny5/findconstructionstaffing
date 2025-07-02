@@ -73,7 +73,9 @@ describe('ProfileSkeleton', () => {
     // Check for the main grid container that holds the layout
     const mainGrid = screen.getByTestId('main-grid-container');
     expect(mainGrid).toBeInTheDocument();
-    expect(mainGrid).toHaveClass('grid', 'grid-cols-1', 'lg:grid-cols-3');
+    expect(mainGrid).toHaveClass('grid');
+    expect(mainGrid).toHaveClass('grid-cols-1');
+    expect(mainGrid).toHaveClass('lg:grid-cols-3');
 
     // Verify all card containers are present
     expect(
