@@ -682,6 +682,38 @@ async function resetDatabase(
     // Track deletion counts
     const deletions: Array<{ table: string; count: number }> = [];
 
+    // 0. First, check for and delete any integration-related tables that might reference agencies
+    // These tables might exist if integrations have been set up
+    const integrationTables = [
+      'roaddog_jobs_configs',
+      'sync_logs',
+      'integration_configs',
+      'jobs',
+      'placements',
+      'staff',
+    ];
+
+    for (const tableName of integrationTables) {
+      try {
+        log.info(`Checking for ${tableName} table...`);
+        const { count, error } = await supabase
+          .from(tableName)
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+        if (!error) {
+          log.info(`Deleted ${count || 0} records from ${tableName}`);
+          deletions.push({ table: tableName, count: count || 0 });
+        } else if (error.code !== '42P01') {
+          // 42P01 = table does not exist
+          log.warning(`Could not delete from ${tableName}: ${error.message}`);
+        }
+      } catch (err) {
+        // Table might not exist, which is fine
+        log.info(`Table ${tableName} does not exist or is not accessible`);
+      }
+    }
+
     // 1. Delete junction tables first (many-to-many relationships)
     log.info('Deleting agency-trade relationships...');
     const { count: agencyTradeCount, error: agencyTradeError } = await supabase
@@ -718,6 +750,26 @@ async function resetDatabase(
       .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
 
     if (agencyError) {
+      // If we still get a foreign key error, list the specific constraint
+      if (agencyError.message.includes('foreign key constraint')) {
+        log.error('Foreign key constraint violation when deleting agencies.');
+        log.error(
+          'There may be additional tables referencing agencies that need to be cleared first.'
+        );
+        log.error(`Error details: ${agencyError.message}`);
+
+        // Try to provide more helpful information
+        if (agencyError.message.includes('referenced from table')) {
+          const match = agencyError.message.match(
+            /referenced from table "([^"]+)"/
+          );
+          if (match) {
+            log.error(
+              `The table "${match[1]}" has references to agencies that must be deleted first.`
+            );
+          }
+        }
+      }
       throw new Error(`Failed to delete agencies: ${agencyError.message}`);
     }
     deletions.push({ table: 'agencies', count: agencyCount || 0 });

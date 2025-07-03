@@ -19,7 +19,32 @@ describe('Reset Database Function', () => {
                   agencies: 12,
                   trades: 48,
                   regions: 35,
+                  roaddog_jobs_configs: 0,
+                  sync_logs: 0,
+                  integration_configs: 0,
+                  jobs: 0,
+                  placements: 0,
+                  staff: 0,
                 };
+
+                // Simulate that integration tables don't exist (error code 42P01)
+                const integrationTables = [
+                  'roaddog_jobs_configs',
+                  'sync_logs',
+                  'integration_configs',
+                  'jobs',
+                  'placements',
+                  'staff',
+                ];
+                if (integrationTables.includes(table)) {
+                  return Promise.resolve({
+                    count: 0,
+                    error: {
+                      code: '42P01',
+                      message: `relation "${table}" does not exist`,
+                    },
+                  });
+                }
 
                 return Promise.resolve({
                   count: counts[table] || 0,
@@ -41,8 +66,14 @@ describe('Reset Database Function', () => {
       // Restore console
       console.log = originalLog;
 
-      // Verify deletion order (junction tables first, then main tables)
+      // Verify deletion order (integration tables first, then junction tables, then main tables)
       expect(deletionCalls).toEqual([
+        'roaddog_jobs_configs',
+        'sync_logs',
+        'integration_configs',
+        'jobs',
+        'placements',
+        'staff',
         'agency_trades',
         'agency_regions',
         'agencies',
@@ -70,6 +101,25 @@ describe('Reset Database Function', () => {
         from: jest.fn((table: string) => ({
           delete: jest.fn(() => ({
             neq: jest.fn(() => {
+              // Integration tables return "not exists" error
+              const integrationTables = [
+                'roaddog_jobs_configs',
+                'sync_logs',
+                'integration_configs',
+                'jobs',
+                'placements',
+                'staff',
+              ];
+              if (integrationTables.includes(table)) {
+                return Promise.resolve({
+                  count: 0,
+                  error: {
+                    code: '42P01',
+                    message: `relation "${table}" does not exist`,
+                  },
+                });
+              }
+
               if (table === 'agencies') {
                 return Promise.resolve({
                   count: null,
@@ -99,8 +149,8 @@ describe('Reset Database Function', () => {
 
       await resetDatabase(mockClient as any);
 
-      // Verify neq was called with zero UUID for each table
-      expect(neqMock).toHaveBeenCalledTimes(5);
+      // Verify neq was called with zero UUID for each table (including integration tables)
+      expect(neqMock).toHaveBeenCalledTimes(11); // 6 integration tables + 5 core tables
       expect(neqMock).toHaveBeenCalledWith(
         'agency_id',
         '00000000-0000-0000-0000-000000000000'

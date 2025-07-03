@@ -77,10 +77,12 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: mockAgency,
-          error: null,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: mockAgency,
+            error: null,
+          })
+        ),
       };
       return queryChain;
     });
@@ -106,10 +108,12 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: null,
-          error: { code: 'PGRST116', message: 'No rows found' },
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: null,
+            error: { code: 'PGRST116', message: 'No rows found' },
+          })
+        ),
       };
       return queryChain;
     });
@@ -139,10 +143,12 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: null,
-          error: dbError,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: null,
+            error: dbError,
+          })
+        ),
       };
       return queryChain;
     });
@@ -177,16 +183,18 @@ describe('GET /api/agencies/[slug]', () => {
 
   it('should handle special characters in slug', async () => {
     const specialSlug = 'test-agency-123';
-    
+
     // Configure mock for special slug
     (supabase.from as any).mockImplementation(() => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: null,
-          error: { code: 'PGRST116', message: 'No rows found' },
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: null,
+            error: { code: 'PGRST116', message: 'No rows found' },
+          })
+        ),
       };
       return queryChain;
     });
@@ -203,7 +211,7 @@ describe('GET /api/agencies/[slug]', () => {
   it('should select all required fields', async () => {
     // Track the select call
     let selectCall: string | undefined;
-    
+
     (supabase.from as any).mockImplementation(() => {
       const queryChain: any = {
         select: jest.fn((query) => {
@@ -211,16 +219,18 @@ describe('GET /api/agencies/[slug]', () => {
           return queryChain;
         }),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: {
-            id: '1',
-            name: 'Test Agency',
-            slug: 'test-agency',
-            agency_trades: [],
-            agency_regions: [],
-          },
-          error: null,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: {
+              id: '1',
+              name: 'Test Agency',
+              slug: 'test-agency',
+              agency_trades: [],
+              agency_regions: [],
+            },
+            error: null,
+          })
+        ),
       };
       return queryChain;
     });
@@ -241,7 +251,7 @@ describe('GET /api/agencies/[slug]', () => {
     (supabase.from as any).mockImplementation(() => {
       throw new Error('Unexpected database error');
     });
-    
+
     const request = createMockNextRequest({
       url: 'http://localhost:3000/api/agencies/test-agency',
     });
@@ -276,10 +286,12 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: rawAgency,
-          error: null,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: rawAgency,
+            error: null,
+          })
+        ),
       };
       return queryChain;
     });
@@ -323,10 +335,12 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: agencyNoRelations,
-          error: null,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: agencyNoRelations,
+            error: null,
+          })
+        ),
       };
       return queryChain;
     });
@@ -348,16 +362,18 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: {
-            id: '1',
-            name: 'Test Agency',
-            slug: 'test-agency',
-            agency_trades: [],
-            agency_regions: [],
-          },
-          error: null,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: {
+              id: '1',
+              name: 'Test Agency',
+              slug: 'test-agency',
+              agency_trades: [],
+              agency_regions: [],
+            },
+            error: null,
+          })
+        ),
       };
       return queryChain;
     });
@@ -369,13 +385,15 @@ describe('GET /api/agencies/[slug]', () => {
     const response = await GET(request, { params: { slug: 'test-agency' } });
 
     expect(response.status).toBe(200);
-    expect(response.headers.get('Cache-Control')).toBe('public, s-maxage=60, stale-while-revalidate=300');
+    expect(response.headers.get('Cache-Control')).toBe(
+      'public, s-maxage=60, stale-while-revalidate=300'
+    );
   });
 
   it('should filter by is_active status', async () => {
     // Track eq calls
     const eqCalls: any[] = [];
-    
+
     (supabase.from as any).mockImplementation(() => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
@@ -383,17 +401,19 @@ describe('GET /api/agencies/[slug]', () => {
           eqCalls.push(args);
           return queryChain;
         }),
-        single: jest.fn(() => Promise.resolve({
-          data: {
-            id: '1',
-            name: 'Active Agency',
-            slug: 'active-agency',
-            is_active: true,
-            agency_trades: [],
-            agency_regions: [],
-          },
-          error: null,
-        })),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: {
+              id: '1',
+              name: 'Active Agency',
+              slug: 'active-agency',
+              is_active: true,
+              agency_trades: [],
+              agency_regions: [],
+            },
+            error: null,
+          })
+        ),
       };
       return queryChain;
     });
