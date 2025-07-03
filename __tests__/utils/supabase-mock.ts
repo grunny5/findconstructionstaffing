@@ -739,7 +739,7 @@ export function configureMockForFilters(
             if (prop === 'then' || prop === 'catch' || prop === 'finally') {
               // Execute the query and return a function that properly delegates to the promise
               const promise = executeQuery();
-              return function(...args: any[]) {
+              return function (...args: any[]) {
                 return promise[prop as keyof Promise<any>].apply(promise, args);
               };
             }

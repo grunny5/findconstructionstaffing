@@ -330,7 +330,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
               return filterMock;
             }),
           };
-          
+
           // Return a proper Promise instead of thenable object
           const promise = Promise.resolve({
             data: [
@@ -340,14 +340,14 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             ],
             error: null,
           });
-          
+
           return Object.assign(promise, filterMock);
         } else if (table === 'agency_regions') {
           const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn(() => filterMock),
           };
-          
+
           // Return a proper Promise instead of thenable object
           const promise = Promise.resolve({
             data: [
@@ -357,7 +357,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             ],
             error: null,
           });
-          
+
           return Object.assign(promise, filterMock);
         }
         // Return a basic mock chain for the main query
@@ -390,7 +390,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           count: (supabase as any)._defaultCount || 0,
         };
         const promise = Promise.resolve(result);
-        
+
         return Object.assign(promise, queryChain);
       });
 
@@ -507,7 +507,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             range: jest.fn(() => filterMock),
             order: jest.fn(() => filterMock),
           };
-          
+
           // Determine the result based on table
           let result: any = { data: null, error: null };
           if (table === 'trades') {
@@ -519,7 +519,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           } else if (table === 'agency_regions') {
             result.data = [{ agency_id: 'agency-1' }]; // Same agency matches both filters
           }
-          
+
           // Return a proper Promise instead of thenable object
           const promise = Promise.resolve(result);
           return Object.assign(promise, filterMock);
@@ -555,7 +555,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           count: (supabase as any)._defaultCount || 0,
         };
         const promise = Promise.resolve(result);
-        
+
         return Object.assign(promise, queryChain);
       });
 
@@ -607,7 +607,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             range: jest.fn(() => filterMock),
             order: jest.fn(() => filterMock),
           };
-          
+
           // Determine the result based on table
           let result: any = { data: null, error: null };
           if (table === 'trades') {
@@ -619,7 +619,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           } else if (table === 'agency_regions') {
             result.data = [{ agency_id: '123' }];
           }
-          
+
           // Return a proper Promise instead of thenable object
           const promise = Promise.resolve(result);
           return Object.assign(promise, filterMock);
@@ -656,7 +656,7 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           count: (supabase as any)._defaultCount || 0,
         };
         const promise = Promise.resolve(result);
-        
+
         return Object.assign(promise, queryChain);
       });
 

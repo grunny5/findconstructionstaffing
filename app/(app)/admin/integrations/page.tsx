@@ -18,6 +18,25 @@ interface IntegrationSummary {
   } | null;
 }
 
+interface CompanyData {
+  id: string;
+  name: string;
+  created_at: string;
+  roaddog_jobs_configs?: Array<{
+    company_id: string;
+    is_active: boolean;
+    last_sync_at: string | null;
+    created_at: string;
+    updated_at: string;
+  }>;
+}
+
+interface SyncLog {
+  company_id: string;
+  status: string;
+  created_at: string;
+}
+
 export default async function AdminIntegrationsPage() {
   const supabase = createClient();
 
@@ -79,10 +98,14 @@ export default async function AdminIntegrationsPage() {
   // Note: This second query is eliminated in the optimized version which uses RPC
   const companiesWithConfigs =
     integrationsData
-      ?.filter((company: any) => company.roaddog_jobs_configs?.length > 0)
+      ?.filter(
+        (company: any) =>
+          Array.isArray(company.roaddog_jobs_configs) &&
+          company.roaddog_jobs_configs.length > 0
+      )
       .map((company: any) => company.id) || [];
 
-  let syncLogs: any[] = [];
+  let syncLogs: SyncLog[] = [];
   if (companiesWithConfigs.length > 0) {
     // Get latest sync log for each company
     const { data: logs } = await supabase
@@ -92,8 +115,8 @@ export default async function AdminIntegrationsPage() {
       .order('created_at', { ascending: false });
 
     // Group by company_id and get the latest for each
-    const latestSyncByCompany = new Map();
-    logs?.forEach((log: any) => {
+    const latestSyncByCompany = new Map<string, SyncLog>();
+    logs?.forEach((log: SyncLog) => {
       if (!latestSyncByCompany.has(log.company_id)) {
         latestSyncByCompany.set(log.company_id, log);
       }
@@ -103,10 +126,10 @@ export default async function AdminIntegrationsPage() {
 
   // Transform data into the format needed for the UI
   const integrations: IntegrationSummary[] =
-    integrationsData?.map((company: any) => {
+    integrationsData?.map((company: CompanyData) => {
       const config = company.roaddog_jobs_configs?.[0] || null;
       const lastSync =
-        syncLogs.find((log) => log.company_id === company.id) || null;
+        syncLogs.find((log: SyncLog) => log.company_id === company.id) || null;
 
       return {
         id: company.id,
