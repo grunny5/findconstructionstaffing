@@ -79,13 +79,13 @@ const customJestConfig = {
     '!**/tests/load/**',
     '!**/__mocks__/**',
   ],
-  // TODO: Increase coverage thresholds back to 80% after fixing all tests
+  // Coverage thresholds restored after fixing all tests
   coverageThreshold: {
     global: {
-      branches: 20,
-      functions: 20,
-      lines: 20,
-      statements: 20,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
