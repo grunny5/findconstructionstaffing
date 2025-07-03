@@ -15,7 +15,7 @@ describe('useToast', () => {
   afterEach(() => {
     jest.clearAllTimers();
     jest.useRealTimers();
-    
+
     // Clear any existing toasts between tests
     const { result } = renderHook(() => useToast());
     act(() => {

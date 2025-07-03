@@ -217,6 +217,7 @@ if (!user.email || !adminEmails.includes(user.email)) {
 To properly implement role-based authorization:
 
 1. **Create a profiles table** with user roles:
+
    ```sql
    CREATE TABLE profiles (
      id UUID REFERENCES auth.users(id) PRIMARY KEY,
@@ -228,6 +229,7 @@ To properly implement role-based authorization:
    ```
 
 2. **Create RLS policies** for the profiles table:
+
    ```sql
    -- Users can read their own profile
    CREATE POLICY "Users can view own profile"
@@ -246,6 +248,7 @@ To properly implement role-based authorization:
    ```
 
 3. **Update the authorization check** in the admin pages:
+
    ```typescript
    // Fetch user profile to check role
    const { data: profile } = await supabase
@@ -261,6 +264,7 @@ To properly implement role-based authorization:
    ```
 
 4. **Create a database trigger** to automatically create profiles:
+
    ```sql
    CREATE OR REPLACE FUNCTION handle_new_user()
    RETURNS TRIGGER AS $$

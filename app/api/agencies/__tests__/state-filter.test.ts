@@ -329,32 +329,36 @@ describe('GET /api/agencies - State/Region Filtering', () => {
               regionsInCall = { column, values };
               return filterMock;
             }),
-            then: (onFulfilled: any) =>
-              Promise.resolve({
-                data: [
-                  { id: 'region-tx' },
-                  { id: 'region-ca' },
-                  { id: 'region-ny' },
-                ],
-                error: null,
-              }).then(onFulfilled),
           };
-          return filterMock;
+          
+          // Return a proper Promise instead of thenable object
+          const promise = Promise.resolve({
+            data: [
+              { id: 'region-tx' },
+              { id: 'region-ca' },
+              { id: 'region-ny' },
+            ],
+            error: null,
+          });
+          
+          return Object.assign(promise, filterMock);
         } else if (table === 'agency_regions') {
           const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn(() => filterMock),
-            then: (onFulfilled: any) =>
-              Promise.resolve({
-                data: [
-                  { agency_id: 'agency-1' },
-                  { agency_id: 'agency-2' },
-                  { agency_id: 'agency-3' },
-                ],
-                error: null,
-              }).then(onFulfilled),
           };
-          return filterMock;
+          
+          // Return a proper Promise instead of thenable object
+          const promise = Promise.resolve({
+            data: [
+              { agency_id: 'agency-1' },
+              { agency_id: 'agency-2' },
+              { agency_id: 'agency-3' },
+            ],
+            error: null,
+          });
+          
+          return Object.assign(promise, filterMock);
         }
         // Return a basic mock chain for the main query
         const queryChain: any = {
@@ -364,14 +368,6 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           or: jest.fn(() => queryChain),
           range: jest.fn(() => queryChain),
           order: jest.fn(() => queryChain),
-          then: (onFulfilled: any) => {
-            const result = {
-              data: (supabase as any)._defaultData || [],
-              error: null,
-              count: (supabase as any)._defaultCount || 0,
-            };
-            return Promise.resolve(result).then(onFulfilled);
-          },
         };
 
         // Track the mocked methods
@@ -387,7 +383,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        return queryChain;
+        // Return a proper Promise instead of thenable object
+        const result = {
+          data: (supabase as any)._defaultData || [],
+          error: null,
+          count: (supabase as any)._defaultCount || 0,
+        };
+        const promise = Promise.resolve(result);
+        
+        return Object.assign(promise, queryChain);
       });
 
       const mockRequest = createMockNextRequest({
@@ -502,23 +506,23 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             or: jest.fn(() => filterMock),
             range: jest.fn(() => filterMock),
             order: jest.fn(() => filterMock),
-            then: (onFulfilled: any) => {
-              let result: any = { data: null, error: null };
-
-              if (table === 'trades') {
-                result.data = [{ id: 'trade-1' }];
-              } else if (table === 'agency_trades') {
-                result.data = [{ agency_id: 'agency-1' }];
-              } else if (table === 'regions') {
-                result.data = [{ id: 'region-tx' }, { id: 'region-ca' }];
-              } else if (table === 'agency_regions') {
-                result.data = [{ agency_id: 'agency-1' }]; // Same agency matches both filters
-              }
-
-              return Promise.resolve(result).then(onFulfilled);
-            },
           };
-          return filterMock;
+          
+          // Determine the result based on table
+          let result: any = { data: null, error: null };
+          if (table === 'trades') {
+            result.data = [{ id: 'trade-1' }];
+          } else if (table === 'agency_trades') {
+            result.data = [{ agency_id: 'agency-1' }];
+          } else if (table === 'regions') {
+            result.data = [{ id: 'region-tx' }, { id: 'region-ca' }];
+          } else if (table === 'agency_regions') {
+            result.data = [{ agency_id: 'agency-1' }]; // Same agency matches both filters
+          }
+          
+          // Return a proper Promise instead of thenable object
+          const promise = Promise.resolve(result);
+          return Object.assign(promise, filterMock);
         }
 
         // Return a basic mock chain for the main query
@@ -529,14 +533,6 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           or: jest.fn(() => queryChain),
           range: jest.fn(() => queryChain),
           order: jest.fn(() => queryChain),
-          then: (onFulfilled: any) => {
-            const result = {
-              data: (supabase as any)._defaultData || [],
-              error: null,
-              count: (supabase as any)._defaultCount || 0,
-            };
-            return Promise.resolve(result).then(onFulfilled);
-          },
         };
 
         // Track the mocked methods
@@ -552,7 +548,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        return queryChain;
+        // Return a proper Promise instead of thenable object
+        const result = {
+          data: (supabase as any)._defaultData || [],
+          error: null,
+          count: (supabase as any)._defaultCount || 0,
+        };
+        const promise = Promise.resolve(result);
+        
+        return Object.assign(promise, queryChain);
       });
 
       const mockRequest = createMockNextRequest({
@@ -602,23 +606,23 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             or: jest.fn(() => filterMock),
             range: jest.fn(() => filterMock),
             order: jest.fn(() => filterMock),
-            then: (onFulfilled: any) => {
-              let result: any = { data: null, error: null };
-
-              if (table === 'trades') {
-                result.data = [{ id: 'trade-1' }, { id: 'trade-2' }];
-              } else if (table === 'agency_trades') {
-                result.data = [{ agency_id: '123' }];
-              } else if (table === 'regions') {
-                result.data = [{ id: 'region-tx' }, { id: 'region-ca' }];
-              } else if (table === 'agency_regions') {
-                result.data = [{ agency_id: '123' }];
-              }
-
-              return Promise.resolve(result).then(onFulfilled);
-            },
           };
-          return filterMock;
+          
+          // Determine the result based on table
+          let result: any = { data: null, error: null };
+          if (table === 'trades') {
+            result.data = [{ id: 'trade-1' }, { id: 'trade-2' }];
+          } else if (table === 'agency_trades') {
+            result.data = [{ agency_id: '123' }];
+          } else if (table === 'regions') {
+            result.data = [{ id: 'region-tx' }, { id: 'region-ca' }];
+          } else if (table === 'agency_regions') {
+            result.data = [{ agency_id: '123' }];
+          }
+          
+          // Return a proper Promise instead of thenable object
+          const promise = Promise.resolve(result);
+          return Object.assign(promise, filterMock);
         }
 
         // For main agencies query, use the centralized mock
@@ -630,14 +634,6 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           or: jest.fn(() => queryChain),
           range: jest.fn(() => queryChain),
           order: jest.fn(() => queryChain),
-          then: (onFulfilled: any) => {
-            const result = {
-              data: (supabase as any)._defaultData || [],
-              error: null,
-              count: (supabase as any)._defaultCount || 0,
-            };
-            return Promise.resolve(result).then(onFulfilled);
-          },
         };
 
         // Track the mocked methods
@@ -653,7 +649,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        return queryChain;
+        // Return a proper Promise instead of thenable object
+        const result = {
+          data: (supabase as any)._defaultData || [],
+          error: null,
+          count: (supabase as any)._defaultCount || 0,
+        };
+        const promise = Promise.resolve(result);
+        
+        return Object.assign(promise, queryChain);
       });
 
       const mockRequest = createMockNextRequest({

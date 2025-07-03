@@ -18,7 +18,10 @@ const customJestConfig = {
         '<rootDir>/hooks/**/*.test.{js,jsx,ts,tsx}',
         '<rootDir>/__tests__/**/*.test.{js,jsx,ts,tsx}',
       ],
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.test-env.js', '<rootDir>/jest.setup.js'],
+      setupFilesAfterEnv: [
+        '<rootDir>/jest.setup.test-env.js',
+        '<rootDir>/jest.setup.js',
+      ],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
       },
@@ -41,7 +44,10 @@ const customJestConfig = {
         '<rootDir>/lib/**/*.test.{js,ts}',
         '<rootDir>/scripts/**/*.test.{js,ts}',
       ],
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.test-env.js', '<rootDir>/jest.setup.js'],
+      setupFilesAfterEnv: [
+        '<rootDir>/jest.setup.test-env.js',
+        '<rootDir>/jest.setup.js',
+      ],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
       },

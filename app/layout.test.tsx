@@ -21,23 +21,23 @@ import RootLayout from './layout';
 describe('RootLayout', () => {
   // Since RootLayout returns html/body elements, we need to test it differently
   // We'll render the component and extract its content for testing
-  
+
   it('should render with correct structure', () => {
     // Create a temporary container
     const container = document.createElement('div');
-    
+
     // Render the layout
     const layout = RootLayout({ children: <div>Test Child Content</div> });
-    
+
     // Check the structure
     expect(layout.type).toBe('html');
     expect(layout.props.lang).toBe('en');
-    
+
     // Check body element
     const body = layout.props.children;
     expect(body.type).toBe('body');
     expect(body.props.className).toBe('__Inter_abc123');
-    
+
     // Check children array
     const [children, toaster] = body.props.children;
     expect(children.props.children).toBe('Test Child Content');
@@ -47,7 +47,7 @@ describe('RootLayout', () => {
     const layout = RootLayout({ children: <div>Content</div> });
     const body = layout.props.children;
     const [_, toaster] = body.props.children;
-    
+
     // Toaster should be the second child
     expect(toaster).toBeDefined();
   });
@@ -57,7 +57,7 @@ describe('RootLayout', () => {
     const layout = RootLayout({ children: testChild });
     const body = layout.props.children;
     const [children] = body.props.children;
-    
+
     expect(children).toBe(testChild);
   });
 });

@@ -153,7 +153,9 @@ describe('Header', () => {
   it('should have responsive container', () => {
     render(<Header />);
 
-    const container = screen.getAllByText('Construction')[0].closest('.max-w-7xl');
+    const container = screen
+      .getAllByText('Construction')[0]
+      .closest('.max-w-7xl');
     expect(container).toHaveClass('mx-auto');
   });
 });

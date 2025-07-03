@@ -115,7 +115,7 @@ describe('Search Functionality Integration Tests', () => {
 
     // Mock window.location to prevent navigation errors
     delete (window as any).location;
-    window.location = { 
+    window.location = {
       reload: jest.fn(),
       href: '',
       pathname: '/',
