@@ -108,11 +108,16 @@ export default async function AdminIntegrationsPage() {
   let syncLogs: SyncLog[] = [];
   if (companiesWithConfigs.length > 0) {
     // Get latest sync log for each company
-    const { data: logs } = await supabase
+    const { data: logs, error: syncError } = await supabase
       .from('roaddog_jobs_sync_logs')
       .select('company_id, status, created_at')
       .in('company_id', companiesWithConfigs)
       .order('created_at', { ascending: false });
+
+    if (syncError) {
+      console.error('Error fetching sync logs:', syncError);
+      // Continue with empty syncLogs array rather than failing entirely
+    }
 
     // Group by company_id and get the latest for each
     const latestSyncByCompany = new Map<string, SyncLog>();
