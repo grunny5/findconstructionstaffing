@@ -95,24 +95,27 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+      - name: Install Vercel CLI and dependencies
+        run: |
+          npm install --global vercel@latest
+          # Install jq for JSON parsing
+          sudo apt-get update && sudo apt-get install -y jq
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
-        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
         id: deploy
         run: |
           # Add retry logic for rate limit errors
           for i in {1..3}; do
-            # Capture both stdout and stderr, with JSON output for clean parsing
-            if DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --output=json 2>&1); then
-              # Extract URL from JSON output
-              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url' 2>/dev/null || echo "$DEPLOY_OUTPUT")
+            # Deploy without JSON output first (more reliable)
+            if DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
+              # The output should contain the deployment URL
+              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "https://[a-zA-Z0-9.-]+\.vercel\.app" | head -1 || echo "")
               
               # Verify we got a valid URL
               if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
@@ -122,6 +125,13 @@ jobs:
               else
                 echo "Failed to extract deployment URL from output"
                 echo "Raw output: $DEPLOY_OUTPUT"
+                # Try to extract from the last line which often contains the URL
+                DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | tail -1 | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" || echo "")
+                if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+                  echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+                  echo "Preview deployed to: $DEPLOYMENT_URL"
+                  break
+                fi
                 exit 1
               fi
             elif echo "$DEPLOY_OUTPUT" | grep -q "api-deployments-free-per-day"; then

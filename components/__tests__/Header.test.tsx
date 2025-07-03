@@ -67,8 +67,12 @@ describe('Header', () => {
   it('should render desktop navigation links', () => {
     render(<Header />);
 
-    const browseLinks = screen.getAllByRole('link', { name: /browse directory/i });
-    const requestLinks = screen.getAllByRole('link', { name: /request labor/i });
+    const browseLinks = screen.getAllByRole('link', {
+      name: /browse directory/i,
+    });
+    const requestLinks = screen.getAllByRole('link', {
+      name: /request labor/i,
+    });
     const resourceLinks = screen.getAllByRole('link', { name: /resources/i });
 
     // Check desktop links (usually the first occurrence)
@@ -81,7 +85,9 @@ describe('Header', () => {
     render(<Header />);
 
     const claimLinks = screen.getAllByRole('link', { name: /claim listing/i });
-    const getStartedLinks = screen.getAllByRole('link', { name: /get started/i });
+    const getStartedLinks = screen.getAllByRole('link', {
+      name: /get started/i,
+    });
 
     // Check that these links exist (at least one for desktop)
     expect(claimLinks.length).toBeGreaterThan(0);

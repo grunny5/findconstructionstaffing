@@ -387,7 +387,9 @@ describe('Search Functionality Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('No matches found')).toBeInTheDocument();
         // The component uses HTML entities for quotes, check for part of the message
-        expect(screen.getByText(/We couldn.*t find any agencies matching/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/We couldn.*t find any agencies matching/)
+        ).toBeInTheDocument();
       });
     });
 

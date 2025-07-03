@@ -732,27 +732,30 @@ export function configureMockForFilters(
         return Promise.resolve(result);
       };
 
-      // Create a proxy that returns the mock for chaining but executes the promise when needed
-      const createChainableProxy = (target: any): any => {
-        return new Proxy(target, {
-          get(obj, prop) {
-            if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-              // Execute the query and return a function that properly delegates to the promise
-              const promise = executeQuery();
-              return function (...args: any[]) {
-                return promise[prop as keyof Promise<any>].apply(promise, args);
-              };
-            }
-            // For other methods, return a function that returns the proxy for chaining
-            if (typeof obj[prop] === 'function') {
-              return jest.fn(() => createChainableProxy(target));
-            }
-            return obj[prop];
-          },
+      // Create a chainable object that defers promise execution
+      const createChainableObject = () => {
+        const chainable = { ...filterMock };
+
+        // Set up method chaining
+        Object.keys(filterMock).forEach((key) => {
+          if (typeof filterMock[key] === 'function') {
+            chainable[key] = jest.fn(() => createChainableObject());
+          }
         });
+
+        // Use Object.defineProperty to make the object thenable without creating anti-pattern
+        Object.defineProperty(chainable, 'then', {
+          value: function (onfulfilled?: any, onrejected?: any) {
+            return executeQuery().then(onfulfilled, onrejected);
+          },
+          configurable: true,
+          writable: true,
+        });
+
+        return chainable;
       };
 
-      return createChainableProxy(filterMock);
+      return createChainableObject();
     }
 
     // For main agencies query, create a full mock chain

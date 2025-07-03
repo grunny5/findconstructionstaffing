@@ -72,3 +72,6 @@ supabase.exe
 test-sanitize*.js
 test-sanitize*.mjs
 test-sanitize*.ts
+
+# Files with invalid names
+construction-recruiter-directory@*

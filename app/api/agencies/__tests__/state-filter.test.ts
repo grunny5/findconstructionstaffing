@@ -338,10 +338,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
               regionsInCall = { column, values };
               return filterMock;
             }),
-            then: (resolve: any) => Promise.resolve(result).then(resolve),
-            catch: (reject: any) => Promise.resolve(result).catch(reject),
-            finally: (onFinally: any) => Promise.resolve(result).finally(onFinally),
           };
+
+          // Return the mock with promise resolution delegated
+          Object.defineProperty(filterMock, 'then', {
+            value: function (onfulfilled?: any, onrejected?: any) {
+              return Promise.resolve(result).then(onfulfilled, onrejected);
+            },
+            configurable: true,
+          });
 
           return filterMock;
         } else if (table === 'agency_regions') {
@@ -357,10 +362,15 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           const filterMock: any = {
             select: jest.fn(() => filterMock),
             in: jest.fn(() => filterMock),
-            then: (resolve: any) => Promise.resolve(result).then(resolve),
-            catch: (reject: any) => Promise.resolve(result).catch(reject),
-            finally: (onFinally: any) => Promise.resolve(result).finally(onFinally),
           };
+
+          // Return the mock with promise resolution delegated
+          Object.defineProperty(filterMock, 'then', {
+            value: function (onfulfilled?: any, onrejected?: any) {
+              return Promise.resolve(result).then(onfulfilled, onrejected);
+            },
+            configurable: true,
+          });
 
           return filterMock;
         }
@@ -387,16 +397,20 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        // Return thenable object
+        // Create result object
         const result = {
           data: (supabase as any)._defaultData || [],
           error: null,
           count: (supabase as any)._defaultCount || 0,
         };
-        
-        queryChain.then = (resolve: any) => Promise.resolve(result).then(resolve);
-        queryChain.catch = (reject: any) => Promise.resolve(result).catch(reject);
-        queryChain.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+
+        // Return the mock with promise resolution delegated
+        Object.defineProperty(queryChain, 'then', {
+          value: function (onfulfilled?: any, onrejected?: any) {
+            return Promise.resolve(result).then(onfulfilled, onrejected);
+          },
+          configurable: true,
+        });
 
         return queryChain;
       });
@@ -527,10 +541,14 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             result.data = [{ agency_id: 'agency-1' }]; // Same agency matches both filters
           }
 
-          // Return thenable object
-          filterMock.then = (resolve: any) => Promise.resolve(result).then(resolve);
-          filterMock.catch = (reject: any) => Promise.resolve(result).catch(reject);
-          filterMock.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+          // Return the mock with promise resolution delegated
+          Object.defineProperty(filterMock, 'then', {
+            value: function (onfulfilled?: any, onrejected?: any) {
+              return Promise.resolve(result).then(onfulfilled, onrejected);
+            },
+            configurable: true,
+          });
+
           return filterMock;
         }
 
@@ -557,16 +575,20 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        // Return thenable object
+        // Create result object
         const result = {
           data: (supabase as any)._defaultData || [],
           error: null,
           count: (supabase as any)._defaultCount || 0,
         };
-        
-        queryChain.then = (resolve: any) => Promise.resolve(result).then(resolve);
-        queryChain.catch = (reject: any) => Promise.resolve(result).catch(reject);
-        queryChain.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+
+        // Return the mock with promise resolution delegated
+        Object.defineProperty(queryChain, 'then', {
+          value: function (onfulfilled?: any, onrejected?: any) {
+            return Promise.resolve(result).then(onfulfilled, onrejected);
+          },
+          configurable: true,
+        });
 
         return queryChain;
       });
@@ -632,10 +654,14 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             result.data = [{ agency_id: '123' }];
           }
 
-          // Return thenable object
-          filterMock.then = (resolve: any) => Promise.resolve(result).then(resolve);
-          filterMock.catch = (reject: any) => Promise.resolve(result).catch(reject);
-          filterMock.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+          // Return the mock with promise resolution delegated
+          Object.defineProperty(filterMock, 'then', {
+            value: function (onfulfilled?: any, onrejected?: any) {
+              return Promise.resolve(result).then(onfulfilled, onrejected);
+            },
+            configurable: true,
+          });
+
           return filterMock;
         }
 
@@ -663,16 +689,20 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        // Return thenable object
+        // Create result object
         const result = {
           data: (supabase as any)._defaultData || [],
           error: null,
           count: (supabase as any)._defaultCount || 0,
         };
-        
-        queryChain.then = (resolve: any) => Promise.resolve(result).then(resolve);
-        queryChain.catch = (reject: any) => Promise.resolve(result).catch(reject);
-        queryChain.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+
+        // Return the mock with promise resolution delegated
+        Object.defineProperty(queryChain, 'then', {
+          value: function (onfulfilled?: any, onrejected?: any) {
+            return Promise.resolve(result).then(onfulfilled, onrejected);
+          },
+          configurable: true,
+        });
 
         return queryChain;
       });

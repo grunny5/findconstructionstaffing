@@ -35,10 +35,15 @@ jobs:
           # Count deployments from last 24 hours
           SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%S.000Z)
           COUNT_RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v6/deployments?since=$SINCE&teamId=$VERCEL_ORG_ID&limit=1")
+            "https://api.vercel.com/v6/deployments?since=$SINCE&teamId=$VERCEL_ORG_ID&limit=0")
 
-          # Extract pagination info to estimate count
-          TOTAL=$(echo $COUNT_RESPONSE | grep -o '"pagination":{"count":[0-9]*' | grep -o '[0-9]*$' || echo "0")
+          # Extract pagination info using jq for reliable JSON parsing
+          if command -v jq &> /dev/null; then
+            TOTAL=$(echo "$COUNT_RESPONSE" | jq -r '.pagination.count // 0')
+          else
+            # Fallback to grep if jq is not available
+            TOTAL=$(echo "$COUNT_RESPONSE" | grep -o '"pagination":{"count":[0-9]*' | grep -o '[0-9]*$' || echo "0")
+          fi
 
           echo "Deployment count (last 24h): $TOTAL"
           echo "deployment-count=$TOTAL" >> $GITHUB_OUTPUT
@@ -59,6 +64,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Deploy to Vercel
         id: deploy
