@@ -9,21 +9,6 @@ jest.mock('@/components/ui/sonner', () => ({
   Toaster: () => <div data-testid="toaster">Toaster</div>,
 }));
 
-import RootLayout from './layout';
-
-// Mock the imported components to avoid issues
-jest.mock('@/components/Header', () => {
-  return function Header() {
-    return <header>Header</header>;
-  };
-});
-
-jest.mock('@/components/Footer', () => {
-  return function Footer() {
-    return <footer>Footer</footer>;
-  };
-});
-
 // Mock next/font/google to return consistent class name
 jest.mock('next/font/google', () => ({
   Inter: () => ({
@@ -31,46 +16,48 @@ jest.mock('next/font/google', () => ({
   }),
 }));
 
+import RootLayout from './layout';
+
 describe('RootLayout', () => {
-  it('should render children within the layout', () => {
-    const { getByText } = render(
-      <RootLayout>
-        <div>Test Child Content</div>
-      </RootLayout>
-    );
-
-    expect(getByText('Test Child Content')).toBeInTheDocument();
+  // Since RootLayout returns html/body elements, we need to test it differently
+  // We'll render the component and extract its content for testing
+  
+  it('should render with correct structure', () => {
+    // Create a temporary container
+    const container = document.createElement('div');
+    
+    // Render the layout
+    const layout = RootLayout({ children: <div>Test Child Content</div> });
+    
+    // Check the structure
+    expect(layout.type).toBe('html');
+    expect(layout.props.lang).toBe('en');
+    
+    // Check body element
+    const body = layout.props.children;
+    expect(body.type).toBe('body');
+    expect(body.props.className).toBe('__Inter_abc123');
+    
+    // Check children array
+    const [children, toaster] = body.props.children;
+    expect(children.props.children).toBe('Test Child Content');
   });
 
-  it('should have correct html attributes', () => {
-    const { container } = render(
-      <RootLayout>
-        <div>Test</div>
-      </RootLayout>
-    );
-
-    const html = container.querySelector('html');
-    expect(html).toHaveAttribute('lang', 'en');
+  it('should include the Toaster component', () => {
+    const layout = RootLayout({ children: <div>Content</div> });
+    const body = layout.props.children;
+    const [_, toaster] = body.props.children;
+    
+    // Toaster should be the second child
+    expect(toaster).toBeDefined();
   });
 
-  it('should render toaster component', () => {
-    const { getByTestId } = render(
-      <RootLayout>
-        <div>Content</div>
-      </RootLayout>
-    );
-
-    expect(getByTestId('toaster')).toBeInTheDocument();
-  });
-
-  it('should apply correct body classes', () => {
-    const { container } = render(
-      <RootLayout>
-        <div>Test</div>
-      </RootLayout>
-    );
-
-    const body = container.querySelector('body');
-    expect(body).toHaveClass('__Inter_abc123');
+  it('should pass through children correctly', () => {
+    const testChild = <div data-testid="test-child">Test Content</div>;
+    const layout = RootLayout({ children: testChild });
+    const body = layout.props.children;
+    const [children] = body.props.children;
+    
+    expect(children).toBe(testChild);
   });
 });

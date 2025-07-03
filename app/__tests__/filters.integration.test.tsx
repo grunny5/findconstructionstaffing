@@ -237,13 +237,24 @@ describe('Filter Integration Tests', () => {
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
       replace: mockReplace,
+      prefetch: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
     });
 
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
 
-    // Mock window.location.reload
+    // Mock window.location to prevent navigation errors
     delete (window as any).location;
-    window.location = { reload: jest.fn() } as any;
+    window.location = { 
+      reload: jest.fn(),
+      href: '',
+      pathname: '/',
+      search: '',
+      assign: jest.fn(),
+      replace: jest.fn(),
+    } as any;
   });
 
   describe('Trade Filter Integration', () => {

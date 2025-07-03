@@ -28,8 +28,8 @@ describe('DirectoryFilters', () => {
     render(<DirectoryFilters onFiltersChange={jest.fn()} totalResults={0} />);
 
     expect(screen.getByPlaceholderText(/search agencies/i)).toBeInTheDocument();
-    expect(screen.getByText(/all states/i)).toBeInTheDocument();
-    expect(screen.getByText(/all trades/i)).toBeInTheDocument();
+    expect(screen.getByText('Service Areas')).toBeInTheDocument();
+    expect(screen.getByText('Trade Specialties')).toBeInTheDocument();
   });
 
   it('should handle search input changes', async () => {
@@ -67,11 +67,11 @@ describe('DirectoryFilters', () => {
     );
 
     // Open state dropdown
-    const stateButton = screen.getByText(/all states/i);
+    const stateButton = screen.getByText('Service Areas');
     fireEvent.click(stateButton);
 
-    // Select a state
-    const texasOption = screen.getByText('TX');
+    // Select a state (states are displayed by name, not code)
+    const texasOption = screen.getByText('Texas');
     fireEvent.click(texasOption);
 
     expect(mockOnFiltersChange).toHaveBeenCalledWith(

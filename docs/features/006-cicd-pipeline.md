@@ -86,11 +86,27 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
+    types: [opened, synchronize, ready_for_review]
     branches: [main, develop]
   push:
     branches: [main, develop]
 
+# Prevent duplicate runs on the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Intelligent deployment check
+  should-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    steps:
+      - Check if PR is draft (skip deployment)
+      - Check if only docs/tests changed (skip deployment)
+      - Always deploy main/staging branches
+
   quality-checks:
     runs-on: ubuntu-latest
     steps:
@@ -126,6 +142,18 @@ jobs:
       - Install dependencies
       - Build application
       - Upload build artifacts
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, should-deploy]
+    if: needs.should-deploy.outputs.should-deploy == 'true'
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - Deploy to Vercel with JSON output
+      - Parse deployment URL deterministically
+      - Post deployment comment on PR
+      - Handle rate limit errors gracefully
 ```
 
 ### Environment Variables & Secrets
@@ -141,6 +169,36 @@ jobs:
 - **Pipeline Duration:** < 5 minutes for standard PR checks
 - **Caching Strategy:** Cache node_modules, Next.js build cache, test results
 - **Parallel Execution:** Run quality, test, and security checks in parallel
+
+### Workflow Optimizations
+
+Based on implementation feedback, the following optimizations were added:
+
+1. **Concurrency Control**
+   - Uses `github.head_ref` for PRs and `github.ref` for pushes
+   - Cancels in-progress runs when new commits are pushed
+   - Prevents duplicate deployments for the same PR
+
+2. **Intelligent Deployment Skipping**
+   - Skips deployment for draft PRs to save resources
+   - Skips deployment when only docs or tests are changed
+   - Detects changes using git diff against base branch
+
+3. **Deployment URL Parsing**
+   - Uses Vercel CLI with `--output=json` flag
+   - Parses deployment URL using `jq` for reliability
+   - Handles JSON parsing errors gracefully
+
+4. **Rate Limit Handling**
+   - Implements retry logic with 3 attempts
+   - Waits 5 minutes between retries on rate limit
+   - Posts informative comments when rate limited
+   - Doesn't fail the workflow on rate limit errors
+
+5. **Security Improvements**
+   - Stores VERCEL_TOKEN as environment variable
+   - Reduces token exposure in logs
+   - Uses least-privilege approach for secrets
 
 ## 4. Implementation Details
 

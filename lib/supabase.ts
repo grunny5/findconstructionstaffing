@@ -5,7 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Skip validation in test environment or during build
 const isTestEnvironment = process.env.NODE_ENV === 'test';
-const isBuildEnvironment = process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_SUPABASE_URL;
+const isBuildEnvironment =
+  process.env.NODE_ENV === 'production' &&
+  !process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 // Validate required environment variables (skip in test/build environment)
 if (!isTestEnvironment && !isBuildEnvironment) {

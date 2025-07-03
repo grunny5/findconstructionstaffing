@@ -9,7 +9,7 @@ import {
   configureMockForFilters,
 } from '@/__tests__/utils/supabase-mock';
 import { supabase } from '@/lib/supabase';
-import { isErrorResponse, API_CONSTANTS, HTTP_STATUS } from '@/types/api';
+import { isErrorResponse, HTTP_STATUS } from '@/types/api';
 import { createMockNextRequest } from '@/__tests__/utils/api-mocks';
 
 // Mock NextResponse

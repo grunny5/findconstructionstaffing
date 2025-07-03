@@ -59,8 +59,9 @@ describe('Header', () => {
   it('should render the logo and brand name', () => {
     render(<Header />);
 
-    expect(screen.getByText('Construction')).toBeInTheDocument();
-    expect(screen.getByText('Recruiter Directory')).toBeInTheDocument();
+    // There are multiple instances of these texts (desktop and mobile)
+    expect(screen.getAllByText('Construction')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Recruiter Directory')[0]).toBeInTheDocument();
   });
 
   it('should render desktop navigation links', () => {
@@ -152,7 +153,7 @@ describe('Header', () => {
   it('should have responsive container', () => {
     render(<Header />);
 
-    const container = screen.getByText('Construction').closest('.max-w-7xl');
+    const container = screen.getAllByText('Construction')[0].closest('.max-w-7xl');
     expect(container).toHaveClass('mx-auto');
   });
 });

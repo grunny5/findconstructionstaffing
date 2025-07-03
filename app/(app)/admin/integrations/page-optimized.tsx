@@ -18,27 +18,37 @@ export default async function AdminIntegrationsPageOptimized() {
   const supabase = createClient();
 
   // Check authentication and admin status
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
   if (!user || authError) {
     redirect('/login');
+    return null; // Ensure we don't continue execution in tests
   }
 
-  // Check if user is admin (implement based on your auth setup)
-  // const { data: profile } = await supabase
-  //   .from('profiles')
-  //   .select('is_admin')
-  //   .eq('id', user.id)
-  //   .single();
-  
-  // if (!profile?.is_admin) {
-  //   redirect('/');
-  // }
+  // Check if user is admin
+  // TODO: Implement proper role-based authorization with profiles table
+  // For now, using email-based check as a security measure
+  const adminEmails = [
+    'admin@findconstructionstaffing.com',
+    'devops@findconstructionstaffing.com',
+    // Add more admin emails as needed
+  ];
+
+  if (!user.email || !adminEmails.includes(user.email)) {
+    redirect('/');
+    return null; // Ensure we don't continue execution in tests
+  }
 
   // Single optimized RPC call to get all integration data
-  const { data: integrations, error } = await supabase
-    .rpc('get_admin_integrations_summary')
-    .returns<IntegrationSummaryRPC[]>();
+  const { data: integrations, error } = (await supabase.rpc(
+    'get_admin_integrations_summary'
+  )) as {
+    data: IntegrationSummaryRPC[] | null;
+    error: any;
+  };
 
   if (error) {
     console.error('Error fetching integrations:', error);
@@ -48,29 +58,36 @@ export default async function AdminIntegrationsPageOptimized() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Integration Management</h1>
-      
+
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
-          {integrations?.map((integration) => (
+          {integrations?.map((integration: IntegrationSummaryRPC) => (
             <li key={integration.id} className="px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-medium">{integration.name}</h3>
                   <p className="text-sm text-gray-500">
-                    Created: {new Date(integration.created_at).toLocaleDateString()}
+                    Created:{' '}
+                    {new Date(integration.created_at).toLocaleDateString()}
                   </p>
                   {integration.config_created_at && (
                     <p className="text-sm text-gray-500">
-                      Config updated: {new Date(integration.config_updated_at || integration.config_created_at).toLocaleDateString()}
+                      Config updated:{' '}
+                      {new Date(
+                        integration.config_updated_at ||
+                          integration.config_created_at
+                      ).toLocaleDateString()}
                     </p>
                   )}
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    integration.config_is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      integration.config_is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
                     {integration.config_is_active ? 'Active' : 'Inactive'}
                   </span>
                   {integration.last_sync_status && (
@@ -80,12 +97,17 @@ export default async function AdminIntegrationsPageOptimized() {
                   )}
                   {integration.last_sync_created_at && (
                     <p className="text-xs text-gray-400">
-                      {new Date(integration.last_sync_created_at).toLocaleString()}
+                      {new Date(
+                        integration.last_sync_created_at
+                      ).toLocaleString()}
                     </p>
                   )}
                   {integration.config_last_sync_at && (
                     <p className="text-xs text-gray-400">
-                      Config sync: {new Date(integration.config_last_sync_at).toLocaleString()}
+                      Config sync:{' '}
+                      {new Date(
+                        integration.config_last_sync_at
+                      ).toLocaleString()}
                     </p>
                   )}
                 </div>

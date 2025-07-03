@@ -22,28 +22,40 @@ export default async function AdminIntegrationsPage() {
   const supabase = createClient();
 
   // Check authentication and admin status
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
   if (!user || authError) {
     redirect('/login');
+    return null; // Ensure we don't continue execution in tests
   }
 
-  // Check if user is admin (you'll need to implement this based on your auth setup)
-  // For example:
-  // const { data: profile } = await supabase
-  //   .from('profiles')
-  //   .select('is_admin')
-  //   .eq('id', user.id)
-  //   .single();
-  
-  // if (!profile?.is_admin) {
-  //   redirect('/');
-  // }
+  // Check if user is admin
+  // TODO: Implement proper role-based authorization with profiles table
+  // For now, using email-based check as a security measure
+  const adminEmails = [
+    'admin@findconstructionstaffing.com',
+    'devops@findconstructionstaffing.com',
+    // Add more admin emails as needed
+  ];
+
+  if (!user.email || !adminEmails.includes(user.email)) {
+    redirect('/');
+    return null; // Ensure we don't continue execution in tests
+  }
+
+  // TODO: Consider migrating to the optimized RPC approach
+  // The page-optimized.tsx version uses a single RPC call (get_admin_integrations_summary)
+  // which consolidates the queries below into one database round-trip for better performance.
+  // Once the RPC method is properly implemented in your database, you can switch to that approach.
 
   // Option 1: Single query with joins (recommended for PostgreSQL)
   const { data: integrationsData, error } = await supabase
     .from('companies')
-    .select(`
+    .select(
+      `
       id,
       name,
       created_at,
@@ -54,7 +66,8 @@ export default async function AdminIntegrationsPage() {
         created_at,
         updated_at
       )
-    `)
+    `
+    )
     .order('name');
 
   if (error) {
@@ -63,9 +76,11 @@ export default async function AdminIntegrationsPage() {
   }
 
   // Get latest sync status for each company with a config
-  const companiesWithConfigs = integrationsData
-    ?.filter(company => company.roaddog_jobs_configs?.length > 0)
-    .map(company => company.id) || [];
+  // Note: This second query is eliminated in the optimized version which uses RPC
+  const companiesWithConfigs =
+    integrationsData
+      ?.filter((company: any) => company.roaddog_jobs_configs?.length > 0)
+      .map((company: any) => company.id) || [];
 
   let syncLogs: any[] = [];
   if (companiesWithConfigs.length > 0) {
@@ -78,7 +93,7 @@ export default async function AdminIntegrationsPage() {
 
     // Group by company_id and get the latest for each
     const latestSyncByCompany = new Map();
-    logs?.forEach(log => {
+    logs?.forEach((log: any) => {
       if (!latestSyncByCompany.has(log.company_id)) {
         latestSyncByCompany.set(log.company_id, log);
       }
@@ -87,31 +102,37 @@ export default async function AdminIntegrationsPage() {
   }
 
   // Transform data into the format needed for the UI
-  const integrations: IntegrationSummary[] = integrationsData?.map(company => {
-    const config = company.roaddog_jobs_configs?.[0] || null;
-    const lastSync = syncLogs.find(log => log.company_id === company.id) || null;
+  const integrations: IntegrationSummary[] =
+    integrationsData?.map((company: any) => {
+      const config = company.roaddog_jobs_configs?.[0] || null;
+      const lastSync =
+        syncLogs.find((log) => log.company_id === company.id) || null;
 
-    return {
-      id: company.id,
-      name: company.name,
-      created_at: company.created_at,
-      config: config ? {
-        is_active: config.is_active,
-        last_sync_at: config.last_sync_at,
-        created_at: config.created_at,
-        updated_at: config.updated_at,
-      } : null,
-      last_sync: lastSync ? {
-        status: lastSync.status,
-        created_at: lastSync.created_at,
-      } : null,
-    };
-  }) || [];
+      return {
+        id: company.id,
+        name: company.name,
+        created_at: company.created_at,
+        config: config
+          ? {
+              is_active: config.is_active,
+              last_sync_at: config.last_sync_at,
+              created_at: config.created_at,
+              updated_at: config.updated_at,
+            }
+          : null,
+        last_sync: lastSync
+          ? {
+              status: lastSync.status,
+              created_at: lastSync.created_at,
+            }
+          : null,
+      };
+    }) || [];
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Integration Management</h1>
-      
+
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {integrations.map((integration) => (
@@ -120,21 +141,26 @@ export default async function AdminIntegrationsPage() {
                 <div>
                   <h3 className="text-lg font-medium">{integration.name}</h3>
                   <p className="text-sm text-gray-500">
-                    Created: {new Date(integration.created_at).toLocaleDateString()}
+                    Created:{' '}
+                    {new Date(integration.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    integration.config?.is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      integration.config?.is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
                     {integration.config?.is_active ? 'Active' : 'Inactive'}
                   </span>
                   {integration.last_sync && (
                     <p className="mt-1 text-sm text-gray-500">
-                      Last sync: {integration.last_sync.status} - 
-                      {new Date(integration.last_sync.created_at).toLocaleString()}
+                      Last sync: {integration.last_sync.status} -
+                      {new Date(
+                        integration.last_sync.created_at
+                      ).toLocaleString()}
                     </p>
                   )}
                 </div>

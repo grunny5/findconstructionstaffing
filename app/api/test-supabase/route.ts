@@ -1,15 +1,31 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+export interface TestSupabaseResponse {
+  success?: boolean;
+  message?: string;
+  tables?: {
+    agencies: {
+      connected: boolean;
+      count?: number;
+    };
+  };
+  error?: string | any;
+  env?: {
+    url: string;
+    key: string;
+  };
+}
+
 export async function GET() {
   try {
     if (!supabase) {
-      return NextResponse.json(
+      return NextResponse.json<TestSupabaseResponse>(
         {
           error: 'Supabase client not initialized',
           env: {
-            url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not set',
-            key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Not set',
+            url: 'Not set',
+            key: 'Not set',
           },
         },
         { status: 500 }
@@ -19,11 +35,11 @@ export async function GET() {
     // Try to query agencies table to test connection
     const { data, error } = await supabase
       .from('agencies')
-      .select('*')
+      .select('id')
       .limit(1);
 
     if (error) {
-      return NextResponse.json(
+      return NextResponse.json<TestSupabaseResponse>(
         {
           success: false,
           message: 'Failed to connect to Supabase',
@@ -31,7 +47,6 @@ export async function GET() {
           tables: {
             agencies: {
               connected: false,
-              error: error,
             },
           },
         },
@@ -39,7 +54,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
+    return NextResponse.json<TestSupabaseResponse>({
       success: true,
       message: 'Successfully connected to Supabase',
       tables: {
@@ -50,7 +65,7 @@ export async function GET() {
       },
     });
   } catch (error: any) {
-    return NextResponse.json(
+    return NextResponse.json<TestSupabaseResponse>(
       {
         success: false,
         message: 'Connection test failed',

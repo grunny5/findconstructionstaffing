@@ -68,7 +68,7 @@ describe('GET /api/test-supabase', () => {
       message: 'Failed to connect to Supabase',
       error: mockError,
       tables: {
-        agencies: { connected: false, error: mockError },
+        agencies: { connected: false },
       },
     });
   });
@@ -82,7 +82,7 @@ describe('GET /api/test-supabase', () => {
     await GET();
 
     expect(mockSupabase.from).toHaveBeenCalledWith('agencies');
-    expect(mockSupabase.select).toHaveBeenCalledWith('*');
+    expect(mockSupabase.select).toHaveBeenCalledWith('id');
     expect(mockSupabase.limit).toHaveBeenCalledWith(1);
   });
 

@@ -47,36 +47,36 @@ describe('Supabase Client', () => {
   it('should throw error when NEXT_PUBLIC_SUPABASE_URL is missing in non-test env', () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-    process.env.NODE_ENV = 'production'; // Temporarily set to non-test
+    (process.env as any).NODE_ENV = 'production'; // Temporarily set to non-test
 
     // Re-import to trigger error
     jest.resetModules();
     expect(() => require('../supabase')).toThrow(
       'Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL'
     );
-    
-    process.env.NODE_ENV = 'test'; // Reset to test
+
+    (process.env as any).NODE_ENV = 'test'; // Reset to test
   });
 
   it('should throw error when NEXT_PUBLIC_SUPABASE_ANON_KEY is missing in non-test env', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    process.env.NODE_ENV = 'production'; // Temporarily set to non-test
+    (process.env as any).NODE_ENV = 'production'; // Temporarily set to non-test
 
     // Re-import to trigger error
     jest.resetModules();
     expect(() => require('../supabase')).toThrow(
       'Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY'
     );
-    
-    process.env.NODE_ENV = 'test'; // Reset to test
+
+    (process.env as any).NODE_ENV = 'test'; // Reset to test
   });
 
   it('should use dummy values in test environment when env vars are missing', () => {
     // Clear env vars
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    process.env.NODE_ENV = 'test';
+    (process.env as any).NODE_ENV = 'test';
 
     // Clear all mocks and modules
     jest.clearAllMocks();
@@ -84,7 +84,7 @@ describe('Supabase Client', () => {
 
     // Re-mock the createClient function
     jest.mock('@supabase/supabase-js', () => ({
-      createClient: jest.fn().mockReturnValue({ from: jest.fn() })
+      createClient: jest.fn().mockReturnValue({ from: jest.fn() }),
     }));
 
     // Re-import - should not throw in test env
@@ -92,8 +92,8 @@ describe('Supabase Client', () => {
     const { createClient: mockCreateClient } = require('@supabase/supabase-js');
 
     expect(mockCreateClient).toHaveBeenCalledWith(
-      'https://test.supabase.co',
-      'test-anon-key'
+      'https://dummy.supabase.co',
+      'dummy-anon-key'
     );
     expect(supabase).toBeDefined();
   });
@@ -114,20 +114,22 @@ describe('Supabase Client', () => {
       // Reset everything
       jest.clearAllMocks();
       jest.resetModules();
-      
+
       // Set env vars
       process.env.NEXT_PUBLIC_SUPABASE_URL = config.url;
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = config.key;
-      process.env.NODE_ENV = 'test';
+      (process.env as any).NODE_ENV = 'test';
 
       // Re-mock
       jest.mock('@supabase/supabase-js', () => ({
-        createClient: jest.fn().mockReturnValue({ from: jest.fn() })
+        createClient: jest.fn().mockReturnValue({ from: jest.fn() }),
       }));
 
       // Re-import with new env vars
       const { supabase } = require('../supabase');
-      const { createClient: mockCreateClient } = require('@supabase/supabase-js');
+      const {
+        createClient: mockCreateClient,
+      } = require('@supabase/supabase-js');
 
       expect(mockCreateClient).toHaveBeenCalledWith(config.url, config.key);
     });

@@ -22,7 +22,8 @@ on:
 
 # Cancel in-progress deployments on same branch
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Use head ref when it exists, otherwise fallback to branch ref
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -33,6 +34,10 @@ jobs:
     outputs:
       should-deploy: ${{ steps.check.outputs.should-deploy }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history to compare changes
+
       - name: Check conditions
         id: check
         run: |
@@ -41,16 +46,35 @@ jobs:
             echo "should-deploy=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # For PRs, only deploy if not draft
-          if [[ "${{ github.event.pull_request.draft }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
             echo "should-deploy=false" >> $GITHUB_OUTPUT
             echo "Skipping deployment for draft PR"
             exit 0
           fi
-          
+
           # Skip if only docs/tests changed
-          echo "should-deploy=true" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For PRs, compare against the base branch
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            # For pushes, compare against the previous commit
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+
+          # Check if any non-docs/non-test files were changed
+          NON_DOCS_TEST_CHANGES=$(echo "$CHANGED_FILES" | grep -vE '^(docs/|.*\.md$|__tests__/|.*\.test\.(ts|tsx|js|jsx)$|.*\.spec\.(ts|tsx|js|jsx)$|jest\.|\.github/|scripts/test)' || true)
+
+          if [[ -z "$NON_DOCS_TEST_CHANGES" ]]; then
+            echo "Only docs/tests changed - skipping deployment"
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "Code changes detected - proceeding with deployment"
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          fi
 
   deploy:
     name: Deploy to Vercel
@@ -60,7 +84,8 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-    
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -74,21 +99,32 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
 
       - name: Build Project Artifacts
-        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
 
       - name: Deploy to Vercel
         id: deploy
         run: |
           # Add retry logic for rate limit errors
           for i in {1..3}; do
-            if DEPLOYMENT_URL=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
-              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-              echo "Preview deployed to: $DEPLOYMENT_URL"
-              break
-            elif echo "$DEPLOYMENT_URL" | grep -q "api-deployments-free-per-day"; then
+            # Capture both stdout and stderr, with JSON output for clean parsing
+            if DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --output=json 2>&1); then
+              # Extract URL from JSON output
+              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url' 2>/dev/null || echo "$DEPLOY_OUTPUT")
+              
+              # Verify we got a valid URL
+              if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+                echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+                echo "Preview deployed to: $DEPLOYMENT_URL"
+                break
+              else
+                echo "Failed to extract deployment URL from output"
+                echo "Raw output: $DEPLOY_OUTPUT"
+                exit 1
+              fi
+            elif echo "$DEPLOY_OUTPUT" | grep -q "api-deployments-free-per-day"; then
               echo "Hit Vercel rate limit. This is deployment attempt $i of 3."
               if [ $i -lt 3 ]; then
                 echo "Waiting 5 minutes before retry..."
@@ -99,7 +135,8 @@ jobs:
                 exit 0  # Don't fail the workflow
               fi
             else
-              echo "Deployment failed with error: $DEPLOYMENT_URL"
+              echo "Deployment failed with error:"
+              echo "$DEPLOY_OUTPUT"
               exit 1
             fi
           done
@@ -110,7 +147,7 @@ jobs:
         with:
           script: |
             const deployment_url = '${{ steps.deploy.outputs.deployment_url }}';
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

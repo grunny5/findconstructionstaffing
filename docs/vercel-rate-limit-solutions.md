@@ -13,10 +13,12 @@ Error: Resource is limited - try again in 3 hours (more than 100, code: "api-dep
 ### 1. Immediate Solutions
 
 #### Wait for Rate Limit Reset
+
 - The limit resets on a rolling 24-hour window
 - Usually takes 3-4 hours for the oldest deployments to roll off
 
 #### Deploy Manually
+
 If you need to deploy urgently:
 
 ```bash
@@ -31,6 +33,7 @@ vercel         # for preview
 ### 2. Reduce Deployment Frequency
 
 #### Use the Optimized Workflow
+
 Replace your current deployment workflow with the optimized version:
 
 ```yaml
@@ -38,12 +41,14 @@ Replace your current deployment workflow with the optimized version:
 ```
 
 This workflow:
+
 - Only deploys when source code changes (not docs/tests)
 - Skips draft PRs
 - Cancels duplicate deployments
 - Implements retry logic with delays
 
 #### Batch Your Changes
+
 - Group related commits together
 - Use draft PRs while working, convert to ready when done
 - Avoid pushing every small change
@@ -51,6 +56,7 @@ This workflow:
 ### 3. Configure Deployment Triggers
 
 #### Only Deploy Significant Changes
+
 Add path filters to your workflow:
 
 ```yaml
@@ -68,16 +74,18 @@ on:
 ```
 
 #### Use Manual Deployments for Development
+
 ```yaml
 on:
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch: # Allow manual trigger
   push:
-    branches: [main]  # Auto-deploy only main
+    branches: [main] # Auto-deploy only main
 ```
 
 ### 4. Long-term Solutions
 
 #### Upgrade to Vercel Pro
+
 - Unlimited deployments
 - $20/month per member
 - Additional performance benefits
@@ -85,6 +93,7 @@ on:
 #### Alternative CI/CD Strategies
 
 1. **Deploy only on merge to main**
+
    ```yaml
    on:
      push:
@@ -108,7 +117,7 @@ name: Monitor Vercel Deployments
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '0 */6 * * *' # Every 6 hours
 
 jobs:
   check-limit:
@@ -125,7 +134,7 @@ jobs:
 For most projects:
 
 1. **Use the optimized workflow** to reduce unnecessary deployments
-2. **Enable path filtering** to skip non-code changes  
+2. **Enable path filtering** to skip non-code changes
 3. **Use draft PRs** during development
 4. **Consider Vercel Pro** if you frequently hit limits
 
@@ -142,6 +151,7 @@ Make sure these are set in your GitHub repository secrets:
 If deployments fail with rate limits:
 
 1. Check recent deployment history:
+
    ```bash
    vercel ls
    ```
@@ -157,6 +167,7 @@ If deployments fail with rate limits:
 ## Alternative: Netlify
 
 If rate limits are a persistent issue, consider Netlify:
+
 - 300 build minutes/month on free tier
 - No deployment count limit
 - Similar features to Vercel

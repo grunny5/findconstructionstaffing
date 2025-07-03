@@ -46,7 +46,7 @@ type SupabaseMethod =
   | 'maybeSingle'
   | 'csv';
 
-// Type for the mock Supabase object
+// Type for the mock Supabase object - flexible to work with both explicit mocks and mocked SupabaseClient
 type MockSupabase = {
   [K in SupabaseMethod]: jest.Mock;
 } & {
@@ -57,6 +57,10 @@ type MockSupabase = {
   _defaultCount?: number;
   _lastMethod?: string;
   _lastArgs?: any[];
+  _resolveWith?: any;
+  _queryCount?: number;
+} & {
+  [key: string]: any; // Index signature to allow string indexing
 };
 
 // Configuration for error simulation
@@ -68,8 +72,8 @@ export interface SupabaseMockConfig {
 }
 
 // Define createSupabaseMockInternal before using it in jest.mock
-function createSupabaseMockInternal(): any {
-  const mockSupabase = {
+function createSupabaseMockInternal(): MockSupabase {
+  const mockSupabase: MockSupabase = {
     from: jest.fn(),
     select: jest.fn(),
     insert: jest.fn(),
@@ -311,7 +315,7 @@ jest.mock('@/lib/supabase', () => {
     _defaultCount: 0,
     _resolveWith: null,
     _queryCount: 0,
-  };
+  } as any;
 
   // Set up basic chain returns
   const chainableMethods = [
@@ -370,7 +374,7 @@ jest.mock('@/lib/supabase', () => {
 });
 
 // Public function to create and configure mock
-export function createSupabaseMock(config?: SupabaseMockConfig) {
+export function createSupabaseMock(config?: SupabaseMockConfig): MockSupabase {
   const mockSupabase = createSupabaseMockInternal();
 
   if (config) {
@@ -430,7 +434,7 @@ export function setupSupabaseMockRuntime(config?: SupabaseMockConfig) {
 }
 
 // Helper to configure mock for specific test scenarios
-export function configureSupabaseMock(mock: any, config: any) {
+export function configureSupabaseMock(mock: any, config: SupabaseMockConfig) {
   // Reset state
   mock._error = null;
   mock._throwError = false;
@@ -455,10 +459,13 @@ export function configureSupabaseMock(mock: any, config: any) {
 
       // Copy all methods from mock
       ...Object.keys(mock).reduce((acc: any, key) => {
-        if (typeof mock[key] === 'function' && jest.isMockFunction(mock[key])) {
+        if (
+          typeof (mock as any)[key] === 'function' &&
+          jest.isMockFunction((mock as any)[key])
+        ) {
           acc[key] = jest.fn((...args) => {
             // Call the original mock to track calls
-            mock[key](...args);
+            (mock as any)[key](...args);
             // Return the same chain for chaining
             return createThenableProxy(queryChain);
           });
@@ -560,7 +567,7 @@ export function configureSupabaseMock(mock: any, config: any) {
 
   // Update all chainable methods to return the mock
   const chainableMethods = Object.keys(mock).filter((key) => {
-    const value = mock[key];
+    const value = (mock as any)[key];
     return (
       typeof value === 'function' &&
       jest.isMockFunction(value) &&
@@ -570,7 +577,7 @@ export function configureSupabaseMock(mock: any, config: any) {
   });
 
   chainableMethods.forEach((method) => {
-    mock[method].mockReturnValue(mock);
+    (mock as any)[method].mockReturnValue(mock);
   });
 }
 
@@ -693,68 +700,106 @@ export function configureMockForFilters(
       table === 'regions' ||
       table === 'agency_regions'
     ) {
+      // Create the filter mock object without promise methods
       const filterMock: any = {
-        select: jest.fn(() => filterMock),
-        in: jest.fn(() => filterMock),
-        eq: jest.fn(() => filterMock),
-        or: jest.fn(() => filterMock),
-        range: jest.fn(() => filterMock),
-        order: jest.fn(() => filterMock),
-        then: (onFulfilled: any) => {
-          let result = { data: null, error: null };
-
-          // Return appropriate data based on table and configuration
-          if (table === 'trades' && config.trades) {
-            result.data = config.trades.ids.map((id) => ({ id })) as any;
-          } else if (table === 'agency_trades' && config.trades) {
-            result.data = config.trades.agencyIds.map((agency_id) => ({
-              agency_id,
-            })) as any;
-          } else if (table === 'regions' && config.states) {
-            result.data = config.states.regionIds.map((id) => ({ id })) as any;
-          } else if (table === 'agency_regions' && config.states) {
-            result.data = config.states.agencyIds.map((agency_id) => ({
-              agency_id,
-            })) as any;
-          }
-
-          return Promise.resolve(result).then(onFulfilled);
-        },
+        select: jest.fn(),
+        in: jest.fn(),
+        eq: jest.fn(),
+        or: jest.fn(),
+        range: jest.fn(),
+        order: jest.fn(),
       };
-      return filterMock;
+
+      // Create a function that returns the promise when needed
+      const executeQuery = () => {
+        let result = { data: null, error: null };
+
+        // Return appropriate data based on table and configuration
+        if (table === 'trades' && config.trades) {
+          result.data = config.trades.ids.map((id) => ({ id })) as any;
+        } else if (table === 'agency_trades' && config.trades) {
+          result.data = config.trades.agencyIds.map((agency_id) => ({
+            agency_id,
+          })) as any;
+        } else if (table === 'regions' && config.states) {
+          result.data = config.states.regionIds.map((id) => ({ id })) as any;
+        } else if (table === 'agency_regions' && config.states) {
+          result.data = config.states.agencyIds.map((agency_id) => ({
+            agency_id,
+          })) as any;
+        }
+
+        return Promise.resolve(result);
+      };
+
+      // Create a proxy that returns the mock for chaining but executes the promise when needed
+      const createChainableProxy = (target: any): any => {
+        return new Proxy(target, {
+          get(obj, prop) {
+            if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+              // Return the promise method bound to the executed query
+              const promise = executeQuery();
+              return (promise as any)[prop].bind(promise);
+            }
+            // For other methods, return a function that returns the proxy for chaining
+            if (typeof obj[prop] === 'function') {
+              return jest.fn(() => createChainableProxy(target));
+            }
+            return obj[prop];
+          },
+        });
+      };
+
+      return createChainableProxy(filterMock);
     }
 
     // For main agencies query, create a full mock chain
     const queryChain: any = {
-      select: jest.fn(() => queryChain),
-      eq: jest.fn(() => queryChain),
-      in: jest.fn(() => queryChain),
-      or: jest.fn(() => queryChain),
-      range: jest.fn(() => queryChain),
-      order: jest.fn(() => queryChain),
-      then: (onFulfilled: any) => {
-        const result = {
-          data: configuredResponse,
-          error: null,
-          count: configuredCount,
-        };
-        return Promise.resolve(result).then(onFulfilled);
-      },
+      select: jest.fn(),
+      eq: jest.fn(),
+      in: jest.fn(),
+      or: jest.fn(),
+      range: jest.fn(),
+      order: jest.fn(),
     };
 
-    // Track the mocked methods on the main mock object for assertions
-    Object.keys(queryChain).forEach((method) => {
-      if (
-        jest.isMockFunction(queryChain[method]) &&
-        jest.isMockFunction(mock[method])
-      ) {
-        queryChain[method].mockImplementation((...args: any[]) => {
-          mock[method](...args);
-          return queryChain;
-        });
-      }
-    });
+    // Create promise for the main query
+    const executeMainQuery = () => {
+      const result = {
+        data: configuredResponse,
+        error: null,
+        count: configuredCount,
+      };
+      return Promise.resolve(result);
+    };
 
-    return queryChain;
+    // Create a proxy for the main query chain
+    const createMainChainProxy = (target: any): any => {
+      return new Proxy(target, {
+        get(obj, prop) {
+          if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+            // Return the promise method bound to the executed query
+            const promise = executeMainQuery();
+            return (promise as any)[prop].bind(promise);
+          }
+          // For query methods, track the call and return the proxy for chaining
+          if (
+            typeof obj[prop] === 'function' &&
+            jest.isMockFunction(obj[prop])
+          ) {
+            return jest.fn((...args: any[]) => {
+              // Track the call on the main mock object if it exists
+              if (jest.isMockFunction((mock as any)[prop])) {
+                (mock as any)[prop](...args);
+              }
+              return createMainChainProxy(target);
+            });
+          }
+          return obj[prop];
+        },
+      });
+    };
+
+    return createMainChainProxy(queryChain);
   });
 }
