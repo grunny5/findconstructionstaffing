@@ -737,9 +737,11 @@ export function configureMockForFilters(
         return new Proxy(target, {
           get(obj, prop) {
             if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-              // Return the promise method bound to the executed query
+              // Execute the query and return a function that properly delegates to the promise
               const promise = executeQuery();
-              return (promise as any)[prop].bind(promise);
+              return function(...args: any[]) {
+                return promise[prop as keyof Promise<any>].apply(promise, args);
+              };
             }
             // For other methods, return a function that returns the proxy for chaining
             if (typeof obj[prop] === 'function') {
