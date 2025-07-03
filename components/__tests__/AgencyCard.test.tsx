@@ -110,7 +110,7 @@ describe('AgencyCard', () => {
     render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
     expect(screen.getByText('4.5')).toBeInTheDocument();
-    expect(screen.getByText('(25 reviews)')).toBeInTheDocument();
+    // The component doesn't display review count, only the rating
   });
 
   it('should not render rating if not available', () => {

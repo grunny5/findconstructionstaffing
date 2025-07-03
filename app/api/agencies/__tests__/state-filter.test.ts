@@ -323,42 +323,46 @@ describe('GET /api/agencies - State/Region Filtering', () => {
 
       (supabase.from as any).mockImplementation((table: any) => {
         if (table === 'regions') {
-          const filterMock: any = {
-            select: jest.fn(() => filterMock),
-            in: jest.fn((column, values) => {
-              regionsInCall = { column, values };
-              return filterMock;
-            }),
-          };
-
-          // Return a proper Promise instead of thenable object
-          const promise = Promise.resolve({
+          const result = {
             data: [
               { id: 'region-tx' },
               { id: 'region-ca' },
               { id: 'region-ny' },
             ],
             error: null,
-          });
-
-          return Object.assign(promise, filterMock);
-        } else if (table === 'agency_regions') {
-          const filterMock: any = {
-            select: jest.fn(() => filterMock),
-            in: jest.fn(() => filterMock),
           };
 
-          // Return a proper Promise instead of thenable object
-          const promise = Promise.resolve({
+          const filterMock: any = {
+            select: jest.fn(() => filterMock),
+            in: jest.fn((column, values) => {
+              regionsInCall = { column, values };
+              return filterMock;
+            }),
+            then: (resolve: any) => Promise.resolve(result).then(resolve),
+            catch: (reject: any) => Promise.resolve(result).catch(reject),
+            finally: (onFinally: any) => Promise.resolve(result).finally(onFinally),
+          };
+
+          return filterMock;
+        } else if (table === 'agency_regions') {
+          const result = {
             data: [
               { agency_id: 'agency-1' },
               { agency_id: 'agency-2' },
               { agency_id: 'agency-3' },
             ],
             error: null,
-          });
+          };
 
-          return Object.assign(promise, filterMock);
+          const filterMock: any = {
+            select: jest.fn(() => filterMock),
+            in: jest.fn(() => filterMock),
+            then: (resolve: any) => Promise.resolve(result).then(resolve),
+            catch: (reject: any) => Promise.resolve(result).catch(reject),
+            finally: (onFinally: any) => Promise.resolve(result).finally(onFinally),
+          };
+
+          return filterMock;
         }
         // Return a basic mock chain for the main query
         const queryChain: any = {
@@ -383,15 +387,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        // Return a proper Promise instead of thenable object
+        // Return thenable object
         const result = {
           data: (supabase as any)._defaultData || [],
           error: null,
           count: (supabase as any)._defaultCount || 0,
         };
-        const promise = Promise.resolve(result);
+        
+        queryChain.then = (resolve: any) => Promise.resolve(result).then(resolve);
+        queryChain.catch = (reject: any) => Promise.resolve(result).catch(reject);
+        queryChain.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
 
-        return Object.assign(promise, queryChain);
+        return queryChain;
       });
 
       const mockRequest = createMockNextRequest({
@@ -520,9 +527,11 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             result.data = [{ agency_id: 'agency-1' }]; // Same agency matches both filters
           }
 
-          // Return a proper Promise instead of thenable object
-          const promise = Promise.resolve(result);
-          return Object.assign(promise, filterMock);
+          // Return thenable object
+          filterMock.then = (resolve: any) => Promise.resolve(result).then(resolve);
+          filterMock.catch = (reject: any) => Promise.resolve(result).catch(reject);
+          filterMock.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+          return filterMock;
         }
 
         // Return a basic mock chain for the main query
@@ -548,15 +557,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        // Return a proper Promise instead of thenable object
+        // Return thenable object
         const result = {
           data: (supabase as any)._defaultData || [],
           error: null,
           count: (supabase as any)._defaultCount || 0,
         };
-        const promise = Promise.resolve(result);
+        
+        queryChain.then = (resolve: any) => Promise.resolve(result).then(resolve);
+        queryChain.catch = (reject: any) => Promise.resolve(result).catch(reject);
+        queryChain.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
 
-        return Object.assign(promise, queryChain);
+        return queryChain;
       });
 
       const mockRequest = createMockNextRequest({
@@ -620,9 +632,11 @@ describe('GET /api/agencies - State/Region Filtering', () => {
             result.data = [{ agency_id: '123' }];
           }
 
-          // Return a proper Promise instead of thenable object
-          const promise = Promise.resolve(result);
-          return Object.assign(promise, filterMock);
+          // Return thenable object
+          filterMock.then = (resolve: any) => Promise.resolve(result).then(resolve);
+          filterMock.catch = (reject: any) => Promise.resolve(result).catch(reject);
+          filterMock.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
+          return filterMock;
         }
 
         // For main agencies query, use the centralized mock
@@ -649,15 +663,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
           }
         });
 
-        // Return a proper Promise instead of thenable object
+        // Return thenable object
         const result = {
           data: (supabase as any)._defaultData || [],
           error: null,
           count: (supabase as any)._defaultCount || 0,
         };
-        const promise = Promise.resolve(result);
+        
+        queryChain.then = (resolve: any) => Promise.resolve(result).then(resolve);
+        queryChain.catch = (reject: any) => Promise.resolve(result).catch(reject);
+        queryChain.finally = (onFinally: any) => Promise.resolve(result).finally(onFinally);
 
-        return Object.assign(promise, queryChain);
+        return queryChain;
       });
 
       const mockRequest = createMockNextRequest({

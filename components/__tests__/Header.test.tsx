@@ -67,27 +67,25 @@ describe('Header', () => {
   it('should render desktop navigation links', () => {
     render(<Header />);
 
-    expect(
-      screen.getByRole('link', { name: /browse directory/i })
-    ).toHaveAttribute('href', '/');
-    expect(
-      screen.getByRole('link', { name: /request labor/i })
-    ).toHaveAttribute('href', '/request-labor');
-    expect(screen.getByRole('link', { name: /resources/i })).toHaveAttribute(
-      'href',
-      '/resources'
-    );
+    const browseLinks = screen.getAllByRole('link', { name: /browse directory/i });
+    const requestLinks = screen.getAllByRole('link', { name: /request labor/i });
+    const resourceLinks = screen.getAllByRole('link', { name: /resources/i });
+
+    // Check desktop links (usually the first occurrence)
+    expect(browseLinks[0]).toHaveAttribute('href', '/');
+    expect(requestLinks[0]).toHaveAttribute('href', '/request-labor');
+    expect(resourceLinks[0]).toHaveAttribute('href', '/resources');
   });
 
   it('should render action buttons on desktop', () => {
     render(<Header />);
 
-    expect(
-      screen.getByRole('link', { name: /claim listing/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: /get started/i })
-    ).toBeInTheDocument();
+    const claimLinks = screen.getAllByRole('link', { name: /claim listing/i });
+    const getStartedLinks = screen.getAllByRole('link', { name: /get started/i });
+
+    // Check that these links exist (at least one for desktop)
+    expect(claimLinks.length).toBeGreaterThan(0);
+    expect(getStartedLinks.length).toBeGreaterThan(0);
   });
 
   it('should have proper header styling', () => {

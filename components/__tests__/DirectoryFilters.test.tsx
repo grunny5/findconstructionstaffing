@@ -91,7 +91,7 @@ describe('DirectoryFilters', () => {
     );
 
     // Open trade dropdown
-    const tradeButton = screen.getByText(/all trades/i);
+    const tradeButton = screen.getByText(/trade specialties/i);
     fireEvent.click(tradeButton);
 
     // Select a trade
@@ -115,7 +115,7 @@ describe('DirectoryFilters', () => {
     );
 
     // Open trade dropdown
-    const tradeButton = screen.getByText(/all trades/i);
+    const tradeButton = screen.getByText(/trade specialties/i);
     fireEvent.click(tradeButton);
 
     // Select a trade
@@ -132,10 +132,16 @@ describe('DirectoryFilters', () => {
       <DirectoryFilters
         onFiltersChange={mockOnFiltersChange}
         totalResults={0}
+        initialFilters={{
+          search: 'existing search',
+          trades: [],
+          states: [],
+        }}
       />
     );
 
     const searchInput = screen.getByPlaceholderText(/search agencies/i);
+    // Clear the existing search
     fireEvent.change(searchInput, { target: { value: '' } });
 
     // Wait for debounce
@@ -192,22 +198,29 @@ describe('DirectoryFilters', () => {
 
   it('should handle clearing state filter', () => {
     const mockOnFiltersChange = jest.fn();
-    render(
+    const { rerender } = render(
       <DirectoryFilters
         onFiltersChange={mockOnFiltersChange}
         totalResults={0}
+        initialFilters={{
+          search: '',
+          trades: [],
+          states: ['TX'],
+        }}
       />
     );
 
-    // Open state dropdown
-    const stateButton = screen.getByText('TX');
-    fireEvent.click(stateButton);
+    // There should be a clear all button since we have filters
+    const clearButton = screen.getByText(/clear all/i);
+    fireEvent.click(clearButton);
 
-    // Click "All States" option
-    const allStatesOption = screen.getByText(/all states/i);
-    fireEvent.click(allStatesOption);
-
-    expect(mockOnFiltersChange).toHaveBeenCalled();
+    expect(mockOnFiltersChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: '',
+        trades: [],
+        states: [],
+      })
+    );
   });
 
   it('should handle clearing trade filter', () => {
@@ -216,17 +229,26 @@ describe('DirectoryFilters', () => {
       <DirectoryFilters
         onFiltersChange={mockOnFiltersChange}
         totalResults={0}
+        initialFilters={{
+          search: '',
+          trades: ['plumber'],
+          states: [],
+        }}
       />
     );
 
     // Open trade dropdown
-    const tradeButton = screen.getByText('Plumber');
+    const tradeButton = screen.getByText(/trade specialties/i);
     fireEvent.click(tradeButton);
 
-    // Click "All Trades" option
-    const allTradesOption = screen.getByText(/all trades/i);
-    fireEvent.click(allTradesOption);
+    // Uncheck the plumber checkbox
+    const plumberCheckbox = screen.getByLabelText('Plumber');
+    fireEvent.click(plumberCheckbox);
 
-    expect(mockOnFiltersChange).toHaveBeenCalled();
+    expect(mockOnFiltersChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        trades: [],
+      })
+    );
   });
 });

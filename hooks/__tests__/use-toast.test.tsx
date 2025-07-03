@@ -32,18 +32,20 @@ describe('useToast', () => {
   it('should add a toast', () => {
     const { result } = renderHook(() => useToast());
 
+    let toastId: string;
     act(() => {
       const { id } = result.current.toast({
         title: 'Test Toast',
         description: 'This is a test',
       });
+      toastId = id;
+    });
 
-      expect(result.current.toasts).toHaveLength(1);
-      expect(result.current.toasts[0]).toMatchObject({
-        id,
-        title: 'Test Toast',
-        description: 'This is a test',
-      });
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0]).toMatchObject({
+      id: toastId!,
+      title: 'Test Toast',
+      description: 'This is a test',
     });
   });
 
@@ -56,10 +58,9 @@ describe('useToast', () => {
       result.current.toast({ title: 'Toast 3' });
     });
 
-    expect(result.current.toasts).toHaveLength(3);
-    expect(result.current.toasts[0].title).toBe('Toast 1');
-    expect(result.current.toasts[1].title).toBe('Toast 2');
-    expect(result.current.toasts[2].title).toBe('Toast 3');
+    // Due to TOAST_LIMIT = 1, only the latest toast should be kept
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0].title).toBe('Toast 3');
   });
 
   it('should dismiss a toast by id', () => {
@@ -77,7 +78,10 @@ describe('useToast', () => {
       result.current.dismiss(toastId);
     });
 
-    expect(result.current.toasts).toHaveLength(0);
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0]).toMatchObject({
+      open: false,
+    });
   });
 
   it('should update a toast', () => {
@@ -107,19 +111,26 @@ describe('useToast', () => {
   it('should handle toast variants', () => {
     const { result } = renderHook(() => useToast());
 
+    // Test default variant
     act(() => {
       result.current.toast({
         title: 'Default Toast',
       });
+    });
 
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0].variant).toBeUndefined();
+
+    // Test destructive variant (will replace the default toast due to TOAST_LIMIT = 1)
+    act(() => {
       result.current.toast({
         title: 'Destructive Toast',
         variant: 'destructive',
       });
     });
 
-    expect(result.current.toasts[0].variant).toBeUndefined();
-    expect(result.current.toasts[1].variant).toBe('destructive');
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0].variant).toBe('destructive');
   });
 
   it('should handle toast with action', () => {

@@ -52,6 +52,7 @@ interface DirectoryFiltersProps {
   onFiltersChange: (filters: FilterState) => void;
   totalResults: number;
   isLoading?: boolean;
+  initialFilters?: Partial<FilterState>;
 }
 
 export interface FilterState {
@@ -69,6 +70,7 @@ export default function DirectoryFilters({
   onFiltersChange,
   totalResults,
   isLoading,
+  initialFilters,
 }: DirectoryFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
@@ -79,6 +81,7 @@ export default function DirectoryFilters({
     claimedOnly: false,
     companySize: [],
     focusAreas: [],
+    ...initialFilters,
   });
 
   const updateFilters = (newFilters: Partial<FilterState>) => {
