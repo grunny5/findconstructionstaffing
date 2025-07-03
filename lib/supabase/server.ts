@@ -30,8 +30,18 @@ export function createClient() {
   }
 
   // Create Supabase client for server-side usage
-  return createSupabaseClient(
+  // In production, this would include auth headers from cookies
+  const supabase = createSupabaseClient(
     supabaseUrl || 'https://dummy.supabase.co',
-    supabaseAnonKey || 'dummy-anon-key'
+    supabaseAnonKey || 'dummy-anon-key',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+    }
   );
+
+  return supabase;
 }
