@@ -16,6 +16,8 @@
     "seed": "tsx scripts/seed-database.ts",
     "seed:reset": "tsx scripts/seed-database.ts --reset",
     "seed:verify": "tsx scripts/seed-database.ts --verify",
+    "db:health": "tsx scripts/check-database-health.ts",
+    "validate:test-data": "tsx scripts/validate-test-data.ts",
     "load-test": "node tests/load/simple-load-test.js",
     "load-test:quick": "CONCURRENT_USERS=10 TEST_DURATION=30 node tests/load/simple-load-test.js",
     "load-test:stress": "CONCURRENT_USERS=200 TEST_DURATION=180 node tests/load/simple-load-test.js"

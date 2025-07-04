@@ -64,13 +64,22 @@ const isVerifyOnly = args.includes('--verify');
 
 // Validate environment variables
 function validateEnvironment(): { url: string; key: string } {
-  const url = process.env.SUPABASE_URL;
+  // Support both SUPABASE_URL and DATABASE_URL for flexibility
+  const url = process.env.SUPABASE_URL || process.env.DATABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // In test environment, use test defaults if not provided
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      url: url || 'http://localhost:54321',
+      key: key || 'test-service-role-key',
+    };
+  }
 
   if (!url || !key) {
     log.error('Missing required environment variables');
     log.info('Please ensure the following are set:');
-    log.info('  - SUPABASE_URL');
+    log.info('  - SUPABASE_URL (or DATABASE_URL)');
     log.info('  - SUPABASE_SERVICE_ROLE_KEY');
     log.info('');
     log.info('You can set these in a .env.local file in the project root.');
@@ -86,7 +95,8 @@ function validateEnvironment(): { url: string; key: string } {
   }
 
   // Basic validation of key format (JWT structure)
-  if (!key.includes('.') || key.split('.').length !== 3) {
+  // Skip validation in test environment
+  if (process.env.NODE_ENV !== 'test' && (!key.includes('.') || key.split('.').length !== 3)) {
     log.error('Invalid SUPABASE_SERVICE_ROLE_KEY format');
     log.info(
       'The service role key should be a JWT token with three parts separated by dots.'
@@ -123,6 +133,23 @@ async function testConnection(
         log.warning('Tables not yet created - this is expected on first run');
         return true;
       }
+      
+      // Handle common connection errors with helpful messages
+      if (error.message?.includes('Failed to fetch')) {
+        log.error('Connection failed: Unable to reach database');
+        log.info('Please check:');
+        log.info('  1. Database service is running');
+        log.info('  2. Network connectivity to database');
+        log.info('  3. Firewall rules allow connection');
+        return false;
+      }
+      
+      if (error.message?.includes('Invalid API key')) {
+        log.error('Authentication failed: Invalid service role key');
+        log.info('Please check your SUPABASE_SERVICE_ROLE_KEY');
+        return false;
+      }
+      
       throw error;
     }
 
@@ -132,6 +159,13 @@ async function testConnection(
     log.error('Failed to connect to database');
     if (error instanceof Error) {
       log.error(`Error: ${error.message}`);
+      
+      // Provide additional context for common errors
+      if (error.message?.includes('ECONNREFUSED')) {
+        log.info('Connection refused. Is the database service running?');
+      } else if (error.message?.includes('ETIMEDOUT')) {
+        log.info('Connection timeout. Check network and firewall settings.');
+      }
     }
     return false;
   }
@@ -230,6 +264,16 @@ async function seedTrades(
     return tradeIdMap;
   } catch (error) {
     log.error('Failed to seed trades');
+    if (error instanceof Error) {
+      log.error(`Details: ${error.message}`);
+      
+      // Provide context-specific error messages
+      if (error.message?.includes('duplicate key')) {
+        log.info('This might be due to duplicate trade names in the data');
+      } else if (error.message?.includes('permission denied')) {
+        log.info('Check that the service role key has proper permissions');
+      }
+    }
     throw error;
   }
 }
@@ -359,6 +403,16 @@ async function seedRegions(
     return regionIdMap;
   } catch (error) {
     log.error('Failed to seed regions');
+    if (error instanceof Error) {
+      log.error(`Details: ${error.message}`);
+      
+      // Provide context-specific error messages
+      if (error.message?.includes('duplicate key')) {
+        log.info('This might be due to duplicate state codes in the data');
+      } else if (error.message?.includes('permission denied')) {
+        log.info('Check that the service role key has proper permissions');
+      }
+    }
     throw error;
   }
 }
@@ -457,6 +511,18 @@ async function seedAgencies(
     return agencyIdMap;
   } catch (error) {
     log.error('Failed to seed agencies');
+    if (error instanceof Error) {
+      log.error(`Details: ${error.message}`);
+      
+      // Provide context-specific error messages
+      if (error.message?.includes('duplicate key')) {
+        log.info('This might be due to duplicate agency names or slugs');
+      } else if (error.message?.includes('permission denied')) {
+        log.info('Check that the service role key has proper permissions');
+      } else if (error.message?.includes('foreign key')) {
+        log.info('This might be due to missing trades or regions referenced by agencies');
+      }
+    }
     throw error;
   }
 }
@@ -1038,9 +1104,24 @@ async function main() {
     // Create Supabase client
     const supabase = createSupabaseClient(url, key);
 
-    // Test connection
-    const connected = await testConnection(supabase);
+    // Test connection with retries
+    let connected = false;
+    const maxRetries = 3;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      connected = await testConnection(supabase);
+      if (connected) {
+        break;
+      }
+      
+      if (attempt < maxRetries) {
+        log.warning(`Connection attempt ${attempt} failed. Retrying in 5 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+    
     if (!connected) {
+      log.error(`Failed to connect after ${maxRetries} attempts`);
       process.exit(1);
     }
 

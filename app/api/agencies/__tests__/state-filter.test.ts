@@ -26,6 +26,95 @@ jest.mock('next/server', () => ({
 // Import the route AFTER mocks are set up
 import { GET } from '../route';
 
+// Helper to create a custom mock that tracks specific calls
+function createFilterMockWithTracking(
+  config: {
+    trades?: { slugs: string[]; ids: string[]; agencyIds: string[] };
+    states?: { codes: string[]; regionIds: string[]; agencyIds: string[] };
+  },
+  onCall?: (table: string, method: string, args: any[]) => void
+) {
+  return (table: any) => {
+    // Use configureMockForFilters logic but with tracking
+    if (
+      table === 'trades' ||
+      table === 'agency_trades' ||
+      table === 'regions' ||
+      table === 'agency_regions'
+    ) {
+      const filterMock: any = {
+        select: jest.fn(),
+        in: jest.fn(),
+        eq: jest.fn(),
+        or: jest.fn(),
+        range: jest.fn(),
+        order: jest.fn(),
+      };
+
+      let result: any = { data: null, error: null };
+
+      // Return appropriate data based on table and configuration
+      if (table === 'trades' && config.trades) {
+        result.data = config.trades.ids.map((id) => ({ id }));
+      } else if (table === 'agency_trades' && config.trades) {
+        result.data = config.trades.agencyIds.map((agency_id) => ({
+          agency_id,
+        }));
+      } else if (table === 'regions' && config.states) {
+        result.data = config.states.regionIds.map((id) => ({ id }));
+      } else if (table === 'agency_regions' && config.states) {
+        result.data = config.states.agencyIds.map((agency_id) => ({
+          agency_id,
+        }));
+      }
+
+      const promise = Promise.resolve(result);
+
+      // Set up method chaining with tracking
+      Object.keys(filterMock).forEach((key) => {
+        (promise as any)[key] = jest.fn((...args: any[]) => {
+          if (onCall) {
+            onCall(table, key, args);
+          }
+          return promise;
+        });
+      });
+
+      return promise;
+    }
+
+    // For main agencies query
+    const queryChain: any = {};
+    const methods = ['select', 'eq', 'in', 'or', 'range', 'order'];
+
+    methods.forEach((method) => {
+      queryChain[method] = jest.fn((...args: any[]) => {
+        if (jest.isMockFunction((supabase as any)[method])) {
+          (supabase as any)[method](...args);
+        }
+        return queryChain;
+      });
+    });
+
+    const result = {
+      data: (supabase as any)._defaultData || [],
+      error: null,
+      count: (supabase as any)._defaultCount || 0,
+    };
+
+    const promise = Promise.resolve(result);
+
+    Object.keys(queryChain).forEach((key) => {
+      (promise as any)[key] = jest.fn((...args: any[]) => {
+        queryChain[key](...args);
+        return promise;
+      });
+    });
+
+    return promise;
+  };
+}
+
 describe('GET /api/agencies - State/Region Filtering', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -321,99 +410,23 @@ describe('GET /api/agencies - State/Region Filtering', () => {
       // Track the regions query
       let regionsInCall: any;
 
-      (supabase.from as any).mockImplementation((table: any) => {
-        if (table === 'regions') {
-          const result = {
-            data: [
-              { id: 'region-tx' },
-              { id: 'region-ca' },
-              { id: 'region-ny' },
-            ],
-            error: null,
-          };
-
-          const filterMock: any = {
-            select: jest.fn(() => filterMock),
-            in: jest.fn((column, values) => {
-              regionsInCall = { column, values };
-              return filterMock;
-            }),
-          };
-
-          // Return the mock with promise resolution delegated
-          Object.defineProperty(filterMock, 'then', {
-            value: function (onfulfilled?: any, onrejected?: any) {
-              return Promise.resolve(result).then(onfulfilled, onrejected);
+      // Use helper with tracking
+      (supabase.from as any).mockImplementation(
+        createFilterMockWithTracking(
+          {
+            states: {
+              codes: ['TX', 'CA', 'NY'],
+              regionIds: ['region-tx', 'region-ca', 'region-ny'],
+              agencyIds: ['agency-1', 'agency-2', 'agency-3'],
             },
-            configurable: true,
-          });
-
-          return filterMock;
-        } else if (table === 'agency_regions') {
-          const result = {
-            data: [
-              { agency_id: 'agency-1' },
-              { agency_id: 'agency-2' },
-              { agency_id: 'agency-3' },
-            ],
-            error: null,
-          };
-
-          const filterMock: any = {
-            select: jest.fn(() => filterMock),
-            in: jest.fn(() => filterMock),
-          };
-
-          // Return the mock with promise resolution delegated
-          Object.defineProperty(filterMock, 'then', {
-            value: function (onfulfilled?: any, onrejected?: any) {
-              return Promise.resolve(result).then(onfulfilled, onrejected);
-            },
-            configurable: true,
-          });
-
-          return filterMock;
-        }
-        // Return a basic mock chain for the main query
-        const queryChain: any = {
-          select: jest.fn(() => queryChain),
-          eq: jest.fn(() => queryChain),
-          in: jest.fn(() => queryChain),
-          or: jest.fn(() => queryChain),
-          range: jest.fn(() => queryChain),
-          order: jest.fn(() => queryChain),
-        };
-
-        // Track the mocked methods
-        Object.keys(queryChain).forEach((method) => {
-          if (
-            jest.isMockFunction(queryChain[method]) &&
-            jest.isMockFunction((supabase as any)[method])
-          ) {
-            queryChain[method].mockImplementation((...args: any[]) => {
-              (supabase as any)[method](...args);
-              return queryChain;
-            });
-          }
-        });
-
-        // Create result object
-        const result = {
-          data: (supabase as any)._defaultData || [],
-          error: null,
-          count: (supabase as any)._defaultCount || 0,
-        };
-
-        // Return the mock with promise resolution delegated
-        Object.defineProperty(queryChain, 'then', {
-          value: function (onfulfilled?: any, onrejected?: any) {
-            return Promise.resolve(result).then(onfulfilled, onrejected);
           },
-          configurable: true,
-        });
-
-        return queryChain;
-      });
+          (table, method, args) => {
+            if (table === 'regions' && method === 'in') {
+              regionsInCall = { column: args[0], values: args[1] };
+            }
+          }
+        )
+      );
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
@@ -507,90 +520,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
     });
 
     it('should combine state and trade filters', async () => {
-      // Track table queries
-      const tableQueries: any[] = [];
-
-      (supabase.from as any).mockImplementation((table: any) => {
-        tableQueries.push(table);
-
-        // Use the helper function's mock data
-        if (
-          table === 'regions' ||
-          table === 'agency_regions' ||
-          table === 'trades' ||
-          table === 'agency_trades'
-        ) {
-          const filterMock: any = {
-            select: jest.fn(() => filterMock),
-            in: jest.fn(() => filterMock),
-            eq: jest.fn(() => filterMock),
-            or: jest.fn(() => filterMock),
-            range: jest.fn(() => filterMock),
-            order: jest.fn(() => filterMock),
-          };
-
-          // Determine the result based on table
-          let result: any = { data: null, error: null };
-          if (table === 'trades') {
-            result.data = [{ id: 'trade-1' }];
-          } else if (table === 'agency_trades') {
-            result.data = [{ agency_id: 'agency-1' }];
-          } else if (table === 'regions') {
-            result.data = [{ id: 'region-tx' }, { id: 'region-ca' }];
-          } else if (table === 'agency_regions') {
-            result.data = [{ agency_id: 'agency-1' }]; // Same agency matches both filters
-          }
-
-          // Return the mock with promise resolution delegated
-          Object.defineProperty(filterMock, 'then', {
-            value: function (onfulfilled?: any, onrejected?: any) {
-              return Promise.resolve(result).then(onfulfilled, onrejected);
-            },
-            configurable: true,
-          });
-
-          return filterMock;
-        }
-
-        // Return a basic mock chain for the main query
-        const queryChain: any = {
-          select: jest.fn(() => queryChain),
-          eq: jest.fn(() => queryChain),
-          in: jest.fn(() => queryChain),
-          or: jest.fn(() => queryChain),
-          range: jest.fn(() => queryChain),
-          order: jest.fn(() => queryChain),
-        };
-
-        // Track the mocked methods
-        Object.keys(queryChain).forEach((method) => {
-          if (
-            jest.isMockFunction(queryChain[method]) &&
-            jest.isMockFunction((supabase as any)[method])
-          ) {
-            queryChain[method].mockImplementation((...args: any[]) => {
-              (supabase as any)[method](...args);
-              return queryChain;
-            });
-          }
-        });
-
-        // Create result object
-        const result = {
-          data: (supabase as any)._defaultData || [],
-          error: null,
-          count: (supabase as any)._defaultCount || 0,
-        };
-
-        // Return the mock with promise resolution delegated
-        Object.defineProperty(queryChain, 'then', {
-          value: function (onfulfilled?: any, onrejected?: any) {
-            return Promise.resolve(result).then(onfulfilled, onrejected);
-          },
-          configurable: true,
-        });
-
-        return queryChain;
+      // Configure mock with combined filters
+      configureMockForFilters(supabase, {
+        states: {
+          codes: ['TX', 'CA'],
+          regionIds: ['region-tx', 'region-ca'],
+          agencyIds: ['agency-1'],
+        },
+        trades: {
+          slugs: ['electricians'],
+          ids: ['trade-1'],
+          agencyIds: ['agency-1'],
+        },
       });
 
       const mockRequest = createMockNextRequest({
@@ -606,10 +547,10 @@ describe('GET /api/agencies - State/Region Filtering', () => {
 
       // Verify both filter chains were executed
       expect(response.status).toBe(200);
-      expect(tableQueries).toContain('trades');
-      expect(tableQueries).toContain('regions');
-      expect(tableQueries).toContain('agency_trades');
-      expect(tableQueries).toContain('agency_regions');
+      expect(supabase.from).toHaveBeenCalledWith('trades');
+      expect(supabase.from).toHaveBeenCalledWith('regions');
+      expect(supabase.from).toHaveBeenCalledWith('agency_trades');
+      expect(supabase.from).toHaveBeenCalledWith('agency_regions');
     });
 
     it('should combine all filters together', async () => {
@@ -624,87 +565,18 @@ describe('GET /api/agencies - State/Region Filtering', () => {
         defaultCount: 15,
       });
 
-      // Setup complex filter mocks using a more robust approach
-      (supabase.from as any).mockImplementation((table: any) => {
-        // Handle filter tables
-        if (
-          table === 'regions' ||
-          table === 'agency_regions' ||
-          table === 'trades' ||
-          table === 'agency_trades'
-        ) {
-          const filterMock: any = {
-            select: jest.fn(() => filterMock),
-            in: jest.fn(() => filterMock),
-            eq: jest.fn(() => filterMock),
-            or: jest.fn(() => filterMock),
-            range: jest.fn(() => filterMock),
-            order: jest.fn(() => filterMock),
-          };
-
-          // Determine the result based on table
-          let result: any = { data: null, error: null };
-          if (table === 'trades') {
-            result.data = [{ id: 'trade-1' }, { id: 'trade-2' }];
-          } else if (table === 'agency_trades') {
-            result.data = [{ agency_id: '123' }];
-          } else if (table === 'regions') {
-            result.data = [{ id: 'region-tx' }, { id: 'region-ca' }];
-          } else if (table === 'agency_regions') {
-            result.data = [{ agency_id: '123' }];
-          }
-
-          // Return the mock with promise resolution delegated
-          Object.defineProperty(filterMock, 'then', {
-            value: function (onfulfilled?: any, onrejected?: any) {
-              return Promise.resolve(result).then(onfulfilled, onrejected);
-            },
-            configurable: true,
-          });
-
-          return filterMock;
-        }
-
-        // For main agencies query, use the centralized mock
-        // Return a basic mock chain for the main query
-        const queryChain: any = {
-          select: jest.fn(() => queryChain),
-          eq: jest.fn(() => queryChain),
-          in: jest.fn(() => queryChain),
-          or: jest.fn(() => queryChain),
-          range: jest.fn(() => queryChain),
-          order: jest.fn(() => queryChain),
-        };
-
-        // Track the mocked methods
-        Object.keys(queryChain).forEach((method) => {
-          if (
-            jest.isMockFunction(queryChain[method]) &&
-            jest.isMockFunction((supabase as any)[method])
-          ) {
-            queryChain[method].mockImplementation((...args: any[]) => {
-              (supabase as any)[method](...args);
-              return queryChain;
-            });
-          }
-        });
-
-        // Create result object
-        const result = {
-          data: (supabase as any)._defaultData || [],
-          error: null,
-          count: (supabase as any)._defaultCount || 0,
-        };
-
-        // Return the mock with promise resolution delegated
-        Object.defineProperty(queryChain, 'then', {
-          value: function (onfulfilled?: any, onrejected?: any) {
-            return Promise.resolve(result).then(onfulfilled, onrejected);
-          },
-          configurable: true,
-        });
-
-        return queryChain;
+      // Setup complex filter mocks using centralized helper
+      configureMockForFilters(supabase, {
+        trades: {
+          slugs: ['electricians', 'plumbers'],
+          ids: ['trade-1', 'trade-2'],
+          agencyIds: ['123'],
+        },
+        states: {
+          codes: ['TX', 'CA'],
+          regionIds: ['region-tx', 'region-ca'],
+          agencyIds: ['123'],
+        },
       });
 
       const mockRequest = createMockNextRequest({

@@ -60,7 +60,14 @@ type MockSupabase = {
   _resolveWith?: any;
   _queryCount?: number;
 } & {
-  [key: string]: any; // Index signature to allow string indexing
+  [key: string]:
+    | jest.Mock
+    | Error
+    | null
+    | boolean
+    | any[]
+    | number
+    | undefined; // More specific typing for dynamic access
 };
 
 // Configuration for error simulation
@@ -266,48 +273,52 @@ function createSupabaseMockInternal(): MockSupabase {
   return mockSupabase;
 }
 
+// Define the Supabase methods array to avoid duplication
+const SUPABASE_METHODS: SupabaseMethod[] = [
+  'from',
+  'select',
+  'eq',
+  'neq',
+  'or',
+  'in',
+  'range',
+  'order',
+  'limit',
+  'single',
+  'delete',
+  'insert',
+  'update',
+  'upsert',
+  'match',
+  'is',
+  'filter',
+  'not',
+  'gte',
+  'gt',
+  'lte',
+  'lt',
+  'like',
+  'ilike',
+  'contains',
+  'containedBy',
+  'rangeGt',
+  'rangeGte',
+  'rangeLt',
+  'rangeLte',
+  'rangeAdjacent',
+  'overlaps',
+  'textSearch',
+  'count',
+  'maybeSingle',
+  'csv',
+];
+
 // Module-level mock - properly hoisted
 jest.mock('@/lib/supabase', () => {
   const { createSlug, formatPhoneNumber } = require('@/lib/utils/formatting');
 
-  // Create mock inline to avoid scope issues
-  const mockSupabase = {
-    from: jest.fn(),
-    select: jest.fn(),
-    insert: jest.fn(),
-    update: jest.fn(),
-    upsert: jest.fn(),
-    delete: jest.fn(),
-    eq: jest.fn(),
-    neq: jest.fn(),
-    gt: jest.fn(),
-    gte: jest.fn(),
-    lt: jest.fn(),
-    lte: jest.fn(),
-    like: jest.fn(),
-    ilike: jest.fn(),
-    is: jest.fn(),
-    in: jest.fn(),
-    not: jest.fn(),
-    match: jest.fn(),
-    filter: jest.fn(),
-    or: jest.fn(),
-    contains: jest.fn(),
-    containedBy: jest.fn(),
-    rangeGt: jest.fn(),
-    rangeGte: jest.fn(),
-    rangeLt: jest.fn(),
-    rangeLte: jest.fn(),
-    rangeAdjacent: jest.fn(),
-    overlaps: jest.fn(),
-    textSearch: jest.fn(),
-    order: jest.fn(),
-    limit: jest.fn(),
-    range: jest.fn(),
-    single: jest.fn(),
-    maybeSingle: jest.fn(),
-    count: jest.fn(),
-    csv: jest.fn(),
+  // Create mock using consistent method list
+  const mockSupabase: any = {
     _error: null,
     _throwError: false,
     _isCountQuery: false,
@@ -315,7 +326,49 @@ jest.mock('@/lib/supabase', () => {
     _defaultCount: 0,
     _resolveWith: null,
     _queryCount: 0,
-  } as any;
+  };
+
+  // Add all methods as jest mocks
+  [
+    'from',
+    'select',
+    'eq',
+    'neq',
+    'or',
+    'in',
+    'range',
+    'order',
+    'limit',
+    'single',
+    'delete',
+    'insert',
+    'update',
+    'upsert',
+    'match',
+    'is',
+    'filter',
+    'not',
+    'gte',
+    'gt',
+    'lte',
+    'lt',
+    'like',
+    'ilike',
+    'contains',
+    'containedBy',
+    'rangeGt',
+    'rangeGte',
+    'rangeLt',
+    'rangeLte',
+    'rangeAdjacent',
+    'overlaps',
+    'textSearch',
+    'count',
+    'maybeSingle',
+    'csv',
+  ].forEach((method) => {
+    mockSupabase[method] = jest.fn();
+  });
 
   // Set up basic chain returns
   const chainableMethods = [
@@ -743,16 +796,17 @@ export function configureMockForFilters(
           }
         });
 
-        // Use Object.defineProperty to make the object thenable without creating anti-pattern
-        Object.defineProperty(chainable, 'then', {
-          value: function (onfulfilled?: any, onrejected?: any) {
-            return executeQuery().then(onfulfilled, onrejected);
-          },
-          configurable: true,
-          writable: true,
+        // Create the promise first
+        const promise = executeQuery();
+
+        // Set up method chaining on the returned promise
+        Object.keys(filterMock).forEach((key) => {
+          if (typeof filterMock[key] === 'function') {
+            (promise as any)[key] = jest.fn(() => createChainableObject());
+          }
         });
 
-        return chainable;
+        return promise;
       };
 
       return createChainableObject();
@@ -778,33 +832,48 @@ export function configureMockForFilters(
       return Promise.resolve(result);
     };
 
-    // Create a proxy for the main query chain
-    const createMainChainProxy = (target: any): any => {
-      return new Proxy(target, {
-        get(obj, prop) {
-          if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-            // Return the promise method bound to the executed query
-            const promise = executeMainQuery();
-            return (promise as any)[prop].bind(promise);
-          }
-          // For query methods, track the call and return the proxy for chaining
-          if (
-            typeof obj[prop] === 'function' &&
-            jest.isMockFunction(obj[prop])
-          ) {
-            return jest.fn((...args: any[]) => {
-              // Track the call on the main mock object if it exists
-              if (jest.isMockFunction((mock as any)[prop])) {
-                (mock as any)[prop](...args);
-              }
-              return createMainChainProxy(target);
-            });
-          }
-          return obj[prop];
-        },
+    // Create a chainable object that executes the query when used as a promise
+    const createMainChain = () => {
+      // Set up method chaining on the queryChain
+      Object.keys(queryChain).forEach((method) => {
+        if (
+          typeof queryChain[method] === 'function' &&
+          jest.isMockFunction(queryChain[method])
+        ) {
+          const originalMethod = queryChain[method];
+          queryChain[method] = jest.fn((...args: any[]) => {
+            // Track the call on the main mock object if it exists
+            if (jest.isMockFunction((mock as any)[method])) {
+              (mock as any)[method](...args);
+            }
+            // Call the original to maintain mock tracking
+            originalMethod(...args);
+            return createMainChain();
+          });
+        }
       });
+
+      // Create the promise first
+      const promise = executeMainQuery();
+
+      // Set up method chaining on the returned promise
+      Object.keys(queryChain).forEach((key) => {
+        if (typeof queryChain[key] === 'function') {
+          (promise as any)[key] = jest.fn((...args: any[]) => {
+            // Track the call on the main mock object if it exists
+            if (jest.isMockFunction((mock as any)[key])) {
+              (mock as any)[key](...args);
+            }
+            // Call the original to maintain mock tracking
+            queryChain[key](...args);
+            return createMainChain();
+          });
+        }
+      });
+
+      return promise;
     };
 
-    return createMainChainProxy(queryChain);
+    return createMainChain();
   });
 }

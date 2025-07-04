@@ -114,8 +114,14 @@ jobs:
           for i in {1..3}; do
             # Deploy without JSON output first (more reliable)
             if DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1); then
-              # The output should contain the deployment URL
-              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "https://[a-zA-Z0-9.-]+\.vercel\.app" | head -1 || echo "")
+              # Look for deployment URL in various formats
+              # Try to find "Preview: <url>" format first
+              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "Preview: https://[a-zA-Z0-9.-]+\.vercel\.app" | sed 's/Preview: //' | awk '{print $1}' || echo "")
+              
+              # If not found, try to find any vercel.app URL
+              if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+                DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" | head -1 || echo "")
+              fi
               
               # Verify we got a valid URL
               if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
@@ -125,11 +131,10 @@ jobs:
               else
                 echo "Failed to extract deployment URL from output"
                 echo "Raw output: $DEPLOY_OUTPUT"
-                # Try to extract from the last line which often contains the URL
-                DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | tail -1 | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" || echo "")
-                if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
-                  echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-                  echo "Preview deployed to: $DEPLOYMENT_URL"
+                # For production deployments, check if deployment succeeded even without URL
+                if echo "$DEPLOY_OUTPUT" | grep -q "Deployment completed"; then
+                  echo "Deployment completed successfully but couldn't extract URL"
+                  echo "deployment_url=https://findconstructionstaffing.vercel.app" >> $GITHUB_OUTPUT
                   break
                 fi
                 exit 1

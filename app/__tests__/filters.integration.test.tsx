@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import HomePage from '../page';
 import { useAgencies } from '@/hooks/use-agencies';
@@ -186,80 +187,45 @@ const mockAgencies = {
   ],
 };
 
-// Helper to create a mock DirectoryFilters component
+// Simplified mock DirectoryFilters component to reduce complexity and flakiness
 const createMockDirectoryFilters = () => {
-  let currentFilters: any = {
-    search: '',
-    trades: [],
-    states: [],
-    perDiem: null,
-    union: null,
-    claimedOnly: false,
-    companySize: [],
-    focusAreas: [],
-  };
-  let onFiltersChangeCallback: any;
-
   const MockDirectoryFilters = ({
     onFiltersChange,
-    totalResults,
-    isLoading,
-    initialFilters,
+    totalResults = 0,
+    isLoading = false,
+    initialFilters = {},
   }: any) => {
-    onFiltersChangeCallback = onFiltersChange;
-    if (
-      initialFilters &&
-      !currentFilters.trades.length &&
-      !currentFilters.states.length
-    ) {
-      currentFilters = { ...currentFilters, ...initialFilters };
-    }
+    // Use React state instead of external mutable variables
+    const [filters, setFilters] = React.useState({
+      search: '',
+      trades: [],
+      states: [],
+      perDiem: null,
+      union: null,
+      claimedOnly: false,
+      companySize: [],
+      focusAreas: [],
+      ...initialFilters,
+    });
 
-    const handleTradeFilter = (trade: string) => {
-      currentFilters = {
-        ...currentFilters,
-        trades: currentFilters.trades.includes(trade)
-          ? currentFilters.trades.filter((t: string) => t !== trade)
-          : [...currentFilters.trades, trade],
-      };
-      onFiltersChange(currentFilters);
+    // Simple filter update function
+    const updateFilters = (updates: any) => {
+      const newFilters = { ...filters, ...updates };
+      setFilters(newFilters);
+      onFiltersChange(newFilters);
     };
 
-    const handleStateFilter = (state: string) => {
-      currentFilters = {
-        ...currentFilters,
-        states: currentFilters.states.includes(state)
-          ? currentFilters.states.filter((s: string) => s !== state)
-          : [...currentFilters.states, state],
-      };
-      onFiltersChange(currentFilters);
+    // Simplified toggle logic
+    const toggleFilter = (type: 'trades' | 'states', value: string) => {
+      const currentArray = filters[type] as string[];
+      const newArray = currentArray.includes(value)
+        ? currentArray.filter((item) => item !== value)
+        : [...currentArray, value];
+      updateFilters({ [type]: newArray });
     };
 
-    const handleClearAll = () => {
-      currentFilters = {
-        search: '',
-        trades: [],
-        states: [],
-        perDiem: null,
-        union: null,
-        claimedOnly: false,
-        companySize: [],
-        focusAreas: [],
-      };
-      onFiltersChange(currentFilters);
-    };
-
-    const handleSearchChange = (value: string) => {
-      currentFilters = { ...currentFilters, search: value };
-      onFiltersChange(currentFilters);
-    };
-
-    const hasActiveFilters =
-      currentFilters.trades.length > 0 ||
-      currentFilters.states.length > 0 ||
-      currentFilters.search;
-    const activeFilterCount =
-      currentFilters.trades.length + currentFilters.states.length;
+    const activeFilterCount = filters.trades.length + filters.states.length;
+    const hasActiveFilters = activeFilterCount > 0 || filters.search;
 
     return (
       <div data-testid="directory-filters">
@@ -269,28 +235,40 @@ const createMockDirectoryFilters = () => {
         <input
           type="text"
           placeholder="Search agencies by name..."
-          value={currentFilters.search}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          value={filters.search}
+          onChange={(e) => updateFilters({ search: e.target.value })}
         />
 
         <div data-testid="trade-filters">
-          <button onClick={() => handleTradeFilter('electrician')}>
+          <button onClick={() => toggleFilter('trades', 'electrician')}>
             Electrician
           </button>
-          <button onClick={() => handleTradeFilter('plumber')}>Plumber</button>
-          <button onClick={() => handleTradeFilter('carpenter')}>
+          <button onClick={() => toggleFilter('trades', 'plumber')}>
+            Plumber
+          </button>
+          <button onClick={() => toggleFilter('trades', 'carpenter')}>
             Carpenter
           </button>
         </div>
 
         <div data-testid="state-filters">
-          <button onClick={() => handleStateFilter('TX')}>Texas</button>
-          <button onClick={() => handleStateFilter('CA')}>California</button>
-          <button onClick={() => handleStateFilter('NY')}>New York</button>
+          <button onClick={() => toggleFilter('states', 'TX')}>Texas</button>
+          <button onClick={() => toggleFilter('states', 'CA')}>California</button>
+          <button onClick={() => toggleFilter('states', 'NY')}>New York</button>
         </div>
 
         {hasActiveFilters && (
-          <button onClick={handleClearAll}>Clear All Filters</button>
+          <button
+            onClick={() => updateFilters({
+              search: '',
+              trades: [],
+              states: [],
+            })}
+            data-testid="clear-all-filters-button"
+            aria-label="Clear all applied filters"
+          >
+            Clear All Filters
+          </button>
         )}
 
         {activeFilterCount > 0 && (
@@ -301,6 +279,48 @@ const createMockDirectoryFilters = () => {
   };
 
   return MockDirectoryFilters;
+};
+
+// Test helper functions
+const setupTest = () => {
+  const mockUseAgencies = useAgencies as jest.Mock;
+  const utils = render(<HomePage />);
+  return { mockUseAgencies, ...utils };
+};
+
+const applyFilters = async (filters: {
+  trades?: string[];
+  states?: string[];
+}) => {
+  if (filters.trades) {
+    for (const trade of filters.trades) {
+      fireEvent.click(screen.getByText(trade));
+    }
+  }
+  if (filters.states) {
+    for (const state of filters.states) {
+      fireEvent.click(screen.getByText(state));
+    }
+  }
+};
+
+const expectApiCallWith = (mockFn: jest.Mock, expectedFilters: any) => {
+  expect(mockFn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      ...expectedFilters,
+      limit: 20,
+      offset: 0,
+    })
+  );
+};
+
+const getResultCount = (container: HTMLElement): number => {
+  const filterResults = container.querySelector(
+    '[data-testid="filter-results"]'
+  );
+  if (!filterResults) return 0;
+  const match = filterResults.textContent?.match(/(\d+)\s+results?/i);
+  return match ? parseInt(match[1], 10) : 0;
 };
 
 describe('Filter Integration Tests', () => {
@@ -325,15 +345,26 @@ describe('Filter Integration Tests', () => {
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
 
     // Mock window.location to prevent navigation errors
-    delete (window as any).location;
-    window.location = {
+    const mockLocation = {
       reload: jest.fn(),
       href: '',
       pathname: '/',
       search: '',
       assign: jest.fn(),
       replace: jest.fn(),
-    } as any;
+    };
+
+    // Try to properly mock location in jsdom
+    try {
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        configurable: true,
+        value: mockLocation,
+      });
+    } catch {
+      // If defineProperty fails, fall back to direct assignment
+      (window as any).location = mockLocation;
+    }
   });
 
   describe('Trade Filter Integration', () => {
@@ -445,14 +476,10 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Carpenter'));
 
       await waitFor(() => {
-        // Verify that the filter state was updated which should trigger URL update
-        expect(mockUseAgencies).toHaveBeenCalledWith(
-          expect.objectContaining({
-            trades: ['electrician', 'carpenter'],
-          })
+        expect(mockReplace).toHaveBeenCalledWith(
+          expect.stringMatching(/trades%5B%5D=electrician.*trades%5B%5D=carpenter/),
+          { scroll: false }
         );
-        // The router.replace is called, but timing might vary
-        expect(mockReplace).toHaveBeenCalled();
       });
     });
   });
@@ -565,14 +592,10 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('California'));
 
       await waitFor(() => {
-        // Verify that the filter state was updated which should trigger URL update
-        expect(mockUseAgencies).toHaveBeenCalledWith(
-          expect.objectContaining({
-            states: ['TX', 'CA'],
-          })
+        expect(mockReplace).toHaveBeenCalledWith(
+          expect.stringMatching(/states%5B%5D=TX.*states%5B%5D=CA/),
+          { scroll: false }
         );
-        // The router.replace is called, but timing might vary
-        expect(mockReplace).toHaveBeenCalled();
       });
     });
   });
@@ -684,10 +707,8 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Electrician'));
       fireEvent.click(screen.getByText('Texas'));
 
-      // Clear all filters - need to look for the button within DirectoryFilters
-      const clearButton = screen.getByRole('button', {
-        name: /clear all filters/i,
-      });
+      // Clear all filters - use test ID for more reliable selection
+      const clearButton = screen.getByTestId('clear-all-filters-button');
       fireEvent.click(clearButton);
 
       await waitFor(() => {
@@ -731,9 +752,13 @@ describe('Filter Integration Tests', () => {
 
       const { rerender } = render(<HomePage />);
 
+      // Use more robust assertion for result count
       expect(screen.getByTestId('filter-results')).toHaveTextContent(
-        '3 results'
+        /3\s+results?/i
       );
+      // Also verify the actual data
+      expect(mockUseAgencies).toHaveBeenCalledWith(expect.any(Object));
+      expect(mockUseAgencies.mock.results[0].value.data.data).toHaveLength(3);
 
       // Apply filter
       fireEvent.click(screen.getByText('Electrician'));
@@ -749,8 +774,15 @@ describe('Filter Integration Tests', () => {
       rerender(<HomePage />);
 
       await waitFor(() => {
+        // Use more robust assertion for result count
         expect(screen.getByTestId('filter-results')).toHaveTextContent(
-          '2 results'
+          /2\s+results?/i
+        );
+        // Also verify the hook was called with filters
+        expect(mockUseAgencies).toHaveBeenCalledWith(
+          expect.objectContaining({
+            trades: ['electrician'],
+          })
         );
       });
     });
@@ -805,15 +837,10 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Texas'));
 
       await waitFor(() => {
-        // Verify filters were applied
-        expect(mockUseAgencies).toHaveBeenCalledWith(
-          expect.objectContaining({
-            trades: ['electrician'],
-            states: ['TX'],
-          })
+        expect(mockReplace).toHaveBeenCalledWith(
+          expect.stringMatching(/trades%5B%5D=electrician.*states%5B%5D=TX/),
+          { scroll: false }
         );
-        // Verify URL update was triggered
-        expect(mockReplace).toHaveBeenCalled();
       });
     });
   });

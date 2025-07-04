@@ -99,8 +99,24 @@ jobs:
           vercel build ${PROD_FLAG} --token="${VERCEL_TOKEN}"
 
           # Deploy and capture the URL
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}")
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1)
+          
+          # Extract URL from output
+          DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "Preview: https://[a-zA-Z0-9.-]+\.vercel\.app" | sed 's/Preview: //' | awk '{print $1}' || echo "")
+          
+          # If not found, try to find any vercel.app URL
+          if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" | head -1 || echo "")
+          fi
+          
+          # Output the URL
+          if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+            echo "Deployed to: $DEPLOYMENT_URL"
+          else
+            echo "Deployment output: $DEPLOY_OUTPUT"
+            echo "deployment_url=unknown" >> $GITHUB_OUTPUT
+          fi
 
   notify-rate-limit:
     name: Notify Rate Limit
