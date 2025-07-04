@@ -98,17 +98,23 @@ jobs:
           # Build the project
           vercel build ${PROD_FLAG} --token="${VERCEL_TOKEN}"
 
-          # Deploy and capture the URL
-          DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1)
-          
-          # Extract URL from output
-          DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "Preview: https://[a-zA-Z0-9.-]+\.vercel\.app" | sed 's/Preview: //' | awk '{print $1}' || echo "")
-          
-          # If not found, try to find any vercel.app URL
-          if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+          # Deploy and capture the output
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}" --json 2>&1)
+
+          # Check if output is JSON
+          if [[ "$DEPLOY_OUTPUT" =~ ^[\{\[] ]]; then
+            # Parse JSON response using jq
+            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url // empty' 2>/dev/null || echo "")
+            
+            # If no url field, try alias or other fields
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.alias[0] // .target // empty' 2>/dev/null || echo "")
+            fi
+          else
+            # Fallback to grep if not JSON output
             DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" | head -1 || echo "")
           fi
-          
+
           # Output the URL
           if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
             echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
@@ -65,10 +66,12 @@ export default async function AgencyProfilePage({ params }: PageProps) {
             {/* Logo and Basic Info */}
             <div className="flex-shrink-0">
               {agency.logo_url ? (
-                <img
+                <Image
                   src={agency.logo_url}
                   alt={`${agency.name} logo`}
-                  className="w-32 h-32 rounded-lg object-cover"
+                  width={128}
+                  height={128}
+                  className="rounded-lg object-cover"
                 />
               ) : (
                 <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">

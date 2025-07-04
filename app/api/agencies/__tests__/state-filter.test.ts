@@ -26,6 +26,71 @@ jest.mock('next/server', () => ({
 // Import the route AFTER mocks are set up
 import { GET } from '../route';
 
+// Helper to create table-specific mock data
+function createMockDataForTable(
+  table: string,
+  config: {
+    trades?: { slugs: string[]; ids: string[]; agencyIds: string[] };
+    states?: { codes: string[]; regionIds: string[]; agencyIds: string[] };
+  }
+): any[] | null {
+  switch (table) {
+    case 'trades':
+      return config.trades ? config.trades.ids.map((id) => ({ id })) : null;
+    case 'agency_trades':
+      return config.trades ? config.trades.agencyIds.map((agency_id) => ({ agency_id })) : null;
+    case 'regions':
+      return config.states ? config.states.regionIds.map((id) => ({ id })) : null;
+    case 'agency_regions':
+      return config.states ? config.states.agencyIds.map((agency_id) => ({ agency_id })) : null;
+    default:
+      return null;
+  }
+}
+
+// Helper to create method chain with tracking
+function createTrackedMethodChain(
+  methods: string[],
+  onCall?: (table: string, method: string, args: any[]) => void | ((method: string, args: any[]) => void),
+  table?: string
+): any {
+  const chain: any = {};
+  
+  methods.forEach((method) => {
+    chain[method] = jest.fn((...args: any[]) => {
+      if (onCall) {
+        if (table) {
+          // If table is provided, call with table parameter
+          (onCall as (table: string, method: string, args: any[]) => void)(table, method, args);
+        } else {
+          // Otherwise, call without table parameter
+          (onCall as (method: string, args: any[]) => void)(method, args);
+        }
+      }
+      return chain;
+    });
+  });
+  
+  return chain;
+}
+
+// Helper to attach methods to a promise
+function attachMethodsToPromise(promise: Promise<any>, methods: any): any {
+  Object.keys(methods).forEach((key) => {
+    // Wrap the method to ensure it returns the promise for chaining
+    (promise as any)[key] = jest.fn((...args: any[]) => {
+      methods[key](...args);
+      return promise;
+    });
+  });
+  return promise;
+}
+
+// Helper to check if table is a filter table
+function isFilterTable(table: string): boolean {
+  return ['trades', 'agency_trades', 'regions', 'agency_regions'].includes(table);
+}
+
 // Helper to create a custom mock that tracks specific calls
 function createFilterMockWithTracking(
   config: {
@@ -35,65 +100,27 @@ function createFilterMockWithTracking(
   onCall?: (table: string, method: string, args: any[]) => void
 ) {
   return (table: any) => {
-    // Use configureMockForFilters logic but with tracking
-    if (
-      table === 'trades' ||
-      table === 'agency_trades' ||
-      table === 'regions' ||
-      table === 'agency_regions'
-    ) {
-      const filterMock: any = {
-        select: jest.fn(),
-        in: jest.fn(),
-        eq: jest.fn(),
-        or: jest.fn(),
-        range: jest.fn(),
-        order: jest.fn(),
-      };
-
-      let result: any = { data: null, error: null };
-
-      // Return appropriate data based on table and configuration
-      if (table === 'trades' && config.trades) {
-        result.data = config.trades.ids.map((id) => ({ id }));
-      } else if (table === 'agency_trades' && config.trades) {
-        result.data = config.trades.agencyIds.map((agency_id) => ({
-          agency_id,
-        }));
-      } else if (table === 'regions' && config.states) {
-        result.data = config.states.regionIds.map((id) => ({ id }));
-      } else if (table === 'agency_regions' && config.states) {
-        result.data = config.states.agencyIds.map((agency_id) => ({
-          agency_id,
-        }));
-      }
-
+    if (isFilterTable(table)) {
+      // Create mock data for filter tables
+      const mockData = createMockDataForTable(table, config);
+      const result = { data: mockData, error: null };
       const promise = Promise.resolve(result);
-
-      // Set up method chaining with tracking
-      Object.keys(filterMock).forEach((key) => {
-        (promise as any)[key] = jest.fn((...args: any[]) => {
-          if (onCall) {
-            onCall(table, key, args);
-          }
-          return promise;
-        });
-      });
-
-      return promise;
+      
+      // Create tracking methods
+      const methods = ['select', 'in', 'eq', 'or', 'range', 'order'];
+      const trackedChain = createTrackedMethodChain(methods, onCall, table);
+      
+      // Attach methods to promise
+      return attachMethodsToPromise(promise, trackedChain);
     }
 
     // For main agencies query
-    const queryChain: any = {};
-    const methods = ['select', 'eq', 'in', 'or', 'range', 'order'];
-
-    methods.forEach((method) => {
-      queryChain[method] = jest.fn((...args: any[]) => {
-        if (jest.isMockFunction((supabase as any)[method])) {
-          (supabase as any)[method](...args);
-        }
-        return queryChain;
-      });
+    const mainQueryMethods = ['select', 'eq', 'in', 'or', 'range', 'order'];
+    const queryChain = createTrackedMethodChain(mainQueryMethods, (method, args) => {
+      // Track on main supabase mock if available
+      if (jest.isMockFunction((supabase as any)[method])) {
+        (supabase as any)[method](...args);
+      }
     });
 
     const result = {
@@ -103,15 +130,7 @@ function createFilterMockWithTracking(
     };
 
     const promise = Promise.resolve(result);
-
-    Object.keys(queryChain).forEach((key) => {
-      (promise as any)[key] = jest.fn((...args: any[]) => {
-        queryChain[key](...args);
-        return promise;
-      });
-    });
-
-    return promise;
+    return attachMethodsToPromise(promise, queryChain);
   };
 }
 

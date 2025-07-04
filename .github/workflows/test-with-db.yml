@@ -16,7 +16,7 @@ jobs:
   test-with-database:
     name: Run Tests with Database
     runs-on: ubuntu-latest
-    
+
     # Use PostgreSQL service container for tests
     services:
       postgres:
@@ -70,16 +70,16 @@ jobs:
           cat > .env.test << EOF
           # Test Database Configuration
           DATABASE_URL=postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test
-          
+
           # Supabase Test Configuration
           NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY=test-anon-key
           SUPABASE_SERVICE_ROLE_KEY=test-service-role-key
-          
+
           # Test Environment
           NODE_ENV=test
           EOF
-          
+
           # Make setup script executable and run it
           chmod +x scripts/setup-test-environment.sh
           ./scripts/setup-test-environment.sh
@@ -147,9 +147,9 @@ jobs:
         run: |
           echo "=== PostgreSQL Logs ==="
           docker logs $(docker ps -q --filter "ancestor=postgres:15") || echo "No logs available"
-          
+
           echo "=== Database Connection Test ==="
           PGPASSWORD=postgres psql -h localhost -U postgres -d findconstructionstaffing_test -c "\l" || echo "Failed to connect"
-          
+
           echo "=== Current Tables ==="
           PGPASSWORD=postgres psql -h localhost -U postgres -d findconstructionstaffing_test -c "\dt" || echo "Failed to list tables"

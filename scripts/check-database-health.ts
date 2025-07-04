@@ -2,7 +2,7 @@
 
 /**
  * Database Health Check Script
- * 
+ *
  * Checks database connectivity and table structure for CI/CD environments
  */
 
@@ -25,9 +25,12 @@ const colors = {
 
 const log = {
   info: (msg: string) => console.log(`${colors.blue}ℹ${colors.reset}  ${msg}`),
-  success: (msg: string) => console.log(`${colors.green}✓${colors.reset}  ${msg}`),
-  warning: (msg: string) => console.log(`${colors.yellow}⚠${colors.reset}  ${msg}`),
-  error: (msg: string) => console.error(`${colors.red}✗${colors.reset}  ${msg}`),
+  success: (msg: string) =>
+    console.log(`${colors.green}✓${colors.reset}  ${msg}`),
+  warning: (msg: string) =>
+    console.log(`${colors.yellow}⚠${colors.reset}  ${msg}`),
+  error: (msg: string) =>
+    console.error(`${colors.red}✗${colors.reset}  ${msg}`),
 };
 
 interface HealthCheckResult {
@@ -55,8 +58,14 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
 
   try {
     // Get connection details
-    const url = process.env.SUPABASE_URL || process.env.DATABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const url =
+      process.env.SUPABASE_URL ||
+      process.env.DATABASE_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!url || !key) {
       result.details.push('Missing database connection environment variables');
@@ -69,8 +78,12 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     // Test 1: Basic connection
     log.info('Testing database connection...');
     try {
-      const { error } = await supabase.from('agencies').select('count').limit(1);
-      if (!error || error.code === '42P01') { // 42P01 = table does not exist
+      const { error } = await supabase
+        .from('agencies')
+        .select('count')
+        .limit(1);
+      if (!error || error.code === '42P01') {
+        // 42P01 = table does not exist
         result.checks.connection = true;
         log.success('Database connection successful');
       } else {
@@ -84,9 +97,15 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
 
     // Test 2: Check if tables exist
     log.info('Checking table structure...');
-    const requiredTables = ['agencies', 'trades', 'regions', 'agency_trades', 'agency_regions'];
+    const requiredTables = [
+      'agencies',
+      'trades',
+      'regions',
+      'agency_trades',
+      'agency_regions',
+    ];
     const existingTables: string[] = [];
-    
+
     for (const table of requiredTables) {
       const { error } = await supabase.from(table).select('count').limit(1);
       if (!error) {
@@ -98,7 +117,9 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
       result.checks.tablesExist = true;
       log.success('All required tables exist');
     } else {
-      const missingTables = requiredTables.filter(t => !existingTables.includes(t));
+      const missingTables = requiredTables.filter(
+        (t) => !existingTables.includes(t)
+      );
       log.warning(`Missing tables: ${missingTables.join(', ')}`);
       result.details.push(`Missing tables: ${missingTables.join(', ')}`);
     }
@@ -106,25 +127,33 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     // Test 3: Check if data is present
     if (result.checks.tablesExist) {
       log.info('Checking data presence...');
-      
+
       const { count: agencyCount } = await supabase
         .from('agencies')
         .select('*', { count: 'exact', head: true });
-      
+
       const { count: tradeCount } = await supabase
         .from('trades')
         .select('*', { count: 'exact', head: true });
-      
+
       const { count: regionCount } = await supabase
         .from('regions')
         .select('*', { count: 'exact', head: true });
 
-      if ((agencyCount || 0) > 0 && (tradeCount || 0) > 0 && (regionCount || 0) > 0) {
+      if (
+        (agencyCount || 0) > 0 &&
+        (tradeCount || 0) > 0 &&
+        (regionCount || 0) > 0
+      ) {
         result.checks.dataPresent = true;
-        log.success(`Data present - Agencies: ${agencyCount}, Trades: ${tradeCount}, Regions: ${regionCount}`);
+        log.success(
+          `Data present - Agencies: ${agencyCount}, Trades: ${tradeCount}, Regions: ${regionCount}`
+        );
       } else {
         log.warning('No data found in tables');
-        result.details.push('Tables exist but contain no data - run seed script');
+        result.details.push(
+          'Tables exist but contain no data - run seed script'
+        );
       }
     }
 
@@ -136,7 +165,7 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
         .from('agencies')
         .select('id, name')
         .limit(1);
-      
+
       if (!error) {
         result.checks.permissions = true;
         log.success('Read permissions verified');
@@ -157,7 +186,6 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     }
 
     return result;
-
   } catch (error: any) {
     log.error('Unexpected error during health check');
     result.details.push(`Unexpected error: ${error.message}`);
@@ -182,7 +210,7 @@ async function main() {
 
   if (result.details.length > 0) {
     console.log('\nDetails:');
-    result.details.forEach(detail => console.log(`  - ${detail}`));
+    result.details.forEach((detail) => console.log(`  - ${detail}`));
   }
 
   // Exit with appropriate code

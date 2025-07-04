@@ -232,6 +232,18 @@ interface MockDirectoryFiltersProps {
 }
 
 // Simplified mock DirectoryFilters component to reduce complexity and flakiness
+// Track filter state outside component to simulate multiple selections
+let currentFilters: FilterState = {
+  search: '',
+  trades: [],
+  states: [],
+  perDiem: null,
+  union: null,
+  claimedOnly: false,
+  companySize: [],
+  focusAreas: [],
+};
+
 const createMockDirectoryFilters = () => {
   const MockDirectoryFilters = ({
     onFiltersChange,
@@ -239,37 +251,57 @@ const createMockDirectoryFilters = () => {
     isLoading = false,
     initialFilters = {},
   }: MockDirectoryFiltersProps) => {
-    // Use React state instead of external mutable variables
-    const [filters, setFilters] = React.useState<FilterState>({
-      search: '',
-      trades: [],
-      states: [],
-      perDiem: null,
-      union: null,
-      claimedOnly: false,
-      companySize: [],
-      focusAreas: [],
-      ...initialFilters,
-    });
+    React.useEffect(() => {
+      // Reset filters on mount
+      currentFilters = {
+        search: '',
+        trades: [],
+        states: [],
+        perDiem: null,
+        union: null,
+        claimedOnly: false,
+        companySize: [],
+        focusAreas: [],
+        ...initialFilters,
+      };
+    }, []);
 
-    // Simple filter update function
-    const updateFilters = (updates: Partial<FilterState>) => {
-      const newFilters = { ...filters, ...updates };
-      setFilters(newFilters);
-      onFiltersChange(newFilters);
+    const handleTradeClick = (trade: string) => {
+      const newTrades = currentFilters.trades.includes(trade)
+        ? currentFilters.trades.filter(t => t !== trade)
+        : [...currentFilters.trades, trade];
+      currentFilters = { ...currentFilters, trades: newTrades };
+      onFiltersChange(currentFilters);
     };
 
-    // Simplified toggle logic
-    const toggleFilter = (type: 'trades' | 'states', value: string) => {
-      const currentArray = filters[type] as string[];
-      const newArray = currentArray.includes(value)
-        ? currentArray.filter((item) => item !== value)
-        : [...currentArray, value];
-      updateFilters({ [type]: newArray });
+    const handleStateClick = (state: string) => {
+      const newStates = currentFilters.states.includes(state)
+        ? currentFilters.states.filter(s => s !== state)
+        : [...currentFilters.states, state];
+      currentFilters = { ...currentFilters, states: newStates };
+      onFiltersChange(currentFilters);
     };
 
-    const activeFilterCount = filters.trades.length + filters.states.length;
-    const hasActiveFilters = activeFilterCount > 0 || filters.search;
+    const handleSearchChange = (value: string) => {
+      currentFilters = { ...currentFilters, search: value };
+      onFiltersChange(currentFilters);
+    };
+
+    const handleClearAll = () => {
+      currentFilters = {
+        search: '',
+        trades: [],
+        states: [],
+        perDiem: null,
+        union: null,
+        claimedOnly: false,
+        companySize: [],
+        focusAreas: [],
+      };
+      onFiltersChange(currentFilters);
+    };
+
+    const activeFilterCount = currentFilters.trades.length + currentFilters.states.length;
 
     return (
       <div data-testid="directory-filters">
@@ -279,45 +311,34 @@ const createMockDirectoryFilters = () => {
         <input
           type="text"
           placeholder="Search agencies by name..."
-          value={filters.search}
-          onChange={(e) => updateFilters({ search: e.target.value })}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
 
         <div data-testid="trade-filters">
-          <button onClick={() => toggleFilter('trades', 'electrician')}>
+          <button onClick={() => handleTradeClick('electrician')}>
             Electrician
           </button>
-          <button onClick={() => toggleFilter('trades', 'plumber')}>
+          <button onClick={() => handleTradeClick('plumber')}>
             Plumber
           </button>
-          <button onClick={() => toggleFilter('trades', 'carpenter')}>
+          <button onClick={() => handleTradeClick('carpenter')}>
             Carpenter
           </button>
         </div>
 
         <div data-testid="state-filters">
-          <button onClick={() => toggleFilter('states', 'TX')}>Texas</button>
-          <button onClick={() => toggleFilter('states', 'CA')}>
-            California
-          </button>
-          <button onClick={() => toggleFilter('states', 'NY')}>New York</button>
+          <button onClick={() => handleStateClick('TX')}>Texas</button>
+          <button onClick={() => handleStateClick('CA')}>California</button>
+          <button onClick={() => handleStateClick('NY')}>New York</button>
         </div>
 
-        {hasActiveFilters && (
-          <button
-            onClick={() =>
-              updateFilters({
-                search: '',
-                trades: [],
-                states: [],
-              })
-            }
-            data-testid="clear-all-filters-button"
-            aria-label="Clear all applied filters"
-          >
-            Clear All Filters
-          </button>
-        )}
+        <button
+          onClick={handleClearAll}
+          data-testid="clear-all-filters-button"
+          aria-label="Clear all applied filters"
+        >
+          Clear All Filters
+        </button>
 
         {activeFilterCount > 0 && (
           <div>{activeFilterCount} filters applied</div>
@@ -371,6 +392,40 @@ const getResultCount = (container: HTMLElement): number => {
   return match ? parseInt(match[1], 10) : 0;
 };
 
+// Helper to wait for router operations with specific parameters
+const waitForRouterUpdate = async (
+  mockReplace: jest.Mock,
+  expectedParams: { trades?: string[]; states?: string[] }
+) => {
+  await waitFor(() => {
+    // Get the most recent call
+    const calls = mockReplace.mock.calls;
+    if (calls.length === 0) {
+      throw new Error('Router replace not called');
+    }
+    
+    const lastCall = calls[calls.length - 1];
+    const urlString = lastCall[0];
+    
+    // Check if URL contains expected parameters
+    if (expectedParams.trades) {
+      expectedParams.trades.forEach(trade => {
+        if (!urlString.includes(`trades%5B%5D=${trade}`)) {
+          throw new Error(`URL missing trade parameter: ${trade}`);
+        }
+      });
+    }
+    
+    if (expectedParams.states) {
+      expectedParams.states.forEach(state => {
+        if (!urlString.includes(`states%5B%5D=${state}`)) {
+          throw new Error(`URL missing state parameter: ${state}`);
+        }
+      });
+    }
+  });
+};
+
 describe('Filter Integration Tests', () => {
   const mockPush = jest.fn();
   const mockReplace = jest.fn();
@@ -378,6 +433,18 @@ describe('Filter Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Reset the currentFilters state before each test
+    currentFilters = {
+      search: '',
+      trades: [],
+      states: [],
+      perDiem: null,
+      union: null,
+      claimedOnly: false,
+      companySize: [],
+      focusAreas: [],
+    };
 
     // Set up the mock DirectoryFilters for this test
     const DirectoryFilters = require('@/components/DirectoryFilters').default;
@@ -392,27 +459,30 @@ describe('Filter Integration Tests', () => {
 
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
 
-    // Mock window.location to prevent navigation errors
-    const mockLocation = {
+    // Mock window.location for jsdom
+    // jsdom doesn't allow location to be redefined, so we use a workaround
+    // by mocking the methods we need
+    const originalLocation = window.location;
+    
+    // @ts-ignore - TypeScript doesn't know about jsdom internals
+    delete window.location;
+    
+    window.location = {
+      ...originalLocation,
       reload: jest.fn(),
       href: '',
       pathname: '/',
       search: '',
       assign: jest.fn(),
       replace: jest.fn(),
-    };
-
-    // Try to properly mock location in jsdom
-    try {
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        configurable: true,
-        value: mockLocation,
-      });
-    } catch {
-      // If defineProperty fails, fall back to direct assignment
-      (window as any).location = mockLocation;
-    }
+      origin: 'http://localhost',
+      protocol: 'http:',
+      host: 'localhost',
+      hostname: 'localhost',
+      port: '',
+      hash: '',
+      toString: () => 'http://localhost/',
+    } as any;
   });
 
   describe('Trade Filter Integration', () => {
@@ -523,14 +593,14 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Electrician'));
       fireEvent.click(screen.getByText('Carpenter'));
 
-      await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith(
-          expect.stringMatching(
-            /trades%5B%5D=electrician.*trades%5B%5D=carpenter/
-          ),
-          { scroll: false }
-        );
+      await waitForRouterUpdate(mockReplace, {
+        trades: ['electrician', 'carpenter']
       });
+      
+      expect(mockReplace).toHaveBeenCalledWith(
+        expect.stringMatching(/trades%5B%5D=electrician.*trades%5B%5D=carpenter/),
+        { scroll: false }
+      );
     });
   });
 
@@ -641,12 +711,14 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Texas'));
       fireEvent.click(screen.getByText('California'));
 
-      await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith(
-          expect.stringMatching(/states%5B%5D=TX.*states%5B%5D=CA/),
-          { scroll: false }
-        );
+      await waitForRouterUpdate(mockReplace, {
+        states: ['TX', 'CA']
       });
+      
+      expect(mockReplace).toHaveBeenCalledWith(
+        expect.stringMatching(/states%5B%5D=TX.*states%5B%5D=CA/),
+        { scroll: false }
+      );
     });
   });
 
@@ -886,12 +958,15 @@ describe('Filter Integration Tests', () => {
       fireEvent.click(screen.getByText('Electrician'));
       fireEvent.click(screen.getByText('Texas'));
 
-      await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith(
-          expect.stringMatching(/trades%5B%5D=electrician.*states%5B%5D=TX/),
-          { scroll: false }
-        );
+      await waitForRouterUpdate(mockReplace, {
+        trades: ['electrician'],
+        states: ['TX']
       });
+      
+      expect(mockReplace).toHaveBeenCalledWith(
+        expect.stringMatching(/trades%5B%5D=electrician.*states%5B%5D=TX/),
+        { scroll: false }
+      );
     });
   });
 
