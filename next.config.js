@@ -4,6 +4,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  typescript: {
+    // Use a separate tsconfig for builds that excludes scripts
+    tsconfigPath: './tsconfig.build.json',
+  },
 };
 
 module.exports = nextConfig;
