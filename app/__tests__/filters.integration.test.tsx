@@ -7,6 +7,8 @@ import HomePage from '../page';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { allTrades, allStates } from '@/lib/mock-data';
+import type { Agency, Trade, Region } from '@/types/supabase';
+import type { FilterState } from '@/components/DirectoryFilters';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -30,14 +32,14 @@ jest.mock('@/components/Footer', () => ({
 
 jest.mock('@/components/AgencyCard', () => ({
   __esModule: true,
-  default: ({ agency }: { agency: any }) => (
+  default: ({ agency }: { agency: Agency }) => (
     <div data-testid={`agency-${agency.id}`}>
       <h3>{agency.name}</h3>
       <div data-testid={`trades-${agency.id}`}>
-        {agency.trades.map((t: any) => t.name).join(', ')}
+        {agency.trades?.map((t: Trade) => t.name).join(', ')}
       </div>
       <div data-testid={`regions-${agency.id}`}>
-        {agency.regions.map((r: any) => r.name).join(', ')}
+        {agency.regions?.map((r: Region) => r.name).join(', ')}
       </div>
     </div>
   ),
@@ -57,9 +59,43 @@ jest.mock('@/components/DirectoryFilters', () => ({
   }),
 }));
 
-const mockAgencies = {
+// Extended Agency type for testing that includes additional UI properties
+interface TestAgency extends Agency {
+  rating?: number;
+  reviewCount?: number;
+  projectCount?: number;
+  featured?: boolean;
+  verified?: boolean;
+}
+
+interface MockAgenciesData {
+  all: TestAgency[];
+  electricians: TestAgency[];
+  texas: TestAgency[];
+}
+
+// Helper to create test agency with defaults
+const createTestAgency = (overrides: Partial<TestAgency>): TestAgency => ({
+  logo_url: undefined,
+  website: undefined,
+  phone: undefined,
+  email: undefined,
+  is_claimed: true,
+  is_active: true,
+  offers_per_diem: false,
+  is_union: false,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+  ...overrides,
+  // Ensure required fields are present
+  id: overrides.id || '',
+  name: overrides.name || '',
+  slug: overrides.slug || '',
+});
+
+const mockAgencies: MockAgenciesData = {
   all: [
-    {
+    createTestAgency({
       id: '1',
       name: 'Elite Construction Staffing',
       slug: 'elite-construction-staffing',
@@ -69,16 +105,16 @@ const mockAgencies = {
         { id: 't2', name: 'Plumber', slug: 'plumber' },
       ],
       regions: [
-        { id: 'r1', name: 'Texas', code: 'TX' },
-        { id: 'r2', name: 'California', code: 'CA' },
+        { id: 'r1', name: 'Texas', state_code: 'TX', slug: 'texas' },
+        { id: 'r2', name: 'California', state_code: 'CA', slug: 'california' },
       ],
       rating: 4.5,
       reviewCount: 25,
       projectCount: 150,
       featured: true,
       verified: true,
-    },
-    {
+    }),
+    createTestAgency({
       id: '2',
       name: 'National Staffing Solutions',
       slug: 'national-staffing-solutions',
@@ -88,31 +124,31 @@ const mockAgencies = {
         { id: 't1', name: 'Electrician', slug: 'electrician' },
       ],
       regions: [
-        { id: 'r3', name: 'New York', code: 'NY' },
-        { id: 'r2', name: 'California', code: 'CA' },
+        { id: 'r3', name: 'New York', state_code: 'NY', slug: 'new-york' },
+        { id: 'r2', name: 'California', state_code: 'CA', slug: 'california' },
       ],
       rating: 4.2,
       reviewCount: 45,
       projectCount: 200,
       featured: false,
       verified: true,
-    },
-    {
+    }),
+    createTestAgency({
       id: '3',
       name: 'Texas Trade Specialists',
       slug: 'texas-trade-specialists',
       description: 'Texas-focused staffing',
       trades: [{ id: 't2', name: 'Plumber', slug: 'plumber' }],
-      regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
+      regions: [{ id: 'r1', name: 'Texas', state_code: 'TX', slug: 'texas' }],
       rating: 4.0,
       reviewCount: 20,
       projectCount: 80,
       featured: false,
       verified: true,
-    },
+    }),
   ],
   electricians: [
-    {
+    createTestAgency({
       id: '1',
       name: 'Elite Construction Staffing',
       slug: 'elite-construction-staffing',
@@ -122,16 +158,16 @@ const mockAgencies = {
         { id: 't2', name: 'Plumber', slug: 'plumber' },
       ],
       regions: [
-        { id: 'r1', name: 'Texas', code: 'TX' },
-        { id: 'r2', name: 'California', code: 'CA' },
+        { id: 'r1', name: 'Texas', state_code: 'TX', slug: 'texas' },
+        { id: 'r2', name: 'California', state_code: 'CA', slug: 'california' },
       ],
       rating: 4.5,
       reviewCount: 25,
       projectCount: 150,
       featured: true,
       verified: true,
-    },
-    {
+    }),
+    createTestAgency({
       id: '2',
       name: 'National Staffing Solutions',
       slug: 'national-staffing-solutions',
@@ -141,18 +177,18 @@ const mockAgencies = {
         { id: 't1', name: 'Electrician', slug: 'electrician' },
       ],
       regions: [
-        { id: 'r3', name: 'New York', code: 'NY' },
-        { id: 'r2', name: 'California', code: 'CA' },
+        { id: 'r3', name: 'New York', state_code: 'NY', slug: 'new-york' },
+        { id: 'r2', name: 'California', state_code: 'CA', slug: 'california' },
       ],
       rating: 4.2,
       reviewCount: 45,
       projectCount: 200,
       featured: false,
       verified: true,
-    },
+    }),
   ],
   texas: [
-    {
+    createTestAgency({
       id: '1',
       name: 'Elite Construction Staffing',
       slug: 'elite-construction-staffing',
@@ -162,30 +198,38 @@ const mockAgencies = {
         { id: 't2', name: 'Plumber', slug: 'plumber' },
       ],
       regions: [
-        { id: 'r1', name: 'Texas', code: 'TX' },
-        { id: 'r2', name: 'California', code: 'CA' },
+        { id: 'r1', name: 'Texas', state_code: 'TX', slug: 'texas' },
+        { id: 'r2', name: 'California', state_code: 'CA', slug: 'california' },
       ],
       rating: 4.5,
       reviewCount: 25,
       projectCount: 150,
       featured: true,
       verified: true,
-    },
-    {
+    }),
+    createTestAgency({
       id: '3',
       name: 'Texas Trade Specialists',
       slug: 'texas-trade-specialists',
       description: 'Texas-focused staffing',
       trades: [{ id: 't2', name: 'Plumber', slug: 'plumber' }],
-      regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
+      regions: [{ id: 'r1', name: 'Texas', state_code: 'TX', slug: 'texas' }],
       rating: 4.0,
       reviewCount: 20,
       projectCount: 80,
       featured: false,
       verified: true,
-    },
+    }),
   ],
 };
+
+// Props interface for the mock DirectoryFilters component
+interface MockDirectoryFiltersProps {
+  onFiltersChange: (filters: FilterState) => void;
+  totalResults?: number;
+  isLoading?: boolean;
+  initialFilters?: Partial<FilterState>;
+}
 
 // Simplified mock DirectoryFilters component to reduce complexity and flakiness
 const createMockDirectoryFilters = () => {
@@ -194,9 +238,9 @@ const createMockDirectoryFilters = () => {
     totalResults = 0,
     isLoading = false,
     initialFilters = {},
-  }: any) => {
+  }: MockDirectoryFiltersProps) => {
     // Use React state instead of external mutable variables
-    const [filters, setFilters] = React.useState({
+    const [filters, setFilters] = React.useState<FilterState>({
       search: '',
       trades: [],
       states: [],
@@ -209,7 +253,7 @@ const createMockDirectoryFilters = () => {
     });
 
     // Simple filter update function
-    const updateFilters = (updates: any) => {
+    const updateFilters = (updates: Partial<FilterState>) => {
       const newFilters = { ...filters, ...updates };
       setFilters(newFilters);
       onFiltersChange(newFilters);
@@ -253,17 +297,21 @@ const createMockDirectoryFilters = () => {
 
         <div data-testid="state-filters">
           <button onClick={() => toggleFilter('states', 'TX')}>Texas</button>
-          <button onClick={() => toggleFilter('states', 'CA')}>California</button>
+          <button onClick={() => toggleFilter('states', 'CA')}>
+            California
+          </button>
           <button onClick={() => toggleFilter('states', 'NY')}>New York</button>
         </div>
 
         {hasActiveFilters && (
           <button
-            onClick={() => updateFilters({
-              search: '',
-              trades: [],
-              states: [],
-            })}
+            onClick={() =>
+              updateFilters({
+                search: '',
+                trades: [],
+                states: [],
+              })
+            }
             data-testid="clear-all-filters-button"
             aria-label="Clear all applied filters"
           >
@@ -304,7 +352,7 @@ const applyFilters = async (filters: {
   }
 };
 
-const expectApiCallWith = (mockFn: jest.Mock, expectedFilters: any) => {
+const expectApiCallWith = (mockFn: jest.Mock, expectedFilters: Partial<FilterState> & { limit?: number; offset?: number }) => {
   expect(mockFn).toHaveBeenCalledWith(
     expect.objectContaining({
       ...expectedFilters,
@@ -477,7 +525,9 @@ describe('Filter Integration Tests', () => {
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith(
-          expect.stringMatching(/trades%5B%5D=electrician.*trades%5B%5D=carpenter/),
+          expect.stringMatching(
+            /trades%5B%5D=electrician.*trades%5B%5D=carpenter/
+          ),
           { scroll: false }
         );
       });

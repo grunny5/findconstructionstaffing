@@ -49,12 +49,24 @@ describe('seed-database.ts', () => {
       });
     });
 
+    it('should use test defaults when in test environment and env vars are missing', () => {
+      process.env.SUPABASE_URL = undefined;
+      process.env.SUPABASE_SERVICE_ROLE_KEY = undefined;
+
+      // When not forcing validation, it should return defaults in test environment
+      const result = validateEnvironment(false);
+      expect(result).toEqual({
+        url: 'http://localhost:54321',
+        key: 'test-service-role-key',
+      });
+    });
+
     it('should exit when SUPABASE_URL is missing', () => {
       process.env.SUPABASE_URL = undefined;
       process.env.SUPABASE_SERVICE_ROLE_KEY =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIn0.test';
 
-      expect(() => validateEnvironment()).toThrow(
+      expect(() => validateEnvironment(true)).toThrow(
         'Process.exit called with code 1'
       );
       expect(mockExit).toHaveBeenCalledWith(1);
@@ -64,7 +76,7 @@ describe('seed-database.ts', () => {
       process.env.SUPABASE_URL = 'https://test.supabase.co';
       process.env.SUPABASE_SERVICE_ROLE_KEY = undefined;
 
-      expect(() => validateEnvironment()).toThrow(
+      expect(() => validateEnvironment(true)).toThrow(
         'Process.exit called with code 1'
       );
       expect(mockExit).toHaveBeenCalledWith(1);
@@ -75,7 +87,7 @@ describe('seed-database.ts', () => {
       process.env.SUPABASE_SERVICE_ROLE_KEY =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIn0.test';
 
-      expect(() => validateEnvironment()).toThrow(
+      expect(() => validateEnvironment(true)).toThrow(
         'Process.exit called with code 1'
       );
       expect(mockExit).toHaveBeenCalledWith(1);
@@ -85,7 +97,7 @@ describe('seed-database.ts', () => {
       process.env.SUPABASE_URL = 'https://test.supabase.co';
       process.env.SUPABASE_SERVICE_ROLE_KEY = 'not-a-jwt-token';
 
-      expect(() => validateEnvironment()).toThrow(
+      expect(() => validateEnvironment(true)).toThrow(
         'Process.exit called with code 1'
       );
       expect(mockExit).toHaveBeenCalledWith(1);

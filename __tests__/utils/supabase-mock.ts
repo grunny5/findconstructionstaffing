@@ -856,10 +856,11 @@ export function configureMockForFilters(
       // Create the promise first
       const promise = executeMainQuery();
 
-      // Set up method chaining on the returned promise
+      // Create chainable methods object
+      const chainableMethods: any = {};
       Object.keys(queryChain).forEach((key) => {
         if (typeof queryChain[key] === 'function') {
-          (promise as any)[key] = jest.fn((...args: any[]) => {
+          chainableMethods[key] = jest.fn((...args: any[]) => {
             // Track the call on the main mock object if it exists
             if (jest.isMockFunction((mock as any)[key])) {
               (mock as any)[key](...args);
@@ -871,7 +872,8 @@ export function configureMockForFilters(
         }
       });
 
-      return promise;
+      // Use Object.assign to avoid thenable anti-pattern
+      return Object.assign(promise, chainableMethods);
     };
 
     return createMainChain();

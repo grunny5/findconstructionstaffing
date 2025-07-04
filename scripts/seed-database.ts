@@ -70,13 +70,13 @@ const isReset = args.includes('--reset');
 const isVerifyOnly = args.includes('--verify');
 
 // Validate environment variables
-function validateEnvironment(): { url: string; key: string } {
+function validateEnvironment(forceValidation = false): { url: string; key: string } {
   // Support both SUPABASE_URL and DATABASE_URL for flexibility
   const url = process.env.SUPABASE_URL || process.env.DATABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // In test environment, use test defaults if not provided
-  if (isTestEnvironment()) {
+  // In test environment, use test defaults if not provided (unless forced to validate)
+  if (isTestEnvironment() && !forceValidation) {
     return {
       url: url || 'http://localhost:54321',
       key: key || 'test-service-role-key',
@@ -102,9 +102,9 @@ function validateEnvironment(): { url: string; key: string } {
   }
 
   // Basic validation of key format (JWT structure)
-  // Skip validation in test environment
+  // Skip validation in test environment unless forced
   if (
-    !isTestEnvironment() &&
+    (!isTestEnvironment() || forceValidation) &&
     (!key.includes('.') || key.split('.').length !== 3)
   ) {
     log.error('Invalid SUPABASE_SERVICE_ROLE_KEY format');
