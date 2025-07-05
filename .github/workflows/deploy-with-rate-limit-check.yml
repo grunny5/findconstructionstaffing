@@ -95,33 +95,55 @@ jobs:
           # Pull Vercel environment information
           vercel pull --yes --environment="${ENVIRONMENT}" --token="${VERCEL_TOKEN}"
 
-          # Build the project
-          vercel build ${PROD_FLAG} --token="${VERCEL_TOKEN}"
-
-          # Deploy and capture the output
-          DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}" --json 2>&1)
-
-          # Check if output is JSON
-          if [[ "$DEPLOY_OUTPUT" =~ ^[\{\[] ]]; then
-            # Parse JSON response using jq
-            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url // empty' 2>/dev/null || echo "")
-            
-            # If no url field, try alias or other fields
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
-              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.alias[0] // .target // empty' 2>/dev/null || echo "")
-            fi
+          # Build the project with error handling
+          set +e  # Don't exit on error immediately
+          
+          echo "Starting Vercel build..."
+          BUILD_OUTPUT=$(vercel build ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1)
+          BUILD_EXIT_CODE=$?
+          
+          echo "Build output:"
+          echo "$BUILD_OUTPUT"
+          echo "Build exit code: $BUILD_EXIT_CODE"
+          
+          # Check if build artifacts were created
+          if [ -d ".vercel/output" ] && [ -f ".vercel/output/config.json" ]; then
+            echo "✓ Build artifacts verified - build successful"
+            set -e  # Re-enable exit on error
           else
-            # Fallback to grep if not JSON output
-            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" | head -1 || echo "")
+            echo "✗ Build failed - no artifacts found"
+            exit $BUILD_EXIT_CODE
           fi
 
-          # Output the URL
-          if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
-            echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-            echo "Deployed to: $DEPLOYMENT_URL"
+          # Deploy and capture the output (without --json flag)
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1)
+          DEPLOY_EXIT_CODE=$?
+
+          if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+            # Extract URL from standard output
+            # Vercel outputs the URL as the last line of successful deployment
+            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.app" | tail -1)
+            
+            # If no URL found, try alternative patterns
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              # Sometimes the URL is in format: "Ready! Available at https://..."
+              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+            fi
+
+            # Output the URL
+            if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+              echo "Deployed to: $DEPLOYMENT_URL"
+            else
+              echo "Warning: Could not extract deployment URL from output"
+              echo "Deployment output: $DEPLOY_OUTPUT"
+              echo "deployment_url=unknown" >> $GITHUB_OUTPUT
+            fi
           else
+            echo "Deployment failed with exit code: $DEPLOY_EXIT_CODE"
             echo "Deployment output: $DEPLOY_OUTPUT"
-            echo "deployment_url=unknown" >> $GITHUB_OUTPUT
+            echo "deployment_url=failed" >> $GITHUB_OUTPUT
+            exit 1
           fi
 
   notify-rate-limit:

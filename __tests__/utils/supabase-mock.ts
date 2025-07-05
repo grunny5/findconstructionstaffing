@@ -799,14 +799,8 @@ export function configureMockForFilters(
         // Create the promise first
         const promise = executeQuery();
 
-        // Set up method chaining on the returned promise
-        Object.keys(filterMock).forEach((key) => {
-          if (typeof filterMock[key] === 'function') {
-            (promise as any)[key] = jest.fn(() => createChainableObject());
-          }
-        });
-
-        return promise;
+        // Use Object.assign to properly combine promise with mock methods
+        return Object.assign(promise, chainable);
       };
 
       return createChainableObject();

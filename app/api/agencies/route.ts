@@ -20,6 +20,36 @@ import {
 // Force dynamic rendering since we use searchParams
 export const dynamic = 'force-dynamic';
 
+// Helper function to execute query with retry logic
+async function queryWithRetry<T>(
+  queryFn: () => Promise<{ data: T | null; error: any }>,
+  retries = 3,
+  delay = 1000
+): Promise<{ data: T | null; error: any }> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const result = await queryFn();
+
+    // If successful or it's a client error (not a connection issue), return immediately
+    if (
+      !result.error ||
+      (result.error.code && !result.error.message?.includes('fetch'))
+    ) {
+      return result;
+    }
+
+    // If not the last attempt and it's a connection error, retry
+    if (attempt < retries && result.error.message?.includes('fetch')) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      continue;
+    }
+
+    return result;
+  }
+
+  // Should never reach here
+  return { data: null, error: new Error('Unexpected error in retry logic') };
+}
+
 /**
  * Apply trade and state filters to get matching agency IDs
  * @returns Array of agency IDs that match the filters, or null if no filters applied
@@ -38,17 +68,16 @@ async function applyFilters(
   // Apply trade filter
   if (trades && trades.length > 0) {
     const tradeQueryId = monitor.startQuery();
-    const { data: tradeData, error: tradeError } = await supabase
-      .from('trades')
-      .select('id')
-      .in('slug', trades);
+    const { data: tradeData, error: tradeError } = await queryWithRetry(
+      async () => supabase.from('trades').select('id').in('slug', trades)
+    );
     monitor.endQuery(tradeQueryId);
 
     if (tradeError || !tradeData) {
       throw new Error('Failed to fetch trade data');
     }
 
-    const tradeIds = tradeData.map((t) => t.id);
+    const tradeIds = tradeData.map((t: { id: string }) => t.id);
 
     if (tradeIds.length > 0) {
       const agencyTradeQueryId = monitor.startQuery();

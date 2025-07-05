@@ -38,39 +38,57 @@ function createMockDataForTable(
     case 'trades':
       return config.trades ? config.trades.ids.map((id) => ({ id })) : null;
     case 'agency_trades':
-      return config.trades ? config.trades.agencyIds.map((agency_id) => ({ agency_id })) : null;
+      return config.trades
+        ? config.trades.agencyIds.map((agency_id) => ({ agency_id }))
+        : null;
     case 'regions':
-      return config.states ? config.states.regionIds.map((id) => ({ id })) : null;
+      return config.states
+        ? config.states.regionIds.map((id) => ({ id }))
+        : null;
     case 'agency_regions':
-      return config.states ? config.states.agencyIds.map((agency_id) => ({ agency_id })) : null;
+      return config.states
+        ? config.states.agencyIds.map((agency_id) => ({ agency_id }))
+        : null;
     default:
       return null;
   }
 }
 
-// Helper to create method chain with tracking
+// Type definitions for the overloaded onCall parameter
+type OnCallWithTable = (table: string, method: string, args: any[]) => void;
+type OnCallWithoutTable = (method: string, args: any[]) => void;
+
+// Helper to create method chain with tracking - with proper overloads
 function createTrackedMethodChain(
   methods: string[],
-  onCall?: (table: string, method: string, args: any[]) => void | ((method: string, args: any[]) => void),
+  onCall: OnCallWithTable,
+  table: string
+): any;
+function createTrackedMethodChain(
+  methods: string[],
+  onCall?: OnCallWithoutTable,
+  table?: undefined
+): any;
+function createTrackedMethodChain(
+  methods: string[],
+  onCall?: OnCallWithTable | OnCallWithoutTable,
   table?: string
 ): any {
   const chain: any = {};
-  
+
   methods.forEach((method) => {
     chain[method] = jest.fn((...args: any[]) => {
       if (onCall) {
         if (table) {
-          // If table is provided, call with table parameter
-          (onCall as (table: string, method: string, args: any[]) => void)(table, method, args);
+          (onCall as OnCallWithTable)(table, method, args);
         } else {
-          // Otherwise, call without table parameter
-          (onCall as (method: string, args: any[]) => void)(method, args);
+          (onCall as OnCallWithoutTable)(method, args);
         }
       }
       return chain;
     });
   });
-  
+
   return chain;
 }
 
@@ -88,7 +106,9 @@ function attachMethodsToPromise(promise: Promise<any>, methods: any): any {
 
 // Helper to check if table is a filter table
 function isFilterTable(table: string): boolean {
-  return ['trades', 'agency_trades', 'regions', 'agency_regions'].includes(table);
+  return ['trades', 'agency_trades', 'regions', 'agency_regions'].includes(
+    table
+  );
 }
 
 // Helper to create a custom mock that tracks specific calls
@@ -105,23 +125,28 @@ function createFilterMockWithTracking(
       const mockData = createMockDataForTable(table, config);
       const result = { data: mockData, error: null };
       const promise = Promise.resolve(result);
-      
+
       // Create tracking methods
       const methods = ['select', 'in', 'eq', 'or', 'range', 'order'];
-      const trackedChain = createTrackedMethodChain(methods, onCall, table);
-      
+      const trackedChain = onCall
+        ? createTrackedMethodChain(methods, onCall, table)
+        : createTrackedMethodChain(methods);
+
       // Attach methods to promise
       return attachMethodsToPromise(promise, trackedChain);
     }
 
     // For main agencies query
     const mainQueryMethods = ['select', 'eq', 'in', 'or', 'range', 'order'];
-    const queryChain = createTrackedMethodChain(mainQueryMethods, (method, args) => {
-      // Track on main supabase mock if available
-      if (jest.isMockFunction((supabase as any)[method])) {
-        (supabase as any)[method](...args);
+    const queryChain = createTrackedMethodChain(
+      mainQueryMethods,
+      (method, args) => {
+        // Track on main supabase mock if available
+        if (jest.isMockFunction((supabase as any)[method])) {
+          (supabase as any)[method](...args);
+        }
       }
-    });
+    );
 
     const result = {
       data: (supabase as any)._defaultData || [],

@@ -70,7 +70,10 @@ const isReset = args.includes('--reset');
 const isVerifyOnly = args.includes('--verify');
 
 // Validate environment variables
-function validateEnvironment(forceValidation = false): { url: string; key: string } {
+function validateEnvironment(forceValidation = false): {
+  url: string;
+  key: string;
+} {
   // Support both SUPABASE_URL and DATABASE_URL for flexibility
   const url = process.env.SUPABASE_URL || process.env.DATABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -127,58 +130,75 @@ function createSupabaseClient(url: string, key: string) {
   });
 }
 
-// Test database connection
+// Test database connection with retry logic
 async function testConnection(
-  supabase: ReturnType<typeof createSupabaseClient>
+  supabase: ReturnType<typeof createSupabaseClient>,
+  retries = 5,
+  retryDelay = 1000
 ): Promise<boolean> {
-  try {
-    log.info('Testing database connection...');
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      log.info(
+        `Testing database connection... (attempt ${attempt}/${retries})`
+      );
 
-    // Try a simple query to test connectivity
-    const { error } = await supabase.from('agencies').select('id').limit(1);
+      // Try a simple query to test connectivity
+      const { error } = await supabase.from('agencies').select('id').limit(1);
 
-    if (error) {
-      // If table doesn't exist, that's okay - connection works
-      if (error.code === '42P01') {
-        log.warning('Tables not yet created - this is expected on first run');
-        return true;
+      if (error) {
+        // If table doesn't exist, that's okay - connection works
+        if (error.code === '42P01') {
+          log.warning('Tables not yet created - this is expected on first run');
+          return true;
+        }
+
+        // Handle common connection errors with helpful messages
+        if (error.message?.includes('Failed to fetch')) {
+          log.error('Connection failed: Unable to reach database');
+          log.info('Please check:');
+          log.info('  1. Database service is running');
+          log.info('  2. Network connectivity to database');
+          log.info('  3. Firewall rules allow connection');
+          return false;
+        }
+
+        if (error.message?.includes('Invalid API key')) {
+          log.error('Authentication failed: Invalid service role key');
+          log.info('Please check your SUPABASE_SERVICE_ROLE_KEY');
+          return false;
+        }
+
+        throw error;
       }
 
-      // Handle common connection errors with helpful messages
-      if (error.message?.includes('Failed to fetch')) {
-        log.error('Connection failed: Unable to reach database');
-        log.info('Please check:');
-        log.info('  1. Database service is running');
-        log.info('  2. Network connectivity to database');
-        log.info('  3. Firewall rules allow connection');
-        return false;
+      log.success('Database connection successful');
+      return true;
+    } catch (error) {
+      // If this is not the last attempt, retry
+      if (attempt < retries) {
+        log.warning(`Connection failed, retrying in ${retryDelay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        continue;
       }
 
-      if (error.message?.includes('Invalid API key')) {
-        log.error('Authentication failed: Invalid service role key');
-        log.info('Please check your SUPABASE_SERVICE_ROLE_KEY');
-        return false;
-      }
+      // Final attempt failed
+      log.error('Failed to connect to database');
+      if (error instanceof Error) {
+        log.error(`Error: ${error.message}`);
 
-      throw error;
+        // Provide additional context for common errors
+        if (error.message?.includes('ECONNREFUSED')) {
+          log.info('Connection refused. Is the database service running?');
+        } else if (error.message?.includes('ETIMEDOUT')) {
+          log.info('Connection timeout. Check network and firewall settings.');
+        }
+      }
+      return false;
     }
-
-    log.success('Database connection successful');
-    return true;
-  } catch (error) {
-    log.error('Failed to connect to database');
-    if (error instanceof Error) {
-      log.error(`Error: ${error.message}`);
-
-      // Provide additional context for common errors
-      if (error.message?.includes('ECONNREFUSED')) {
-        log.info('Connection refused. Is the database service running?');
-      } else if (error.message?.includes('ETIMEDOUT')) {
-        log.info('Connection timeout. Check network and firewall settings.');
-      }
-    }
-    return false;
   }
+
+  // Should never reach here
+  return false;
 }
 
 // Extract unique trades from mock data

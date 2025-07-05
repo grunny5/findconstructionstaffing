@@ -58,11 +58,25 @@ jobs:
       - name: Create test database schema
         env:
           PGPASSWORD: postgres
+          PGUSER: postgres
+          PGHOST: localhost
+          PGDATABASE: findconstructionstaffing_test
         run: |
           echo "Creating database schema..."
-          psql -h localhost -U postgres -d findconstructionstaffing_test -f supabase/migrations/combined_migration.sql || {
-            echo "Failed to create schema. This might be okay if migrations don't exist yet."
-          }
+          # First, check if the migration file exists
+          if [ -f "supabase/migrations/combined_migration_idempotent.sql" ]; then
+            echo "Using idempotent migration file..."
+            psql -f supabase/migrations/combined_migration_idempotent.sql
+          elif [ -f "supabase/migrations/combined_migration.sql" ]; then
+            echo "Using original migration file..."
+            # Drop and recreate database to ensure clean state
+            psql -d postgres -c "DROP DATABASE IF EXISTS findconstructionstaffing_test;"
+            psql -d postgres -c "CREATE DATABASE findconstructionstaffing_test;"
+            # Run migration
+            psql -d findconstructionstaffing_test -f supabase/migrations/combined_migration.sql
+          else
+            echo "No migration file found - skipping schema creation"
+          fi
 
       - name: Set up test environment
         run: |
@@ -78,6 +92,12 @@ jobs:
 
           # Test Environment
           NODE_ENV=test
+          
+          # Ensure PostgreSQL uses correct user
+          PGUSER=postgres
+          PGPASSWORD=postgres
+          PGHOST=localhost
+          PGDATABASE=findconstructionstaffing_test
           EOF
 
           # Make setup script executable and run it
@@ -89,6 +109,10 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test
           SUPABASE_URL: http://localhost:54321
           SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGDATABASE: findconstructionstaffing_test
         run: |
           echo "Checking database health..."
           npm run db:health || {
@@ -101,6 +125,10 @@ jobs:
           SUPABASE_URL: http://localhost:54321
           SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
           NODE_ENV: test
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGDATABASE: findconstructionstaffing_test
         run: |
           echo "Seeding test database..."
           # Check if seed script exists before running
@@ -121,6 +149,10 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
           SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGDATABASE: findconstructionstaffing_test
         run: |
           echo "Running tests..."
           npm test -- --ci --passWithNoTests --coverage || {

@@ -26,6 +26,9 @@ jobs:
         run: npm test -- --coverage --ci --passWithNoTests --coverageReporters=json-summary
         env:
           NODE_ENV: test
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}
 
       - name: Coverage Summary
         uses: irongut/CodeCoverageSummary@v1.3.0
