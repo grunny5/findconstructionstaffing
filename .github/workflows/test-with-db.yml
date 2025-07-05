@@ -92,7 +92,7 @@ jobs:
 
           # Test Environment
           NODE_ENV=test
-          
+
           # Ensure PostgreSQL uses correct user
           PGUSER=postgres
           PGPASSWORD=postgres

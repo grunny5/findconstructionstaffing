@@ -115,16 +115,16 @@ jobs:
       - name: Build Project Artifacts
         run: |
           set +e  # Don't exit on error immediately
-          
+
           # Run the build and capture all output
           echo "Starting Vercel build..."
           BUILD_OUTPUT=$(vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           BUILD_EXIT_CODE=$?
-          
+
           echo "Build output:"
           echo "$BUILD_OUTPUT"
           echo "Build exit code: $BUILD_EXIT_CODE"
-          
+
           # Check if build artifacts were created (more comprehensive check)
           if [ -d ".vercel/output" ] && [ -f ".vercel/output/config.json" ]; then
             echo "✓ Build artifacts verified in .vercel/output"
@@ -146,18 +146,18 @@ jobs:
               exit 0
             fi
           fi
-          
+
           # If we get here, build truly failed
           echo "✗ Build failed - no artifacts found"
           echo "Build exit code: $BUILD_EXIT_CODE"
-          
+
           # Check for common issues in output
           if echo "$BUILD_OUTPUT" | grep -q "Error: No such file or directory"; then
             echo "Hint: Build may be missing required files"
           elif echo "$BUILD_OUTPUT" | grep -q "TypeError"; then
             echo "Hint: Build encountered a TypeError - check for code issues"
           fi
-          
+
           exit $BUILD_EXIT_CODE
 
       - name: Deploy to Vercel

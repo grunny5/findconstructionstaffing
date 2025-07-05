@@ -97,15 +97,15 @@ jobs:
 
           # Build the project with error handling
           set +e  # Don't exit on error immediately
-          
+
           echo "Starting Vercel build..."
           BUILD_OUTPUT=$(vercel build ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1)
           BUILD_EXIT_CODE=$?
-          
+
           echo "Build output:"
           echo "$BUILD_OUTPUT"
           echo "Build exit code: $BUILD_EXIT_CODE"
-          
+
           # Check if build artifacts were created
           if [ -d ".vercel/output" ] && [ -f ".vercel/output/config.json" ]; then
             echo "✓ Build artifacts verified - build successful"
