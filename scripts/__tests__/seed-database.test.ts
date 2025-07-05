@@ -27,11 +27,21 @@ const mockExit = jest
 // Ensure we're not in test environment for these tests
 const originalNodeEnv = process.env.NODE_ENV;
 beforeEach(() => {
-  process.env.NODE_ENV = 'production';
+  // Use Object.defineProperty to modify read-only NODE_ENV
+  Object.defineProperty(process.env, 'NODE_ENV', {
+    value: 'production',
+    writable: true,
+    configurable: true,
+  });
 });
 
 afterEach(() => {
-  process.env.NODE_ENV = originalNodeEnv;
+  // Restore original NODE_ENV
+  Object.defineProperty(process.env, 'NODE_ENV', {
+    value: originalNodeEnv,
+    writable: true,
+    configurable: true,
+  });
   mockExit.mockClear();
 });
 
