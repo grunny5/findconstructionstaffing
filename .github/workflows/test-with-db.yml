@@ -47,6 +47,8 @@ jobs:
         run: npm ci
 
       - name: Wait for PostgreSQL
+        env:
+          PGUSER: postgres
         run: |
           echo "Waiting for PostgreSQL to be ready..."
           until pg_isready -h localhost -p 5432 -U postgres; do

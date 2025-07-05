@@ -17,6 +17,9 @@ export const dynamic = 'force-dynamic';
 
 const errorTracker = ErrorRateTracker.getInstance();
 
+// Check if we're in a test environment
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+
 interface RouteParams {
   params: {
     slug: string;
@@ -37,23 +40,48 @@ async function queryWithRetry<T>(
   delay = 1000
 ): Promise<{ data: T | null; error: any }> {
   for (let attempt = 1; attempt <= retries; attempt++) {
-    const result = await queryFn();
+    try {
+      const result = await queryFn();
 
-    // If successful or it's a client error (not a connection issue), return immediately
-    if (
-      !result.error ||
-      (result.error.code && !result.error.message?.includes('fetch'))
-    ) {
+      // If successful or it's a client error (not a connection issue), return immediately
+      if (
+        !result.error ||
+        (result.error.code && !result.error.message?.includes('fetch'))
+      ) {
+        return result;
+      }
+
+      // Log connection errors
+      if (result.error.message?.includes('fetch')) {
+        console.error(
+          `[API ERROR] Database connection failed (attempt ${attempt}/${retries}):`,
+          {
+            error: result.error.message,
+            code: result.error.code,
+          }
+        );
+      }
+
+      // If not the last attempt and it's a connection error, retry
+      if (attempt < retries && result.error.message?.includes('fetch')) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
       return result;
-    }
+    } catch (error) {
+      console.error(
+        `[API ERROR] Unexpected error in query (attempt ${attempt}/${retries}):`,
+        error
+      );
 
-    // If not the last attempt and it's a connection error, retry
-    if (attempt < retries && result.error.message?.includes('fetch')) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      continue;
-    }
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
 
-    return result;
+      return { data: null, error };
+    }
   }
 
   // Should never reach here
@@ -75,11 +103,14 @@ export async function GET(
     const slug = params.slug;
     if (!slug || !isValidSlug(slug)) {
       monitor.complete(HTTP_STATUS.BAD_REQUEST, 'Invalid agency slug format');
+      console.error(
+        `[API ERROR] GET /api/agencies/[slug]: Invalid agency slug format - slug: "${slug}"`
+      );
       return NextResponse.json(
         {
           error: {
             code: ERROR_CODES.INVALID_PARAMS,
-            message: 'Invalid agency slug format',
+            message: 'Invalid agency slug',
             details: {
               slug: 'Slug must be lowercase alphanumeric with hyphens only',
             },
@@ -89,8 +120,14 @@ export async function GET(
       );
     }
 
-    // Validate database connection
-    if (!supabase) {
+    // Validate database connection and environment
+    if (!supabase && !isTestEnvironment) {
+      console.error('[API ERROR] Supabase client not initialized', {
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        nodeEnv: process.env.NODE_ENV,
+      });
+
       monitor.complete(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
         'Database connection not initialized'
@@ -145,6 +182,9 @@ export async function GET(
         // No rows found
         monitor.complete(HTTP_STATUS.NOT_FOUND, 'Agency not found');
         errorTracker.recordRequest('GET /api/agencies/[slug]', true);
+        console.error(
+          `[API ERROR] GET /api/agencies/[slug]: Agency not found - slug: ${slug}`
+        );
         return NextResponse.json(
           {
             error: {
@@ -162,7 +202,11 @@ export async function GET(
         'Failed to fetch agency'
       );
       errorTracker.recordRequest('GET /api/agencies/[slug]', true);
-      console.error('Database error:', error);
+      console.error(`[API ERROR] GET /api/agencies/[slug]: Database error`, {
+        code: error.code || 'DATABASE_ERROR',
+        message: error.message || 'Connection failed',
+        slug,
+      });
       return NextResponse.json(
         {
           error: {

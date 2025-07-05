@@ -26,6 +26,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+# Permissions needed for the workflow
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   # Check if we should deploy
   should-deploy:
@@ -113,6 +119,10 @@ jobs:
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set +e  # Don't exit on error immediately
 
@@ -229,18 +239,23 @@ jobs:
           done
 
       - name: Create deployment status
-        if: github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited'
+        if: github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'
         uses: actions/github-script@v7
         with:
           script: |
             const deployment_url = '${{ steps.deploy.outputs.deployment_url }}';
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `🚀 Preview deployment ready at: ${deployment_url}`
-            });
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `🚀 Preview deployment ready at: ${deployment_url}`
+              });
+            } catch (error) {
+              console.error('Failed to create comment:', error);
+              // Don't fail the workflow if comment creation fails
+            }
 
       - name: Rate limit warning
         if: steps.deploy.outputs.deployment_url == 'rate-limited'
@@ -248,10 +263,15 @@ jobs:
         with:
           script: |
             if (context.eventName === 'pull_request') {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: `⚠️ Vercel deployment rate limit reached (100 deployments/day on free tier). The build passed but preview deployment was skipped.\n\nOptions:\n1. Wait a few hours for the limit to reset\n2. Upgrade to Vercel Pro for unlimited deployments\n3. Deploy manually using \`vercel\` CLI`
-              });
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: `⚠️ Vercel deployment rate limit reached (100 deployments/day on free tier). The build passed but preview deployment was skipped.\n\nOptions:\n1. Wait a few hours for the limit to reset\n2. Upgrade to Vercel Pro for unlimited deployments\n3. Deploy manually using \`vercel\` CLI`
+                });
+              } catch (error) {
+                console.error('Failed to create rate limit warning comment:', error);
+                // Don't fail the workflow if comment creation fails
+              }
             }

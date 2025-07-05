@@ -24,6 +24,17 @@ const mockExit = jest
     throw new Error(`Process.exit called with code ${code}`);
   });
 
+// Ensure we're not in test environment for these tests
+const originalNodeEnv = process.env.NODE_ENV;
+beforeEach(() => {
+  process.env.NODE_ENV = 'production';
+});
+
+afterEach(() => {
+  process.env.NODE_ENV = originalNodeEnv;
+  mockExit.mockClear();
+});
+
 describe('seed-database.ts', () => {
   describe('validateEnvironment', () => {
     const originalEnv = process.env;
