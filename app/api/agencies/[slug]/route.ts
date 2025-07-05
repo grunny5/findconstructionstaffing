@@ -29,7 +29,7 @@ interface RouteParams {
 // Helper function to validate slug format
 function isValidSlug(slug: string): boolean {
   // Slug should be lowercase, alphanumeric with hyphens, no spaces or special chars
-  const slugRegex = /^[a-z0-9-]+$/;
+  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   return slugRegex.test(slug) && slug.length > 0 && slug.length <= 100;
 }
 
@@ -84,8 +84,8 @@ async function queryWithRetry<T>(
     }
   }
 
-  // Should never reach here
-  return { data: null, error: new Error('Unexpected error in retry logic') };
+  // All retries exhausted
+  return { data: null, error: new Error('Database query failed after all retry attempts') };
 }
 
 /**

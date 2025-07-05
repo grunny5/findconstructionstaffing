@@ -237,10 +237,9 @@ const createMockDirectoryFilters = () => {
     onFiltersChange,
     totalResults = 0,
     isLoading = false,
-    initialFilters = {},
   }: MockDirectoryFiltersProps) {
-    // Store current filters in a ref to avoid re-renders and external state
-    const filtersRef = React.useRef<FilterState>({
+    // Use local state instead of refs for cleaner React patterns
+    const [filters, setFilters] = React.useState<FilterState>({
       search: '',
       trades: [],
       states: [],
@@ -249,41 +248,38 @@ const createMockDirectoryFilters = () => {
       claimedOnly: false,
       companySize: [],
       focusAreas: [],
-      ...initialFilters,
     });
 
     const updateFilters = React.useCallback(
       (updates: Partial<FilterState>) => {
-        filtersRef.current = { ...filtersRef.current, ...updates };
-        onFiltersChange(filtersRef.current);
+        const newFilters = { ...filters, ...updates };
+        setFilters(newFilters);
+        onFiltersChange(newFilters);
       },
-      [onFiltersChange]
+      [filters, onFiltersChange]
     );
 
     const toggleTrade = React.useCallback(
       (trade: string) => {
-        const currentTrades = filtersRef.current.trades;
-        const newTrades = currentTrades.includes(trade)
-          ? currentTrades.filter((t) => t !== trade)
-          : [...currentTrades, trade];
+        const newTrades = filters.trades.includes(trade)
+          ? filters.trades.filter((t) => t !== trade)
+          : [...filters.trades, trade];
         updateFilters({ trades: newTrades });
       },
-      [updateFilters]
+      [filters.trades, updateFilters]
     );
 
     const toggleState = React.useCallback(
       (state: string) => {
-        const currentStates = filtersRef.current.states;
-        const newStates = currentStates.includes(state)
-          ? currentStates.filter((s) => s !== state)
-          : [...currentStates, state];
+        const newStates = filters.states.includes(state)
+          ? filters.states.filter((s) => s !== state)
+          : [...filters.states, state];
         updateFilters({ states: newStates });
       },
-      [updateFilters]
+      [filters.states, updateFilters]
     );
 
-    const activeFilterCount =
-      filtersRef.current.trades.length + filtersRef.current.states.length;
+    const activeFilterCount = filters.trades.length + filters.states.length;
 
     return (
       <div data-testid="directory-filters">
@@ -390,20 +386,22 @@ const waitForRouterUpdate = async (
   expectedParams: { trades?: string[]; states?: string[] }
 ) => {
   await waitFor(() => {
-    // Get the most recent call
     const calls = mockReplace.mock.calls;
     if (calls.length === 0) {
-      throw new Error('Router replace not called');
+      throw new Error('Expected router.replace to be called, but no calls were made');
     }
 
     const lastCall = calls[calls.length - 1];
+    if (!lastCall || !lastCall[0]) {
+      throw new Error('Router.replace called without URL parameter');
+    }
     const urlString = lastCall[0];
 
     // Check if URL contains expected parameters
     if (expectedParams.trades) {
       expectedParams.trades.forEach((trade) => {
         if (!urlString.includes(`trades%5B%5D=${trade}`)) {
-          throw new Error(`URL missing trade parameter: ${trade}`);
+          throw new Error(`URL missing trade parameter: ${trade}. Actual URL: ${urlString}`);
         }
       });
     }
@@ -411,7 +409,7 @@ const waitForRouterUpdate = async (
     if (expectedParams.states) {
       expectedParams.states.forEach((state) => {
         if (!urlString.includes(`states%5B%5D=${state}`)) {
-          throw new Error(`URL missing state parameter: ${state}`);
+          throw new Error(`URL missing state parameter: ${state}. Actual URL: ${urlString}`);
         }
       });
     }
@@ -440,25 +438,23 @@ describe('Filter Integration Tests', () => {
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
 
     // Mock window.location to prevent navigation errors
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        reload: jest.fn(),
-        href: '',
-        pathname: '/',
-        search: '',
-        assign: jest.fn(),
-        replace: jest.fn(),
-        origin: 'http://localhost',
-        protocol: 'http:',
-        host: 'localhost',
-        hostname: 'localhost',
-        port: '',
-        hash: '',
-        toString: () => 'http://localhost/',
-      },
-    });
+    // Use delete and reassign approach to avoid "Cannot redefine property" errors
+    delete (window as any).location;
+    (window as any).location = {
+      reload: jest.fn(),
+      href: '',
+      pathname: '/',
+      search: '',
+      assign: jest.fn(),
+      replace: jest.fn(),
+      origin: 'http://localhost',
+      protocol: 'http:',
+      host: 'localhost',
+      hostname: 'localhost',
+      port: '',
+      hash: '',
+      toString: () => 'http://localhost/',
+    };
   });
 
   describe('Trade Filter Integration', () => {
@@ -749,7 +745,7 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Add search
-      const searchInput = screen.getByPlaceholderText(/Search agencies/);
+      const searchInput = screen.getByPlaceholderText(/Search agencies by name/);
       fireEvent.change(searchInput, { target: { value: 'elite' } });
 
       // Add filters
@@ -890,18 +886,13 @@ describe('Filter Integration Tests', () => {
 
   describe('Filter URL Persistence', () => {
     it('should initialize filters from URL on page load', () => {
-      // Mock URLSearchParams methods with realistic behavior
-      const mockParams = new Map([
-        ['trades[]', ['electrician', 'plumber']],
-        ['states[]', ['TX']],
-        ['search', ['']],
-      ]);
-
-      mockSearchParams.getAll = jest.fn((key) => mockParams.get(key) || []);
-      mockSearchParams.get = jest.fn((key) => {
-        const values = mockParams.get(key);
-        return values && values.length > 0 ? values[0] : null;
-      });
+      // Mock URLSearchParams with more realistic behavior
+      const mockParamsString = 'trades[]=electrician&trades[]=plumber&states[]=TX&search=';
+      const realParams = new URLSearchParams(mockParamsString);
+      
+      mockSearchParams.getAll = jest.fn((key) => realParams.getAll(key));
+      mockSearchParams.get = jest.fn((key) => realParams.get(key));
+      mockSearchParams.has = jest.fn((key) => realParams.has(key));
 
       const mockUseAgencies = useAgencies as jest.Mock;
       mockUseAgencies.mockReturnValue({

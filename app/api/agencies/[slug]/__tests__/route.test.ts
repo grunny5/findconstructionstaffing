@@ -178,6 +178,9 @@ describe('GET /api/agencies/[slug]', () => {
     expect(data.error).toEqual({
       code: ERROR_CODES.INVALID_PARAMS,
       message: 'Invalid agency slug',
+      details: {
+        slug: 'Slug must be lowercase alphanumeric with hyphens only',
+      },
     });
   });
 

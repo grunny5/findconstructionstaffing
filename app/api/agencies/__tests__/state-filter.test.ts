@@ -94,14 +94,15 @@ function createTrackedMethodChain(
 
 // Helper to attach methods to a promise
 function attachMethodsToPromise(promise: Promise<any>, methods: any): any {
-  Object.keys(methods).forEach((key) => {
-    // Wrap the method to ensure it returns the promise for chaining
-    (promise as any)[key] = jest.fn((...args: any[]) => {
+  const wrappedMethods = Object.keys(methods).reduce((acc, key) => {
+    acc[key] = jest.fn((...args: any[]) => {
       methods[key](...args);
       return promise;
     });
-  });
-  return promise;
+    return acc;
+  }, {} as any);
+  
+  return Object.assign(promise, wrappedMethods);
 }
 
 // Helper to check if table is a filter table

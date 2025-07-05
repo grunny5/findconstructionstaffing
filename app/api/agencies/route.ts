@@ -46,8 +46,8 @@ async function queryWithRetry<T>(
     return result;
   }
 
-  // Should never reach here
-  return { data: null, error: new Error('Unexpected error in retry logic') };
+  // All retries exhausted
+  return { data: null, error: new Error('Database query failed after maximum retries') };
 }
 
 /**
@@ -81,10 +81,12 @@ async function applyFilters(
 
     if (tradeIds.length > 0) {
       const agencyTradeQueryId = monitor.startQuery();
-      const { data: agencyTradeData, error: agencyTradeError } = await supabase
-        .from('agency_trades')
-        .select('agency_id')
-        .in('trade_id', tradeIds);
+      const { data: agencyTradeData, error: agencyTradeError } = await queryWithRetry(
+        async () => supabase
+          .from('agency_trades')
+          .select('agency_id')
+          .in('trade_id', tradeIds)
+      );
       monitor.endQuery(agencyTradeQueryId);
 
       if (agencyTradeError || !agencyTradeData) {
@@ -103,10 +105,12 @@ async function applyFilters(
   // Apply state filter
   if (states && states.length > 0) {
     const regionQueryId = monitor.startQuery();
-    const { data: regionData, error: regionError } = await supabase
-      .from('regions')
-      .select('id')
-      .in('state_code', states);
+    const { data: regionData, error: regionError } = await queryWithRetry(
+      async () => supabase
+        .from('regions')
+        .select('id')
+        .in('state_code', states)
+    );
     monitor.endQuery(regionQueryId);
 
     if (regionError || !regionData) {
@@ -117,11 +121,12 @@ async function applyFilters(
 
     if (regionIds.length > 0) {
       const agencyRegionQueryId = monitor.startQuery();
-      const { data: agencyRegionData, error: agencyRegionError } =
-        await supabase
+      const { data: agencyRegionData, error: agencyRegionError } = await queryWithRetry(
+        async () => supabase
           .from('agency_regions')
           .select('agency_id')
-          .in('region_id', regionIds);
+          .in('region_id', regionIds)
+      );
       monitor.endQuery(agencyRegionQueryId);
 
       if (agencyRegionError || !agencyRegionData) {
