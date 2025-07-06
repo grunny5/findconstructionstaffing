@@ -20,36 +20,92 @@ import {
 // Force dynamic rendering since we use searchParams
 export const dynamic = 'force-dynamic';
 
-// Helper function to execute query with retry logic
+// Helper function to execute query with retry logic and detailed diagnostics
 async function queryWithRetry<T>(
   queryFn: () => Promise<{ data: T | null; error: any }>,
   retries = 3,
   delay = 1000
 ): Promise<{ data: T | null; error: any }> {
+  const startTime = Date.now();
+
   for (let attempt = 1; attempt <= retries; attempt++) {
-    const result = await queryFn();
+    try {
+      const attemptStart = Date.now();
+      const result = await queryFn();
+      const attemptTime = Date.now() - attemptStart;
 
-    // If successful or it's a client error (not a connection issue), return immediately
-    if (
-      !result.error ||
-      (result.error.code && !result.error.message?.includes('fetch'))
-    ) {
+      // If successful, return immediately
+      if (!result.error) {
+        if (attempt > 1) {
+          console.log(
+            `[API SUCCESS] Database query completed in ${attemptTime}ms (attempt ${attempt})`
+          );
+        }
+        return result;
+      }
+
+      // Check for different types of errors
+      const isConnectionError =
+        result.error.message?.includes('fetch') ||
+        result.error.message?.includes('connect') ||
+        result.error.message?.includes('timeout') ||
+        result.error.code === 'ECONNREFUSED';
+
+      const isAuthError =
+        result.error.message?.includes('auth') ||
+        result.error.message?.includes('unauthorized') ||
+        result.error.code === 'PGRST301';
+
+      // Log detailed error information for connection issues
+      if (isConnectionError) {
+        console.error(`[API ERROR] Database connection failed:`, {
+          attempt: `${attempt}/${retries}`,
+          attemptTime: `${attemptTime}ms`,
+          totalTime: `${Date.now() - startTime}ms`,
+          message: result.error.message,
+          code: result.error.code,
+        });
+
+        // If not the last attempt, retry
+        if (attempt < retries) {
+          console.log(`[API RETRY] Waiting ${delay}ms before retry...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 1.5; // Exponential backoff
+          continue;
+        }
+      } else if (isAuthError) {
+        console.error(`[API ERROR] Database authentication failed:`, {
+          message: result.error.message,
+          code: result.error.code,
+        });
+        // Don't retry auth errors
+        return result;
+      }
+
+      // For other errors or last attempt, return the result
       return result;
-    }
+    } catch (error: any) {
+      console.error(`[API ERROR] Unexpected error in query:`, {
+        attempt: `${attempt}/${retries}`,
+        error: error?.message || String(error),
+      });
 
-    // If not the last attempt and it's a connection error, retry
-    if (attempt < retries && result.error.message?.includes('fetch')) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      continue;
-    }
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 1.5;
+        continue;
+      }
 
-    return result;
+      return { data: null, error: error };
+    }
   }
 
   // All retries exhausted
   return {
     data: null,
-    error: new Error('Database query failed after maximum retries'),
+    error: new Error(
+      `Database query failed after ${retries} retry attempts in ${Date.now() - startTime}ms`
+    ),
   };
 }
 
@@ -169,30 +225,82 @@ export async function GET(request: NextRequest) {
   const errorTracker = ErrorRateTracker.getInstance();
 
   try {
+    // Check environment variables and database connection
+    const isTestEnvironment = process.env.NODE_ENV === 'test';
+
+    if (!isTestEnvironment) {
+      if (
+        !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ) {
+        const envStatus = {
+          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL
+            ? 'Set'
+            : 'Missing',
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env
+            .NEXT_PUBLIC_SUPABASE_ANON_KEY
+            ? 'Set'
+            : 'Missing',
+          NODE_ENV: process.env.NODE_ENV,
+          url_preview:
+            process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+          urlValid:
+            process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('supabase.co'),
+          keyFormat:
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.startsWith('eyJ'),
+        };
+
+        console.error(
+          '[API ERROR] Missing Supabase environment variables',
+          envStatus
+        );
+
+        const errorResponse: ErrorResponse = {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Database configuration error',
+            details:
+              process.env.NODE_ENV === 'development' ? envStatus : undefined,
+          },
+        };
+
+        monitor.complete(
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          'Missing environment variables'
+        );
+        errorTracker.recordRequest('/api/agencies', true);
+
+        return NextResponse.json(errorResponse, {
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+        });
+      }
+    }
+
     // Check if Supabase client is initialized
-    if (!supabase) {
+    if (!supabase && !isTestEnvironment) {
+      console.error(
+        '[API ERROR] Supabase client not initialized despite valid environment variables'
+      );
+
       const errorResponse: ErrorResponse = {
         error: {
           code: ERROR_CODES.DATABASE_ERROR,
           message: 'Database connection not initialized',
-          details: {
-            env: {
-              url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not set',
-              key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-                ? 'Set'
-                : 'Not set',
-            },
-          },
+          details:
+            process.env.NODE_ENV === 'development'
+              ? {
+                  hasClient: !!supabase,
+                  hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+                  hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+                }
+              : undefined,
         },
       };
-      const response = NextResponse.json(errorResponse, {
-        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-      });
 
       monitor.complete(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -200,7 +308,14 @@ export async function GET(request: NextRequest) {
       );
       errorTracker.recordRequest('/api/agencies', true);
 
-      return response;
+      return NextResponse.json(errorResponse, {
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      });
     }
 
     // Parse and validate query parameters

@@ -177,9 +177,10 @@ describe('GET /api/agencies/[slug]', () => {
     const data = await response.json();
     expect(data.error).toEqual({
       code: ERROR_CODES.INVALID_PARAMS,
-      message: 'Invalid agency slug',
+      message: 'Agency slug is required',
       details: {
-        slug: 'Slug must be lowercase alphanumeric with hyphens only',
+        slug: 'Slug parameter cannot be empty',
+        received: '',
       },
     });
   });

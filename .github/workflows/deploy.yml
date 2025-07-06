@@ -98,31 +98,37 @@ jobs:
 
       - name: Build Project Artifacts
         run: |
-          set -eo pipefail  # Exit on error and pipe failures
-
           echo "Starting Vercel build..."
 
-          # Capture output while preserving exit code
-          BUILD_OUTPUT=$(vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
-
-          # Always show build output for debugging
-          echo "Build output:"
-          echo "$BUILD_OUTPUT"
-
-          # Handle build failure
-          if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
-            echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
+          # Run build without pipefail to avoid tee exit code issues
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
+          PIPESTATUS_RESULT=${PIPESTATUS[0]}
+          
+          if [ $PIPESTATUS_RESULT -ne 0 ]; then
+            echo "::error::Vercel build failed with exit code: $PIPESTATUS_RESULT"
             exit 1
           fi
 
+          echo "✓ Vercel build command completed"
+
           # Verify build artifacts
-          if [ ! -d ".vercel/output" ] || [ ! -f ".vercel/output/config.json" ]; then
-            echo "::error::Build completed but artifacts are missing"
+          if [ ! -d ".vercel/output" ]; then
+            echo "::error::Build output directory not found"
+            ls -la .vercel/ || true
+            exit 1
+          fi
+
+          if [ ! -f ".vercel/output/config.json" ]; then
+            echo "::error::Build config.json not found"
+            ls -la .vercel/output/ || true
             exit 1
           fi
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
+          
+          # Ensure clean exit
+          exit 0
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
@@ -247,31 +253,37 @@ jobs:
 
       - name: Build Project Artifacts
         run: |
-          set -eo pipefail  # Exit on error and pipe failures
-
           echo "Starting Vercel production build..."
 
-          # Capture output while preserving exit code
-          BUILD_OUTPUT=$(vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
-
-          # Always show build output for debugging
-          echo "Build output:"
-          echo "$BUILD_OUTPUT"
-
-          # Handle build failure
-          if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
-            echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
+          # Run build without pipefail to avoid tee exit code issues
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
+          PIPESTATUS_RESULT=${PIPESTATUS[0]}
+          
+          if [ $PIPESTATUS_RESULT -ne 0 ]; then
+            echo "::error::Vercel build failed with exit code: $PIPESTATUS_RESULT"
             exit 1
           fi
 
+          echo "✓ Vercel build command completed"
+
           # Verify build artifacts
-          if [ ! -d ".vercel/output" ] || [ ! -f ".vercel/output/config.json" ]; then
-            echo "::error::Build completed but artifacts are missing"
+          if [ ! -d ".vercel/output" ]; then
+            echo "::error::Build output directory not found"
+            ls -la .vercel/ || true
+            exit 1
+          fi
+
+          if [ ! -f ".vercel/output/config.json" ]; then
+            echo "::error::Build config.json not found"
+            ls -la .vercel/output/ || true
             exit 1
           fi
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
+          
+          # Ensure clean exit
+          exit 0
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
@@ -324,10 +336,15 @@ jobs:
             
             # Generate a deployment ID from timestamp
             DEPLOYMENT_ID="prod-$(date +%s)"
-
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-          echo "Production deployed to: $DEPLOYMENT_URL"
+            
+            echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+            echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+            echo "Production deployed to: $DEPLOYMENT_URL"
+          else
+            echo "::error::Deployment failed with exit code: $DEPLOYMENT_EXIT_CODE"
+            echo "$DEPLOYMENT_OUTPUT"
+            exit 1
+          fi
 
       - name: Create deployment record
         uses: actions/github-script@v7

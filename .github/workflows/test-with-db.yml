@@ -16,6 +16,13 @@ jobs:
   test-with-database:
     name: Run Tests with Database
     runs-on: ubuntu-latest
+    
+    env:
+      # Global environment variables to ensure postgres user is used
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      USER: postgres
+      POSTGRES_USER: postgres
 
     # Use PostgreSQL service container for tests
     services:
@@ -54,9 +61,12 @@ jobs:
       - name: Wait for PostgreSQL
         env:
           PGUSER: postgres
+          PGPASSWORD: postgres
+          USER: postgres
         run: |
           echo "Waiting for PostgreSQL to be ready..."
-          until pg_isready -h localhost -p 5432 -U postgres; do
+          # Explicitly use postgres user
+          until PGUSER=postgres pg_isready -h localhost -p 5432 -U postgres; do
             echo "PostgreSQL is not ready yet..."
             sleep 2
           done
@@ -68,6 +78,7 @@ jobs:
           PGUSER: postgres
           PGHOST: localhost
           PGDATABASE: findconstructionstaffing_test
+          USER: postgres
         run: |
           echo "Creating database schema..."
           # First, check if the migration file exists
@@ -87,29 +98,24 @@ jobs:
 
       - name: Set up test environment
         run: |
-          # Create .env.test file with test database connection
-          cat <<'EOF' > .env.test
-          # Test Database Configuration
-          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test
-
-          # Supabase Test Configuration
-          NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-          NEXT_PUBLIC_SUPABASE_ANON_KEY=test-anon-key
-          SUPABASE_SERVICE_ROLE_KEY=test-service-role-key
-
-          # Test Environment
-          NODE_ENV=test
-
-          # Ensure PostgreSQL uses correct user
-          PGUSER=postgres
-          PGPASSWORD=postgres
-          PGHOST=localhost
-          PGDATABASE=findconstructionstaffing_test
-          EOF
-
+          # Copy CI environment file
+          cp .env.ci .env.test
+          
+          # Export all environment variables from .env.ci
+          set -a
+          source .env.ci
+          set +a
+          
+          # Ensure PostgreSQL client uses correct user
+          export PGUSER=postgres
+          export PGPASSWORD=postgres
+          export USER=postgres
+          
           # Make setup script executable and run it
-          chmod +x scripts/setup-test-environment.sh
-          ./scripts/setup-test-environment.sh
+          if [ -f scripts/setup-test-environment.sh ]; then
+            chmod +x scripts/setup-test-environment.sh
+            ./scripts/setup-test-environment.sh
+          fi
 
       - name: Check database health
         env:
@@ -120,6 +126,7 @@ jobs:
           PGPASSWORD: postgres
           PGHOST: localhost
           PGDATABASE: findconstructionstaffing_test
+          USER: postgres
         run: |
           echo "Checking database health..."
           npm run db:health || {
@@ -136,6 +143,7 @@ jobs:
           PGPASSWORD: postgres
           PGHOST: localhost
           PGDATABASE: findconstructionstaffing_test
+          USER: postgres
         run: |
           echo "Seeding test database..."
           # Check if seed script exists before running
@@ -160,6 +168,7 @@ jobs:
           PGPASSWORD: postgres
           PGHOST: localhost
           PGDATABASE: findconstructionstaffing_test
+          USER: postgres
         run: |
           echo "Running tests..."
           npm test -- --ci --passWithNoTests --coverage || {

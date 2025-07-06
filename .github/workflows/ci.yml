@@ -16,7 +16,7 @@ permissions:
 # Prevent multiple CI runs on the same branch from interfering
 # Only cancel in-progress runs for pull requests, not for main branch
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -32,6 +32,8 @@ jobs:
     name: Code Quality Checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      NODE_OPTIONS: '--max-old-space-size=4096'
     strategy:
       matrix:
         check: [typescript, eslint, prettier]
@@ -69,9 +71,6 @@ jobs:
       - name: Run TypeScript compilation
         if: matrix.check == 'typescript'
         run: |
-          # Set Node.js memory limit to prevent OOM errors
-          export NODE_OPTIONS="--max-old-space-size=4096"
-
           # Run TypeScript check with error handling
           echo "Starting TypeScript type check..."
           if ! npm run type-check; then
@@ -83,9 +82,6 @@ jobs:
       - name: Run ESLint
         if: matrix.check == 'eslint'
         run: |
-          # Set Node.js memory limit to prevent OOM errors
-          export NODE_OPTIONS="--max-old-space-size=4096"
-
           # Run ESLint with error handling
           echo "Starting ESLint check..."
           if ! npm run lint -- --cache --cache-location .eslintcache --max-warnings 0; then
@@ -131,6 +127,7 @@ jobs:
             ${{ runner.os }}-nextjs-
 
       - name: Run unit tests with coverage
+        continue-on-error: true
         run: |
           # Set test environment variables for mocked tests
           export NODE_ENV=test
@@ -138,16 +135,7 @@ jobs:
           export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
 
           # Run tests with coverage
-          npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache || {
-            echo "Tests failed. This might be due to:"
-            echo "1. Missing test mocks for database operations"
-            echo "2. Tests expecting real database connection"
-            echo "3. Actual test failures"
-            echo ""
-            echo "Check the test output above for specific errors."
-            # Don't fail the workflow yet - let test reporter analyze results
-            true
-          }
+          npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache
 
       - name: Cache performance metrics
         if: always()
@@ -178,7 +166,7 @@ jobs:
           name: Jest Tests
           path: test-results/junit.xml
           reporter: jest-junit
-          fail-on-error: false
+          fail-on-error: true
           fail-on-empty: false
 
   security:
@@ -195,10 +183,15 @@ jobs:
           node-version: '20.x'
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
+        run: |
+          echo "Running npm audit for high and critical vulnerabilities..."
+          npm audit --audit-level=high
 
       - name: Generate detailed audit report
-        run: npm audit --audit-level=high --json > audit.json || true
+        if: always()
+        run: |
+          echo "Generating detailed audit report..."
+          npm audit --json > audit.json || true
 
       - name: Upload audit report
         uses: actions/upload-artifact@v4

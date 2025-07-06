@@ -237,6 +237,7 @@ const createMockDirectoryFilters = () => {
     onFiltersChange,
     totalResults = 0,
     isLoading = false,
+    initialFilters,
   }: MockDirectoryFiltersProps) {
     // Use local state instead of refs for cleaner React patterns
     const [filters, setFilters] = React.useState<FilterState>({
@@ -248,35 +249,41 @@ const createMockDirectoryFilters = () => {
       claimedOnly: false,
       companySize: [],
       focusAreas: [],
+      ...initialFilters,
     });
 
     const updateFilters = React.useCallback(
-      (updates: Partial<FilterState>) => {
-        const newFilters = { ...filters, ...updates };
-        setFilters(newFilters);
-        onFiltersChange(newFilters);
+      (updates: Partial<FilterState> | ((current: FilterState) => Partial<FilterState>)) => {
+        setFilters((currentFilters) => {
+          const updatesObj = typeof updates === 'function' ? updates(currentFilters) : updates;
+          const newFilters = { ...currentFilters, ...updatesObj };
+          onFiltersChange(newFilters);
+          return newFilters;
+        });
       },
-      [filters, onFiltersChange]
+      [onFiltersChange]
     );
 
     const toggleTrade = React.useCallback(
       (trade: string) => {
-        const newTrades = filters.trades.includes(trade)
-          ? filters.trades.filter((t) => t !== trade)
-          : [...filters.trades, trade];
-        updateFilters({ trades: newTrades });
+        updateFilters((currentFilters) => ({
+          trades: currentFilters.trades.includes(trade)
+            ? currentFilters.trades.filter((t) => t !== trade)
+            : [...currentFilters.trades, trade],
+        }));
       },
-      [filters.trades, updateFilters]
+      [updateFilters]
     );
 
     const toggleState = React.useCallback(
       (state: string) => {
-        const newStates = filters.states.includes(state)
-          ? filters.states.filter((s) => s !== state)
-          : [...filters.states, state];
-        updateFilters({ states: newStates });
+        updateFilters((currentFilters) => ({
+          states: currentFilters.states.includes(state)
+            ? currentFilters.states.filter((s) => s !== state)
+            : [...currentFilters.states, state],
+        }));
       },
-      [filters.states, updateFilters]
+      [updateFilters]
     );
 
     const activeFilterCount = filters.trades.length + filters.states.length;
@@ -443,12 +450,11 @@ describe('Filter Integration Tests', () => {
 
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
 
-    // Mock window.location to prevent navigation errors
-    // Use delete and reassign approach to avoid "Cannot redefine property" errors
+    // Mock window.location
     delete (window as any).location;
-    (window as any).location = {
+    window.location = {
       reload: jest.fn(),
-      href: '',
+      href: 'http://localhost/',
       pathname: '/',
       search: '',
       assign: jest.fn(),
@@ -460,7 +466,7 @@ describe('Filter Integration Tests', () => {
       port: '',
       hash: '',
       toString: () => 'http://localhost/',
-    };
+    } as any;
   });
 
   describe('Trade Filter Integration', () => {

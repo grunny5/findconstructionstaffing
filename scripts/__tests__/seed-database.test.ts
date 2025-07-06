@@ -71,6 +71,13 @@ describe('seed-database.ts', () => {
     });
 
     it('should use test defaults when in test environment and env vars are missing', () => {
+      // Temporarily set NODE_ENV to test for this specific test
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'test',
+        writable: true,
+        configurable: true,
+      });
+      
       process.env.SUPABASE_URL = undefined;
       process.env.SUPABASE_SERVICE_ROLE_KEY = undefined;
 
@@ -79,6 +86,13 @@ describe('seed-database.ts', () => {
       expect(result).toEqual({
         url: 'http://localhost:54321',
         key: 'test-service-role-key',
+      });
+      
+      // Reset back to production for other tests
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true,
       });
     });
 
