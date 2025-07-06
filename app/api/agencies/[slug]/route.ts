@@ -112,13 +112,21 @@ export async function GET(
 
   try {
     // Early environment validation (only log in non-test environments)
-    if (!isTestEnvironment && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) {
+    if (
+      !isTestEnvironment &&
+      (!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    ) {
       console.error('[API ERROR] Missing Supabase environment variables', {
-        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing',
+        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL
+          ? 'Set'
+          : 'Missing',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+          ? 'Set'
+          : 'Missing',
       });
     }
-    
+
     // Validate slug format early
     const slug = params.slug;
     if (!slug || !isValidSlug(slug)) {
@@ -222,31 +230,41 @@ export async function GET(
         'Failed to fetch agency'
       );
       errorTracker.recordRequest('GET /api/agencies/[slug]', true);
-      
+
       // Provide more detailed error information
       const errorDetails: any = {
         code: error.code || 'DATABASE_ERROR',
         message: error.message || 'Connection failed',
         slug,
       };
-      
+
       // Check for connection-specific errors
-      if (error.message?.includes('fetch') || error.message?.includes('connect')) {
+      if (
+        error.message?.includes('fetch') ||
+        error.message?.includes('connect')
+      ) {
         errorDetails.type = 'CONNECTION_ERROR';
         errorDetails.hint = 'Check Supabase URL and network connectivity';
-      } else if (error.message?.includes('auth') || error.message?.includes('unauthorized')) {
+      } else if (
+        error.message?.includes('auth') ||
+        error.message?.includes('unauthorized')
+      ) {
         errorDetails.type = 'AUTH_ERROR';
         errorDetails.hint = 'Check Supabase anon key configuration';
       }
-      
-      console.error(`[API ERROR] GET /api/agencies/[slug]: Database error`, errorDetails);
-      
+
+      console.error(
+        `[API ERROR] GET /api/agencies/[slug]: Database error`,
+        errorDetails
+      );
+
       return NextResponse.json(
         {
           error: {
             code: ERROR_CODES.DATABASE_ERROR,
             message: 'Failed to fetch agency',
-            details: process.env.NODE_ENV === 'development' ? errorDetails : undefined,
+            details:
+              process.env.NODE_ENV === 'development' ? errorDetails : undefined,
           },
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
@@ -350,7 +368,7 @@ export async function GET(
       'An unexpected error occurred'
     );
     errorTracker.recordRequest('GET /api/agencies/[slug]', true);
-    
+
     // Log detailed error information for debugging
     console.error('Unexpected error in GET /api/agencies/[slug]:', {
       error: error?.message || error,
@@ -360,7 +378,7 @@ export async function GET(
         hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
         hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         nodeEnv: process.env.NODE_ENV,
-      }
+      },
     });
 
     return NextResponse.json(
@@ -368,10 +386,13 @@ export async function GET(
         error: {
           code: ERROR_CODES.INTERNAL_ERROR,
           message: 'An unexpected error occurred',
-          details: process.env.NODE_ENV === 'development' ? {
-            message: error?.message,
-            type: error?.constructor?.name,
-          } : undefined,
+          details:
+            process.env.NODE_ENV === 'development'
+              ? {
+                  message: error?.message,
+                  type: error?.constructor?.name,
+                }
+              : undefined,
         },
       },
       {

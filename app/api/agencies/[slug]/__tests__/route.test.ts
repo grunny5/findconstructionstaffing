@@ -256,10 +256,12 @@ describe('GET /api/agencies/[slug]', () => {
       const queryChain: any = {
         select: jest.fn(() => queryChain),
         eq: jest.fn(() => queryChain),
-        single: jest.fn(() => Promise.resolve({
-          data: null,
-          error: { message: 'Unexpected database error' }
-        }))
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: null,
+            error: { message: 'Unexpected database error' },
+          })
+        ),
       };
       return queryChain;
     });

@@ -14,9 +14,10 @@ permissions:
   actions: read
 
 # Prevent multiple CI runs on the same branch from interfering
+# Only cancel in-progress runs for pull requests, not for main branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Record start time for performance monitoring
@@ -70,7 +71,7 @@ jobs:
         run: |
           # Set Node.js memory limit to prevent OOM errors
           export NODE_OPTIONS="--max-old-space-size=4096"
-          
+
           # Run TypeScript check with error handling
           echo "Starting TypeScript type check..."
           if ! npm run type-check; then
