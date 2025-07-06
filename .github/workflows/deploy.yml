@@ -57,6 +57,10 @@ jobs:
       github.event_name == 'pull_request' && 
       github.event.pull_request.head.repo.full_name == github.repository &&
       needs.check-preview-gate.outputs.should-deploy == 'true'
+    
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout code
@@ -92,33 +96,35 @@ jobs:
 
       - name: Install Vercel CLI
         run: |
-          # Install Vercel CLI and suppress deprecation warnings
-          npm install --global vercel@latest --loglevel=error 2>&1 | grep -v "deprecated" | grep -v "npm warn" || true
+          # Install Vercel CLI with proper error handling
+          echo "Installing Vercel CLI..."
+          npm install --global vercel@latest --loglevel=error || {
+            echo "::error::Failed to install Vercel CLI"
+            exit 1
+          }
           
           # Verify installation
-          which vercel && vercel --version
+          echo "Verifying Vercel CLI installation..."
+          which vercel && vercel --version || {
+            echo "::error::Vercel CLI not found after installation"
+            exit 1
+          }
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
-        shell: bash
         run: |
           echo "Starting Vercel build..."
-
-          # Run build and capture the exit code properly
-          vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
-          BUILD_EXIT_CODE=${PIPESTATUS[0]}
-
-          # Check if build actually failed
-          if [ $BUILD_EXIT_CODE -ne 0 ]; then
-            echo "::error::Vercel build command failed with exit code: $BUILD_EXIT_CODE"
-            # Show any errors from the log
-            grep -i "error" build.log || true
-            exit $BUILD_EXIT_CODE
+          
+          # Run build and save output
+          if vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log; then
+            echo "✓ Vercel build command completed successfully"
+          else
+            echo "::error::Vercel build command failed"
+            cat build.log
+            exit 1
           fi
-
-          echo "✓ Vercel build command completed successfully"
 
           # Verify build artifacts
           if [ ! -d ".vercel/output" ]; then

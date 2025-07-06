@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         check: [typescript, eslint, prettier]
-      fail-fast: false  # Don't cancel other jobs if one fails
+      fail-fast: false # Don't cancel other jobs if one fails
 
     steps:
       - name: Checkout code
@@ -75,17 +75,17 @@ jobs:
         run: |
           # Run TypeScript check with error handling
           echo "Starting TypeScript type check..."
-          
+
           # Capture the exit code without failing immediately
           npm run type-check
           TYPESCRIPT_EXIT_CODE=$?
-          
+
           if [ $TYPESCRIPT_EXIT_CODE -ne 0 ]; then
             echo "::error::TypeScript type check failed with exit code: $TYPESCRIPT_EXIT_CODE"
             echo "typescript_failed=true" >> $GITHUB_OUTPUT
             exit 1
           fi
-          
+
           echo "TypeScript type check completed successfully"
           echo "typescript_failed=false" >> $GITHUB_OUTPUT
 

@@ -43,7 +43,10 @@ type SupabaseMethod =
 // Factory function to create a mock Supabase instance
 // This approach provides better control for test-specific configurations
 export function createMockSupabase() {
-  const mock: Record<string, jest.Mock> = {
+  const mock: Record<string, jest.Mock | any> = {
+    // Add _error property to signal this is a mock to API routes
+    _error: true,
+
     // Query builder methods
     from: jest.fn(),
     select: jest.fn(),
@@ -91,6 +94,9 @@ export function createMockSupabase() {
 
   // Set up method chaining - each method returns the mock object
   Object.keys(mock).forEach((method) => {
+    // Skip non-function properties
+    if (typeof mock[method] !== 'function') return;
+
     // Terminal methods that return promises
     if (['single', 'maybeSingle', 'csv'].includes(method)) {
       mock[method].mockImplementation(() =>
@@ -145,4 +151,6 @@ export function resetSupabaseMock() {
       supabase[method].mockClear();
     }
   });
+  // Ensure _error property remains true after reset
+  (supabase as any)._error = true;
 }

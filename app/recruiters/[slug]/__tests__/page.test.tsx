@@ -8,6 +8,7 @@ import { Agency } from '@/types/api';
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     from: jest.fn(),
+    _error: true, // Add this to signal a mock to the API code
   },
 }));
 

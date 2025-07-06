@@ -117,7 +117,7 @@ function createSupabaseMockInternal(): MockSupabase {
     maybeSingle: jest.fn(),
     count: jest.fn(),
     csv: jest.fn(),
-    _error: null,
+    _error: true, // Set to true to signal this is a mock to API routes
     _throwError: false,
     _isCountQuery: false,
     _defaultData: [],
@@ -148,7 +148,7 @@ function createSupabaseMockInternal(): MockSupabase {
       }, {}),
 
       // Also copy the state properties
-      _error: mockSupabase._error,
+      _error: true, // Always true to signal this is a mock
       _throwError: mockSupabase._throwError,
       _defaultData: mockSupabase._defaultData,
       _defaultCount: mockSupabase._defaultCount,
@@ -319,7 +319,7 @@ jest.mock('@/lib/supabase', () => {
 
   // Create mock using consistent method list
   const mockSupabase: any = {
-    _error: null,
+    _error: true, // Set to true to signal this is a mock to API routes
     _throwError: false,
     _isCountQuery: false,
     _defaultData: [],
