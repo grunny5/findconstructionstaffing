@@ -41,6 +41,7 @@ supabase/migrations/
 .gitattributes
 .gitignore
 .prettierignore
+.eslintignore
 .gitkeep
 *.sql
 *.ps1

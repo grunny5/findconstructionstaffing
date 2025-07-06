@@ -99,28 +99,28 @@ jobs:
       - name: Build Project Artifacts
         run: |
           set -eo pipefail  # Exit on error and pipe failures
-          
+
           echo "Starting Vercel build..."
-          
+
           # Capture output while preserving exit code
           BUILD_OUTPUT=$(vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
-          
+
           # Always show build output for debugging
           echo "Build output:"
           echo "$BUILD_OUTPUT"
-          
+
           # Handle build failure
           if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
             echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
             exit 1
           fi
-          
+
           # Verify build artifacts
           if [ ! -d ".vercel/output" ] || [ ! -f ".vercel/output/config.json" ]; then
             echo "::error::Build completed but artifacts are missing"
             exit 1
           fi
-          
+
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
 
@@ -248,28 +248,28 @@ jobs:
       - name: Build Project Artifacts
         run: |
           set -eo pipefail  # Exit on error and pipe failures
-          
+
           echo "Starting Vercel production build..."
-          
+
           # Capture output while preserving exit code
           BUILD_OUTPUT=$(vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
-          
+
           # Always show build output for debugging
           echo "Build output:"
           echo "$BUILD_OUTPUT"
-          
+
           # Handle build failure
           if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
             echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
             exit 1
           fi
-          
+
           # Verify build artifacts
           if [ ! -d ".vercel/output" ] || [ ! -f ".vercel/output/config.json" ]; then
             echo "::error::Build completed but artifacts are missing"
             exit 1
           fi
-          
+
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
 
@@ -293,7 +293,7 @@ jobs:
           echo "Deploying to production..."
           DEPLOYMENT_OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           DEPLOYMENT_EXIT_CODE=$?
-          
+
           if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
             # Strip ANSI escape codes from output first
             CLEAN_OUTPUT=$(echo "$DEPLOYMENT_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g')

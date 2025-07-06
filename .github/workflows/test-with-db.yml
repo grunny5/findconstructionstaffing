@@ -89,23 +89,23 @@ jobs:
         run: |
           # Create .env.test file with test database connection
           cat <<'EOF' > .env.test
-# Test Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test
+          # Test Database Configuration
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test
 
-# Supabase Test Configuration
-NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=test-anon-key
-SUPABASE_SERVICE_ROLE_KEY=test-service-role-key
+          # Supabase Test Configuration
+          NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=test-anon-key
+          SUPABASE_SERVICE_ROLE_KEY=test-service-role-key
 
-# Test Environment
-NODE_ENV=test
+          # Test Environment
+          NODE_ENV=test
 
-# Ensure PostgreSQL uses correct user
-PGUSER=postgres
-PGPASSWORD=postgres
-PGHOST=localhost
-PGDATABASE=findconstructionstaffing_test
-EOF
+          # Ensure PostgreSQL uses correct user
+          PGUSER=postgres
+          PGPASSWORD=postgres
+          PGHOST=localhost
+          PGDATABASE=findconstructionstaffing_test
+          EOF
 
           # Make setup script executable and run it
           chmod +x scripts/setup-test-environment.sh

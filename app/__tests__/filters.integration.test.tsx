@@ -388,7 +388,9 @@ const waitForRouterUpdate = async (
   await waitFor(() => {
     const calls = mockReplace.mock.calls;
     if (calls.length === 0) {
-      throw new Error('Expected router.replace to be called, but no calls were made');
+      throw new Error(
+        'Expected router.replace to be called, but no calls were made'
+      );
     }
 
     const lastCall = calls[calls.length - 1];
@@ -401,7 +403,9 @@ const waitForRouterUpdate = async (
     if (expectedParams.trades) {
       expectedParams.trades.forEach((trade) => {
         if (!urlString.includes(`trades%5B%5D=${trade}`)) {
-          throw new Error(`URL missing trade parameter: ${trade}. Actual URL: ${urlString}`);
+          throw new Error(
+            `URL missing trade parameter: ${trade}. Actual URL: ${urlString}`
+          );
         }
       });
     }
@@ -409,7 +413,9 @@ const waitForRouterUpdate = async (
     if (expectedParams.states) {
       expectedParams.states.forEach((state) => {
         if (!urlString.includes(`states%5B%5D=${state}`)) {
-          throw new Error(`URL missing state parameter: ${state}. Actual URL: ${urlString}`);
+          throw new Error(
+            `URL missing state parameter: ${state}. Actual URL: ${urlString}`
+          );
         }
       });
     }
@@ -745,7 +751,9 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Add search
-      const searchInput = screen.getByPlaceholderText(/Search agencies by name/);
+      const searchInput = screen.getByPlaceholderText(
+        /Search agencies by name/
+      );
       fireEvent.change(searchInput, { target: { value: 'elite' } });
 
       // Add filters
@@ -887,9 +895,10 @@ describe('Filter Integration Tests', () => {
   describe('Filter URL Persistence', () => {
     it('should initialize filters from URL on page load', () => {
       // Mock URLSearchParams with more realistic behavior
-      const mockParamsString = 'trades[]=electrician&trades[]=plumber&states[]=TX&search=';
+      const mockParamsString =
+        'trades[]=electrician&trades[]=plumber&states[]=TX&search=';
       const realParams = new URLSearchParams(mockParamsString);
-      
+
       mockSearchParams.getAll = jest.fn((key) => realParams.getAll(key));
       mockSearchParams.get = jest.fn((key) => realParams.get(key));
       mockSearchParams.has = jest.fn((key) => realParams.has(key));

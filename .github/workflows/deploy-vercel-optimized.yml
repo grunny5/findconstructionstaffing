@@ -129,14 +129,14 @@ jobs:
 
           # Run the build and capture all output
           echo "Starting Vercel build..."
-          
+
           # Capture output while preserving exit code
           BUILD_OUTPUT=$(vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
-          
+
           # Always show build output for debugging
           echo "Build output:"
           echo "$BUILD_OUTPUT"
-          
+
           # Handle build failure
           if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
             echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
@@ -152,21 +152,21 @@ jobs:
             
             exit 1
           fi
-          
+
           # Verify build artifacts
           if [ ! -d ".vercel/output" ]; then
             echo "::error::Build completed but no output directory found"
             exit 1
           fi
-          
+
           if [ ! -f ".vercel/output/config.json" ]; then
             echo "::error::Build completed but config.json is missing"
             exit 1
           fi
-          
+
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified in .vercel/output"
-          
+
           # List build artifacts for debugging
           echo "Build artifacts:"
           ls -la .vercel/output/ | head -20

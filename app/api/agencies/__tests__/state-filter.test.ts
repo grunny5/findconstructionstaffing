@@ -101,7 +101,7 @@ function attachMethodsToPromise(promise: Promise<any>, methods: any): any {
     });
     return acc;
   }, {} as any);
-  
+
   return Object.assign(promise, wrappedMethods);
 }
 

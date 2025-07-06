@@ -13,6 +13,11 @@ permissions:
   checks: write
   actions: read
 
+# Prevent multiple CI runs on the same branch from interfering
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Record start time for performance monitoring
   start-timer:
@@ -25,6 +30,7 @@ jobs:
   quality-checks:
     name: Code Quality Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         check: [typescript, eslint, prettier]
@@ -38,6 +44,18 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Cache TypeScript
+        if: matrix.check == 'typescript'
+        uses: actions/cache@v4
+        with:
+          path: |
+            tsconfig.tsbuildinfo
+            .tsbuildinfo
+          key: ${{ runner.os }}-typescript-${{ hashFiles('package-lock.json', 'tsconfig.json', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-typescript-${{ hashFiles('package-lock.json', 'tsconfig.json') }}
+            ${{ runner.os }}-typescript-
+
       - name: Cache ESLint
         if: matrix.check == 'eslint'
         uses: actions/cache@v4
@@ -49,11 +67,31 @@ jobs:
 
       - name: Run TypeScript compilation
         if: matrix.check == 'typescript'
-        run: npm run type-check
+        run: |
+          # Set Node.js memory limit to prevent OOM errors
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          
+          # Run TypeScript check with error handling
+          echo "Starting TypeScript type check..."
+          if ! npm run type-check; then
+            echo "::error::TypeScript type check failed"
+            exit 1
+          fi
+          echo "TypeScript type check completed successfully"
 
       - name: Run ESLint
         if: matrix.check == 'eslint'
-        run: npm run lint -- --cache --cache-location .eslintcache
+        run: |
+          # Set Node.js memory limit to prevent OOM errors
+          export NODE_OPTIONS="--max-old-space-size=4096"
+
+          # Run ESLint with error handling
+          echo "Starting ESLint check..."
+          if ! npm run lint -- --cache --cache-location .eslintcache --max-warnings 0; then
+            echo "::error::ESLint check failed"
+            exit 1
+          fi
+          echo "ESLint check completed successfully"
 
       - name: Run Prettier check
         if: matrix.check == 'prettier'
