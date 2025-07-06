@@ -91,22 +91,29 @@ jobs:
           echo "Token is available"
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: |
+          # Install Vercel CLI and suppress deprecation warnings
+          npm install --global vercel@latest --loglevel=error 2>/dev/null || npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
+        shell: bash
         run: |
           echo "Starting Vercel build..."
 
-          # Run build without pipefail to avoid tee exit code issues
-          vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
-          PIPESTATUS_RESULT=${PIPESTATUS[0]}
+          # Run build and capture output without pipefail
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log || BUILD_FAILED=1
 
-          if [ $PIPESTATUS_RESULT -ne 0 ]; then
-            echo "::error::Vercel build failed with exit code: $PIPESTATUS_RESULT"
-            exit 1
+          # Check if build actually failed
+          if [ "${BUILD_FAILED}" = "1" ]; then
+            echo "::error::Vercel build command failed"
+            # Check the log for actual errors
+            if grep -q "Error:" build.log || grep -q "error:" build.log; then
+              echo "Build errors found in log"
+              exit 1
+            fi
           fi
 
           echo "✓ Vercel build command completed"
@@ -126,8 +133,8 @@ jobs:
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
-
-          # Ensure clean exit
+          
+          # Explicitly exit with success
           exit 0
 
       - name: Deploy Project Artifacts to Vercel

@@ -148,6 +148,10 @@ jobs:
           export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
           export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
           export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
+          
+          # Force test environment to ensure mocks are used
+          export FORCE_TEST_MOCKS=true
+          export CI=true
 
           # Run tests with coverage
           npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache

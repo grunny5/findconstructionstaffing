@@ -368,6 +368,14 @@ const expectApiCallWith = (
     offset: 0,
     ...expectedFilters,
   };
+  
+  // Validate pagination parameters are within expected bounds
+  if (expectedCall.limit < 1 || expectedCall.limit > 100) {
+    throw new Error(`Invalid limit: ${expectedCall.limit}. Expected 1-100.`);
+  }
+  if (expectedCall.offset < 0) {
+    throw new Error(`Invalid offset: ${expectedCall.offset}. Expected >= 0.`);
+  }
 
   if (callIndex === -1) {
     // Check the most recent call
