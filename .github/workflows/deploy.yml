@@ -103,7 +103,7 @@ jobs:
           # Run build without pipefail to avoid tee exit code issues
           vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
           PIPESTATUS_RESULT=${PIPESTATUS[0]}
-          
+
           if [ $PIPESTATUS_RESULT -ne 0 ]; then
             echo "::error::Vercel build failed with exit code: $PIPESTATUS_RESULT"
             exit 1
@@ -126,7 +126,7 @@ jobs:
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
-          
+
           # Ensure clean exit
           exit 0
 
@@ -258,7 +258,7 @@ jobs:
           # Run build without pipefail to avoid tee exit code issues
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
           PIPESTATUS_RESULT=${PIPESTATUS[0]}
-          
+
           if [ $PIPESTATUS_RESULT -ne 0 ]; then
             echo "::error::Vercel build failed with exit code: $PIPESTATUS_RESULT"
             exit 1
@@ -281,7 +281,7 @@ jobs:
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
-          
+
           # Ensure clean exit
           exit 0
 

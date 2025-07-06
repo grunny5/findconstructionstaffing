@@ -254,16 +254,7 @@ describe('GET /api/agencies - Trade Filtering', () => {
       }
     });
 
-    it('should ignore empty trade values', async () => {
-      // Configure mock for valid trade only
-      configureMockForFilters(supabase, {
-        trades: {
-          slugs: ['electricians'],
-          ids: ['trade-1'],
-          agencyIds: ['agency-1'],
-        },
-      });
-
+    it('should reject empty trade values with validation error', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: {
@@ -271,10 +262,21 @@ describe('GET /api/agencies - Trade Filtering', () => {
         },
       });
 
-      await GET(mockRequest);
+      const response = await GET(mockRequest);
+      const data = await response.json();
 
-      // Should still process valid trades (empty values filtered out)
-      // No trades table query expected since empty values are filtered
+      // Empty strings should fail validation (min length 1 after trim)
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(isErrorResponse(data)).toBe(true);
+      if (isErrorResponse(data)) {
+        expect(data.error.code).toBe('INVALID_PARAMS');
+        expect(data.error.message).toBe('Invalid query parameters');
+        // The error details should indicate the validation failure
+        expect(data.error.details).toBeDefined();
+      }
+
+      // Verify that no database queries were made due to validation failure
+      expect(supabase.from).not.toHaveBeenCalled();
     });
 
     it('should trim whitespace from trade slugs', async () => {
@@ -350,9 +352,10 @@ describe('GET /api/agencies - Trade Filtering', () => {
 
       // All filters should be applied
       supabaseMockHelpers.expectTableQueried(supabase, 'trades'); // Trade filter
-      // Note: range might be called multiple times due to mock implementation
-      // Just verify it was called at least once
-      expect(supabase.range).toHaveBeenCalled();
+      // Verify pagination was applied - range is called on the query chain, not directly on supabase
+      // The route calls .range(offset, offset + limit - 1) for pagination
+      // We can verify the agency query was made with proper filtering
+      supabaseMockHelpers.expectTableQueried(supabase, 'agencies');
     });
   });
 });

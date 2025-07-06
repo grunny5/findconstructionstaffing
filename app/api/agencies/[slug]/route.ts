@@ -42,6 +42,85 @@ function isValidSlug(slug: string): boolean {
   return slugRegex.test(slug) && slug.length > 0 && slug.length <= 100;
 }
 
+// Network error codes that indicate connection issues
+const NETWORK_ERROR_CODES = new Set([
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'ENOTFOUND',
+  'ETIMEDOUT',
+  'ENETUNREACH',
+  'EHOSTUNREACH',
+  'EPIPE',
+  'ECONNABORTED',
+]);
+
+// Auth error codes from PostgREST/Supabase
+const AUTH_ERROR_CODES = new Set([
+  'PGRST301', // JWT auth error
+  'PGRST302', // Anonymous access disallowed
+  'PGRST303', // JWT expired
+]);
+
+// Helper function to classify database errors
+function classifyDatabaseError(error: any): {
+  type: 'CONNECTION' | 'AUTH' | 'CLIENT' | 'OTHER';
+  isRetryable: boolean;
+} {
+  // Check error codes first (most reliable)
+  if (error.code) {
+    if (NETWORK_ERROR_CODES.has(error.code)) {
+      return { type: 'CONNECTION', isRetryable: true };
+    }
+    if (AUTH_ERROR_CODES.has(error.code)) {
+      return { type: 'AUTH', isRetryable: false };
+    }
+    // PGRST116 = no rows found - this is a client error, not retryable
+    if (error.code === 'PGRST116') {
+      return { type: 'CLIENT', isRetryable: false };
+    }
+  }
+
+  // Fallback to message patterns for errors without codes
+  const message = error.message?.toLowerCase() || '';
+
+  // Connection error patterns
+  if (
+    message.includes('fetch') ||
+    message.includes('connect') ||
+    message.includes('timeout') ||
+    message.includes('network') ||
+    message.includes('econnrefused') ||
+    message.includes('econnreset') ||
+    message.includes('socket hang up')
+  ) {
+    return { type: 'CONNECTION', isRetryable: true };
+  }
+
+  // Auth error patterns
+  if (
+    message.includes('auth') ||
+    message.includes('unauthorized') ||
+    message.includes('jwt') ||
+    message.includes('token') ||
+    message.includes('forbidden')
+  ) {
+    return { type: 'AUTH', isRetryable: false };
+  }
+
+  // Client error patterns (bad requests)
+  if (
+    message.includes('invalid') ||
+    message.includes('not found') ||
+    message.includes('bad request') ||
+    message.includes('malformed')
+  ) {
+    return { type: 'CLIENT', isRetryable: false };
+  }
+
+  // Default to OTHER with no retry
+  return { type: 'OTHER', isRetryable: false };
+}
+
 // Helper function to execute query with retry logic and detailed diagnostics
 async function queryWithRetry<T>(
   queryFn: () => Promise<{ data: T | null; error: any }>,
@@ -56,7 +135,7 @@ async function queryWithRetry<T>(
       const result = await queryFn();
       const attemptTime = Date.now() - attemptStart;
 
-      // If successful or it's a client error (not a connection issue), return immediately
+      // If successful, return immediately
       if (!result.error) {
         console.log(
           `[API SUCCESS] Database query completed in ${attemptTime}ms (attempt ${attempt})`
@@ -64,28 +143,16 @@ async function queryWithRetry<T>(
         return result;
       }
 
-      // Check for different types of errors
-      const isConnectionError =
-        result.error.message?.includes('fetch') ||
-        result.error.message?.includes('connect') ||
-        result.error.message?.includes('timeout') ||
-        result.error.code === 'ECONNREFUSED';
-
-      const isAuthError =
-        result.error.message?.includes('auth') ||
-        result.error.message?.includes('unauthorized') ||
-        result.error.code === 'PGRST301';
+      // Classify the error
+      const errorClassification = classifyDatabaseError(result.error);
 
       // Log detailed error information
       const errorDetails = {
         attempt: `${attempt}/${retries}`,
         attemptTime: `${attemptTime}ms`,
         totalTime: `${Date.now() - startTime}ms`,
-        errorType: isConnectionError
-          ? 'CONNECTION'
-          : isAuthError
-            ? 'AUTH'
-            : 'OTHER',
+        errorType: errorClassification.type,
+        isRetryable: errorClassification.isRetryable,
         message: result.error.message,
         code: result.error.code,
         supabaseUrl:
@@ -93,23 +160,32 @@ async function queryWithRetry<T>(
         hasValidKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       };
 
-      if (isConnectionError) {
-        console.error(`[API ERROR] Database connection failed:`, errorDetails);
-      } else if (isAuthError) {
-        console.error(
-          `[API ERROR] Database authentication failed:`,
-          errorDetails
-        );
-        // Don't retry auth errors
-        return result;
-      } else {
-        console.error(`[API ERROR] Database query error:`, errorDetails);
-        // Don't retry application errors (like PGRST116 - no rows found)
-        return result;
+      // Log based on error type
+      switch (errorClassification.type) {
+        case 'CONNECTION':
+          console.error(
+            `[API ERROR] Database connection failed:`,
+            errorDetails
+          );
+          break;
+        case 'AUTH':
+          console.error(
+            `[API ERROR] Database authentication failed:`,
+            errorDetails
+          );
+          break;
+        case 'CLIENT':
+          console.error(
+            `[API ERROR] Client error (not retrying):`,
+            errorDetails
+          );
+          break;
+        default:
+          console.error(`[API ERROR] Database query error:`, errorDetails);
       }
 
-      // If not the last attempt and it's a connection error, retry
-      if (attempt < retries && isConnectionError) {
+      // Only retry if it's retryable and not the last attempt
+      if (attempt < retries && errorClassification.isRetryable) {
         console.log(`[API RETRY] Waiting ${delay}ms before retry...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 1.5; // Exponential backoff
@@ -119,14 +195,21 @@ async function queryWithRetry<T>(
       return result;
     } catch (error: any) {
       const attemptTime = Date.now() - startTime;
+
+      // Try to classify even thrown errors
+      const errorClassification = classifyDatabaseError(error);
+
       console.error(`[API ERROR] Unexpected error in query:`, {
         attempt: `${attempt}/${retries}`,
         totalTime: `${attemptTime}ms`,
+        errorType: errorClassification.type,
+        isRetryable: errorClassification.isRetryable,
         error: error?.message || String(error),
+        code: error?.code,
         stack: error?.stack?.split('\n')[0], // First line only
       });
 
-      if (attempt < retries) {
+      if (attempt < retries && errorClassification.isRetryable) {
         await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 1.5;
         continue;
@@ -178,6 +261,13 @@ export async function GET(
         console.error(
           '[API ERROR] Missing Supabase environment variables',
           envStatus
+        );
+
+        console.error(
+          '\nTo fix this error, please set the following environment variables:\n' +
+            '  - NEXT_PUBLIC_SUPABASE_URL: Your Supabase project URL\n' +
+            '  - NEXT_PUBLIC_SUPABASE_ANON_KEY: Your Supabase anon key\n\n' +
+            'For CI/CD setup, see: docs/CI_CD_ENV_SETUP.md'
         );
 
         monitor.complete(
@@ -339,26 +429,31 @@ export async function GET(
       );
       errorTracker.recordRequest('GET /api/agencies/[slug]', true);
 
+      // Classify the error for better diagnostics
+      const errorClassification = classifyDatabaseError(error);
+
       // Provide more detailed error information
       const errorDetails: any = {
         code: error.code || 'DATABASE_ERROR',
         message: error.message || 'Connection failed',
         slug,
+        type: errorClassification.type + '_ERROR',
+        isRetryable: errorClassification.isRetryable,
       };
 
-      // Check for connection-specific errors
-      if (
-        error.message?.includes('fetch') ||
-        error.message?.includes('connect')
-      ) {
-        errorDetails.type = 'CONNECTION_ERROR';
-        errorDetails.hint = 'Check Supabase URL and network connectivity';
-      } else if (
-        error.message?.includes('auth') ||
-        error.message?.includes('unauthorized')
-      ) {
-        errorDetails.type = 'AUTH_ERROR';
-        errorDetails.hint = 'Check Supabase anon key configuration';
+      // Add specific hints based on error type
+      switch (errorClassification.type) {
+        case 'CONNECTION':
+          errorDetails.hint = 'Check Supabase URL and network connectivity';
+          break;
+        case 'AUTH':
+          errorDetails.hint = 'Check Supabase anon key configuration';
+          break;
+        case 'CLIENT':
+          errorDetails.hint = 'Check the request parameters and data';
+          break;
+        default:
+          errorDetails.hint = 'An unexpected database error occurred';
       }
 
       console.error(

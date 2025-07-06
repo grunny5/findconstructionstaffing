@@ -255,6 +255,13 @@ export async function GET(request: NextRequest) {
           envStatus
         );
 
+        console.error(
+          '\nTo fix this error, please set the following environment variables:\n' +
+            '  - NEXT_PUBLIC_SUPABASE_URL: Your Supabase project URL\n' +
+            '  - NEXT_PUBLIC_SUPABASE_ANON_KEY: Your Supabase anon key\n\n' +
+            'For CI/CD setup, see: docs/CI_CD_ENV_SETUP.md'
+        );
+
         const errorResponse: ErrorResponse = {
           error: {
             code: ERROR_CODES.DATABASE_ERROR,

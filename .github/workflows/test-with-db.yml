@@ -16,7 +16,7 @@ jobs:
   test-with-database:
     name: Run Tests with Database
     runs-on: ubuntu-latest
-    
+
     env:
       # Global environment variables to ensure postgres user is used
       PGUSER: postgres
@@ -100,17 +100,17 @@ jobs:
         run: |
           # Copy CI environment file
           cp .env.ci .env.test
-          
+
           # Export all environment variables from .env.ci
           set -a
           source .env.ci
           set +a
-          
+
           # Ensure PostgreSQL client uses correct user
           export PGUSER=postgres
           export PGPASSWORD=postgres
           export USER=postgres
-          
+
           # Make setup script executable and run it
           if [ -f scripts/setup-test-environment.sh ]; then
             chmod +x scripts/setup-test-environment.sh

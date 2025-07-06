@@ -253,9 +253,14 @@ const createMockDirectoryFilters = () => {
     });
 
     const updateFilters = React.useCallback(
-      (updates: Partial<FilterState> | ((current: FilterState) => Partial<FilterState>)) => {
+      (
+        updates:
+          | Partial<FilterState>
+          | ((current: FilterState) => Partial<FilterState>)
+      ) => {
         setFilters((currentFilters) => {
-          const updatesObj = typeof updates === 'function' ? updates(currentFilters) : updates;
+          const updatesObj =
+            typeof updates === 'function' ? updates(currentFilters) : updates;
           const newFilters = { ...currentFilters, ...updatesObj };
           onFiltersChange(newFilters);
           return newFilters;

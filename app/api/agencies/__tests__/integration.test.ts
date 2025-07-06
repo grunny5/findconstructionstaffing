@@ -746,9 +746,7 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
         // When supabase is null, the code might throw an error that gets caught
         // by the catch block, resulting in INTERNAL_ERROR instead of DATABASE_ERROR
         expect(data.error.code).toBe(ERROR_CODES.INTERNAL_ERROR);
-        expect(data.error.message).toContain(
-          'An unexpected error occurred'
-        );
+        expect(data.error.message).toContain('An unexpected error occurred');
       }
     });
   });

@@ -77,8 +77,12 @@ describe('seed-database.ts', () => {
         writable: true,
         configurable: true,
       });
-      
+
+      // Save current DATABASE_URL to restore later
+      const savedDatabaseUrl = process.env.DATABASE_URL;
+
       process.env.SUPABASE_URL = undefined;
+      process.env.DATABASE_URL = undefined;
       process.env.SUPABASE_SERVICE_ROLE_KEY = undefined;
 
       // When not forcing validation, it should return defaults in test environment
@@ -87,7 +91,10 @@ describe('seed-database.ts', () => {
         url: 'http://localhost:54321',
         key: 'test-service-role-key',
       });
-      
+
+      // Restore DATABASE_URL
+      process.env.DATABASE_URL = savedDatabaseUrl;
+
       // Reset back to production for other tests
       Object.defineProperty(process.env, 'NODE_ENV', {
         value: 'production',
@@ -97,7 +104,11 @@ describe('seed-database.ts', () => {
     });
 
     it('should exit when SUPABASE_URL is missing', () => {
+      // Save current DATABASE_URL to restore later
+      const savedDatabaseUrl = process.env.DATABASE_URL;
+
       process.env.SUPABASE_URL = undefined;
+      process.env.DATABASE_URL = undefined; // Also unset DATABASE_URL since it can be used as fallback
       process.env.SUPABASE_SERVICE_ROLE_KEY =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIn0.test';
 
@@ -105,6 +116,9 @@ describe('seed-database.ts', () => {
         'Process.exit called with code 1'
       );
       expect(mockExit).toHaveBeenCalledWith(1);
+
+      // Restore DATABASE_URL
+      process.env.DATABASE_URL = savedDatabaseUrl;
     });
 
     it('should exit when SUPABASE_SERVICE_ROLE_KEY is missing', () => {
