@@ -229,7 +229,8 @@ export async function GET(request: NextRequest) {
   try {
     // Check environment variables and database connection
     const isTestEnvironment = process.env.NODE_ENV === 'test';
-    const isMockedSupabase = supabase && typeof (supabase as any)._error !== 'undefined';
+    const isMockedSupabase =
+      supabase && typeof (supabase as any)._error !== 'undefined';
 
     if (!isTestEnvironment && !isMockedSupabase) {
       if (

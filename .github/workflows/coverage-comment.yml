@@ -22,13 +22,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check environment variables
+        run: |
+          echo "=== Checking CI Environment Variables ==="
+          echo "NEXT_PUBLIC_SUPABASE_URL is: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL && 'set ✓' || 'not set ✗' }}"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY is: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY && 'set ✓' || 'not set ✗' }}"
+          echo "SUPABASE_SERVICE_ROLE_KEY is: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY && 'set ✓' || 'not set ✗' }}"
+
+          if [[ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]] || [[ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]]; then
+            echo ""
+            echo "⚠️  Warning: Supabase environment variables are not set!"
+            echo "Tests will run with mock values, but integration tests may fail."
+            echo "See docs/CI_CD_ENV_SETUP.md for setup instructions."
+          fi
+
       - name: Run tests with coverage
         run: npm test -- --coverage --ci --passWithNoTests --coverageReporters=json-summary
         env:
           NODE_ENV: test
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}
+          # Force test environment to ensure mocks are used
+          FORCE_TEST_MOCKS: true
+          CI: true
 
       - name: Coverage Summary
         uses: irongut/CodeCoverageSummary@v1.3.0

@@ -245,8 +245,9 @@ export async function GET(
   try {
     // Early environment validation with detailed logging
     // Skip validation if supabase is mocked (has mock methods)
-    const isMockedSupabase = supabase && typeof (supabase as any)._error !== 'undefined';
-    
+    const isMockedSupabase =
+      supabase && typeof (supabase as any)._error !== 'undefined';
+
     if (!isTestEnvironment && !isMockedSupabase) {
       if (
         !process.env.NEXT_PUBLIC_SUPABASE_URL ||

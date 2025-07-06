@@ -368,7 +368,7 @@ const expectApiCallWith = (
     offset: 0,
     ...expectedFilters,
   };
-  
+
   // Validate pagination parameters are within expected bounds
   if (expectedCall.limit < 1 || expectedCall.limit > 100) {
     throw new Error(`Invalid limit: ${expectedCall.limit}. Expected 1-100.`);

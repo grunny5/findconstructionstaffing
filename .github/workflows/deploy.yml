@@ -93,7 +93,10 @@ jobs:
       - name: Install Vercel CLI
         run: |
           # Install Vercel CLI and suppress deprecation warnings
-          npm install --global vercel@latest --loglevel=error 2>/dev/null || npm install --global vercel@latest
+          npm install --global vercel@latest --loglevel=error 2>&1 | grep -v "deprecated" | grep -v "npm warn" || true
+          
+          # Verify installation
+          which vercel && vercel --version
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
@@ -103,20 +106,19 @@ jobs:
         run: |
           echo "Starting Vercel build..."
 
-          # Run build and capture output without pipefail
-          vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log || BUILD_FAILED=1
+          # Run build and capture the exit code properly
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
           # Check if build actually failed
-          if [ "${BUILD_FAILED}" = "1" ]; then
-            echo "::error::Vercel build command failed"
-            # Check the log for actual errors
-            if grep -q "Error:" build.log || grep -q "error:" build.log; then
-              echo "Build errors found in log"
-              exit 1
-            fi
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "::error::Vercel build command failed with exit code: $BUILD_EXIT_CODE"
+            # Show any errors from the log
+            grep -i "error" build.log || true
+            exit $BUILD_EXIT_CODE
           fi
 
-          echo "✓ Vercel build command completed"
+          echo "✓ Vercel build command completed successfully"
 
           # Verify build artifacts
           if [ ! -d ".vercel/output" ]; then
@@ -133,9 +135,6 @@ jobs:
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
-          
-          # Explicitly exit with success
-          exit 0
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
