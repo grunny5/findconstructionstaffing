@@ -108,8 +108,8 @@ jobs:
         if: always()
         run: |
           echo "Job status: ${{ job.status }}"
-          echo "Job cancelled: ${{ cancelled() }}"
-          if [ "${{ cancelled() }}" = "true" ]; then
+          echo "Job cancelled: ${{ job.status == 'cancelled' }}"
+          if [ "${{ job.status }}" = "cancelled" ]; then
             echo "::warning::Job was cancelled. This might be due to concurrency settings or manual cancellation."
           fi
 
