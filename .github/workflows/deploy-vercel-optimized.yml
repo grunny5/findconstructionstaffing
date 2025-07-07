@@ -71,6 +71,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # For PRs, use GitHub API to get the list of changed files
             # This properly handles untracked files, submodules, and permission changes
+            export GH_TOKEN="${{ github.token }}"
             CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
             # For pushes, compare against the previous commit including untracked files
@@ -156,14 +157,18 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          set -eo pipefail  # Exit on error and pipe failures
+          set -o pipefail  # Exit on pipe failures but not on command errors
 
           # Run the build and capture all output
           echo "Starting Vercel build..."
 
           # Capture output while preserving exit code
+          # Temporarily disable exit on error to capture the exit code
           BUILD_EXIT_CODE=0
-          BUILD_OUTPUT=$(vercel build --token="${{ secrets.VERCEL_TOKEN }}" 2>&1) || BUILD_EXIT_CODE=$?
+          set +e
+          BUILD_OUTPUT=$(vercel build --token="${{ secrets.VERCEL_TOKEN }}" 2>&1)
+          BUILD_EXIT_CODE=$?
+          set -e
 
           # Always show build output for debugging
           echo "Build output:"
