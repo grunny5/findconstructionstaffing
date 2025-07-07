@@ -205,37 +205,44 @@ function createSupabaseMockInternal(): MockSupabase {
   };
 
   // Setup from to create a new query chain
-  mockSupabase.from.mockImplementation(() => {
-    const queryChain = createQueryChain();
+  if (mockSupabase.from && jest.isMockFunction(mockSupabase.from)) {
+    mockSupabase.from.mockImplementation(() => {
+      const queryChain = createQueryChain();
 
-    // Override select for this specific chain to detect count queries
-    queryChain.select = jest.fn((columns, options) => {
-      // Call original to track - only pass options if they were provided
-      if (options !== undefined) {
-        (mockSupabase as any).select(columns, options);
-      } else {
-        (mockSupabase as any).select(columns);
-      }
+      // Override select for this specific chain to detect count queries
+      queryChain.select = jest.fn((columns, options) => {
+        // Call original to track - only pass options if they were provided
+        if (mockSupabase.select && jest.isMockFunction(mockSupabase.select)) {
+          if (options !== undefined) {
+            (mockSupabase as any).select(columns, options);
+          } else {
+            (mockSupabase as any).select(columns);
+          }
+        }
 
-      // Check if this is a count query
-      const isCountQuery = options?.count === 'exact' && options?.head === true;
-      if (isCountQuery) {
-        queryChain._isCountQuery = true;
-      }
+        // Check if this is a count query
+        const isCountQuery =
+          options?.count === 'exact' && options?.head === true;
+        if (isCountQuery) {
+          queryChain._isCountQuery = true;
+        }
+
+        return createThenableProxy(queryChain);
+      });
 
       return createThenableProxy(queryChain);
     });
-
-    return createThenableProxy(queryChain);
-  });
+  }
 
   // Setup select to handle count queries
-  mockSupabase.select.mockImplementation((columns, options = {}) => {
-    // Handle count queries with head option
-    const isCountQuery = options.count === 'exact' && options.head;
-    const queryChain = createQueryChain(isCountQuery);
-    return createThenableProxy(queryChain);
-  });
+  if (mockSupabase.select && jest.isMockFunction(mockSupabase.select)) {
+    mockSupabase.select.mockImplementation((columns, options = {}) => {
+      // Handle count queries with head option
+      const isCountQuery = options.count === 'exact' && options.head;
+      const queryChain = createQueryChain(isCountQuery);
+      return createThenableProxy(queryChain);
+    });
+  }
 
   // Setup terminal methods that always return promises
   ['single', 'maybeSingle', 'csv'].forEach((method) => {
@@ -586,37 +593,52 @@ export function configureSupabaseMock(mock: any, config: SupabaseMockConfig) {
   let queryChainCount = 0;
 
   // Update from method to create a new query chain
-  mock.from.mockImplementation(() => {
-    queryChainCount++;
-    const queryChain = createQueryChain();
+  if (
+    mock.from &&
+    jest.isMockFunction(mock.from) &&
+    typeof mock.from.mockImplementation === 'function'
+  ) {
+    mock.from.mockImplementation(() => {
+      queryChainCount++;
+      const queryChain = createQueryChain();
 
-    // Override select for this specific chain
-    queryChain.select = jest.fn((columns, options) => {
-      // Call original to track - only pass options if they were provided
-      if (options !== undefined) {
-        mock.select(columns, options);
-      } else {
-        mock.select(columns);
-      }
+      // Override select for this specific chain
+      queryChain.select = jest.fn((columns, options) => {
+        // Call original to track - only pass options if they were provided
+        if (mock.select && jest.isMockFunction(mock.select)) {
+          if (options !== undefined) {
+            mock.select(columns, options);
+          } else {
+            mock.select(columns);
+          }
+        }
 
-      // Check if this is a count query
-      const isCountQuery = options?.count === 'exact' && options?.head === true;
-      if (isCountQuery) {
-        queryChain._isCountQuery = true;
-      }
+        // Check if this is a count query
+        const isCountQuery =
+          options?.count === 'exact' && options?.head === true;
+        if (isCountQuery) {
+          queryChain._isCountQuery = true;
+        }
+
+        return createThenableProxy(queryChain);
+      });
 
       return createThenableProxy(queryChain);
     });
-
-    return createThenableProxy(queryChain);
-  });
+  }
 
   // Update select method to handle count queries and return proxy
-  mock.select.mockImplementation((columns: any, options: any = {}) => {
-    const isCountQuery = options.count === 'exact' && options.head;
-    const queryChain = createQueryChain(isCountQuery);
-    return createThenableProxy(queryChain);
-  });
+  if (
+    mock.select &&
+    jest.isMockFunction(mock.select) &&
+    typeof mock.select.mockImplementation === 'function'
+  ) {
+    mock.select.mockImplementation((columns: any, options: any = {}) => {
+      const isCountQuery = options.count === 'exact' && options.head;
+      const queryChain = createQueryChain(isCountQuery);
+      return createThenableProxy(queryChain);
+    });
+  }
 
   // Update all chainable methods to return the mock
   const chainableMethods = Object.keys(mock).filter((key) => {

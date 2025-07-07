@@ -98,14 +98,17 @@ jobs:
         run: |
           # Install Vercel CLI with proper error handling
           echo "Installing Vercel CLI..."
-          npm install --global vercel@latest --loglevel=error || {
+          npm install --global vercel@latest --loglevel=error 2>&1 | grep -v "npm warn deprecated" || true
+          
+          # Check if installation succeeded
+          if ! command -v vercel &> /dev/null; then
             echo "::error::Failed to install Vercel CLI"
             exit 1
-          }
+          fi
 
           # Verify installation
           echo "Verifying Vercel CLI installation..."
-          which vercel && vercel --version || {
+          vercel --version || {
             echo "::error::Vercel CLI not found after installation"
             exit 1
           }
@@ -115,11 +118,16 @@ jobs:
 
       - name: Build Project Artifacts
         run: |
+          set -e  # Exit on any error
           echo "Starting Vercel build..."
 
           # Run build without tee to avoid exit code issues
-          vercel build --token=${{ secrets.VERCEL_TOKEN }} > build.log 2>&1
-          BUILD_RESULT=$?
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} > build.log 2>&1 || BUILD_RESULT=$?
+          
+          # If BUILD_RESULT is not set, the command succeeded
+          if [ -z "${BUILD_RESULT:-}" ]; then
+            BUILD_RESULT=0
+          fi
 
           # Display the build log
           cat build.log
@@ -147,6 +155,9 @@ jobs:
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
+          
+          # Ensure we exit cleanly
+          exit 0
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
@@ -264,21 +275,38 @@ jobs:
         run: npm ci
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: |
+          echo "Installing Vercel CLI..."
+          npm install --global vercel@latest --loglevel=error 2>&1 | grep -v "npm warn deprecated" || true
+          
+          # Verify installation
+          vercel --version || {
+            echo "::error::Vercel CLI not found after installation"
+            exit 1
+          }
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
         run: |
+          set -e  # Exit on any error
           echo "Starting Vercel production build..."
 
-          # Run build without pipefail to avoid tee exit code issues
-          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log
-          PIPESTATUS_RESULT=${PIPESTATUS[0]}
+          # Run build without tee to avoid exit code issues
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} > build.log 2>&1 || BUILD_RESULT=$?
+          
+          # If BUILD_RESULT is not set, the command succeeded
+          if [ -z "${BUILD_RESULT:-}" ]; then
+            BUILD_RESULT=0
+          fi
 
-          if [ $PIPESTATUS_RESULT -ne 0 ]; then
-            echo "::error::Vercel build failed with exit code: $PIPESTATUS_RESULT"
+          # Display the build log
+          cat build.log
+
+          # Check if build failed
+          if [ $BUILD_RESULT -ne 0 ]; then
+            echo "::error::Vercel build failed with exit code: $BUILD_RESULT"
             exit 1
           fi
 
