@@ -23,7 +23,7 @@ on:
 # Cancel in-progress deployments on same branch
 concurrency:
   # Use head ref when it exists, otherwise fallback to branch ref
-  # Sanitize workflow name (remove spaces/parentheses) and branch/ref
+  # Replace slashes with hyphens in branch/ref names for valid group identifier
   group: deploy-vercel-optimized-${{ replace(github.head_ref || github.ref, '/', '-') }}
   cancel-in-progress: true
 
@@ -99,9 +99,23 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
     steps:
+      - name: Check Vercel token availability
+        id: check-token
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "::warning::VERCEL_TOKEN unavailable - likely a forked PR. Skipping deployment."
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+            echo "deployment_url=token-missing" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "Token is available"
+          echo "should_skip=false" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v4
+        if: steps.check-token.outputs.should_skip != 'true'
 
       - name: Setup Node.js
+        if: steps.check-token.outputs.should_skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -109,6 +123,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
 
       - name: Install Vercel CLI and dependencies
+        if: steps.check-token.outputs.should_skip != 'true'
         run: |
           # Install CLI
           npm install --global vercel@latest
@@ -118,9 +133,11 @@ jobs:
           sudo apt-get update && sudo apt-get install -y jq
 
       - name: Pull Vercel Environment Information
+        if: steps.check-token.outputs.should_skip != 'true'
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
+        if: steps.check-token.outputs.should_skip != 'true'
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -174,6 +191,7 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy
+        if: steps.check-token.outputs.should_skip != 'true'
         run: |
           # Set variables to track deployment success
           DEPLOYMENT_SUCCESS=false
@@ -263,7 +281,7 @@ jobs:
           fi
 
       - name: Create deployment status
-        if: github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'
+        if: steps.check-token.outputs.should_skip != 'true' && github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'
         uses: actions/github-script@v7
         with:
           script: |
