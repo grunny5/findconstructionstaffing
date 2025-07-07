@@ -50,7 +50,7 @@ type SupabaseMethod =
 type MockSupabase = {
   [K in SupabaseMethod]: jest.Mock;
 } & {
-  _error?: Error | null;
+  _error?: Error | null | boolean; // Allow boolean for mock detection
   _throwError?: boolean;
   _isCountQuery?: boolean;
   _defaultData?: any;

@@ -65,6 +65,8 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # For PRs, use GitHub API to get the list of changed files
             # This properly handles untracked files, submodules, and permission changes
+            # Configure GitHub CLI with authentication token
+            export GH_TOKEN="${{ github.token }}"
             CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
             # For pushes, compare against the previous commit including untracked files
@@ -134,7 +136,14 @@ jobs:
 
       - name: Pull Vercel Environment Information
         if: steps.check-token.outputs.should_skip != 'true'
-        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            VERCEL_ENV="production"
+          else
+            VERCEL_ENV="preview"
+          fi
+          vercel pull --yes --environment="${VERCEL_ENV}" --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
         if: steps.check-token.outputs.should_skip != 'true'
@@ -202,7 +211,12 @@ jobs:
             echo "Deploying to Vercel (attempt $i/3)..."
             
             # Deploy and capture both output and exit code using JSON for reliable parsing
-            DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} --json 2>&1) || DEPLOY_EXIT_CODE=$?
+            # Determine if we need the --prod flag
+            EXTRA_FLAG=""
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              EXTRA_FLAG="--prod"
+            fi
+            DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${EXTRA_FLAG} --token=${{ secrets.VERCEL_TOKEN }} --json 2>&1) || DEPLOY_EXIT_CODE=$?
             
             echo "Deploy exit code: ${DEPLOY_EXIT_CODE:-0}"
             echo "Deploy output:"

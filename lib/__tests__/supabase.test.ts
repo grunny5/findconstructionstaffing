@@ -56,7 +56,7 @@ describe('Supabase Client', () => {
     // Clear all environment variables and set to development
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-    process.env.NODE_ENV = 'development';
+    (process.env as any).NODE_ENV = 'development';
 
     // Reset modules to ensure fresh import
     jest.resetModules();
@@ -72,14 +72,14 @@ describe('Supabase Client', () => {
     );
 
     // Reset back to test environment
-    process.env.NODE_ENV = 'test';
+    (process.env as any).NODE_ENV = 'test';
   });
 
   it('should throw error when NEXT_PUBLIC_SUPABASE_ANON_KEY is missing in non-test env', () => {
     // Set URL but clear ANON_KEY, set to development
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    process.env.NODE_ENV = 'development';
+    (process.env as any).NODE_ENV = 'development';
 
     // Reset modules to ensure fresh import
     jest.resetModules();
@@ -95,7 +95,7 @@ describe('Supabase Client', () => {
     );
 
     // Reset back to test environment
-    process.env.NODE_ENV = 'test';
+    (process.env as any).NODE_ENV = 'test';
   });
 
   it('should use dummy values in test environment when env vars are missing', () => {
