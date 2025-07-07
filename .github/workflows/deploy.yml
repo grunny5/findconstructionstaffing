@@ -117,14 +117,20 @@ jobs:
         run: |
           echo "Starting Vercel build..."
 
-          # Run build and save output
-          if vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee build.log; then
-            echo "✓ Vercel build command completed successfully"
-          else
-            echo "::error::Vercel build command failed"
-            cat build.log
+          # Run build without tee to avoid exit code issues
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} > build.log 2>&1
+          BUILD_RESULT=$?
+
+          # Display the build log
+          cat build.log
+
+          # Check if build failed
+          if [ $BUILD_RESULT -ne 0 ]; then
+            echo "::error::Vercel build command failed with exit code: $BUILD_RESULT"
             exit 1
           fi
+
+          echo "✓ Vercel build command completed successfully"
 
           # Verify build artifacts
           if [ ! -d ".vercel/output" ]; then

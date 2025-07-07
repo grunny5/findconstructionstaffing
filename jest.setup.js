@@ -10,6 +10,8 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
 process.env.NODE_ENV = 'test';
+process.env.FORCE_TEST_MOCKS = 'true';
+process.env.CI = 'true'; // Force CI mode for all tests
 
 // Add Web API polyfills for Node.js environment tests
 if (typeof global.Request === 'undefined') {

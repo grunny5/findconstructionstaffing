@@ -20,6 +20,7 @@ const customJestConfig = {
       ],
       setupFilesAfterEnv: [
         '<rootDir>/jest.setup.test-env.js',
+        '<rootDir>/jest.setup.supabase.js',
         '<rootDir>/jest.setup.js',
       ],
       moduleNameMapper: {
@@ -46,6 +47,7 @@ const customJestConfig = {
       ],
       setupFilesAfterEnv: [
         '<rootDir>/jest.setup.test-env.js',
+        '<rootDir>/jest.setup.supabase.js',
         '<rootDir>/jest.setup.js',
       ],
       moduleNameMapper: {

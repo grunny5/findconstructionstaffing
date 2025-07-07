@@ -4,13 +4,25 @@
 import { GET } from '@/app/api/agencies/[slug]/route';
 import { Agency } from '@/types/api';
 
-// Mock Supabase
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn(),
-    _error: true, // Add this to signal a mock to the API code
-  },
-}));
+// Mock Supabase before any imports
+jest.mock('@/lib/supabase', () => {
+  const mockFrom = jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+        })),
+      })),
+    })),
+  }));
+
+  return {
+    supabase: {
+      from: mockFrom,
+      _error: true, // Signal this is a mock to the API code
+    },
+  };
+});
 
 const mockAgency: Agency = {
   id: '1',

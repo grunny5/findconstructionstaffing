@@ -46,6 +46,9 @@ jobs:
           # Force test environment to ensure mocks are used
           FORCE_TEST_MOCKS: true
           CI: true
+          # Set database user to prevent defaulting to root
+          PGUSER: postgres
+          USER: postgres
 
       - name: Coverage Summary
         uses: irongut/CodeCoverageSummary@v1.3.0

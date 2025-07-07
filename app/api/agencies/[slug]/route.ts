@@ -318,7 +318,7 @@ export async function GET(
             message: 'Agency slug is required',
             details: {
               slug: 'Slug parameter cannot be empty',
-              received: params?.slug || 'undefined',
+              received: params?.slug === undefined ? 'undefined' : params?.slug,
             },
           },
         },

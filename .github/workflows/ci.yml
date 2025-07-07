@@ -172,6 +172,10 @@ jobs:
           export FORCE_TEST_MOCKS=true
           export CI=true
 
+          # Set database user to prevent defaulting to root
+          export PGUSER=postgres
+          export USER=postgres
+
           # Run tests with coverage
           npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache
 
