@@ -13,14 +13,11 @@ permissions:
   checks: write
   actions: read
 
-# Prevent multiple CI runs on the same branch from interfering
-# Only cancel in-progress runs for pull requests, not for main branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # Record start time for performance monitoring
   start-timer:
     runs-on: ubuntu-latest
     outputs:
@@ -28,6 +25,7 @@ jobs:
     steps:
       - id: start
         run: echo "time=$(date -u +%s)" >> $GITHUB_OUTPUT
+
   quality-checks:
     name: Code Quality Checks
     runs-on: ubuntu-latest
@@ -37,7 +35,7 @@ jobs:
     strategy:
       matrix:
         check: [typescript, eslint, prettier]
-      fail-fast: false # Don't cancel other jobs if one fails
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -71,51 +69,35 @@ jobs:
 
       - name: Run TypeScript compilation
         if: matrix.check == 'typescript'
-        id: typescript-check
-        run: |
-          # Run TypeScript check with error handling
-          echo "Starting TypeScript type check..."
-
-          # Capture the exit code without failing immediately
-          npm run type-check
-          TYPESCRIPT_EXIT_CODE=$?
-
-          if [ $TYPESCRIPT_EXIT_CODE -ne 0 ]; then
-            echo "::error::TypeScript type check failed with exit code: $TYPESCRIPT_EXIT_CODE"
-            echo "typescript_failed=true" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-
-          echo "TypeScript type check completed successfully"
-          echo "typescript_failed=false" >> $GITHUB_OUTPUT
+        run: npm run type-check
 
       - name: Run ESLint
         if: matrix.check == 'eslint'
-        run: |
-          # Run ESLint with error handling
-          echo "Starting ESLint check..."
-          if ! npm run lint -- --cache --cache-location .eslintcache --max-warnings 0; then
-            echo "::error::ESLint check failed"
-            exit 1
-          fi
-          echo "ESLint check completed successfully"
+        run: npm run lint -- --cache --cache-location .eslintcache --max-warnings 0
 
       - name: Run Prettier check
         if: matrix.check == 'prettier'
         run: npm run format:check
 
-      - name: Check job status
-        if: always()
-        run: |
-          echo "Job status: ${{ job.status }}"
-          echo "Job cancelled: ${{ job.status == 'cancelled' }}"
-          if [ "${{ job.status }}" = "cancelled" ]; then
-            echo "::warning::Job was cancelled. This might be due to concurrency settings or manual cancellation."
-          fi
-
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    needs: [quality-checks] # Ensures tests run only after quality checks pass
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: findconstructionstaffing_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout code
@@ -129,77 +111,38 @@ jobs:
       - name: Cache Jest cache
         uses: actions/cache@v4
         with:
-          path: |
-            /tmp/jest_*
-            .jest-cache
-          key: ${{ runner.os }}-jest-${{ hashFiles('package-lock.json', '**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx') }}
+          path: .jest-cache
+          key: ${{ runner.os }}-jest-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-jest-
 
-      - name: Cache Next.js build
-        uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-            ${{ runner.os }}-nextjs-
-
-      - name: Check environment variables
-        run: |
-          echo "=== Checking CI Environment Variables ==="
-          echo "NEXT_PUBLIC_SUPABASE_URL is: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL && 'set ✓' || 'not set ✗' }}"
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY is: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY && 'set ✓' || 'not set ✗' }}"
-          echo "SUPABASE_SERVICE_ROLE_KEY is: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY && 'set ✓' || 'not set ✗' }}"
-
-          if [[ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]] || [[ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]]; then
-            echo ""
-            echo "⚠️  Warning: Supabase environment variables are not set!"
-            echo "Tests will run with mock values, but integration tests may fail."
-            echo "See docs/CI_CD_ENV_SETUP.md for setup instructions."
-          fi
-
       - name: Run unit tests with coverage
-        continue-on-error: true
         run: |
-          # Set test environment variables for mocked tests
+          echo "Waiting for PostgreSQL to start..."
+          sleep 5
+          
           export NODE_ENV=test
           export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
           export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
           export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
-
-          # Force test environment to ensure mocks are used
           export FORCE_TEST_MOCKS=true
           export CI=true
-
-          # Set database user to prevent defaulting to root
           export PGUSER=postgres
           export USER=postgres
-
-          # ✅ ADD THIS LINE to override any incorrect default DATABASE_URL from the CI environment
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
-
-          # Run tests with coverage
+          
           npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache
 
-      - name: Cache performance metrics
-        if: always()
-        run: |
-          echo "=== Cache Performance Metrics ==="
-          echo "Jest cache size:"
-          du -sh .jest-cache 2>/dev/null || echo "0 (no cache)"
-          echo "Cache files:"
-          find .jest-cache -type f 2>/dev/null | wc -l || echo "0"
-
       - name: Upload coverage reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
           path: coverage/
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results/
@@ -212,11 +155,11 @@ jobs:
           path: test-results/junit.xml
           reporter: jest-junit
           fail-on-error: false
-          fail-on-empty: false
 
   security:
     name: Security Scanning
     runs-on: ubuntu-latest
+    needs: [quality-checks]
 
     steps:
       - name: Checkout code
@@ -228,17 +171,10 @@ jobs:
           node-version: '20.x'
 
       - name: Run npm audit
-        run: |
-          echo "Running npm audit for high and critical vulnerabilities..."
-          npm audit --audit-level=high
-
-      - name: Generate detailed audit report
-        if: always()
-        run: |
-          echo "Generating detailed audit report..."
-          npm audit --json > audit.json || true
+        run: npm audit --audit-level=high
 
       - name: Upload audit report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-audit-report
@@ -247,7 +183,7 @@ jobs:
   build:
     name: Build Application
     runs-on: ubuntu-latest
-    needs: [quality-checks, test, security]
+    needs: [test, security]
 
     steps:
       - name: Checkout code
@@ -271,7 +207,6 @@ jobs:
           name: build-artifacts
           path: .next/
 
-  # Performance monitoring and summary
   performance-summary:
     name: Performance Summary
     runs-on: ubuntu-latest
@@ -287,90 +222,17 @@ jobs:
           DURATION=$((END_TIME - START_TIME))
           DURATION_MIN=$((DURATION / 60))
           DURATION_SEC=$((DURATION % 60))
-
-          echo "duration=${DURATION}" >> $GITHUB_OUTPUT
           echo "duration_display=${DURATION_MIN}m ${DURATION_SEC}s" >> $GITHUB_OUTPUT
-
-          # Check if under 5 minutes
-          if [ $DURATION -lt 300 ]; then
-            echo "status=✅ PASS" >> $GITHUB_OUTPUT
-            echo "Performance target met: ${DURATION_MIN}m ${DURATION_SEC}s < 5m"
-          else
-            echo "status=⚠️ WARNING" >> $GITHUB_OUTPUT
-            echo "Performance target exceeded: ${DURATION_MIN}m ${DURATION_SEC}s > 5m"
-          fi
 
       - name: Generate job summary
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           # CI/CD Pipeline Performance Report
-
           ## Overall Duration: ${{ steps.duration.outputs.duration_display }}
-          **Status**: ${{ steps.duration.outputs.status }}
-
-          ## Job Results
-          - Quality Checks: ${{ needs.quality-checks.result }}
-          - Tests: ${{ needs.test.result }}
-          - Security: ${{ needs.security.result }}
-          - Build: ${{ needs.build.result }}
-
-          ## Performance Target
-          - Target: < 5 minutes
-          - Actual: ${{ steps.duration.outputs.duration_display }}
-
+          | Job | Status |
+          |-----|--------|
+          | Quality Checks | ${{ needs.quality-checks.result }} |
+          | Tests | ${{ needs.test.result }} |
+          | Security | ${{ needs.security.result }} |
+          | Build | ${{ needs.build.result }} |
           EOF
-
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const duration = '${{ steps.duration.outputs.duration_display }}';
-            const status = '${{ steps.duration.outputs.status }}';
-
-            // Comment marker to identify our comments
-            const commentMarker = '<!-- ci-performance-report -->';
-
-            const comment = `${commentMarker}
-            ### CI/CD Pipeline Performance
-
-            **Duration**: ${duration}
-            **Status**: ${status}
-
-            | Job | Status |
-            |-----|--------|
-            | Quality Checks | ${{ needs.quality-checks.result }} |
-            | Tests | ${{ needs.test.result }} |
-            | Security | ${{ needs.security.result }} |
-            | Build | ${{ needs.build.result }} |
-
-            *Updated: ${new Date().toISOString()}*`;
-
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
-            });
-
-            const existingComment = comments.find(comment => 
-              comment.body.includes(commentMarker)
-            );
-
-            if (existingComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existingComment.id,
-                body: comment
-              });
-            } else {
-              // Create new comment
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            }
