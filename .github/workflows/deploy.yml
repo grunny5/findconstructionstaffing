@@ -162,9 +162,35 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         id: deploy
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "Preview deployed to: $DEPLOYMENT_URL"
+          set -e  # Exit on any error
+          echo "Starting deployment..."
+          
+          # Deploy and capture both output and exit code
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || DEPLOY_EXIT_CODE=$?
+          
+          # Check if deployment succeeded
+          if [ -z "${DEPLOY_EXIT_CODE:-}" ]; then
+            DEPLOY_EXIT_CODE=0
+          fi
+          
+          echo "Deploy output:"
+          echo "$DEPLOY_OUTPUT"
+          
+          if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+            # Extract URL from output
+            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+            
+            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+              echo "Preview deployed to: $DEPLOYMENT_URL"
+            else
+              echo "::warning::Could not extract deployment URL from output"
+              echo "deployment_url=unknown" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "::error::Deployment failed with exit code: $DEPLOY_EXIT_CODE"
+            exit 1
+          fi
 
       - name: Create PR-specific alias
         id: alias

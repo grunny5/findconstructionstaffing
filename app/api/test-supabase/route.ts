@@ -36,7 +36,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('agencies')
       .select('id')
-      .limit(1);
+      .range(0, 0);
 
     if (error) {
       return NextResponse.json<TestSupabaseResponse>(

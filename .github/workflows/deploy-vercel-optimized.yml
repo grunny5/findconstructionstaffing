@@ -209,23 +209,26 @@ jobs:
               fi
               
               # Verify we got a valid URL
-              if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+              if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
                 echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
                 echo "Preview deployed to: $DEPLOYMENT_URL"
                 break
               else
                 echo "Warning: Failed to extract deployment URL from output"
+                echo "Clean output for debugging:"
+                echo "$CLEAN_OUTPUT"
+                
                 # For production deployments, use known production URL
                 if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
                   echo "Using fallback production URL"
                   echo "deployment_url=https://findconstructionstaffing.vercel.app" >> $GITHUB_OUTPUT
                   break
                 else
-                  # For preview deployments, we need the URL
-                  echo "Could not determine preview deployment URL"
+                  # For preview deployments, we need the URL but don't fail
+                  echo "Could not determine preview deployment URL, but deployment likely succeeded"
                   echo "deployment_url=unknown" >> $GITHUB_OUTPUT
-                  # Don't fail the workflow, deployment likely succeeded
-                  break
+                  # Explicitly exit successfully - don't fail the workflow
+                  exit 0
                 fi
               fi
             elif echo "$DEPLOY_OUTPUT" | grep -q "api-deployments-free-per-day"; then
@@ -241,9 +244,16 @@ jobs:
             else
               echo "Deployment failed with error:"
               echo "$DEPLOY_OUTPUT"
-              exit 1
+              if [ $i -eq 3 ]; then
+                echo "::error::All deployment attempts failed"
+                exit 1
+              fi
             fi
           done
+          
+          # Ensure we exit successfully if we got here
+          echo "Deployment process completed"
+          exit 0
 
       - name: Create deployment status
         if: github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'

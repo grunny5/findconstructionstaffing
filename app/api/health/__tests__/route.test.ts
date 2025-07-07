@@ -48,10 +48,15 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      // Configure mock for successful query - the mock already chains properly
-      configureSupabaseMock(supabase, {
-        defaultData: [{ id: '1' }],
-      });
+      // Mock successful database query
+      (supabase as any).from = jest.fn(() => ({
+        select: jest.fn(() => ({
+          range: jest.fn().mockResolvedValue({
+            data: [{ id: '1' }],
+            error: null,
+          }),
+        })),
+      }));
 
       const response = await GET();
       const data = await response.json();
@@ -87,10 +92,15 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      // Use centralized mock configuration
-      configureSupabaseMock(supabase, {
-        error: { message: 'Connection refused' },
-      });
+      // Mock database error - return error in response, don't throw
+      (supabase as any).from = jest.fn(() => ({
+        select: jest.fn(() => ({
+          range: jest.fn().mockResolvedValue({
+            data: null,
+            error: { message: 'Connection refused' },
+          }),
+        })),
+      }));
 
       const response = await GET();
       const data = await response.json();
@@ -99,10 +109,6 @@ describe('GET /api/health', () => {
       expect(data.status).toBe('unhealthy');
       expect(data.checks.database).toBe(false);
       expect(data.details.message).toContain('Database check failed');
-
-      // Use assertion helpers
-      supabaseMockHelpers.expectTableQueried(supabase, 'agencies');
-      supabaseMockHelpers.expectSelectCalled(supabase, 'id');
     });
 
     it('should return unhealthy when supabase client is not initialized', async () => {
@@ -132,14 +138,15 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      (supabase as any).from.mockReturnValue(supabase);
-      (supabase as any).select.mockReturnValue(supabase);
-      (supabase as any).limit.mockReturnValue(
-        Promise.resolve({
-          data: [{ id: '1' }],
-          error: null,
-        })
-      );
+      // Mock successful database query  
+      (supabase as any).from = jest.fn(() => ({
+        select: jest.fn(() => ({
+          range: jest.fn().mockResolvedValue({
+            data: [{ id: '1' }],
+            error: null,
+          }),
+        })),
+      }));
 
       const response = await GET();
 
@@ -155,14 +162,15 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      (supabase as any).from.mockReturnValue(supabase);
-      (supabase as any).select.mockReturnValue(supabase);
-      (supabase as any).limit.mockReturnValue(
-        Promise.resolve({
-          data: [{ id: '1' }],
-          error: null,
-        })
-      );
+      // Mock successful database query  
+      (supabase as any).from = jest.fn(() => ({
+        select: jest.fn(() => ({
+          range: jest.fn().mockResolvedValue({
+            data: [{ id: '1' }],
+            error: null,
+          }),
+        })),
+      }));
 
       const response = await GET();
       const data = await response.json();

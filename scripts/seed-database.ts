@@ -143,7 +143,7 @@ async function testConnection(
       );
 
       // Try a simple query to test connectivity
-      const { error } = await supabase.from('agencies').select('id').limit(1);
+      const { error } = await supabase.from('agencies').select('id').range(0, 0);
 
       if (error) {
         // If table doesn't exist, that's okay - connection works

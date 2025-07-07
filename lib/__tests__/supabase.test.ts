@@ -11,6 +11,14 @@ describe('Supabase Client', () => {
     jest.clearAllMocks();
     jest.resetModules();
     process.env = { ...originalEnv };
+    
+    // Clear any existing module cache
+    Object.keys(require.cache).forEach(key => {
+      if (key.includes('supabase')) {
+        delete require.cache[key];
+      }
+    });
+    
     // Set up the mock
     const mockClient = { from: jest.fn() };
     (createSupabaseClient as jest.Mock).mockReturnValue(mockClient);
@@ -45,31 +53,45 @@ describe('Supabase Client', () => {
   });
 
   it('should throw error when NEXT_PUBLIC_SUPABASE_URL is missing in non-test env', () => {
+    // Clear all environment variables and set to development
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-    (process.env as any).NODE_ENV = 'development'; // Set to development to avoid build check
+    process.env.NODE_ENV = 'development';
 
-    // Re-import to trigger error
+    // Reset modules to ensure fresh import
     jest.resetModules();
-    expect(() => require('../supabase')).toThrow(
-      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL'
-    );
+    
+    // Clear the module cache to force re-evaluation
+    delete require.cache[require.resolve('../supabase')];
+    
+    // Expect the error to be thrown during module import
+    expect(() => {
+      require('../supabase');
+    }).toThrow('Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL');
 
-    (process.env as any).NODE_ENV = 'test'; // Reset to test
+    // Reset back to test environment
+    process.env.NODE_ENV = 'test';
   });
 
   it('should throw error when NEXT_PUBLIC_SUPABASE_ANON_KEY is missing in non-test env', () => {
+    // Set URL but clear ANON_KEY, set to development
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    (process.env as any).NODE_ENV = 'development'; // Set to development to avoid build check
+    process.env.NODE_ENV = 'development';
 
-    // Re-import to trigger error
+    // Reset modules to ensure fresh import
     jest.resetModules();
-    expect(() => require('../supabase')).toThrow(
-      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
+    
+    // Clear the module cache to force re-evaluation
+    delete require.cache[require.resolve('../supabase')];
+    
+    // Expect the error to be thrown during module import
+    expect(() => {
+      require('../supabase');
+    }).toThrow('Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY');
 
-    (process.env as any).NODE_ENV = 'test'; // Reset to test
+    // Reset back to test environment
+    process.env.NODE_ENV = 'test';
   });
 
   it('should use dummy values in test environment when env vars are missing', () => {

@@ -81,7 +81,7 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
       const { error } = await supabase
         .from('agencies')
         .select('count')
-        .limit(1);
+        .range(0, 0);
       if (!error || error.code === '42P01') {
         // 42P01 = table does not exist
         result.checks.connection = true;
@@ -107,7 +107,7 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     const existingTables: string[] = [];
 
     for (const table of requiredTables) {
-      const { error } = await supabase.from(table).select('count').limit(1);
+      const { error } = await supabase.from(table).select('count').range(0, 0);
       if (!error) {
         existingTables.push(table);
       }
@@ -164,7 +164,7 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
       const { data, error } = await supabase
         .from('agencies')
         .select('id, name')
-        .limit(1);
+        .range(0, 0);
 
       if (!error) {
         result.checks.permissions = true;
