@@ -386,7 +386,8 @@ export async function GET(request: NextRequest) {
             state_code
           )
         )
-      `
+      `,
+        { count: 'exact' }
       )
       .eq('is_active', true);
 
@@ -409,10 +410,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Apply pagination using validated parameters
+    // Apply pagination and ordering using validated parameters
     query = query
-      .range(offset, offset + limit - 1)
-      .order('name', { ascending: true });
+      .order('name', { ascending: true })
+      .range(offset, offset + limit - 1);
 
     // Execute the query with performance tracking
     const mainQueryId = monitor.startQuery();

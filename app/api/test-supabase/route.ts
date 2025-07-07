@@ -35,8 +35,7 @@ export async function GET() {
     // Try to query agencies table to test connection
     const { data, error } = await supabase
       .from('agencies')
-      .select('id')
-      .range(0, 0);
+      .select('id', { head: true, count: 'exact' });
 
     if (error) {
       return NextResponse.json<TestSupabaseResponse>(

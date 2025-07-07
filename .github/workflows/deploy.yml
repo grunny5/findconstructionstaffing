@@ -165,8 +165,8 @@ jobs:
           set -e  # Exit on any error
           echo "Starting deployment..."
           
-          # Deploy and capture both output and exit code
-          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || DEPLOY_EXIT_CODE=$?
+          # Deploy and capture both output and exit code using JSON for reliable parsing
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --json) || DEPLOY_EXIT_CODE=$?
           
           # Check if deployment succeeded
           if [ -z "${DEPLOY_EXIT_CODE:-}" ]; then
@@ -177,14 +177,21 @@ jobs:
           echo "$DEPLOY_OUTPUT"
           
           if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
-            # Extract URL from output
-            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+            # Parse JSON output to extract deployment information
+            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url // empty')
+            DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | jq -r '.id // .uid // empty')
             
-            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" != "null" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
               echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
               echo "Preview deployed to: $DEPLOYMENT_URL"
+              
+              # Set deployment ID if available
+              if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
+                echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+                echo "Deployment ID: $DEPLOYMENT_ID"
+              fi
             else
-              echo "::warning::Could not extract deployment URL from output"
+              echo "::warning::Could not extract deployment URL from JSON output"
               echo "deployment_url=unknown" >> $GITHUB_OUTPUT
             fi
           else
@@ -199,7 +206,15 @@ jobs:
           ALIAS_NAME="findconstructionstaffing-pr-${PR_NUMBER}"
 
           # Set alias for the deployment
-          vercel alias set ${{ steps.deploy.outputs.deployment_url }} ${ALIAS_NAME} --token=${{ secrets.VERCEL_TOKEN }}
+          DEPLOYMENT_URL="${{ steps.deploy.outputs.deployment_url }}"
+          
+          # Guard against missing or invalid deployment URL
+          if [[ -z "$DEPLOYMENT_URL" || "$DEPLOYMENT_URL" == "unknown" || "$DEPLOYMENT_URL" == "null" ]]; then
+            echo "::error::Deployment URL not available ($DEPLOYMENT_URL) - skipping alias creation"
+            exit 1
+          fi
+          
+          vercel alias set "$DEPLOYMENT_URL" ${ALIAS_NAME} --token=${{ secrets.VERCEL_TOKEN }}
 
           ALIAS_URL="https://${ALIAS_NAME}.vercel.app"
           echo "alias_url=$ALIAS_URL" >> $GITHUB_OUTPUT
@@ -361,7 +376,7 @@ jobs:
         id: deploy
         run: |
           # Store current deployment for potential rollback using JSON output
-          CURRENT_DEPLOYMENT_JSON=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} --output json || echo '{"deployments":[]}')
+          CURRENT_DEPLOYMENT_JSON=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} --json || echo '{"deployments":[]}')
           CURRENT_DEPLOYMENT=$(echo "$CURRENT_DEPLOYMENT_JSON" | node -e "
             const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
             const prodDeployments = (data.deployments || [])
@@ -371,49 +386,58 @@ jobs:
               console.log(prodDeployments[0].uid);
             }
           ")
-          echo "previous_deployment=$CURRENT_DEPLOYMENT" >> $GITHUB_OUTPUT
+          
+          # Ensure previous_deployment is always set with a meaningful value
+          if [[ -n "$CURRENT_DEPLOYMENT" && "$CURRENT_DEPLOYMENT" != "null" ]]; then
+            echo "previous_deployment=$CURRENT_DEPLOYMENT" >> $GITHUB_OUTPUT
+            echo "Found previous deployment: $CURRENT_DEPLOYMENT"
+          else
+            echo "previous_deployment=none" >> $GITHUB_OUTPUT
+            echo "No previous deployment found"
+          fi
 
-          # Deploy to production
+          # Deploy to production using JSON output for reliable parsing
           echo "Deploying to production..."
-          DEPLOYMENT_OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+          DEPLOYMENT_OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --json 2>&1)
           DEPLOYMENT_EXIT_CODE=$?
 
           if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
-            # Strip ANSI escape codes from output first
-            CLEAN_OUTPUT=$(echo "$DEPLOYMENT_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g')
+            # Parse JSON output to extract deployment information
+            DEPLOYMENT_URL=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.url // empty')
+            DEPLOYMENT_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.uid // empty')
             
-            # Extract URL from cleaned output using multiple patterns
-            # Pattern 1: Direct URL on its own line
-            DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -E "^https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)$" | tail -1)
-            
-            # Pattern 2: URL after "Ready!" or "Deployed to:"
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
-              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "(Ready!|Deployed to:)\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
-            fi
-            
-            # Pattern 3: URL after "Inspect:"
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
-              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "Inspect:\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
-            fi
-            
-            # Pattern 4: Any URL in the output (fallback)
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
-              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
-            fi
-            
-            # For production, we know the URL
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
+            # Validate we got the required information
+            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" != "null" ]]; then
+              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+              echo "Production deployed to: $DEPLOYMENT_URL"
+            else
+              # Fallback to known production URL for production deployments
               DEPLOYMENT_URL="https://findconstructionstaffing.vercel.app"
+              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+              echo "Production deployed to: $DEPLOYMENT_URL (using fallback URL)"
             fi
             
-            # Generate a deployment ID from timestamp
-            DEPLOYMENT_ID="prod-$(date +%s)"
+            # Set deployment ID - use actual deployment UID for rollback functionality
+            if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
+              echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+              echo "Deployment ID: $DEPLOYMENT_ID"
+            else
+              # Try to extract deployment ID from JSON output using alternative field names
+              DEPLOYMENT_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.id // .deploymentId // empty')
+              
+              if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
+                echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+                echo "Deployment ID: $DEPLOYMENT_ID"
+              else
+                echo "::warning::Could not determine deployment ID - rollback commands may not work"
+                echo "deployment_id=unknown" >> $GITHUB_OUTPUT
+              fi
+            fi
             
-            echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-            echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-            echo "Production deployed to: $DEPLOYMENT_URL"
+            echo "✓ Deployment completed successfully"
           else
             echo "::error::Deployment failed with exit code: $DEPLOYMENT_EXIT_CODE"
+            echo "Deployment output:"
             echo "$DEPLOYMENT_OUTPUT"
             exit 1
           fi
