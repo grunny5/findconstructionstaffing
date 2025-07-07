@@ -81,19 +81,12 @@ jobs:
           USER: postgres
         run: |
           echo "Creating database schema..."
-          # First, check if the migration file exists
           if [ -f "supabase/migrations/combined_migration_idempotent.sql" ]; then
-            echo "Using idempotent migration file..."
-            psql -f supabase/migrations/combined_migration_idempotent.sql
+            psql -U postgres -f supabase/migrations/combined_migration_idempotent.sql
           elif [ -f "supabase/migrations/combined_migration.sql" ]; then
-            echo "Using original migration file..."
-            # Drop and recreate database to ensure clean state
-            psql -d postgres -c "DROP DATABASE IF EXISTS findconstructionstaffing_test;"
-            psql -d postgres -c "CREATE DATABASE findconstructionstaffing_test;"
-            # Run migration
-            psql -d findconstructionstaffing_test -f supabase/migrations/combined_migration.sql
-          else
-            echo "No migration file found - skipping schema creation"
+            psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS findconstructionstaffing_test;"
+            psql -U postgres -d postgres -c "CREATE DATABASE findconstructionstaffing_test;"
+            psql -U postgres -d findconstructionstaffing_test -f supabase/migrations/combined_migration.sql
           fi
 
       - name: Set up test environment
