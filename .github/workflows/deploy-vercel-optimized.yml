@@ -23,8 +23,8 @@ on:
 # Cancel in-progress deployments on same branch
 concurrency:
   # Use head ref when it exists, otherwise fallback to branch ref
-  # Replace slashes with hyphens to avoid GitHub's validation error
-  group: ${{ github.workflow }}-${{ replace(github.head_ref || github.ref, '/', '-') }}
+  # Sanitize workflow name (remove spaces/parentheses) and branch/ref
+  group: deploy-vercel-optimized-${{ replace(github.head_ref || github.ref, '/', '-') }}
   cancel-in-progress: true
 
 # Permissions needed for the workflow
@@ -63,13 +63,13 @@ jobs:
 
           # Skip if only docs/tests changed
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # For PRs, compare against the base branch
-            # Ensure the base branch is available locally
-            git fetch origin ${{ github.base_ref }} --depth=1
-            CHANGED_FILES=$(git diff --name-only FETCH_HEAD...HEAD)
+            # For PRs, use GitHub API to get the list of changed files
+            # This properly handles untracked files, submodules, and permission changes
+            CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
-            # For pushes, compare against the previous commit
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            # For pushes, compare against the previous commit including untracked files
+            git fetch origin ${{ github.event.before }} --depth=1
+            CHANGED_FILES=$(git diff --name-only --relative FETCH_HEAD HEAD)
           fi
 
           # Check if any non-docs/non-test files were changed
@@ -106,6 +106,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install Vercel CLI and dependencies
         run: |
@@ -131,7 +132,7 @@ jobs:
           echo "Starting Vercel build..."
 
           # Capture output while preserving exit code
-          BUILD_OUTPUT=$(vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
+          BUILD_OUTPUT=$(vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
 
           # Always show build output for debugging
           echo "Build output:"
