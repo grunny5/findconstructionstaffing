@@ -65,8 +65,17 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # For PRs, use GitHub API to get the list of changed files
             # This properly handles untracked files, submodules, and permission changes
+            
+            # Install GitHub CLI if not present
+            if ! command -v gh &> /dev/null; then
+              echo "Installing GitHub CLI..."
+              sudo apt-get update -qq && sudo apt-get install -y gh
+            fi
+            
             # Configure GitHub CLI with authentication token
             export GH_TOKEN="${{ github.token }}"
+            export GITHUB_TOKEN="${{ github.token }}"
+            
             CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
             # For pushes, compare against the previous commit including untracked files
@@ -143,7 +152,7 @@ jobs:
           else
             VERCEL_ENV="preview"
           fi
-          vercel pull --yes --environment="${VERCEL_ENV}" --token=${{ secrets.VERCEL_TOKEN }}
+          vercel pull --yes --environment="${VERCEL_ENV}" --token="${{ secrets.VERCEL_TOKEN }}"
 
       - name: Build Project Artifacts
         if: steps.check-token.outputs.should_skip != 'true'
@@ -158,7 +167,8 @@ jobs:
           echo "Starting Vercel build..."
 
           # Capture output while preserving exit code
-          BUILD_OUTPUT=$(vercel build --token=${{ secrets.VERCEL_TOKEN }} 2>&1) || BUILD_EXIT_CODE=$?
+          BUILD_EXIT_CODE=0
+          BUILD_OUTPUT=$(vercel build --token="${{ secrets.VERCEL_TOKEN }}" 2>&1) || BUILD_EXIT_CODE=$?
 
           # Always show build output for debugging
           echo "Build output:"
@@ -211,12 +221,15 @@ jobs:
             echo "Deploying to Vercel (attempt $i/3)..."
             
             # Deploy and capture both output and exit code using JSON for reliable parsing
+            # Initialize exit code
+            DEPLOY_EXIT_CODE=0
+            
             # Determine if we need the --prod flag
-            EXTRA_FLAG=""
             if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-              EXTRA_FLAG="--prod"
+              DEPLOY_OUTPUT=$(vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}" --json 2>&1) || DEPLOY_EXIT_CODE=$?
+            else
+              DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}" --json 2>&1) || DEPLOY_EXIT_CODE=$?
             fi
-            DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${EXTRA_FLAG} --token=${{ secrets.VERCEL_TOKEN }} --json 2>&1) || DEPLOY_EXIT_CODE=$?
             
             echo "Deploy exit code: ${DEPLOY_EXIT_CODE:-0}"
             echo "Deploy output:"
