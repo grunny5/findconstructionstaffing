@@ -35,28 +35,34 @@ permissions:
 
 jobs:
   # Check if we should deploy
-  should-deploy:
+  should_deploy:
     name: Check Deployment Conditions
     runs-on: ubuntu-latest
     outputs:
-      should-deploy: ${{ steps.check.outputs.should-deploy }}
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Need full history to compare changes
+
+      - name: Setup GitHub CLI
+        uses: cli/cli-action@v1
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Check conditions
         id: check
         run: |
           # Always deploy main and staging
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # For PRs, only deploy if not draft
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
-            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
             echo "Skipping deployment for draft PR"
             exit 0
           fi
@@ -65,17 +71,6 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # For PRs, use GitHub API to get the list of changed files
             # This properly handles untracked files, submodules, and permission changes
-            
-            # Install GitHub CLI if not present
-            if ! command -v gh &> /dev/null; then
-              echo "Installing GitHub CLI..."
-              sudo apt-get update -qq && sudo apt-get install -y gh
-            fi
-            
-            # Configure GitHub CLI with authentication token
-            export GH_TOKEN="${{ github.token }}"
-            export GITHUB_TOKEN="${{ github.token }}"
-            
             CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
             # For pushes, compare against the previous commit including untracked files
@@ -93,17 +88,17 @@ jobs:
             echo "Only docs/tests changed - skipping deployment"
             echo "Changed files:"
             echo "$CHANGED_FILES"
-            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
           else
             echo "Code changes detected - proceeding with deployment"
-            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
           fi
 
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: should-deploy
-    if: needs.should-deploy.outputs.should-deploy == 'true'
+    needs: should_deploy
+    if: needs.should_deploy.outputs.should_deploy == 'true'
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -111,7 +106,7 @@ jobs:
 
     steps:
       - name: Check Vercel token availability
-        id: check-token
+        id: check_token
         run: |
           if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
             echo "::warning::VERCEL_TOKEN unavailable - likely a forked PR. Skipping deployment."
@@ -123,10 +118,10 @@ jobs:
           echo "should_skip=false" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v4
-        if: steps.check-token.outputs.should_skip != 'true'
+        if: steps.check_token.outputs.should_skip != 'true'
 
       - name: Setup Node.js
-        if: steps.check-token.outputs.should_skip != 'true'
+        if: steps.check_token.outputs.should_skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -134,7 +129,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
 
       - name: Install Vercel CLI and dependencies
-        if: steps.check-token.outputs.should_skip != 'true'
+        if: steps.check_token.outputs.should_skip != 'true'
         run: |
           # Install CLI
           npm install --global vercel@latest
@@ -144,7 +139,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y jq
 
       - name: Pull Vercel Environment Information
-        if: steps.check-token.outputs.should_skip != 'true'
+        if: steps.check_token.outputs.should_skip != 'true'
         run: |
           # Determine environment based on branch
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
@@ -155,7 +150,7 @@ jobs:
           vercel pull --yes --environment="${VERCEL_ENV}" --token="${{ secrets.VERCEL_TOKEN }}"
 
       - name: Build Project Artifacts
-        if: steps.check-token.outputs.should_skip != 'true'
+        if: steps.check_token.outputs.should_skip != 'true'
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -210,7 +205,7 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy
-        if: steps.check-token.outputs.should_skip != 'true'
+        if: steps.check_token.outputs.should_skip != 'true'
         run: |
           # Set variables to track deployment success
           DEPLOYMENT_SUCCESS=false
@@ -224,12 +219,11 @@ jobs:
             # Initialize exit code
             DEPLOY_EXIT_CODE=0
             
-            # Determine if we need the --prod flag
-            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-              DEPLOY_OUTPUT=$(vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}" --json 2>&1) || DEPLOY_EXIT_CODE=$?
-            else
-              DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}" --json 2>&1) || DEPLOY_EXIT_CODE=$?
-            fi
+            # Set production flag for main branch
+            PROD_FLAG=""
+            [ "${{ github.ref }}" = "refs/heads/main" ] && PROD_FLAG="--prod"
+            
+            DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${{ secrets.VERCEL_TOKEN }}" --json 2>&1) || DEPLOY_EXIT_CODE=$?
             
             echo "Deploy exit code: ${DEPLOY_EXIT_CODE:-0}"
             echo "Deploy output:"
@@ -308,7 +302,7 @@ jobs:
           fi
 
       - name: Create deployment status
-        if: steps.check-token.outputs.should_skip != 'true' && github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'
+        if: steps.check_token.outputs.should_skip != 'true' && github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'
         uses: actions/github-script@v7
         with:
           script: |
