@@ -176,6 +176,9 @@ jobs:
           export PGUSER=postgres
           export USER=postgres
 
+          # ✅ ADD THIS LINE to override any incorrect default DATABASE_URL from the CI environment
+          export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
+
           # Run tests with coverage
           npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache
 
