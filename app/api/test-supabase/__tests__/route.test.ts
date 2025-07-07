@@ -20,7 +20,7 @@ describe('GET /api/test-supabase', () => {
   const mockSupabase = {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
+    range: jest.fn().mockReturnThis(),
   };
 
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe('GET /api/test-supabase', () => {
   });
 
   it('should return success when connection works', async () => {
-    mockSupabase.limit.mockResolvedValue({
+    mockSupabase.range.mockResolvedValue({
       data: [{ id: '1' }],
       error: null,
     });
@@ -54,7 +54,7 @@ describe('GET /api/test-supabase', () => {
       code: 'TIMEOUT',
     };
 
-    mockSupabase.limit.mockResolvedValue({
+    mockSupabase.range.mockResolvedValue({
       data: null,
       error: mockError,
     });
@@ -74,7 +74,7 @@ describe('GET /api/test-supabase', () => {
   });
 
   it('should query agencies table', async () => {
-    mockSupabase.limit.mockResolvedValue({
+    mockSupabase.range.mockResolvedValue({
       data: [],
       error: null,
     });
@@ -83,11 +83,11 @@ describe('GET /api/test-supabase', () => {
 
     expect(mockSupabase.from).toHaveBeenCalledWith('agencies');
     expect(mockSupabase.select).toHaveBeenCalledWith('id');
-    expect(mockSupabase.limit).toHaveBeenCalledWith(1);
+    expect(mockSupabase.range).toHaveBeenCalledWith(0, 0);
   });
 
   it('should handle empty result set', async () => {
-    mockSupabase.limit.mockResolvedValue({
+    mockSupabase.range.mockResolvedValue({
       data: [],
       error: null,
     });
@@ -100,7 +100,7 @@ describe('GET /api/test-supabase', () => {
   });
 
   it('should handle null data response', async () => {
-    mockSupabase.limit.mockResolvedValue({
+    mockSupabase.range.mockResolvedValue({
       data: null,
       error: null,
     });

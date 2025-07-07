@@ -34,7 +34,7 @@ describe('Enhanced Supabase Mock', () => {
         .select('*')
         .eq('is_active', true)
         .order('name', { ascending: true })
-        .limit(10);
+        .range(0, 9);
 
       expect(query).toBeDefined();
       expect(supabase.from).toHaveBeenCalledWith('agencies');
