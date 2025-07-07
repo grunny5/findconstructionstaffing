@@ -61,7 +61,9 @@ export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
   try {
     if (supabase && checks.environment) {
       // Perform a simple query to verify database connectivity
-      const { error } = await supabase.from('agencies').select('id', { head: true, count: 'exact' });
+      const { error } = await supabase
+        .from('agencies')
+        .select('id', { head: true, count: 'exact' });
 
       if (!error) {
         checks.database = true;

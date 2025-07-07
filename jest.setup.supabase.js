@@ -26,7 +26,7 @@ jest.mock('@/lib/supabase', () => {
       order: jest.fn(() => createMockChain()),
       limit: jest.fn(() => createMockChain()),
       range: jest.fn(() => createMockChain()),
-      
+
       // Terminal methods that return promises
       single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       maybeSingle: jest.fn(() => Promise.resolve({ data: null, error: null })),
@@ -37,12 +37,12 @@ jest.mock('@/lib/supabase', () => {
       update: jest.fn(() => Promise.resolve({ data: null, error: null })),
       upsert: jest.fn(() => Promise.resolve({ data: null, error: null })),
       delete: jest.fn(() => Promise.resolve({ data: null, error: null })),
-      
+
       // Add then/catch to make the chain thenable when needed
-      then: jest.fn((onFulfilled) => 
+      then: jest.fn((onFulfilled) =>
         Promise.resolve({ data: [], error: null }).then(onFulfilled)
       ),
-      catch: jest.fn((onRejected) => 
+      catch: jest.fn((onRejected) =>
         Promise.resolve({ data: [], error: null }).catch(onRejected)
       ),
     };
@@ -51,7 +51,7 @@ jest.mock('@/lib/supabase', () => {
 
   const mockSupabase = createMockChain();
   mockSupabase._error = true; // CRITICAL: This signals to API routes that this is a mock
-  
+
   // Ensure from method exists on root object
   mockSupabase.from = jest.fn(() => createMockChain());
 

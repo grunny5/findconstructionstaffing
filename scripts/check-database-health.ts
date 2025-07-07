@@ -106,7 +106,9 @@ async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     const existingTables: string[] = [];
 
     for (const table of requiredTables) {
-      const { error } = await supabase.from(table).select('count', { head: true, count: 'exact' });
+      const { error } = await supabase
+        .from(table)
+        .select('count', { head: true, count: 'exact' });
       if (!error) {
         existingTables.push(table);
       }

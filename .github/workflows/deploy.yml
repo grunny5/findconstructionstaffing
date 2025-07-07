@@ -99,7 +99,7 @@ jobs:
           # Install Vercel CLI with proper error handling
           echo "Installing Vercel CLI..."
           npm install --global vercel@latest --loglevel=error 2>&1 | grep -v "npm warn deprecated" || true
-          
+
           # Check if installation succeeded
           if ! command -v vercel &> /dev/null; then
             echo "::error::Failed to install Vercel CLI"
@@ -123,7 +123,7 @@ jobs:
 
           # Run build without tee to avoid exit code issues
           vercel build --token=${{ secrets.VERCEL_TOKEN }} > build.log 2>&1 || BUILD_RESULT=$?
-          
+
           # If BUILD_RESULT is not set, the command succeeded
           if [ -z "${BUILD_RESULT:-}" ]; then
             BUILD_RESULT=0
@@ -155,7 +155,7 @@ jobs:
 
           echo "✓ Build completed successfully"
           echo "✓ Build artifacts verified"
-          
+
           # Ensure we exit cleanly
           exit 0
 
@@ -164,18 +164,18 @@ jobs:
         run: |
           set -e  # Exit on any error
           echo "Starting deployment..."
-          
+
           # Deploy and capture both output and exit code using JSON for reliable parsing
           DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --json) || DEPLOY_EXIT_CODE=$?
-          
+
           # Check if deployment succeeded
           if [ -z "${DEPLOY_EXIT_CODE:-}" ]; then
             DEPLOY_EXIT_CODE=0
           fi
-          
+
           echo "Deploy output:"
           echo "$DEPLOY_OUTPUT"
-          
+
           if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
             # Parse JSON output to extract deployment information
             DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url // empty')
@@ -207,13 +207,13 @@ jobs:
 
           # Set alias for the deployment
           DEPLOYMENT_URL="${{ steps.deploy.outputs.deployment_url }}"
-          
+
           # Guard against missing or invalid deployment URL
           if [[ -z "$DEPLOYMENT_URL" || "$DEPLOYMENT_URL" == "unknown" || "$DEPLOYMENT_URL" == "null" ]]; then
             echo "::error::Deployment URL not available ($DEPLOYMENT_URL) - skipping alias creation"
             exit 1
           fi
-          
+
           vercel alias set "$DEPLOYMENT_URL" ${ALIAS_NAME} --token=${{ secrets.VERCEL_TOKEN }}
 
           ALIAS_URL="https://${ALIAS_NAME}.vercel.app"
@@ -319,7 +319,7 @@ jobs:
         run: |
           echo "Installing Vercel CLI..."
           npm install --global vercel@latest --loglevel=error 2>&1 | grep -v "npm warn deprecated" || true
-          
+
           # Verify installation
           vercel --version || {
             echo "::error::Vercel CLI not found after installation"
@@ -336,7 +336,7 @@ jobs:
 
           # Run build without tee to avoid exit code issues
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} > build.log 2>&1 || BUILD_RESULT=$?
-          
+
           # If BUILD_RESULT is not set, the command succeeded
           if [ -z "${BUILD_RESULT:-}" ]; then
             BUILD_RESULT=0
@@ -386,7 +386,7 @@ jobs:
               console.log(prodDeployments[0].uid);
             }
           ")
-          
+
           # Ensure previous_deployment is always set with a meaningful value
           if [[ -n "$CURRENT_DEPLOYMENT" && "$CURRENT_DEPLOYMENT" != "null" ]]; then
             echo "previous_deployment=$CURRENT_DEPLOYMENT" >> $GITHUB_OUTPUT

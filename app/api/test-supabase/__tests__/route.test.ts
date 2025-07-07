@@ -81,7 +81,10 @@ describe('GET /api/test-supabase', () => {
     await GET();
 
     expect(mockSupabase.from).toHaveBeenCalledWith('agencies');
-    expect(mockSupabase.select).toHaveBeenCalledWith('id', { head: true, count: 'exact' });
+    expect(mockSupabase.select).toHaveBeenCalledWith('id', {
+      head: true,
+      count: 'exact',
+    });
   });
 
   it('should handle empty result set', async () => {

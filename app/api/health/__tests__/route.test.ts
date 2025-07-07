@@ -138,7 +138,7 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      // Mock successful database query  
+      // Mock successful database query
       (supabase as any).from = jest.fn(() => ({
         select: jest.fn(() => ({
           range: jest.fn().mockResolvedValue({
@@ -162,7 +162,7 @@ describe('GET /api/health', () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-key';
 
-      // Mock successful database query  
+      // Mock successful database query
       (supabase as any).from = jest.fn(() => ({
         select: jest.fn(() => ({
           range: jest.fn().mockResolvedValue({
