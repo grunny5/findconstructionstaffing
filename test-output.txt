@@ -1,4 +1,0 @@
-
-> construction-recruiter-directory@0.1.0 test
-> jest --coverage --coverageReporters=json-summary --no-cache
-
