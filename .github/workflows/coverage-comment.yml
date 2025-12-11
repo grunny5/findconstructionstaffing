@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: Run tests with coverage
-        run: npm test -- --coverage --ci --passWithNoTests --coverageReporters=json-summary
+        run: npm test -- --coverage --ci --passWithNoTests
         env:
           NODE_ENV: test
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}
