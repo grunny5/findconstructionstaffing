@@ -241,21 +241,21 @@ jobs:
 
               # Extract URL from cleaned output using multiple patterns
               # Pattern 1: Direct URL on its own line
-              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -E "^https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)$" | tail -1)
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -E "^https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)$" | tail -1 || true)
 
               # Pattern 2: URL after "Ready!" or "Deployed to:"
               if [[ -z "$DEPLOYMENT_URL" ]]; then
-                DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "(Ready!|Deployed to:)\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+                DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "(Ready!|Deployed to:)\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
               fi
 
               # Pattern 3: URL after "Inspect:"
               if [[ -z "$DEPLOYMENT_URL" ]]; then
-                DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "Inspect:\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+                DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "Inspect:\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
               fi
 
               # Pattern 4: Any URL in the output (fallback)
               if [[ -z "$DEPLOYMENT_URL" ]]; then
-                DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+                DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
               fi
 
               # Check if we got a valid URL
