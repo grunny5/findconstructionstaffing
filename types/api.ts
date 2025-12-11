@@ -1,6 +1,6 @@
 /**
  * API TypeScript Type Definitions
- * 
+ *
  * This file contains comprehensive type definitions for the agencies API endpoint.
  * All types are designed to match the database schema exactly while providing
  * type safety for API consumers.
@@ -80,7 +80,6 @@ export interface Agency {
   regions: Region[];
 }
 
-
 /**
  * Pagination metadata for list responses
  */
@@ -151,7 +150,12 @@ export interface AgencyResponse {
  * Type guard to check if a response is an error
  */
 export function isErrorResponse(response: any): response is ErrorResponse {
-  return response !== null && response !== undefined && typeof response === 'object' && 'error' in response;
+  return (
+    response !== null &&
+    response !== undefined &&
+    typeof response === 'object' &&
+    'error' in response
+  );
 }
 
 /**

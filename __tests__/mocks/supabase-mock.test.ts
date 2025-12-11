@@ -19,7 +19,10 @@ describe('Enhanced Supabase Mock', () => {
     });
 
     it('should track createClient calls', () => {
-      expect(createClient).toHaveBeenCalledWith('https://test.supabase.co', 'test-key');
+      expect(createClient).toHaveBeenCalledWith(
+        'https://test.supabase.co',
+        'test-key'
+      );
       expect(createClient).toHaveBeenCalledTimes(1);
     });
   });
@@ -31,7 +34,7 @@ describe('Enhanced Supabase Mock', () => {
         .select('*')
         .eq('is_active', true)
         .order('name', { ascending: true })
-        .limit(10);
+        .range(0, 9);
 
       expect(query).toBeDefined();
       expect(supabase.from).toHaveBeenCalledWith('agencies');
@@ -41,7 +44,7 @@ describe('Enhanced Supabase Mock', () => {
       const result = await supabase
         .from('agencies')
         .select('*')
-        .then(res => res);
+        .then((res) => res);
 
       expect(result.data).toBeDefined();
       expect(result.error).toBeNull();
@@ -53,17 +56,23 @@ describe('Enhanced Supabase Mock', () => {
       // Set up an error scenario
       const mockError: PostgrestError = {
         message: 'Test error',
-        code: 'TEST_ERROR'
+        code: 'TEST_ERROR',
+        details: '',
+        hint: '',
+        name: 'PostgrestError',
       };
-      
-      if (supabase._setMockError) {
-        supabase._setMockError(mockError);
+
+      const mockClient = supabase as any;
+      if (mockClient._setMockError) {
+        mockClient._setMockError(mockError);
       }
 
-      const result = await supabase
-        .from('agencies')
-        .select('*')
-        .catch(err => ({ caught: true, error: err }));
+      // The real Supabase client returns a promise-like object
+      const query = supabase.from('agencies').select('*') as any;
+      const result = await query.catch((err: any) => ({
+        caught: true,
+        error: err,
+      }));
 
       expect(result).toBeDefined();
     });
@@ -71,12 +80,10 @@ describe('Enhanced Supabase Mock', () => {
     it('should support finally', async () => {
       let finallyCalled = false;
 
-      await supabase
-        .from('agencies')
-        .select('*')
-        .finally(() => {
-          finallyCalled = true;
-        });
+      const query = supabase.from('agencies').select('*') as any;
+      await query.finally(() => {
+        finallyCalled = true;
+      });
 
       expect(finallyCalled).toBe(true);
     });
@@ -107,10 +114,7 @@ describe('Enhanced Supabase Mock', () => {
     });
 
     it('should support csv() method', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('id,name')
-        .csv();
+      const result = await supabase.from('agencies').select('id,name').csv();
 
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe('string');
@@ -118,10 +122,8 @@ describe('Enhanced Supabase Mock', () => {
     });
 
     it('should support execute() method', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('*')
-        .execute();
+      const query = supabase.from('agencies').select('*') as any;
+      const result = await query.execute();
 
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data)).toBe(true);
@@ -131,20 +133,20 @@ describe('Enhanced Supabase Mock', () => {
 
   describe('Mock Data', () => {
     it('should return sample test data by default', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.data).toBeDefined();
-      expect(result.data.length).toBe(2);
-      expect(result.data[0]).toHaveProperty('name', 'Mock Construction Staffing');
-      expect(result.data[1]).toHaveProperty('name', 'Test Builders Inc');
+      expect(result.data).not.toBeNull();
+      expect(result.data!.length).toBe(2);
+      expect(result.data![0]).toHaveProperty(
+        'name',
+        'Mock Construction Staffing'
+      );
+      expect(result.data![1]).toHaveProperty('name', 'Test Builders Inc');
     });
 
     it('should include count in response', async () => {
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.count).toBe(2);
     });
@@ -153,19 +155,19 @@ describe('Enhanced Supabase Mock', () => {
       const customData = [
         { id: 'custom-1', name: 'Custom Agency 1' },
         { id: 'custom-2', name: 'Custom Agency 2' },
-        { id: 'custom-3', name: 'Custom Agency 3' }
+        { id: 'custom-3', name: 'Custom Agency 3' },
       ];
 
-      if (supabase._setMockData) {
-        supabase._setMockData(customData);
+      const mockClient = supabase as any;
+      if (mockClient._setMockData) {
+        mockClient._setMockData(customData);
       }
 
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
-      expect(result.data).toHaveLength(3);
-      expect(result.data[0]).toHaveProperty('name', 'Custom Agency 1');
+      expect(result.data).not.toBeNull();
+      expect(result.data!).toHaveLength(3);
+      expect(result.data![0]).toHaveProperty('name', 'Custom Agency 1');
     });
 
     it('should allow simulating errors', async () => {
@@ -173,16 +175,16 @@ describe('Enhanced Supabase Mock', () => {
         message: 'Database connection failed',
         code: 'CONNECTION_ERROR',
         details: 'Connection refused',
-        hint: 'Check your database configuration'
+        hint: 'Check your database configuration',
+        name: 'PostgrestError',
       };
 
-      if (supabase._setMockError) {
-        supabase._setMockError(mockError);
+      const mockClient = supabase as any;
+      if (mockClient._setMockError) {
+        mockClient._setMockError(mockError);
       }
 
-      const result = await supabase
-        .from('agencies')
-        .select('*');
+      const result = await supabase.from('agencies').select('*');
 
       expect(result.data).toBeNull();
       expect(result.error).toEqual(mockError);
@@ -194,30 +196,33 @@ describe('Enhanced Supabase Mock', () => {
     it('should mock signUp', async () => {
       const result = await supabase.auth.signUp({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
       });
 
-      expect(result.data.user).toBeDefined();
-      expect(result.data.user.id).toBe('mock-user-id');
+      expect(result.data).not.toBeNull();
+      expect(result.data!.user).toBeDefined();
+      expect(result.data!.user!.id).toBe('mock-user-id');
       expect(result.error).toBeNull();
     });
 
     it('should mock signIn', async () => {
-      const result = await supabase.auth.signIn({
+      const result = await supabase.auth.signInWithPassword({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
       });
 
-      expect(result.data.session).toBeDefined();
-      expect(result.data.session.access_token).toBe('mock-token');
+      expect(result.data).not.toBeNull();
+      expect(result.data!.session).toBeDefined();
+      expect(result.data!.session!.access_token).toBe('mock-token');
       expect(result.error).toBeNull();
     });
 
     it('should mock getUser', async () => {
       const result = await supabase.auth.getUser();
 
-      expect(result.data.user).toBeDefined();
-      expect(result.data.user.id).toBe('mock-user-id');
+      expect(result.data).not.toBeNull();
+      expect(result.data!.user).toBeDefined();
+      expect(result.data!.user!.id).toBe('mock-user-id');
     });
   });
 
@@ -227,7 +232,8 @@ describe('Enhanced Supabase Mock', () => {
       const result = await bucket.upload('user123/avatar.png', new Blob());
 
       expect(result.data).toBeDefined();
-      expect(result.data.path).toBe('mock-path');
+      expect(result.data).not.toBeNull();
+      expect(result.data!.path).toBe('mock-path');
       expect(result.error).toBeNull();
     });
   });
@@ -235,11 +241,12 @@ describe('Enhanced Supabase Mock', () => {
   describe('Functions Methods', () => {
     it('should mock function invocation', async () => {
       const result = await supabase.functions.invoke('my-function', {
-        body: { input: 'test' }
+        body: { input: 'test' },
       });
 
       expect(result.data).toBeDefined();
-      expect(result.data.result).toBe('mock-function-result');
+      expect(result.data).not.toBeNull();
+      expect(result.data!.result).toBe('mock-function-result');
       expect(result.error).toBeNull();
     });
   });
@@ -250,15 +257,29 @@ describe('Enhanced Supabase Mock', () => {
 
       // Test that all filter methods exist and return the query builder
       const filters = [
-        'eq', 'neq', 'gt', 'gte', 'lt', 'lte',
-        'like', 'ilike', 'is', 'in', 'contains',
-        'containedBy', 'or', 'not', 'match', 'filter'
+        'eq',
+        'neq',
+        'gt',
+        'gte',
+        'lt',
+        'lte',
+        'like',
+        'ilike',
+        'is',
+        'in',
+        'contains',
+        'containedBy',
+        'or',
+        'not',
+        'match',
+        'filter',
       ];
 
-      filters.forEach(filter => {
-        expect(query[filter]).toBeDefined();
-        expect(typeof query[filter]).toBe('function');
-        expect(query[filter]('test', 'value')).toBe(query);
+      filters.forEach((filter) => {
+        const queryWithFilter = query as any;
+        expect(queryWithFilter[filter]).toBeDefined();
+        expect(typeof queryWithFilter[filter]).toBe('function');
+        expect(queryWithFilter[filter]('test', 'value')).toBe(query);
       });
     });
   });

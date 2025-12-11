@@ -24,12 +24,14 @@ This guide walks through setting up staging deployment for the FindConstructionS
 In Vercel Dashboard > Settings > Environment Variables, add:
 
 #### For All Environments:
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 #### For Staging/Preview Only:
+
 ```
 NEXT_PUBLIC_ENVIRONMENT=staging
 NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
@@ -108,25 +110,27 @@ Use a separate Supabase project for staging:
 
 1. Create a new Supabase project for staging
 2. Apply database schema:
+
    ```bash
    # Option 1: Use Supabase Dashboard
    # Go to SQL Editor and run your schema creation scripts
-   
+
    # Option 2: Use Supabase CLI (if migrations are set up)
    npx supabase db push --linked
-   
+
    # Option 3: Create the migrate:staging script in package.json:
    # "migrate:staging": "npx supabase db push --db-url $STAGING_DATABASE_URL"
    ```
 
 3. Seed test data:
+
    ```bash
    # Ensure SUPABASE_SERVICE_ROLE_KEY is set for your staging environment
    NEXT_PUBLIC_SUPABASE_URL=your-staging-url \
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-staging-anon-key \
    SUPABASE_SERVICE_ROLE_KEY=your-staging-service-key \
    npm run seed
-   
+
    # Or if you've configured .env.staging:
    npm run seed
    ```
@@ -137,6 +141,7 @@ Use a separate Supabase project for staging:
    - `npm run seed:verify` - Verify data integrity
 
    **Note**: To add custom migration scripts, update `package.json`:
+
    ```json
    {
      "scripts": {
@@ -163,11 +168,13 @@ if (isStaging) {
 ## Staging URL Management
 
 ### Default Vercel URLs:
+
 - Production: `your-project.vercel.app`
 - Staging: `your-project-git-staging.vercel.app`
 - Preview: `your-project-pr-123.vercel.app`
 
 ### Custom Domain (Optional):
+
 1. Add domain in Vercel Dashboard > Domains
 2. Configure DNS:
    - `staging.yourdomain.com` → Staging deployment
@@ -185,7 +192,7 @@ export async function GET() {
   return Response.json({
     status: 'healthy',
     environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 ```
@@ -193,6 +200,7 @@ export async function GET() {
 ### Deployment Notifications
 
 The GitHub Action will:
+
 - Comment on PRs with deployment URLs
 - Add deployment summaries to workflow runs
 - Send notifications on failures

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -28,7 +28,9 @@ export default function Header() {
               <span className="text-xl font-bold gradient-text-primary">
                 Construction
               </span>
-              <div className="text-xs text-slate-500 font-medium">Recruiter Directory</div>
+              <div className="text-xs text-slate-500 font-medium">
+                Recruiter Directory
+              </div>
             </div>
           </Link>
 
@@ -47,15 +49,20 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" size="sm" className="glass-button" asChild>
-              <Link href="/claim-listing">
-                Claim Listing
-              </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              className="glass-button"
+              asChild
+            >
+              <Link href="/claim-listing">Claim Listing</Link>
             </Button>
-            <Button size="sm" className="modern-button-primary h-9 px-4" asChild>
-              <Link href="/request-labor">
-                Get Started
-              </Link>
+            <Button
+              size="sm"
+              className="modern-button-primary h-9 px-4"
+              asChild
+            >
+              <Link href="/request-labor">Get Started</Link>
             </Button>
           </div>
 
@@ -73,11 +80,15 @@ export default function Header() {
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <span className="font-bold gradient-text-primary">Construction</span>
-                    <div className="text-xs text-slate-500 font-medium">Recruiter Directory</div>
+                    <span className="font-bold gradient-text-primary">
+                      Construction
+                    </span>
+                    <div className="text-xs text-slate-500 font-medium">
+                      Recruiter Directory
+                    </div>
                   </div>
                 </div>
-                
+
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
@@ -89,15 +100,25 @@ export default function Header() {
                     <span>{item.label}</span>
                   </Link>
                 ))}
-                
+
                 <div className="border-t pt-6 space-y-3">
-                  <Button variant="outline" className="w-full glass-button" asChild>
-                    <Link href="/claim-listing" onClick={() => setIsOpen(false)}>
+                  <Button
+                    variant="outline"
+                    className="w-full glass-button"
+                    asChild
+                  >
+                    <Link
+                      href="/claim-listing"
+                      onClick={() => setIsOpen(false)}
+                    >
                       Claim Listing
                     </Link>
                   </Button>
                   <Button className="w-full modern-button-primary" asChild>
-                    <Link href="/request-labor" onClick={() => setIsOpen(false)}>
+                    <Link
+                      href="/request-labor"
+                      onClick={() => setIsOpen(false)}
+                    >
                       Get Started
                     </Link>
                   </Button>

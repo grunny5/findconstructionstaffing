@@ -1,14 +1,15 @@
+/**
+ * @jest-environment node
+ */
 // Import centralized mock first
-import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import {
+  configureSupabaseMock,
+  supabaseMockHelpers,
+  resetSupabaseMock,
+} from '@/__tests__/utils/supabase-mock';
 import { supabase } from '@/lib/supabase';
-import { 
-  isErrorResponse, 
-  API_CONSTANTS,
-  HTTP_STATUS 
-} from '@/types/api';
-import { 
-  createMockNextRequest 
-} from '@/__tests__/utils/api-mocks';
+import { isErrorResponse, API_CONSTANTS, HTTP_STATUS } from '@/types/api';
+import { createMockNextRequest } from '@/__tests__/utils/api-mocks';
 
 // Mock NextResponse
 jest.mock('next/server', () => ({
@@ -16,9 +17,9 @@ jest.mock('next/server', () => ({
     json: jest.fn((data: any, init?: ResponseInit) => ({
       status: init?.status || 200,
       json: async () => data,
-      headers: new Headers(init?.headers)
-    }))
-  }
+      headers: new Headers(init?.headers),
+    })),
+  },
 }));
 
 // Import the route AFTER mocks are set up
@@ -28,62 +29,68 @@ describe('GET /api/agencies - Pagination', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetSupabaseMock(supabase);
-    
+
     // Setup default successful response
     configureSupabaseMock(supabase, {
       defaultData: [],
-      defaultCount: 0
+      defaultCount: 0,
     });
   });
 
   describe('Pagination Parameter Defaults', () => {
     it('should apply default limit when not specified', async () => {
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       await GET(mockRequest);
 
       // Should use default limit (20)
-      expect(supabase.range).toHaveBeenCalledWith(0, API_CONSTANTS.DEFAULT_LIMIT - 1);
+      expect((supabase as any).range).toHaveBeenCalledWith(
+        0,
+        API_CONSTANTS.DEFAULT_LIMIT - 1
+      );
     });
 
     it('should apply default offset when not specified', async () => {
       const mockRequest = createMockNextRequest({
-        url: 'http://localhost:3000/api/agencies'
+        url: 'http://localhost:3000/api/agencies',
       });
 
       await GET(mockRequest);
 
       // Should use default offset (0)
-      expect(supabase.range).toHaveBeenCalledWith(0, expect.any(Number));
+      expect((supabase as any).range).toHaveBeenCalledWith(
+        0,
+        expect.any(Number)
+      );
     });
 
     it('should use custom limit when provided', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: '10' }
+        searchParams: { limit: '10' },
       });
 
       await GET(mockRequest);
 
       // Should use custom limit
-      expect(supabase.range).toHaveBeenCalledWith(0, 9);
+      expect((supabase as any).range).toHaveBeenCalledWith(0, 9);
     });
 
     it('should use custom offset when provided', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { 
+        searchParams: {
           offset: '40',
-          limit: '20'
-        }
+          limit: '20',
+        },
       });
 
       await GET(mockRequest);
 
       // Should use custom offset
-      expect(supabase.range).toHaveBeenCalledWith(40, 59);
+      expect((supabase as any).range).toHaveBeenCalledWith(40, 59);
     });
   });
 
@@ -91,7 +98,7 @@ describe('GET /api/agencies - Pagination', () => {
     it('should enforce maximum limit', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: '150' } // Over max of 100
+        searchParams: { limit: '150' }, // Over max of 100
       });
 
       const response = await GET(mockRequest);
@@ -105,7 +112,7 @@ describe('GET /api/agencies - Pagination', () => {
     it('should enforce minimum limit of 1', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: '0' }
+        searchParams: { limit: '0' },
       });
 
       const response = await GET(mockRequest);
@@ -119,7 +126,7 @@ describe('GET /api/agencies - Pagination', () => {
     it('should enforce non-negative offset', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { offset: '-10' }
+        searchParams: { offset: '-10' },
       });
 
       const response = await GET(mockRequest);
@@ -133,7 +140,7 @@ describe('GET /api/agencies - Pagination', () => {
     it('should handle non-numeric limit gracefully', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: 'abc' }
+        searchParams: { limit: 'abc' },
       });
 
       const response = await GET(mockRequest);
@@ -147,7 +154,7 @@ describe('GET /api/agencies - Pagination', () => {
     it('should handle non-numeric offset gracefully', async () => {
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { offset: 'xyz' }
+        searchParams: { offset: 'xyz' },
       });
 
       const response = await GET(mockRequest);
@@ -167,13 +174,18 @@ describe('GET /api/agencies - Pagination', () => {
 
       // Configure mock with specific data and count
       configureSupabaseMock(supabase, {
-        defaultData: Array(limit).fill({ id: '123', name: 'Test Agency', trades: [], regions: [] }),
-        defaultCount: totalAgencies
+        defaultData: Array(limit).fill({
+          id: '123',
+          name: 'Test Agency',
+          trades: [],
+          regions: [],
+        }),
+        defaultCount: totalAgencies,
       });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: String(limit), offset: String(offset) }
+        searchParams: { limit: String(limit), offset: String(offset) },
       });
 
       const response = await GET(mockRequest);
@@ -185,7 +197,7 @@ describe('GET /api/agencies - Pagination', () => {
           total: totalAgencies,
           limit,
           offset,
-          hasMore: true
+          hasMore: true,
         });
       }
     });
@@ -197,13 +209,18 @@ describe('GET /api/agencies - Pagination', () => {
 
       // Configure mock with specific data and count
       configureSupabaseMock(supabase, {
-        defaultData: Array(5).fill({ id: '123', name: 'Test Agency', trades: [], regions: [] }),
-        defaultCount: totalAgencies
+        defaultData: Array(5).fill({
+          id: '123',
+          name: 'Test Agency',
+          trades: [],
+          regions: [],
+        }),
+        defaultCount: totalAgencies,
       });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: String(limit), offset: String(offset) }
+        searchParams: { limit: String(limit), offset: String(offset) },
       });
 
       const response = await GET(mockRequest);
@@ -215,7 +232,7 @@ describe('GET /api/agencies - Pagination', () => {
           total: totalAgencies,
           limit,
           offset,
-          hasMore: false
+          hasMore: false,
         });
       }
     });
@@ -228,12 +245,12 @@ describe('GET /api/agencies - Pagination', () => {
       // Configure mock with empty data
       configureSupabaseMock(supabase, {
         defaultData: [],
-        defaultCount: totalAgencies
+        defaultCount: totalAgencies,
       });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
-        searchParams: { limit: String(limit), offset: String(offset) }
+        searchParams: { limit: String(limit), offset: String(offset) },
       });
 
       const response = await GET(mockRequest);
@@ -246,7 +263,7 @@ describe('GET /api/agencies - Pagination', () => {
           total: 0,
           limit,
           offset,
-          hasMore: false
+          hasMore: false,
         });
       }
     });
@@ -255,8 +272,13 @@ describe('GET /api/agencies - Pagination', () => {
   describe('Pagination with Filters', () => {
     it('should apply pagination after search filter', async () => {
       configureSupabaseMock(supabase, {
-        defaultData: Array(5).fill({ id: '123', name: 'Test Agency', trades: [], regions: [] }),
-        defaultCount: 5
+        defaultData: Array(5).fill({
+          id: '123',
+          name: 'Test Agency',
+          trades: [],
+          regions: [],
+        }),
+        defaultCount: 5,
       });
 
       const mockRequest = createMockNextRequest({
@@ -264,23 +286,28 @@ describe('GET /api/agencies - Pagination', () => {
         searchParams: {
           search: 'test',
           limit: '5',
-          offset: '0'
-        }
+          offset: '0',
+        },
       });
 
       await GET(mockRequest);
 
       // Should apply search first, then pagination
-      expect(supabase.or).toHaveBeenCalled();
-      expect(supabase.range).toHaveBeenCalledWith(0, 4);
+      expect((supabase as any).or).toHaveBeenCalled();
+      expect((supabase as any).range).toHaveBeenCalledWith(0, 4);
     });
 
     it('should apply pagination after all filters', async () => {
       // For this complex test, we'll just verify the response is correct
       // The detailed mock tracking is complex due to multiple table queries
       configureSupabaseMock(supabase, {
-        defaultData: Array(5).fill({ id: '123', name: 'Test Agency', trades: [], regions: [] }),
-        defaultCount: 5
+        defaultData: Array(5).fill({
+          id: '123',
+          name: 'Test Agency',
+          trades: [],
+          regions: [],
+        }),
+        defaultCount: 5,
       });
 
       const mockRequest = createMockNextRequest({
@@ -289,9 +316,9 @@ describe('GET /api/agencies - Pagination', () => {
           search: 'test',
           trade: 'electrician',
           state: 'TX',
-          limit: '5', 
-          offset: '10'
-        }
+          limit: '5',
+          offset: '10',
+        },
       });
 
       const response = await GET(mockRequest);
@@ -306,19 +333,24 @@ describe('GET /api/agencies - Pagination', () => {
         expect(data.pagination.offset).toBe(10);
         expect(data.pagination.total).toBe(5);
       }
-      
+
       // Verify key methods were called
       expect(supabase.from).toHaveBeenCalled();
-      expect(supabase.select).toHaveBeenCalled(); 
-      expect(supabase.range).toHaveBeenCalledWith(10, 14); // Pagination
+      expect((supabase as any).select).toHaveBeenCalled();
+      expect((supabase as any).range).toHaveBeenCalledWith(10, 14); // Pagination
     });
 
     it('should count total with filters applied', async () => {
       const totalFilteredAgencies = 15;
 
       configureSupabaseMock(supabase, {
-        defaultData: Array(10).fill({ id: '123', name: 'Test Agency', trades: [], regions: [] }),
-        defaultCount: totalFilteredAgencies
+        defaultData: Array(10).fill({
+          id: '123',
+          name: 'Test Agency',
+          trades: [],
+          regions: [],
+        }),
+        defaultCount: totalFilteredAgencies,
       });
 
       const mockRequest = createMockNextRequest({
@@ -326,8 +358,8 @@ describe('GET /api/agencies - Pagination', () => {
         searchParams: {
           trade: 'electrician',
           limit: '10',
-          offset: '0'
-        }
+          offset: '0',
+        },
       });
 
       const response = await GET(mockRequest);
@@ -347,15 +379,15 @@ describe('GET /api/agencies - Pagination', () => {
 
       configureSupabaseMock(supabase, {
         defaultData: [],
-        defaultCount: totalAgencies
+        defaultCount: totalAgencies,
       });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: {
           limit: '20',
-          offset: '100' // Way beyond total
-        }
+          offset: '100', // Way beyond total
+        },
       });
 
       const response = await GET(mockRequest);
@@ -368,7 +400,7 @@ describe('GET /api/agencies - Pagination', () => {
           total: totalAgencies,
           limit: 20,
           offset: 100,
-          hasMore: false
+          hasMore: false,
         });
       }
     });
@@ -377,16 +409,21 @@ describe('GET /api/agencies - Pagination', () => {
       const totalAgencies = 100;
 
       configureSupabaseMock(supabase, {
-        defaultData: Array(20).fill({ id: '123', name: 'Test Agency', trades: [], regions: [] }),
-        defaultCount: totalAgencies
+        defaultData: Array(20).fill({
+          id: '123',
+          name: 'Test Agency',
+          trades: [],
+          regions: [],
+        }),
+        defaultCount: totalAgencies,
       });
 
       const mockRequest = createMockNextRequest({
         url: 'http://localhost:3000/api/agencies',
         searchParams: {
           limit: '20',
-          offset: '80' // Exactly 20 items left
-        }
+          offset: '80', // Exactly 20 items left
+        },
       });
 
       const response = await GET(mockRequest);

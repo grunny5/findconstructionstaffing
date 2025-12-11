@@ -7,6 +7,7 @@ This directory contains manual mock implementations for modules in the `lib` dir
 The consolidated Supabase mock provides a comprehensive mock implementation with:
 
 ### Features
+
 - **Factory Function**: `createMockSupabase()` for creating fresh mock instances
 - **Complete Method Coverage**: All Supabase query builder methods
 - **Method Chaining**: Proper chainable API matching Supabase's interface
@@ -33,7 +34,7 @@ describe('My Test', () => {
       .select('*')
       .eq('is_active', true)
       .order('name');
-    
+
     // Result will be { data: [], error: null, count: null }
   });
 });
@@ -53,13 +54,14 @@ const customMock = createMockSupabase();
 customMock.order.mockResolvedValue({
   data: [{ id: '1', name: 'Test Agency' }],
   error: null,
-  count: 1
+  count: 1,
 });
 ```
 
 ### Related Mocks
 
 For more advanced mocking scenarios, see:
+
 - `__tests__/utils/supabase-mock.ts` - Centralized mock with error simulation and runtime configuration
 - `__mocks__/@supabase/supabase-js.ts` - Low-level Supabase client mock
 

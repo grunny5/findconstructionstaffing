@@ -2,13 +2,21 @@
  * Tests for agencies query validation and sanitization
  */
 
-import { sanitizeSearchInput, parseAgenciesQuery, AgenciesQuerySchema } from '../agencies-query';
+import {
+  sanitizeSearchInput,
+  parseAgenciesQuery,
+  AgenciesQuerySchema,
+} from '../agencies-query';
 
 describe('sanitizeSearchInput', () => {
   describe('Valid inputs', () => {
     it('should preserve valid business names', () => {
-      expect(sanitizeSearchInput('Elite Construction Staffing')).toBe('Elite Construction Staffing');
-      expect(sanitizeSearchInput("Bob's Staffing, Inc.")).toBe("Bob's Staffing, Inc.");
+      expect(sanitizeSearchInput('Elite Construction Staffing')).toBe(
+        'Elite Construction Staffing'
+      );
+      expect(sanitizeSearchInput("Bob's Staffing, Inc.")).toBe(
+        "Bob's Staffing, Inc."
+      );
       expect(sanitizeSearchInput('ABC-123 Services')).toBe('ABC-123 Services');
       expect(sanitizeSearchInput('Staff_Pro')).toBe('Staff_Pro');
     });
@@ -19,7 +27,9 @@ describe('sanitizeSearchInput', () => {
     });
 
     it('should collapse multiple spaces', () => {
-      expect(sanitizeSearchInput('test    multiple   spaces')).toBe('test multiple spaces');
+      expect(sanitizeSearchInput('test    multiple   spaces')).toBe(
+        'test multiple spaces'
+      );
     });
 
     it('should handle empty strings', () => {
@@ -32,31 +42,43 @@ describe('sanitizeSearchInput', () => {
     it('should remove SQL keywords as whole words', () => {
       expect(sanitizeSearchInput('SELECT * FROM users')).toBe('FROM users');
       expect(sanitizeSearchInput('DROP TABLE agencies')).toBe('TABLE agencies');
-      expect(sanitizeSearchInput('Construction UNION Labor')).toBe('Construction Labor');
+      expect(sanitizeSearchInput('Construction UNION Labor')).toBe(
+        'Construction Labor'
+      );
     });
 
     it('should preserve SQL keywords within words', () => {
-      expect(sanitizeSearchInput('Selection Staffing')).toBe('Selection Staffing');
+      expect(sanitizeSearchInput('Selection Staffing')).toBe(
+        'Selection Staffing'
+      );
       expect(sanitizeSearchInput('Executive Search')).toBe('Executive Search');
-      expect(sanitizeSearchInput('Dropbox Integration')).toBe('Dropbox Integration');
+      expect(sanitizeSearchInput('Dropbox Integration')).toBe(
+        'Dropbox Integration'
+      );
     });
 
     it('should remove SQL comment indicators', () => {
       expect(sanitizeSearchInput('test--comment')).toBe('testcomment');
-      expect(sanitizeSearchInput('test /* comment */ value')).toBe('test comment value');
+      expect(sanitizeSearchInput('test /* comment */ value')).toBe(
+        'test comment value'
+      );
     });
 
     it('should remove dangerous special characters', () => {
       expect(sanitizeSearchInput("test'; DROP TABLE--")).toBe("test' TABLE");
       expect(sanitizeSearchInput('test" OR 1=1--')).toBe('test OR 11');
-      expect(sanitizeSearchInput('test<script>alert(1)</script>')).toBe('test1');
+      expect(sanitizeSearchInput('test<script>alert(1)</script>')).toBe(
+        'test1'
+      );
     });
   });
 
   describe('XSS prevention', () => {
     it('should remove HTML tags and script keywords', () => {
       expect(sanitizeSearchInput('<script>alert("xss")</script>')).toBe('xss');
-      expect(sanitizeSearchInput('test<img src=x onerror=alert(1)>')).toBe('testimg srcx 1');
+      expect(sanitizeSearchInput('test<img src=x onerror=alert(1)>')).toBe(
+        'testimg srcx 1'
+      );
       expect(sanitizeSearchInput('onclick=alert(1)')).toBe('1');
     });
 
@@ -91,16 +113,22 @@ describe('sanitizeSearchInput', () => {
 
   describe('Complex attack patterns', () => {
     it('should handle combined attack attempts', () => {
-      expect(sanitizeSearchInput("'; UNION SELECT * FROM users--")).toBe("' FROM users");
+      expect(sanitizeSearchInput("'; UNION SELECT * FROM users--")).toBe(
+        "' FROM users"
+      );
       expect(sanitizeSearchInput('"><script>alert(1)</script>')).toBe('1');
       expect(sanitizeSearchInput("admin'--")).toBe("admin'");
-      expect(sanitizeSearchInput('1; DROP TABLE agencies; --')).toBe('1 TABLE agencies');
+      expect(sanitizeSearchInput('1; DROP TABLE agencies; --')).toBe(
+        '1 TABLE agencies'
+      );
     });
 
     it('should handle encoded attacks', () => {
       // URL encoded characters are not decoded by this function
       // They should be decoded before sanitization in the API layer
-      expect(sanitizeSearchInput('test%27OR%271%27%3D%271')).toBe('test27OR271273D271');
+      expect(sanitizeSearchInput('test%27OR%271%27%3D%271')).toBe(
+        'test27OR271273D271'
+      );
     });
   });
 });
@@ -110,7 +138,7 @@ describe('parseAgenciesQuery', () => {
     const params = new URLSearchParams({
       search: 'test',
       limit: '10',
-      offset: '20'
+      offset: '20',
     });
 
     const result = parseAgenciesQuery(params);
@@ -146,7 +174,11 @@ describe('parseAgenciesQuery', () => {
     const result = parseAgenciesQuery(params);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.trades).toEqual(['electricians', 'plumbers', 'carpenters']);
+      expect(result.data.trades).toEqual([
+        'electricians',
+        'plumbers',
+        'carpenters',
+      ]);
     }
   });
 
@@ -166,13 +198,15 @@ describe('parseAgenciesQuery', () => {
 
   it('should validate search length', () => {
     const params = new URLSearchParams({
-      search: 'a'.repeat(101)
+      search: 'a'.repeat(101),
     });
 
     const result = parseAgenciesQuery(params);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toContain('less than 100 characters');
+      expect(result.error.issues[0].message).toContain(
+        'less than 100 characters'
+      );
     }
   });
 

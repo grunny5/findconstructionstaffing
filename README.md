@@ -1,10 +1,14 @@
 # FindConstructionStaffing
 
+[![CI/CD Pipeline](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml/badge.svg)](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml)
+[![Coverage Status](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.total.lines.pct&suffix=%25&url=https%3A%2F%2Fraw.githubusercontent.com%2Fgrunny5%2Ffindconstructionstaffing%2Fmain%2Fcoverage%2Fcoverage-summary.json)](https://github.com/grunny5/findconstructionstaffing/actions/workflows/ci.yml)
+
 A modern web directory platform connecting construction companies with specialized staffing agencies across North America.
 
 ## Project Overview
 
 FindConstructionStaffing is a Next.js-based directory application designed to streamline the process of finding qualified construction staffing partners. The platform serves two primary audiences:
+
 - **Construction Companies**: Looking for reliable staffing agencies to fill skilled labor positions
 - **Staffing Agencies**: Seeking to showcase their services and connect with potential clients
 
@@ -13,17 +17,20 @@ FindConstructionStaffing is a Next.js-based directory application designed to st
 ### Technology Stack
 
 #### Core Framework
+
 - **Next.js 13.5.1** - Using App Router for modern React development
 - **React 18.2.0** - Component-based UI architecture
 - **TypeScript 5.2.2** - Type-safe development with strict configuration
 
 #### UI & Styling
+
 - **Tailwind CSS 3.3.3** - Utility-first CSS framework
 - **Shadcn/ui** - Comprehensive component library built on Radix UI
 - **Lucide React** - Modern icon library
 - **CSS Variables** - Dynamic theming support
 
 #### Data & State Management
+
 - **Supabase** - PostgreSQL database (configured, not yet implemented)
 - **React Hook Form 7.53.0** - Form state management
 - **Zod 3.23.8** - Schema validation
@@ -109,18 +116,21 @@ Currently using mock data with plans for Supabase integration:
 ### Development Standards
 
 #### Code Style
+
 - Use functional components with hooks
 - Implement proper error boundaries
 - Follow ESLint configuration
 - No unnecessary comments in production code
 
 #### Component Guidelines
+
 - All new components should follow existing patterns
 - Use Tailwind classes for styling
 - Implement responsive design from the start
 - Ensure accessibility (ARIA labels, keyboard navigation)
 
 #### State Management
+
 - Use React Hook Form for all forms
 - Implement proper loading and error states
 - Validate data on both client and server
@@ -128,6 +138,7 @@ Currently using mock data with plans for Supabase integration:
 ### Planned Features & Roadmap
 
 #### Phase 1: Core Functionality (Current)
+
 - ✅ Basic directory listing
 - ✅ Search and filtering
 - ✅ Agency profiles (basic)
@@ -135,6 +146,7 @@ Currently using mock data with plans for Supabase integration:
 - ⏳ Database integration
 
 #### Phase 2: Enhanced Features
+
 - [ ] User authentication (agencies)
 - [ ] Agency dashboard for profile management
 - [ ] Advanced agency profiles with portfolios
@@ -143,6 +155,7 @@ Currently using mock data with plans for Supabase integration:
 - [ ] Email notifications
 
 #### Phase 3: Advanced Capabilities
+
 - [ ] API for third-party integrations
 - [ ] Mobile app development
 - [ ] Analytics dashboard
@@ -202,7 +215,8 @@ Currently using mock data with plans for Supabase integration:
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - Supabase account (for database)
 
@@ -236,11 +250,17 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # Required for seeding
 ### Development Commands
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint
-npm run type-check # Run TypeScript compiler
+# Essential development commands
+npm run dev          # Start development server
+npm run test         # Run test suite
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript compiler
+npm run format:check # Check code formatting
+npm run format       # Format code with Prettier
+
+# Build and deployment
+npm run build        # Build for production
+npm run start        # Start production server
 
 # Database seeding commands
 npm run seed         # Seed database with mock data
@@ -253,6 +273,7 @@ npm run seed:verify  # Verify seeded data integrity
 The project includes a comprehensive database seeding script for development and testing:
 
 #### Features
+
 - **Idempotent Operations**: Run multiple times without creating duplicates
 - **Foreign Key Respect**: Proper deletion order when resetting
 - **Progress Tracking**: Clear logging of operations and counts
@@ -262,15 +283,19 @@ The project includes a comprehensive database seeding script for development and
 #### Usage
 
 1. **Initial Seeding**
+
    ```bash
    npm run seed
    ```
+
    Seeds the database with all mock agency data, trades, and regions.
 
 2. **Reset and Re-seed**
+
    ```bash
    npm run seed:reset
    ```
+
    Clears all existing data and performs a fresh seed. Includes a 3-second safety delay.
 
 3. **Verify Data**
@@ -280,11 +305,37 @@ The project includes a comprehensive database seeding script for development and
    Runs verification queries to ensure all data was seeded correctly.
 
 #### Seeded Data
+
 - **12 Agencies**: Complete staffing company profiles
 - **48 Trades**: All construction specialties
 - **35 Regions**: US states with agencies
 - **60 Agency-Trade Relationships**: Specialization mappings
 - **58 Agency-Region Relationships**: Service area mappings
+
+## CI/CD
+
+Our project uses GitHub Actions for continuous integration and deployment:
+
+### Continuous Integration
+
+- **Type Checking**: TypeScript compilation with strict mode
+- **Linting**: ESLint for code quality
+- **Formatting**: Prettier for consistent style
+- **Testing**: Jest with 80% coverage requirement
+- **Security**: npm audit for vulnerability scanning
+
+### Continuous Deployment
+
+- **Preview Deployments**: Every PR gets a unique preview URL
+- **Production Deployments**: Automatic deployment to Vercel on main branch
+- **Environment Management**: Separate preview and production environments
+- **Rollback Support**: Via Vercel dashboard
+
+All PR checks must pass before merging. Preview deployments available at:
+
+```
+https://findconstructionstaffing-pr-{PR_NUMBER}.vercel.app
+```
 
 ## Deployment
 
@@ -298,10 +349,11 @@ The project is configured for deployment on Vercel with automatic CI/CD:
 
 2. **Automatic Deployments**:
    - **Production**: Merges to `main` branch
-   - **Staging**: Pushes to `staging` branch  
+   - **Staging**: Pushes to `staging` branch
    - **Preview**: All pull requests
 
 3. **Manual Deployment**:
+
    ```bash
    vercel --prod  # Deploy to production
    vercel         # Deploy preview
@@ -313,6 +365,41 @@ The project is configured for deployment on Vercel with automatic CI/CD:
    - `SUPABASE_SERVICE_ROLE_KEY` - Service role key (for API routes)
    - `MONITORING_API_KEY` - Optional, for metrics endpoint
 
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+### Automated Checks
+
+Every pull request and push to main/develop branches triggers:
+
+1. **Code Quality Checks**
+   - TypeScript compilation verification
+   - ESLint code quality rules
+   - Prettier formatting check
+
+2. **Test Suite**
+   - Unit tests with Jest
+   - Coverage report generation
+   - Test results uploaded as artifacts
+
+3. **Security Scanning**
+   - npm audit for vulnerability detection
+   - Production dependency scanning
+
+4. **Build Verification**
+   - Next.js production build
+   - Build artifacts saved for deployment
+
+### Workflow Status
+
+Check the Actions tab in GitHub to view:
+
+- Pipeline execution history
+- Detailed logs for each job
+- Test coverage reports
+- Build artifacts
+
 ## Contributing
 
 1. Follow the established code patterns
@@ -320,6 +407,11 @@ The project is configured for deployment on Vercel with automatic CI/CD:
 3. Create feature branches for new work
 4. Submit pull requests with clear descriptions
 5. Ensure all tests pass before submitting
+6. Run CI checks locally before pushing:
+   ```bash
+   npm run lint && npm run type-check && npm run format:check && npm test
+   ```
+7. CI/CD checks must pass before merging
 
 ## License
 

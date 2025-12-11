@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 
 /**
  * Custom hook that debounces a value
- * 
+ *
  * @param value - The value to debounce
  * @param delay - The delay in milliseconds (default: 300ms)
  * @returns The debounced value
- * 
+ *
  * @example
  * ```tsx
  * const [searchTerm, setSearchTerm] = useState('');
  * const debouncedSearchTerm = useDebounce(searchTerm, 300);
- * 
+ *
  * // Use debouncedSearchTerm for API calls
  * useEffect(() => {
  *   if (debouncedSearchTerm) {

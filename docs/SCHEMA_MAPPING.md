@@ -6,52 +6,54 @@ This document details the exact mapping between mock data fields and database co
 
 ## Field Mapping Table
 
-| Mock Data Field | Database Column | Data Type | Transformation Required | Notes |
-|-----------------|-----------------|-----------|------------------------|-------|
-| name | name | TEXT | None | Direct mapping |
-| website | website | TEXT | None | Direct mapping |
-| logo_url | logo_url | TEXT | None | Direct mapping |
-| description | description | TEXT | None | Direct mapping |
-| offers_per_diem | offers_per_diem | BOOLEAN | None | Direct mapping |
-| is_union | is_union | BOOLEAN | None | Direct mapping |
-| founded_year | founded_year | INTEGER | None | Direct mapping |
-| employee_count | employee_count | TEXT | None | Direct mapping (stored as text) |
-| headquarters | headquarters | TEXT | None | Direct mapping |
-| trades[] | agency_trades | Junction | Array → Records | See "Relationship Mapping" |
-| regions[] | agency_regions | Junction | Array → Records | See "Relationship Mapping" |
+| Mock Data Field | Database Column | Data Type | Transformation Required | Notes                           |
+| --------------- | --------------- | --------- | ----------------------- | ------------------------------- |
+| name            | name            | TEXT      | None                    | Direct mapping                  |
+| website         | website         | TEXT      | None                    | Direct mapping                  |
+| logo_url        | logo_url        | TEXT      | None                    | Direct mapping                  |
+| description     | description     | TEXT      | None                    | Direct mapping                  |
+| offers_per_diem | offers_per_diem | BOOLEAN   | None                    | Direct mapping                  |
+| is_union        | is_union        | BOOLEAN   | None                    | Direct mapping                  |
+| founded_year    | founded_year    | INTEGER   | None                    | Direct mapping                  |
+| employee_count  | employee_count  | TEXT      | None                    | Direct mapping (stored as text) |
+| headquarters    | headquarters    | TEXT      | None                    | Direct mapping                  |
+| trades[]        | agency_trades   | Junction  | Array → Records         | See "Relationship Mapping"      |
+| regions[]       | agency_regions  | Junction  | Array → Records         | See "Relationship Mapping"      |
 
 ## Auto-Generated Fields
 
 These fields are automatically populated by the database:
 
-| Field | Default Value | Generation Method |
-|-------|---------------|-------------------|
-| id | UUID | gen_random_uuid() |
-| slug | from name | createSlug(name) |
-| phone | NULL | Optional - not in mock |
-| email | NULL | Optional - not in mock |
-| is_claimed | false | Default value |
-| is_active | true | Default value |
-| rating | NULL | No reviews yet |
-| review_count | 0 | Default value |
-| project_count | 0 | Default value |
-| verified | false | Default value |
-| featured | false | Default value |
-| claimed_at | NULL | Not claimed |
-| claimed_by | NULL | Not claimed |
-| created_at | NOW() | Automatic timestamp |
-| updated_at | NOW() | Automatic timestamp |
+| Field         | Default Value | Generation Method      |
+| ------------- | ------------- | ---------------------- |
+| id            | UUID          | gen_random_uuid()      |
+| slug          | from name     | createSlug(name)       |
+| phone         | NULL          | Optional - not in mock |
+| email         | NULL          | Optional - not in mock |
+| is_claimed    | false         | Default value          |
+| is_active     | true          | Default value          |
+| rating        | NULL          | No reviews yet         |
+| review_count  | 0             | Default value          |
+| project_count | 0             | Default value          |
+| verified      | false         | Default value          |
+| featured      | false         | Default value          |
+| claimed_at    | NULL          | Not claimed            |
+| claimed_by    | NULL          | Not claimed            |
+| created_at    | NOW()         | Automatic timestamp    |
+| updated_at    | NOW()         | Automatic timestamp    |
 
 ## Relationship Mapping
 
 ### Trades Array → agency_trades Junction Table
 
 Mock data format:
+
 ```javascript
-trades: ["Millwright", "Pipefitter", "Welder"]
+trades: ['Millwright', 'Pipefitter', 'Welder'];
 ```
 
 Database structure:
+
 ```sql
 -- trades table
 id | name | slug
@@ -71,11 +73,13 @@ agency1 | uuid3
 ### Regions Array → agency_regions Junction Table
 
 Mock data format:
+
 ```javascript
-regions: ["Texas", "Louisiana", "Oklahoma"]
+regions: ['Texas', 'Louisiana', 'Oklahoma'];
 ```
 
 Database structure:
+
 ```sql
 -- regions table
 id | name | state_code | slug
@@ -94,13 +98,13 @@ agency1 | uuid3
 
 ## Data Type Compatibility
 
-| Mock Type | Database Type | Compatible | Notes |
-|-----------|---------------|------------|-------|
-| string | TEXT | ✅ Yes | Direct mapping |
-| boolean | BOOLEAN | ✅ Yes | Direct mapping |
-| number | INTEGER | ✅ Yes | For founded_year |
-| string | TEXT | ✅ Yes | For employee_count |
-| array | Junction Table | ✅ Yes | Via relationships |
+| Mock Type | Database Type  | Compatible | Notes              |
+| --------- | -------------- | ---------- | ------------------ |
+| string    | TEXT           | ✅ Yes     | Direct mapping     |
+| boolean   | BOOLEAN        | ✅ Yes     | Direct mapping     |
+| number    | INTEGER        | ✅ Yes     | For founded_year   |
+| string    | TEXT           | ✅ Yes     | For employee_count |
+| array     | Junction Table | ✅ Yes     | Via relationships  |
 
 ## Migration Steps
 
@@ -132,19 +136,19 @@ agency1 | uuid3
 
 ```javascript
 // 1. Pre-populate trades
-const uniqueTrades = [...new Set(mockAgencies.flatMap(a => a.trades))];
+const uniqueTrades = [...new Set(mockAgencies.flatMap((a) => a.trades))];
 for (const trade of uniqueTrades) {
   await insertTrade({ name: trade, slug: createSlug(trade) });
 }
 
 // 2. Pre-populate regions
-const uniqueRegions = [...new Set(mockAgencies.flatMap(a => a.regions))];
+const uniqueRegions = [...new Set(mockAgencies.flatMap((a) => a.regions))];
 for (const region of uniqueRegions) {
   const stateCode = getStateCode(region);
-  await insertRegion({ 
-    name: region, 
+  await insertRegion({
+    name: region,
     state_code: stateCode,
-    slug: createSlug(`${region}-${stateCode}`)
+    slug: createSlug(`${region}-${stateCode}`),
   });
 }
 
@@ -154,15 +158,15 @@ for (const mockAgency of mockAgencies) {
   const agency = await insertAgency({
     name: mockAgency.name,
     slug: createSlug(mockAgency.name),
-    ...directMappings
+    ...directMappings,
   });
-  
+
   // Create trade relationships
   for (const tradeName of mockAgency.trades) {
     const trade = await getTradeByName(tradeName);
     await insertAgencyTrade(agency.id, trade.id);
   }
-  
+
   // Create region relationships
   for (const regionName of mockAgency.regions) {
     const region = await getRegionByName(regionName);

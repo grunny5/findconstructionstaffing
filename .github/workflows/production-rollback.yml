@@ -1,0 +1,170 @@
+name: Production Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Deployment ID to rollback (leave empty for last deployment)'
+        required: false
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Get deployment info
+        id: deployment
+        run: |
+          if [ -z "${{ github.event.inputs.deployment_id }}" ]; then
+            # Get the previous production deployment using JSON output
+            echo "Fetching deployment list..."
+            DEPLOYMENTS_JSON=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} --output json || echo '{"deployments":[]}')
+            
+            # Parse JSON to find the second-most recent production deployment
+            DEPLOYMENT_ID=$(echo "$DEPLOYMENTS_JSON" | node -e "
+              const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+              const prodDeployments = (data.deployments || [])
+                .filter(d => d.target === 'production' && d.state === 'READY')
+                .sort((a, b) => new Date(b.created) - new Date(a.created));
+              
+              if (prodDeployments.length < 2) {
+                console.error('Error: Not enough production deployments to rollback');
+                process.exit(1);
+              }
+              
+              // Get the second deployment (index 1)
+              console.log(prodDeployments[1].uid);
+            ")
+            
+            if [ -z "$DEPLOYMENT_ID" ]; then
+              echo "Error: Could not find previous deployment to rollback to"
+              exit 1
+            fi
+            
+            echo "Rolling back to previous deployment: $DEPLOYMENT_ID"
+          else
+            DEPLOYMENT_ID="${{ github.event.inputs.deployment_id }}"
+            echo "Rolling back to specified deployment: $DEPLOYMENT_ID"
+          fi
+
+          echo "deployment-id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+
+      - name: Perform rollback
+        id: rollback
+        run: |
+          # Promote the deployment to production
+          echo "Promoting deployment ${{ steps.deployment.outputs.deployment-id }} to production..."
+          vercel promote ${{ steps.deployment.outputs.deployment-id }} --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+          # Get deployment details using JSON output
+          echo "Fetching deployment details..."
+          DEPLOYMENT_INFO=$(vercel inspect ${{ steps.deployment.outputs.deployment-id }} --token=${{ secrets.VERCEL_TOKEN }} --output json || echo '{}')
+
+          # Extract the URL from JSON
+          ROLLBACK_URL=$(echo "$DEPLOYMENT_INFO" | node -e "
+            const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+            console.log(data.url || 'https://findconstructionstaffing.com');
+          ")
+
+          echo "rollback-url=$ROLLBACK_URL" >> $GITHUB_OUTPUT
+          echo "Rollback completed. Production URL: $ROLLBACK_URL"
+
+      - name: Create rollback record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Create deployment record for rollback
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production',
+              description: `Rollback: ${{ github.event.inputs.reason }}`,
+              auto_merge: false,
+              required_contexts: [],
+              task: 'rollback'
+            });
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              environment_url: '${{ steps.rollback.outputs.rollback-url }}',
+              description: 'Rollback completed successfully'
+            });
+
+      - name: Create rollback issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔄 Production Rollback: ${new Date().toISOString().split('T')[0]}`,
+              body: `## Production Rollback Executed
+              
+              ### Rollback Details
+              - **Initiated by**: @${{ github.actor }}
+              - **Reason**: ${{ github.event.inputs.reason }}
+              - **Rolled back to**: ${{ steps.deployment.outputs.deployment-id }}
+              - **Timestamp**: ${new Date().toISOString()}
+              
+              ### Next Steps
+              1. Verify production is stable
+              2. Investigate the issue that caused the rollback
+              3. Create hotfix if necessary
+              4. Plan forward deployment
+              
+              ### Rollback URL
+              ${{ steps.rollback.outputs.rollback-url }}
+              
+              cc: @team`,
+              labels: ['production', 'rollback', 'incident']
+            });
+
+            console.log(`Rollback issue created: #${issue.data.number}`);
+
+      - name: Generate rollback summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 🔄 Production Rollback Complete
+
+          ## Rollback Information
+          - **Deployment ID**: ${{ steps.deployment.outputs.deployment-id }}
+          - **Reason**: ${{ github.event.inputs.reason }}
+          - **Initiated by**: ${{ github.actor }}
+          - **URL**: ${{ steps.rollback.outputs.rollback-url }}
+
+          ## Important
+          - Production has been rolled back successfully
+          - An issue has been created to track this incident
+          - Please verify the application is functioning correctly
+
+          ## Follow-up Actions
+          1. Check application health
+          2. Review logs for the failed deployment
+          3. Create and test a fix
+          4. Deploy the fix through normal CI/CD process
+          EOF

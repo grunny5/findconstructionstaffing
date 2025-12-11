@@ -1,12 +1,12 @@
-import { 
-  seedTrades, 
-  seedRegions, 
-  seedAgencies, 
+import {
+  seedTrades,
+  seedRegions,
+  seedAgencies,
   createAgencyTradeRelationships,
   createAgencyRegionRelationships,
   extractUniqueTrades,
   extractUniqueStates,
-  createStateMapping
+  createStateMapping,
 } from '../seed-database';
 import { mockAgencies } from '../../lib/mock-data';
 
@@ -20,22 +20,26 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingTrades.filter(t => values.includes(t.name));
+              const matching = existingTrades.filter((t) =>
+                values.includes(t.name)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
-            const inserted = data.map(d => ({ ...d, id: `id-${d.name}` }));
+            const inserted = data.map((d) => ({ ...d, id: `id-${d.name}` }));
             existingTrades.push(...inserted);
             totalInserted += inserted.length;
             return {
-              select: jest.fn(() => Promise.resolve({
-                data: inserted,
-                error: null
-              }))
+              select: jest.fn(() =>
+                Promise.resolve({
+                  data: inserted,
+                  error: null,
+                })
+              ),
             };
-          })
-        }))
+          }),
+        })),
       };
 
       // First run - should insert all trades
@@ -63,21 +67,25 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingTrades.filter(t => values.includes(t.name));
+              const matching = existingTrades.filter((t) =>
+                values.includes(t.name)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
-            const inserted = data.map(d => ({ ...d, id: `id-${d.name}` }));
+            const inserted = data.map((d) => ({ ...d, id: `id-${d.name}` }));
             existingTrades.push(...inserted);
             return {
-              select: jest.fn(() => Promise.resolve({
-                data: inserted,
-                error: null
-              }))
+              select: jest.fn(() =>
+                Promise.resolve({
+                  data: inserted,
+                  error: null,
+                })
+              ),
             };
-          })
-        }))
+          }),
+        })),
       };
 
       // Run multiple times
@@ -102,22 +110,29 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingRegions.filter(r => values.includes(r.state_code));
+              const matching = existingRegions.filter((r) =>
+                values.includes(r.state_code)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
-            const inserted = data.map(d => ({ ...d, id: `id-${d.state_code}` }));
+            const inserted = data.map((d) => ({
+              ...d,
+              id: `id-${d.state_code}`,
+            }));
             existingRegions.push(...inserted);
             totalInserted += inserted.length;
             return {
-              select: jest.fn(() => Promise.resolve({
-                data: inserted,
-                error: null
-              }))
+              select: jest.fn(() =>
+                Promise.resolve({
+                  data: inserted,
+                  error: null,
+                })
+              ),
             };
-          })
-        }))
+          }),
+        })),
       };
 
       // First run
@@ -142,22 +157,26 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingAgencies.filter(a => values.includes(a.name));
+              const matching = existingAgencies.filter((a) =>
+                values.includes(a.name)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
-            const inserted = data.map(d => ({ ...d, id: `id-${d.name}` }));
+            const inserted = data.map((d) => ({ ...d, id: `id-${d.name}` }));
             existingAgencies.push(...inserted);
             totalInserted += inserted.length;
             return {
-              select: jest.fn(() => Promise.resolve({
-                data: inserted,
-                error: null
-              }))
+              select: jest.fn(() =>
+                Promise.resolve({
+                  data: inserted,
+                  error: null,
+                })
+              ),
             };
-          })
-        }))
+          }),
+        })),
       };
 
       // First run
@@ -181,10 +200,10 @@ describe('Idempotency Tests', () => {
       const agencyIdMap = new Map(
         mockAgencies.map((a, i) => [a.name, `agency-${i}`])
       );
-      
+
       const tradeIdMap = new Map<string, string>();
       const allTrades = new Set<string>();
-      mockAgencies.forEach(a => a.trades.forEach(t => allTrades.add(t)));
+      mockAgencies.forEach((a) => a.trades.forEach((t) => allTrades.add(t)));
       Array.from(allTrades).forEach((trade, i) => {
         tradeIdMap.set(trade, `trade-${i}`);
       });
@@ -193,26 +212,36 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingRelationships.filter(r => values.includes(r.agency_id));
+              const matching = existingRelationships.filter((r) =>
+                values.includes(r.agency_id)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
             existingRelationships.push(...data);
             totalInserted += data.length;
             return Promise.resolve({ error: null });
-          })
-        }))
+          }),
+        })),
       };
 
       // First run
-      await createAgencyTradeRelationships(mockClient as any, agencyIdMap, tradeIdMap);
+      await createAgencyTradeRelationships(
+        mockClient as any,
+        agencyIdMap,
+        tradeIdMap
+      );
       const firstRunInserted = totalInserted;
       expect(firstRunInserted).toBeGreaterThan(0);
 
       // Second run - should not insert any
       totalInserted = 0;
-      await createAgencyTradeRelationships(mockClient as any, agencyIdMap, tradeIdMap);
+      await createAgencyTradeRelationships(
+        mockClient as any,
+        agencyIdMap,
+        tradeIdMap
+      );
       expect(totalInserted).toBe(0);
     });
 
@@ -223,12 +252,12 @@ describe('Idempotency Tests', () => {
       const agencyIdMap = new Map(
         mockAgencies.map((a, i) => [a.name, `agency-${i}`])
       );
-      
+
       const stateMapping = createStateMapping();
       const regionIdMap = new Map<string, string>();
       const allStates = new Set<string>();
-      mockAgencies.forEach(a => a.regions.forEach(s => allStates.add(s)));
-      Array.from(allStates).forEach(stateName => {
+      mockAgencies.forEach((a) => a.regions.forEach((s) => allStates.add(s)));
+      Array.from(allStates).forEach((stateName) => {
         const stateCode = stateMapping.get(stateName);
         if (stateCode) {
           regionIdMap.set(stateCode, `region-${stateCode}`);
@@ -239,26 +268,36 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingRelationships.filter(r => values.includes(r.agency_id));
+              const matching = existingRelationships.filter((r) =>
+                values.includes(r.agency_id)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
             existingRelationships.push(...data);
             totalInserted += data.length;
             return Promise.resolve({ error: null });
-          })
-        }))
+          }),
+        })),
       };
 
       // First run
-      await createAgencyRegionRelationships(mockClient as any, agencyIdMap, regionIdMap);
+      await createAgencyRegionRelationships(
+        mockClient as any,
+        agencyIdMap,
+        regionIdMap
+      );
       const firstRunInserted = totalInserted;
       expect(firstRunInserted).toBeGreaterThan(0);
 
       // Second run - should not insert any
       totalInserted = 0;
-      await createAgencyRegionRelationships(mockClient as any, agencyIdMap, regionIdMap);
+      await createAgencyRegionRelationships(
+        mockClient as any,
+        agencyIdMap,
+        regionIdMap
+      );
       expect(totalInserted).toBe(0);
     });
   });
@@ -272,22 +311,26 @@ describe('Idempotency Tests', () => {
         from: jest.fn(() => ({
           select: jest.fn(() => ({
             in: jest.fn((field: string, values: string[]) => {
-              const matching = existingTrades.filter(t => values.includes(t.name));
+              const matching = existingTrades.filter((t) =>
+                values.includes(t.name)
+              );
               return Promise.resolve({ data: matching, error: null });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
-            const inserted = data.map(d => ({ ...d, id: `id-${d.name}` }));
+            const inserted = data.map((d) => ({ ...d, id: `id-${d.name}` }));
             existingTrades.push(...inserted);
             insertedCounts.push(data.length);
             return {
-              select: jest.fn(() => Promise.resolve({
-                data: inserted,
-                error: null
-              }))
+              select: jest.fn(() =>
+                Promise.resolve({
+                  data: inserted,
+                  error: null,
+                })
+              ),
             };
-          })
-        }))
+          }),
+        })),
       };
 
       // Mock console to capture logs
@@ -297,11 +340,12 @@ describe('Idempotency Tests', () => {
 
       // First run
       await seedTrades(mockClient as any);
-      
+
       // Check first run logs
-      const firstRunLog = logSpy.mock.calls.find(call => 
-        typeof call[0] === 'string' && 
-        call[0].includes('Created: 48, Skipped: 0')
+      const firstRunLog = logSpy.mock.calls.find(
+        (call) =>
+          typeof call[0] === 'string' &&
+          call[0].includes('Created: 48, Skipped: 0')
       );
       expect(firstRunLog).toBeDefined();
 
@@ -312,9 +356,10 @@ describe('Idempotency Tests', () => {
       await seedTrades(mockClient as any);
 
       // Check second run logs
-      const secondRunLog = logSpy.mock.calls.find(call => 
-        typeof call[0] === 'string' && 
-        call[0].includes('Created: 0, Skipped: 48')
+      const secondRunLog = logSpy.mock.calls.find(
+        (call) =>
+          typeof call[0] === 'string' &&
+          call[0].includes('Created: 0, Skipped: 48')
       );
       expect(secondRunLog).toBeDefined();
 
@@ -329,21 +374,26 @@ describe('Idempotency Tests', () => {
           select: jest.fn(() => ({
             in: jest.fn(() => {
               // Simulate query time
-              return new Promise(resolve => {
-                setTimeout(() => resolve({ data: existingData, error: null }), 5);
+              return new Promise((resolve) => {
+                setTimeout(
+                  () => resolve({ data: existingData, error: null }),
+                  5
+                );
               });
-            })
+            }),
           })),
           insert: jest.fn((data: any[]) => {
             existingData = [...existingData, ...data];
             return {
-              select: jest.fn(() => Promise.resolve({
-                data: data,
-                error: null
-              }))
+              select: jest.fn(() =>
+                Promise.resolve({
+                  data: data,
+                  error: null,
+                })
+              ),
             };
-          })
-        }))
+          }),
+        })),
       };
 
       // First run

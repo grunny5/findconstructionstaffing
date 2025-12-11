@@ -11,14 +11,19 @@ try {
 console.log('🌐 Web-Based Migration Helper\n');
 
 // Get Supabase project URL from environment variable or use default
-const SUPABASE_PROJECT_URL = process.env.SUPABASE_PROJECT_URL || 'https://supabase.com/dashboard/project/YOUR_PROJECT_ID';
+const SUPABASE_PROJECT_URL =
+  process.env.SUPABASE_PROJECT_URL ||
+  'https://supabase.com/dashboard/project/YOUR_PROJECT_ID';
 
 // Read all migration files with error handling
 const migrationsDir = path.join(__dirname, '..', 'supabase', 'migrations');
 let migrationFiles = [];
 
 try {
-  migrationFiles = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+  migrationFiles = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
 } catch (error) {
   console.error('❌ Error reading migrations directory:', error.message);
   console.error(`   Make sure the directory exists: ${migrationsDir}`);
@@ -26,7 +31,7 @@ try {
 }
 
 console.log('📋 Migration files found:');
-migrationFiles.forEach(file => {
+migrationFiles.forEach((file) => {
   console.log(`  - ${file}`);
 });
 

@@ -1,22 +1,26 @@
 # CodeRabbit Review Status
 
 ## Overview
+
 This document tracks all CodeRabbit comments from both GitHub PR and IDE, organizing them by status and priority.
 
 ## Review Strategy
 
 ### 1. Collect All Comments
+
 - **GitHub PR Comments**: Use `gh pr view 5 --comments` to see all PR comments
 - **IDE Comments**: Review comments shown inline in VS Code
 - **Export**: Save all comments to review systematically
 
 ### 2. Categorize by Type
+
 - 🛡️ **Security Issues** (P0 - Critical)
 - 🐛 **Bug Risks** (P1 - High)
 - 🛠️ **Refactoring Suggestions** (P2 - Medium)
 - 📚 **Documentation/Style** (P3 - Low)
 
 ### 3. Track Resolution Status
+
 - ✅ **Resolved** - Fixed and committed
 - 🚧 **In Progress** - Currently working on
 - 📋 **Pending** - Not yet addressed
@@ -25,6 +29,7 @@ This document tracks all CodeRabbit comments from both GitHub PR and IDE, organi
 ## Comments Already Addressed
 
 ### ✅ Resolved Issues
+
 1. **Jest Mock Hoisting** (`__tests__/utils/supabase-mock.ts`)
    - Fixed: Moved jest.mock() to module level
    - Commit: `29189b4`
@@ -70,6 +75,7 @@ This document tracks all CodeRabbit comments from both GitHub PR and IDE, organi
 ### 📋 Pending from GitHub PR
 
 To view all pending comments:
+
 ```bash
 # Get all comments from the PR
 gh pr view 5 --comments > pr-comments.txt
@@ -81,6 +87,7 @@ gh api repos/grunny5/findconstructionstaffing/pulls/5/comments
 ### 📋 Pending from IDE
 
 Check these files for inline CodeRabbit comments:
+
 1. Check all `.ts` and `.tsx` files for comment indicators
 2. Use VS Code's Problems panel to see all warnings
 3. Search for "@coderabbitai" in the codebase
@@ -88,10 +95,11 @@ Check these files for inline CodeRabbit comments:
 ## Next Steps
 
 1. **Export all comments**:
+
    ```bash
    # Export GitHub comments
    gh pr view 5 --comments > coderabbit-github-comments.txt
-   
+
    # Search for inline comments
    grep -r "@coderabbitai" . --include="*.ts" --include="*.tsx" > coderabbit-ide-comments.txt
    ```

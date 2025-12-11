@@ -1,0 +1,205 @@
+name: Deploy with Rate Limit Check
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  check-rate-limit:
+    name: Check Vercel Rate Limit
+    runs-on: ubuntu-latest
+    outputs:
+      can-deploy: ${{ steps.check.outputs.can-deploy }}
+      deployment-count: ${{ steps.check.outputs.deployment-count }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check deployment usage
+        id: check
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          # Simple check using Vercel API
+          RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?limit=1&teamId=$VERCEL_ORG_ID")
+
+          # Count deployments from last 24 hours
+          SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%S.000Z)
+          COUNT_RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?since=$SINCE&teamId=$VERCEL_ORG_ID&limit=0")
+
+          # Extract pagination info using jq for reliable JSON parsing
+          if command -v jq &> /dev/null; then
+            TOTAL=$(echo "$COUNT_RESPONSE" | jq -r '.pagination.count // 0')
+          else
+            # Fallback to grep if jq is not available
+            TOTAL=$(echo "$COUNT_RESPONSE" | grep -o '"pagination":{"count":[0-9]*' | grep -o '[0-9]*$' || echo "0")
+          fi
+
+          echo "Deployment count (last 24h): $TOTAL"
+          echo "deployment-count=$TOTAL" >> $GITHUB_OUTPUT
+
+          if [ "$TOTAL" -ge "95" ]; then
+            echo "⚠️ Approaching Vercel rate limit ($TOTAL/100 deployments)"
+            echo "can-deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Within rate limit ($TOTAL/100 deployments)"
+            echo "can-deploy=true" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    name: Deploy to Vercel
+    needs: check-rate-limit
+    if: needs.check-rate-limit.outputs.can-deploy == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Vercel
+        id: deploy
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # Install Vercel CLI
+          npm i -g vercel
+
+          # Determine environment and production flag based on branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            ENVIRONMENT="production"
+            PROD_FLAG="--prod"
+          else
+            ENVIRONMENT="preview"
+            PROD_FLAG=""
+          fi
+
+          # Pull Vercel environment information
+          vercel pull --yes --environment="${ENVIRONMENT}" --token="${VERCEL_TOKEN}"
+
+          # Build the project with error handling
+          export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}"
+          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+
+          set -eo pipefail  # Exit on error and pipe failures
+
+          echo "Starting Vercel build..."
+
+          # Capture output while preserving exit code
+          BUILD_OUTPUT=$(vercel build ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1) || BUILD_EXIT_CODE=$?
+
+          # Always show build output for debugging
+          echo "Build output:"
+          echo "$BUILD_OUTPUT"
+
+          # Handle build failure
+          if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
+            echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
+            exit 1
+          fi
+
+          # Verify build artifacts
+          if [ ! -d ".vercel/output" ] || [ ! -f ".vercel/output/config.json" ]; then
+            echo "::error::Build completed but artifacts are missing"
+            exit 1
+          fi
+
+          echo "✓ Build completed successfully"
+          echo "✓ Build artifacts verified"
+
+          # Deploy and capture the output (without --json flag)
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${VERCEL_TOKEN}" 2>&1)
+          DEPLOY_EXIT_CODE=$?
+
+          if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+            # Strip ANSI escape codes from output first
+            CLEAN_OUTPUT=$(echo "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g')
+            
+            # Extract URL from cleaned output using multiple patterns
+            # Pattern 1: Direct URL on its own line
+            DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -E "^https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)$" | tail -1)
+            
+            # Pattern 2: URL after "Ready!" or "Deployed to:"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "(Ready!|Deployed to:)\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+            fi
+            
+            # Pattern 3: URL after "Inspect:"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "Inspect:\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+            fi
+            
+            # Pattern 4: Any URL in the output (fallback)
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1)
+            fi
+
+            # Output the URL
+            if [[ "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+              echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+              echo "Deployed to: $DEPLOYMENT_URL"
+            else
+              echo "Warning: Could not extract deployment URL from output"
+              echo "Cleaned output: $CLEAN_OUTPUT"
+              echo "deployment_url=unknown" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Deployment failed with exit code: $DEPLOY_EXIT_CODE"
+            echo "Deployment output: $DEPLOY_OUTPUT"
+            echo "deployment_url=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  notify-rate-limit:
+    name: Notify Rate Limit
+    needs: check-rate-limit
+    if: needs.check-rate-limit.outputs.can-deploy == 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `⚠️ **Vercel Deployment Skipped**\n\nRate limit approaching or exceeded (${{ needs.check-rate-limit.outputs.deployment-count }}/100 deployments in last 24 hours).\n\n**Options:**\n1. Wait a few hours for the limit to reset\n2. Deploy manually using: \`vercel\`\n3. Upgrade to [Vercel Pro](https://vercel.com/pricing) for unlimited deployments\n\nThe build and tests passed successfully - only the preview deployment was skipped.`
+              });
+            } catch (error) {
+              console.error('Failed to create rate limit comment:', error);
+              // Don't fail the workflow if comment creation fails
+            }
+
+      - name: Set workflow status
+        run: |
+          echo "⚠️ Deployment skipped due to rate limit"
+          echo "Current usage: ${{ needs.check-rate-limit.outputs.deployment-count }}/100"
+          exit 0  # Don't fail the workflow

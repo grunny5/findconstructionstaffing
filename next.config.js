@@ -5,6 +5,10 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   optimizeFonts: false,
+  typescript: {
+    // Use a separate tsconfig for builds that excludes scripts
+    tsconfigPath: './tsconfig.build.json',
+  },
 };
 
 module.exports = nextConfig;

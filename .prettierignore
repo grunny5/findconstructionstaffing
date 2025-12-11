@@ -1,0 +1,78 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+*.map
+
+# Environment files
+.env*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+test-results/
+.jest-cache/
+.eslintcache
+
+# Directories
+.bolt/
+supabase/.temp/
+supabase/migrations/
+
+# Files without parsers
+.gitattributes
+.gitignore
+.prettierignore
+.eslintignore
+.gitkeep
+*.sql
+*.ps1
+*.sh
+*.bat
+*.toml
+test-output.txt
+*.txt
+*.xml
+
+# Scripts and configs
+scripts/*.ps1
+scripts/*.sh
+tests/load/*.sh
+
+# Supabase specific
+supabase/.gitignore
+supabase/config.toml
+supabase-setup.bat
+test-supabase.bat
+supabase.exe
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Test files
+test-sanitize*.js
+test-sanitize*.mjs
+test-sanitize*.ts
+
+# Files with invalid names
+construction-recruiter-directory@*

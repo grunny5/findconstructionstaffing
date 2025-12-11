@@ -7,6 +7,7 @@ This directory contains API documentation for the Find Construction Staffing age
 ## OpenAPI Specification
 
 The API is documented using OpenAPI 3.0 specification:
+
 - [`openapi-agencies.yaml`](./openapi-agencies.yaml) - Complete API specification
 
 ## Viewing the Documentation
@@ -38,6 +39,7 @@ Install the "OpenAPI (Swagger) Editor" extension in VS Code for inline preview.
 Retrieves a list of active construction staffing agencies with optional filtering.
 
 #### Features:
+
 - 🔍 **Search**: Full-text search across name and description
 - 🏗️ **Trade Filtering**: Filter by construction trade specialties
 - 📍 **State Filtering**: Filter by US state codes
@@ -45,6 +47,7 @@ Retrieves a list of active construction staffing agencies with optional filterin
 - ⚡ **Caching**: HTTP caching with ETags
 
 #### Query Parameters:
+
 - `search` - Search term (optional)
 - `trades[]` - Array of trade slugs (optional)
 - `states[]` - Array of 2-letter state codes (optional)
@@ -89,7 +92,7 @@ curl "https://api.findconstructionstaffing.com/api/agencies?offset=20&limit=20"
           "name": "Dallas-Fort Worth",
           "code": "TX"
         }
-      ],
+      ]
       // ... other fields
     }
   ],
@@ -124,9 +127,11 @@ curl "https://api.findconstructionstaffing.com/api/agencies?offset=20&limit=20"
 ## HTTP Headers
 
 ### Request Headers
+
 - `If-None-Match` - ETag value for conditional requests
 
 ### Response Headers
+
 - `Cache-Control` - Caching directives (max-age=300 for success)
 - `ETag` - Entity tag for response content
 - `Vary` - Accept-Encoding
@@ -141,6 +146,7 @@ curl "https://api.findconstructionstaffing.com/api/agencies?offset=20&limit=20"
 ## Rate Limiting
 
 Currently no rate limiting is implemented. Future versions may include:
+
 - Request limits per IP
 - API key-based quotas
 - Burst protection
@@ -194,5 +200,6 @@ Import the OpenAPI specification into Postman to get a complete collection with 
 ## Support
 
 For API issues or questions:
+
 - GitHub Issues: [Report an issue](https://github.com/findconstructionstaffing/api/issues)
 - Email: api-support@findconstructionstaffing.com

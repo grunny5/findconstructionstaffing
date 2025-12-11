@@ -1,9 +1,15 @@
 import useSWR, { SWRConfiguration } from 'swr';
-import { AgenciesApiResponse, AgenciesQueryParams, ErrorResponse, isErrorResponse, API_CONSTANTS } from '@/types/api';
+import {
+  AgenciesApiResponse,
+  AgenciesQueryParams,
+  ErrorResponse,
+  isErrorResponse,
+  API_CONSTANTS,
+} from '@/types/api';
 
 /**
  * Custom hook for fetching agency data from the API
- * 
+ *
  * This hook provides a reusable interface for fetching agency data with:
  * - Automatic caching and revalidation via SWR
  * - Loading and error states
@@ -23,13 +29,13 @@ function buildQueryString(params: AgenciesQueryParams): string {
   }
 
   if (params.trades && params.trades.length > 0) {
-    params.trades.forEach(trade => {
+    params.trades.forEach((trade) => {
       searchParams.append('trades[]', trade);
     });
   }
 
   if (params.states && params.states.length > 0) {
-    params.states.forEach(state => {
+    params.states.forEach((state) => {
       searchParams.append('states[]', state);
     });
   }
@@ -50,7 +56,7 @@ function buildQueryString(params: AgenciesQueryParams): string {
  */
 async function fetcher(url: string): Promise<AgenciesApiResponse> {
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error?.message || 'Failed to fetch agencies');
@@ -87,17 +93,17 @@ export interface UseAgenciesOptions extends AgenciesQueryParams {
 
 /**
  * Custom hook for fetching agencies with query parameters
- * 
+ *
  * @example
  * ```tsx
  * // Basic usage
  * const { data, error, isLoading } = useAgencies();
- * 
+ *
  * // With search
  * const { data, error, isLoading } = useAgencies({
  *   search: 'construction',
  * });
- * 
+ *
  * // With filters
  * const { data, error, isLoading } = useAgencies({
  *   trades: ['electricians', 'plumbers'],
@@ -105,7 +111,7 @@ export interface UseAgenciesOptions extends AgenciesQueryParams {
  *   limit: 20,
  *   offset: 0,
  * });
- * 
+ *
  * // Disabled until ready
  * const { data, error, isLoading } = useAgencies({
  *   search: searchTerm,
@@ -113,7 +119,9 @@ export interface UseAgenciesOptions extends AgenciesQueryParams {
  * });
  * ```
  */
-export function useAgencies(options: UseAgenciesOptions = {}): UseAgenciesReturn {
+export function useAgencies(
+  options: UseAgenciesOptions = {}
+): UseAgenciesReturn {
   const {
     search,
     trades,
@@ -137,20 +145,19 @@ export function useAgencies(options: UseAgenciesOptions = {}): UseAgenciesReturn
   const url = `/api/agencies${queryString ? `?${queryString}` : ''}`;
 
   // Use SWR for data fetching
-  const { data, error, isValidating, mutate } = useSWR<AgenciesApiResponse, Error>(
-    enabled ? url : null,
-    fetcher,
-    {
-      // Default SWR options
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      shouldRetryOnError: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 1000,
-      dedupingInterval: 2000,
-      ...swrOptions,
-    }
-  );
+  const { data, error, isValidating, mutate } = useSWR<
+    AgenciesApiResponse,
+    Error
+  >(enabled ? url : null, fetcher, {
+    // Default SWR options
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    shouldRetryOnError: true,
+    errorRetryCount: 3,
+    errorRetryInterval: 1000,
+    dedupingInterval: 2000,
+    ...swrOptions,
+  });
 
   return {
     data,
@@ -165,21 +172,25 @@ export function useAgencies(options: UseAgenciesOptions = {}): UseAgenciesReturn
  * Hook for fetching a single agency by slug
  * This can be used for agency profile pages
  */
-export function useAgency(slug: string | undefined, options: SWRConfiguration<AgenciesApiResponse> = {}) {
-  const url = slug ? `/api/agencies?search=${encodeURIComponent(slug)}&limit=1` : null;
+export function useAgency(
+  slug: string | undefined,
+  options: SWRConfiguration<AgenciesApiResponse> = {}
+) {
+  const url = slug
+    ? `/api/agencies?search=${encodeURIComponent(slug)}&limit=1`
+    : null;
 
-  const { data, error, isValidating, mutate } = useSWR<AgenciesApiResponse, Error>(
-    url,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      shouldRetryOnError: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 1000,
-      ...options,
-    }
-  );
+  const { data, error, isValidating, mutate } = useSWR<
+    AgenciesApiResponse,
+    Error
+  >(url, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    shouldRetryOnError: true,
+    errorRetryCount: 3,
+    errorRetryInterval: 1000,
+    ...options,
+  });
 
   // Extract the first agency from the response
   const agency = data?.data?.[0];

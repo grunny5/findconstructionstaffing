@@ -11,17 +11,20 @@ The `.claude/settings.local.json` file implements a deny-list to prevent executi
 ### Explicitly Denied Commands
 
 #### File System Operations
+
 - `rm` - Prevents file/directory deletion
 - `chmod` - Prevents permission changes
 - `chown` - Prevents ownership changes
 - `chgrp` - Prevents group ownership changes
 
 #### Privilege Escalation
+
 - `sudo` - Prevents superuser access
 - `su` - Prevents user switching
 - `visudo` - Prevents sudoers file editing
 
 #### System Administration
+
 - `dd` - Prevents disk operations
 - `mkfs` - Prevents filesystem creation
 - `mount/umount` - Prevents filesystem mounting
@@ -29,22 +32,26 @@ The `.claude/settings.local.json` file implements a deny-list to prevent executi
 - `format` - Prevents formatting operations
 
 #### System Control
+
 - `shutdown/reboot/poweroff` - Prevents system control
 - `systemctl/service` - Prevents service management
 - `kill/killall/pkill` - Prevents process termination
 
 #### User Management
+
 - `passwd` - Prevents password changes
 - `useradd/userdel/usermod` - Prevents user account changes
 - `groupadd/groupdel` - Prevents group management
 
 #### Network Operations
+
 - `nc/netcat` - Prevents network connections
 - `iptables` - Prevents firewall changes
 
 ### Allowed Operations
 
 The following Git and filesystem operations remain allowed for development:
+
 - `git` operations (add, commit, push, checkout, config)
 - `ls` - Directory listing
 - `mv` - File moving/renaming
@@ -55,6 +62,7 @@ The following Git and filesystem operations remain allowed for development:
 To use these security settings:
 
 1. Copy the example configuration:
+
    ```bash
    cp .claude/settings.example.json .claude/settings.local.json
    ```
@@ -66,6 +74,7 @@ To use these security settings:
 ## Rationale
 
 This configuration follows the principle of least privilege, allowing only the commands necessary for development work while explicitly blocking commands that could:
+
 - Delete or damage files
 - Escalate privileges
 - Modify system settings
@@ -75,6 +84,7 @@ This configuration follows the principle of least privilege, allowing only the c
 ## Updates
 
 When updating the security configuration:
+
 1. Update `.claude/settings.example.json`
 2. Document the change in this file
 3. Ensure all team members update their local settings

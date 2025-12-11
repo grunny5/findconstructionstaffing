@@ -1,15 +1,19 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { loadEnvironmentVariables, extractProjectReference } = require('./utils/env-loader');
+const {
+  loadEnvironmentVariables,
+  extractProjectReference,
+} = require('./utils/env-loader');
 
 // Load environment variables using the centralized utility
 loadEnvironmentVariables();
 
 // Get project reference using the utility function
-const projectRef = process.env.SUPABASE_PROJECT_REF || 
-                  extractProjectReference(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
-                  'your-project-ref';
+const projectRef =
+  process.env.SUPABASE_PROJECT_REF ||
+  extractProjectReference(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+  'your-project-ref';
 
 console.log('🔄 Applying Supabase Migrations\n');
 
@@ -46,10 +50,12 @@ console.log('📤 Pushing migrations to database...\n');
 
 try {
   // Use --non-interactive flag to prevent hanging in CI environments
-  const output = execSync('supabase db push --non-interactive', { encoding: 'utf8' });
+  const output = execSync('supabase db push --non-interactive', {
+    encoding: 'utf8',
+  });
   console.log(output);
   console.log('\n✅ Migrations applied successfully!');
-  
+
   // Generate TypeScript types from remote database
   console.log('\n🔧 Generating TypeScript types from remote database...');
   try {
@@ -59,14 +65,18 @@ try {
       fs.mkdirSync(libDir, { recursive: true });
       console.log('📁 Created lib directory');
     }
-    
+
     // First, pull the latest schema from remote to ensure accuracy
     console.log('📥 Pulling latest schema from remote database...');
     execSync('supabase db pull', { encoding: 'utf8' });
-    
+
     // Generate types from the remote database schema
-    execSync(`supabase gen types typescript --project-ref ${projectRef} > lib/database.types.ts`);
-    console.log('✅ TypeScript types generated from remote database in lib/database.types.ts');
+    execSync(
+      `supabase gen types typescript --project-ref ${projectRef} > lib/database.types.ts`
+    );
+    console.log(
+      '✅ TypeScript types generated from remote database in lib/database.types.ts'
+    );
   } catch (typeError) {
     console.log('⚠️  Could not generate types:', typeError.message);
     console.log('Falling back to local schema generation...');
@@ -83,11 +93,14 @@ try {
       console.log('❌ Type generation failed:', localError.message);
     }
   }
-  
 } catch (error) {
   console.error('❌ Migration failed:', error.message);
   console.log('\nTroubleshooting:');
   console.log('1. Check your database password is correct');
-  console.log('2. Ensure you have the latest migrations in supabase/migrations/');
-  console.log('3. Try running: supabase db reset (WARNING: This will delete all data)');
+  console.log(
+    '2. Ensure you have the latest migrations in supabase/migrations/'
+  );
+  console.log(
+    '3. Try running: supabase db reset (WARNING: This will delete all data)'
+  );
 }

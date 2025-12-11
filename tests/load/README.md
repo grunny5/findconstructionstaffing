@@ -80,6 +80,7 @@ node tests/load/agencies-api.autocannon.js
 ## Test Scenarios
 
 All load tests cover these scenarios:
+
 - Fetching all agencies (no filters)
 - Search by name
 - Filter by single trade
@@ -91,18 +92,19 @@ All load tests cover these scenarios:
 ## Results
 
 Test results are saved to `tests/load/results/` with timestamps:
+
 - JSON files with detailed metrics
 - Markdown summaries with recommendations
 - Performance target validation
 
 ## Performance Targets
 
-| Metric | Target | Description |
-|--------|--------|-------------|
-| P95 Response Time | < 100ms | 95% of requests must complete within 100ms |
-| Error Rate | < 1% | Less than 1% of requests should fail |
-| Throughput | > 100 req/s | Should handle at least 100 requests per second |
-| Concurrent Users | 100 | Support 100 simultaneous users |
+| Metric            | Target      | Description                                    |
+| ----------------- | ----------- | ---------------------------------------------- |
+| P95 Response Time | < 100ms     | 95% of requests must complete within 100ms     |
+| Error Rate        | < 1%        | Less than 1% of requests should fail           |
+| Throughput        | > 100 req/s | Should handle at least 100 requests per second |
+| Concurrent Users  | 100         | Support 100 simultaneous users                 |
 
 ## Running Load Tests in CI/CD
 
@@ -116,11 +118,13 @@ The project includes a comprehensive GitHub Actions workflow for load testing wi
 ### Health Check Endpoint
 
 The API includes a dedicated health endpoint (`/api/health`) that verifies:
+
 - API availability
 - Database connectivity
 - Environment configuration
 
 Example health check response:
+
 ```json
 {
   "status": "healthy",
@@ -167,35 +171,35 @@ on:
 jobs:
   load-test:
     runs-on: ubuntu-latest
-    
+
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       BASE_URL: ${{ github.event.inputs.target_url || 'http://localhost:3000' }}
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       # Only build and start locally if testing localhost
       - name: Build application
         if: contains(env.BASE_URL, 'localhost')
         run: npm run build
-      
+
       - name: Start application
         if: contains(env.BASE_URL, 'localhost')
         run: |
           npm start &
           echo $! > .pid
-      
+
       - name: Wait for API to be ready
         run: |
           echo "Waiting for API at $BASE_URL to be ready..."
@@ -207,13 +211,13 @@ jobs:
             echo "Attempt $i/30..."
             sleep 2
           done
-          
+
           # Verify API is responding
           if ! curl -s $BASE_URL/api/agencies > /dev/null; then
             echo "::error::API did not become ready after 60 seconds"
             exit 1
           fi
-      
+
       - name: Run load test
         run: |
           echo "Running load test against $BASE_URL"
@@ -221,7 +225,7 @@ jobs:
         env:
           CONCURRENT_USERS: ${{ github.event.inputs.concurrent_users }}
           TEST_DURATION: ${{ github.event.inputs.test_duration }}
-      
+
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
@@ -229,7 +233,7 @@ jobs:
           name: load-test-results-${{ github.run_number }}
           path: tests/load/results/
           retention-days: 30
-      
+
       - name: Stop application
         if: always() && contains(env.BASE_URL, 'localhost')
         run: |
@@ -237,17 +241,17 @@ jobs:
             kill "$(cat .pid)" || true
             rm .pid
           fi
-      
+
       - name: Check performance targets
         run: |
           # Find the latest summary file
           SUMMARY=$(ls -t tests/load/results/simple-load-test-summary_*.md 2>/dev/null | head -1)
-          
+
           if [ -z "$SUMMARY" ] || [ ! -f "$SUMMARY" ]; then
             echo "::error::No load test summary file found"
             exit 1
           fi
-          
+
           # Display results in job summary
           {
             echo "## Load Test Results"
@@ -258,7 +262,7 @@ jobs:
             echo ""
             cat "$SUMMARY"
           } >> "$GITHUB_STEP_SUMMARY"
-          
+
           # Fail if targets not met
           if grep -q "❌" "$SUMMARY"; then
             echo "::error::Performance targets not met. See summary for details."
@@ -269,6 +273,7 @@ jobs:
 ## Interpreting Results
 
 ### Good Performance
+
 ```
 ✅ 95th Percentile: 45ms
 ✅ Error Rate: 0.1%
@@ -276,6 +281,7 @@ jobs:
 ```
 
 ### Needs Optimization
+
 ```
 ❌ 95th Percentile: 150ms
 ❌ Error Rate: 2.5%
@@ -291,16 +297,19 @@ Recommendations:
 ## Troubleshooting
 
 ### "Connection refused" errors
+
 - Ensure the API server is running
 - Check the BASE_URL is correct
 - Verify no firewall blocking
 
 ### High error rates
+
 - Check database connection limits
 - Monitor server memory usage
 - Review error logs for details
 
 ### Slow response times
+
 - Enable query logging to find slow queries
 - Check database indexes
 - Monitor CPU usage during tests
@@ -310,7 +319,7 @@ Recommendations:
 
 After load testing:
 
-1. **If targets are met**: 
+1. **If targets are met**:
    - Run tests in staging environment
    - Schedule regular performance testing
    - Set up monitoring alerts

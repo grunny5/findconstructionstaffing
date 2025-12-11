@@ -30,7 +30,7 @@ export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
     database: false,
     environment: false,
   };
-  
+
   let overallStatus: 'healthy' | 'unhealthy' = 'healthy';
   let message: string | undefined;
 
@@ -38,13 +38,13 @@ export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
   try {
     const requiredEnvVars = [
       'NEXT_PUBLIC_SUPABASE_URL',
-      'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
     ];
-    
+
     const missingVars = requiredEnvVars.filter(
-      varName => !process.env[varName]
+      (varName) => !process.env[varName]
     );
-    
+
     if (missingVars.length === 0) {
       checks.environment = true;
     } else {
@@ -63,9 +63,8 @@ export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
       // Perform a simple query to verify database connectivity
       const { error } = await supabase
         .from('agencies')
-        .select('id')
-        .limit(1);
-      
+        .select('id', { head: true, count: 'exact' });
+
       if (!error) {
         checks.database = true;
       } else {
@@ -94,19 +93,16 @@ export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
       environment: process.env.NODE_ENV || 'development',
       version: process.env.npm_package_version,
       uptime: process.uptime ? Math.floor(process.uptime()) : undefined,
-      message
-    }
+      message,
+    },
   };
 
   // Return appropriate status code based on health
-  return NextResponse.json(
-    response,
-    { 
-      status: overallStatus === 'healthy' ? 200 : 503,
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'X-Response-Time': `${Date.now() - startTime}ms`
-      }
-    }
-  );
+  return NextResponse.json(response, {
+    status: overallStatus === 'healthy' ? 200 : 503,
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'X-Response-Time': `${Date.now() - startTime}ms`,
+    },
+  });
 }

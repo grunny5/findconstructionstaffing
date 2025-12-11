@@ -1,11 +1,11 @@
 # FSD: Supabase Infrastructure Setup
 
-* **ID:** 0001
-* **Status:** Draft
-* **Related Epic:** Database & Backend Core
-* **Author:** Product Team
-* **Last Updated:** 2024-12-24
-* **Designs:** N/A - Infrastructure feature
+- **ID:** 0001
+- **Status:** Draft
+- **Related Epic:** Database & Backend Core
+- **Author:** Product Team
+- **Last Updated:** 2024-12-24
+- **Designs:** N/A - Infrastructure feature
 
 ## 1. Problem & Goal
 
@@ -16,6 +16,7 @@ Construction companies and staffing agencies currently interact with static mock
 ### Goal & Hypothesis
 
 We believe that by implementing a Supabase PostgreSQL database with proper schema design and real-time capabilities, we will enable dynamic data management and scalable search functionality. We will know this is true when we see:
+
 - Database queries returning results in under 100ms for 95% of requests
 - Successful data migration of all 12 mock agencies with 100% accuracy
 - Zero connection failures during standard operation
@@ -29,10 +30,10 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 
 **Acceptance Criteria:**
 
-* [ ] **Given** a new Supabase account, **When** I create a project named "findconstructionstaffing", **Then** I receive a project URL and anon key for configuration
-* [ ] **Given** the Supabase credentials, **When** I configure environment variables in `.env.local`, **Then** the application can establish a secure connection
-* [ ] **Given** a configured project, **When** I test the connection from the application, **Then** I receive a successful response within 100ms
-* [ ] **Given** the need for team collaboration, **When** I create `.env.example`, **Then** other developers can set up their local environment
+- [ ] **Given** a new Supabase account, **When** I create a project named "findconstructionstaffing", **Then** I receive a project URL and anon key for configuration
+- [ ] **Given** the Supabase credentials, **When** I configure environment variables in `.env.local`, **Then** the application can establish a secure connection
+- [ ] **Given** a configured project, **When** I test the connection from the application, **Then** I receive a successful response within 100ms
+- [ ] **Given** the need for team collaboration, **When** I create `.env.example`, **Then** other developers can set up their local environment
 
 ### Story 2: Database Schema Implementation
 
@@ -40,10 +41,10 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 
 **Acceptance Criteria:**
 
-* [ ] **Given** the TypeScript interfaces in `lib/supabase.ts`, **When** I create the agencies table, **Then** all fields match the interface with proper data types
-* [ ] **Given** the need for many-to-many relationships, **When** I create trades and regions tables, **Then** junction tables properly link agencies to their specialties and locations
-* [ ] **Given** search requirements, **When** I add indexes, **Then** queries on name, trades, and regions fields execute in under 50ms
-* [ ] **Given** the need for data integrity, **When** I set up foreign keys, **Then** cascade deletes work properly and orphaned records are prevented
+- [ ] **Given** the TypeScript interfaces in `lib/supabase.ts`, **When** I create the agencies table, **Then** all fields match the interface with proper data types
+- [ ] **Given** the need for many-to-many relationships, **When** I create trades and regions tables, **Then** junction tables properly link agencies to their specialties and locations
+- [ ] **Given** search requirements, **When** I add indexes, **Then** queries on name, trades, and regions fields execute in under 50ms
+- [ ] **Given** the need for data integrity, **When** I set up foreign keys, **Then** cascade deletes work properly and orphaned records are prevented
 
 ### Story 3: Security Configuration
 
@@ -51,10 +52,10 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 
 **Acceptance Criteria:**
 
-* [ ] **Given** all database tables, **When** I enable RLS, **Then** direct table access is blocked by default
-* [ ] **Given** the public directory requirement, **When** I create read policies for agencies, trades, and regions, **Then** anonymous users can view but not modify data
-* [ ] **Given** future authentication needs, **When** I structure RLS policies, **Then** they can be extended to support user-based permissions
-* [ ] **Given** security best practices, **When** I audit the policies, **Then** no data leakage paths exist
+- [ ] **Given** all database tables, **When** I enable RLS, **Then** direct table access is blocked by default
+- [ ] **Given** the public directory requirement, **When** I create read policies for agencies, trades, and regions, **Then** anonymous users can view but not modify data
+- [ ] **Given** future authentication needs, **When** I structure RLS policies, **Then** they can be extended to support user-based permissions
+- [ ] **Given** security best practices, **When** I audit the policies, **Then** no data leakage paths exist
 
 ### Story 4: Data Migration Readiness
 
@@ -62,20 +63,21 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 
 **Acceptance Criteria:**
 
-* [ ] **Given** the mock data structure, **When** I verify the schema, **Then** all mock data fields have corresponding database columns
-* [ ] **Given** the need for unique identifiers, **When** I configure slug generation, **Then** the `createSlug` function output matches database constraints
-* [ ] **Given** data relationships, **When** I test inserting related data, **Then** agencies, trades, and regions link correctly through junction tables
-* [ ] **Given** the need for data verification, **When** I create test queries, **Then** I can retrieve agencies with all their associated trades and regions
+- [ ] **Given** the mock data structure, **When** I verify the schema, **Then** all mock data fields have corresponding database columns
+- [ ] **Given** the need for unique identifiers, **When** I configure slug generation, **Then** the `createSlug` function output matches database constraints
+- [ ] **Given** data relationships, **When** I test inserting related data, **Then** agencies, trades, and regions link correctly through junction tables
+- [ ] **Given** the need for data verification, **When** I create test queries, **Then** I can retrieve agencies with all their associated trades and regions
 
 ## 3. Technical & Design Requirements
 
 ### UX/UI Requirements
 
-* N/A - This is a backend infrastructure feature
+- N/A - This is a backend infrastructure feature
 
 ### Technical Impact Analysis
 
-* **Data Model:**
+- **Data Model:**
+
   ```sql
   -- Core tables as defined in TypeScript interfaces
   CREATE TABLE agencies (
@@ -154,8 +156,8 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
   CREATE POLICY "Public can view active agency trades" ON agency_trades
     FOR SELECT USING (
       EXISTS (
-        SELECT 1 FROM agencies 
-        WHERE agencies.id = agency_trades.agency_id 
+        SELECT 1 FROM agencies
+        WHERE agencies.id = agency_trades.agency_id
         AND agencies.is_active = true
       )
     );
@@ -163,16 +165,16 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
   CREATE POLICY "Public can view active agency regions" ON agency_regions
     FOR SELECT USING (
       EXISTS (
-        SELECT 1 FROM agencies 
-        WHERE agencies.id = agency_regions.agency_id 
+        SELECT 1 FROM agencies
+        WHERE agencies.id = agency_regions.agency_id
         AND agencies.is_active = true
       )
     );
   ```
 
-* **API Endpoints:** None in this phase - API implementation is Task 3
+- **API Endpoints:** None in this phase - API implementation is Task 3
 
-* **Non-Functional Requirements:**
+- **Non-Functional Requirements:**
   - Database queries must return within 100ms for 95th percentile
   - Connection pool must support at least 20 concurrent connections
   - All sensitive data (keys, URLs) must be stored in environment variables
@@ -183,36 +185,37 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 
 ### Out of Scope
 
-* User authentication setup (only RLS structure preparation)
-* API endpoint implementation (separate task)
-* Data migration execution (separate task)
-* Advanced search features (full-text search optimization)
-* Database replication or read replicas
-* Custom Supabase Edge Functions
+- User authentication setup (only RLS structure preparation)
+- API endpoint implementation (separate task)
+- Data migration execution (separate task)
+- Advanced search features (full-text search optimization)
+- Database replication or read replicas
+- Custom Supabase Edge Functions
 
 ### Open Questions
 
-* [ ] **Question:** Should we implement soft deletes (is_deleted flag) or hard deletes for agencies?
+- [ ] **Question:** Should we implement soft deletes (is_deleted flag) or hard deletes for agencies?
   - **Owner:** Tech Lead
   - **Target Date:** Before schema finalization
-  
-* [ ] **Question:** Do we need audit trails (created_by, updated_by) in this phase?
+- [ ] **Question:** Do we need audit trails (created_by, updated_by) in this phase?
   - **Owner:** Security Lead
   - **Target Date:** Before RLS implementation
 
-* [ ] **Question:** What is the expected growth rate for data volume planning?
+- [ ] **Question:** What is the expected growth rate for data volume planning?
   - **Owner:** Product Manager
   - **Target Date:** Before index optimization
 
 ## 5. Success Metrics
 
 ### Technical Metrics
+
 - [ ] Connection success rate: 100%
 - [ ] Query performance: <100ms for 95% of queries
 - [ ] Schema validation: 100% match with TypeScript interfaces
 - [ ] RLS coverage: 100% of tables protected
 
 ### Development Metrics
+
 - [ ] Setup time for new developers: <30 minutes
 - [ ] Zero security vulnerabilities in setup
 - [ ] Documentation completeness: All steps documented
@@ -220,16 +223,19 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 ## 6. Testing Strategy
 
 ### Unit Tests
+
 - Connection establishment and error handling
 - Schema validation against TypeScript types
 - RLS policy verification
 
 ### Integration Tests
+
 - End-to-end connection from Next.js to Supabase
 - Query performance under load
 - Concurrent connection handling
 
 ### Security Tests
+
 - RLS policy penetration testing
 - Environment variable exposure checks
 - SQL injection prevention verification
@@ -237,6 +243,7 @@ We believe that by implementing a Supabase PostgreSQL database with proper schem
 ## 7. Rollback Plan
 
 If issues arise during implementation:
+
 1. Application continues using mock data (no breaking changes)
 2. Supabase project can be deleted and recreated
 3. Environment variables can be reverted
@@ -260,7 +267,8 @@ If issues arise during implementation:
 
 ---
 
-**Next Steps:** 
+**Next Steps:**
+
 1. This FSD is ready for technical review
 2. Upon approval, we can begin implementation following the Sprint 0 task list
 3. The next FSD should cover the API endpoint implementation (Task 3)

@@ -1,16 +1,25 @@
-"use client";
+'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AgencyCardSkeleton() {
   return (
-    <Card className="border-0 bg-white/80 backdrop-blur-sm" data-testid="agency-card-skeleton">
+    <Card
+      className="border-0 bg-white/80 backdrop-blur-sm"
+      data-testid="agency-card-skeleton"
+    >
       <CardContent className="p-8">
-        <div className="flex flex-col lg:flex-row gap-8" data-testid="skeleton-flex-container">
+        <div
+          className="flex flex-col lg:flex-row gap-8"
+          data-testid="skeleton-flex-container"
+        >
           {/* Logo Skeleton */}
           <div className="flex-shrink-0">
-            <Skeleton className="w-20 h-20 rounded-3xl" data-testid="skeleton-logo" />
+            <Skeleton
+              className="w-20 h-20 rounded-3xl"
+              data-testid="skeleton-logo"
+            />
           </div>
 
           {/* Content */}
@@ -31,7 +40,10 @@ export default function AgencyCardSkeleton() {
                 </div>
 
                 {/* Company Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-testid="skeleton-stats-grid">
+                <div
+                  className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+                  data-testid="skeleton-stats-grid"
+                >
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="flex items-center gap-2">
                       <Skeleton className="w-8 h-8 rounded-lg" />
@@ -50,8 +62,14 @@ export default function AgencyCardSkeleton() {
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3 lg:flex-shrink-0">
-                <Skeleton className="h-10 w-full lg:w-40 rounded-xl" data-testid="skeleton-button-1" />
-                <Skeleton className="h-10 w-full lg:w-40 rounded-xl" data-testid="skeleton-button-2" />
+                <Skeleton
+                  className="h-10 w-full lg:w-40 rounded-xl"
+                  data-testid="skeleton-button-1"
+                />
+                <Skeleton
+                  className="h-10 w-full lg:w-40 rounded-xl"
+                  data-testid="skeleton-button-2"
+                />
               </div>
             </div>
           </div>

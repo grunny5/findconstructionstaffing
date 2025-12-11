@@ -1,0 +1,345 @@
+name: Deploy to Vercel (Optimized)
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    # Only deploy on certain paths to reduce deployments
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.js'
+      - 'tailwind.config.ts'
+      - 'tsconfig.json'
+  workflow_dispatch:
+
+# Cancel in-progress deployments on same branch
+concurrency:
+  # Use head ref when it exists, otherwise fallback to branch ref
+  # Replace slashes with hyphens in branch/ref names for valid group identifier
+  group: deploy-vercel-optimized-${{ replace(github.head_ref || github.ref, '/', '-') }}
+  cancel-in-progress: true
+
+# Permissions needed for the workflow
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # Check if we should deploy
+  should_deploy:
+    name: Check Deployment Conditions
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history to compare changes
+
+      - name: Setup GitHub CLI
+        uses: cli/cli-action@v1
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Check conditions
+        id: check
+        run: |
+          # Always deploy main and staging
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # For PRs, only deploy if not draft
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "Skipping deployment for draft PR"
+            exit 0
+          fi
+
+          # Skip if only docs/tests changed
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For PRs, use GitHub API to get the list of changed files
+            # This properly handles untracked files, submodules, and permission changes
+            export GH_TOKEN="${{ github.token }}"
+            CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
+          else
+            # For pushes, compare against the previous commit including untracked files
+            git fetch origin ${{ github.event.before }} --depth=1
+            CHANGED_FILES=$(git diff --name-only --relative FETCH_HEAD HEAD)
+          fi
+
+          # Check if any non-docs/non-test files were changed
+          # Use case-insensitive matching and handle files anywhere in the tree
+          # Exclude: docs, test directories, test files, mock files, markdown files, stories, and common root-level docs
+          NON_DOCS_TEST_CHANGES=$(echo "$CHANGED_FILES" | grep -Evi \
+            '(^|/)(docs|test|tests|__tests__|__mocks__|\.storybook)(/|$)|(\.(test|spec|stories)\.(ts|tsx|js|jsx)$)|(\.(md|markdown)$)|(^|/)(README|CHANGELOG|CONTRIBUTING|LICENSE|SECURITY|AUTHORS|NOTICE)(\.[^/]+)?$|\.github/dependabot\.yml$' || true)
+
+          if [[ -z "$NON_DOCS_TEST_CHANGES" ]]; then
+            echo "Only docs/tests changed - skipping deployment"
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "Code changes detected - proceeding with deployment"
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: should_deploy
+    if: needs.should_deploy.outputs.should_deploy == 'true'
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Check Vercel token availability
+        id: check_token
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "::warning::VERCEL_TOKEN unavailable - likely a forked PR. Skipping deployment."
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+            echo "deployment_url=token-missing" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "Token is available"
+          echo "should_skip=false" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v4
+        if: steps.check_token.outputs.should_skip != 'true'
+
+      - name: Setup Node.js
+        if: steps.check_token.outputs.should_skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Vercel CLI and dependencies
+        if: steps.check_token.outputs.should_skip != 'true'
+        run: |
+          # Install CLI
+          npm install --global vercel@latest
+          # Install project dependencies deterministically
+          npm ci
+          # Install jq for JSON parsing
+          sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Pull Vercel Environment Information
+        if: steps.check_token.outputs.should_skip != 'true'
+        run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            VERCEL_ENV="production"
+          else
+            VERCEL_ENV="preview"
+          fi
+          vercel pull --yes --environment="${VERCEL_ENV}" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build Project Artifacts
+        if: steps.check_token.outputs.should_skip != 'true'
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -o pipefail  # Exit on pipe failures but not on command errors
+
+          # Run the build and capture all output
+          echo "Starting Vercel build..."
+
+          # Capture output while preserving exit code
+          # Temporarily disable exit on error to capture the exit code
+          BUILD_EXIT_CODE=0
+          set +e
+          BUILD_OUTPUT=$(vercel build --token="${{ secrets.VERCEL_TOKEN }}" 2>&1)
+          BUILD_EXIT_CODE=$?
+          set -e
+
+          # Always show build output for debugging
+          echo "Build output:"
+          echo "$BUILD_OUTPUT"
+
+          # Handle build failure
+          if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
+            echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
+            
+            # Check for common issues in output
+            if echo "$BUILD_OUTPUT" | grep -q "Error: No such file or directory"; then
+              echo "::error::Build failed - missing required files"
+            elif echo "$BUILD_OUTPUT" | grep -q "TypeError"; then
+              echo "::error::Build failed - TypeError in code"
+            elif echo "$BUILD_OUTPUT" | grep -q "out of memory"; then
+              echo "::error::Build failed - out of memory"
+            fi
+            
+            exit 1
+          fi
+
+          # Verify build artifacts
+          if [ ! -d ".vercel/output" ]; then
+            echo "::error::Build completed but no output directory found"
+            exit 1
+          fi
+
+          if [ ! -f ".vercel/output/config.json" ]; then
+            echo "::error::Build completed but config.json is missing"
+            exit 1
+          fi
+
+          echo "✓ Build completed successfully"
+          echo "✓ Build artifacts verified in .vercel/output"
+
+          # List build artifacts for debugging
+          echo "Build artifacts:"
+          ls -la .vercel/output/ | head -20
+
+      - name: Deploy to Vercel
+        id: deploy
+        if: steps.check_token.outputs.should_skip != 'true'
+        run: |
+          # Set variables to track deployment success
+          DEPLOYMENT_SUCCESS=false
+          DEPLOYMENT_URL=""
+
+          # Add retry logic for rate limit errors
+          for i in {1..3}; do
+            echo "Deploying to Vercel (attempt $i/3)..."
+            
+            # Deploy and capture both output and exit code using JSON for reliable parsing
+            # Initialize exit code
+            DEPLOY_EXIT_CODE=0
+            
+            # Set production flag for main branch
+            PROD_FLAG=""
+            [ "${{ github.ref }}" = "refs/heads/main" ] && PROD_FLAG="--prod"
+            
+            DEPLOY_OUTPUT=$(vercel deploy --prebuilt ${PROD_FLAG} --token="${{ secrets.VERCEL_TOKEN }}" --json 2>&1) || DEPLOY_EXIT_CODE=$?
+            
+            echo "Deploy exit code: ${DEPLOY_EXIT_CODE:-0}"
+            echo "Deploy output:"
+            echo "$DEPLOY_OUTPUT"
+            
+            # Check if deployment succeeded
+            if [ "${DEPLOY_EXIT_CODE:-0}" -eq 0 ]; then
+              # Parse JSON output to extract deployment information
+              DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url // empty')
+              DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | jq -r '.id // .uid // empty')
+              
+              # Check if we got a valid URL
+              if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" != "null" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+                echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+                echo "✓ Deployment successful: $DEPLOYMENT_URL"
+                
+                # Set deployment ID if available
+                if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
+                  echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+                  echo "Deployment ID: $DEPLOYMENT_ID"
+                fi
+                
+                DEPLOYMENT_SUCCESS=true
+                break
+              else
+                echo "Warning: Failed to extract deployment URL from JSON output"
+                
+                # For production deployments, use known production URL
+                if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+                  echo "Using fallback production URL"
+                  echo "deployment_url=https://findconstructionstaffing.vercel.app" >> $GITHUB_OUTPUT
+                  DEPLOYMENT_SUCCESS=true
+                  break
+                else
+                  # For preview deployments, deployment likely succeeded even without URL
+                  echo "deployment_url=unknown" >> $GITHUB_OUTPUT
+                  echo "✓ Preview deployment completed (URL extraction failed but deployment likely succeeded)"
+                  DEPLOYMENT_SUCCESS=true
+                  break
+                fi
+              fi
+            elif echo "$DEPLOY_OUTPUT" | grep -q "api-deployments-free-per-day"; then
+              echo "Hit Vercel rate limit. This is deployment attempt $i of 3."
+              if [ $i -lt 3 ]; then
+                echo "Waiting 5 minutes before retry..."
+                sleep 300
+              else
+                echo "::warning::Vercel deployment rate limit reached. Please upgrade to Pro or wait for limit reset."
+                echo "deployment_url=rate-limited" >> $GITHUB_OUTPUT
+                DEPLOYMENT_SUCCESS=true  # Don't fail workflow for rate limits
+                break
+              fi
+            else
+              echo "Deployment attempt $i failed with exit code: ${DEPLOY_EXIT_CODE:-0}"
+              echo "Error output:"
+              echo "$DEPLOY_OUTPUT"
+              
+              # Only fail if this was the last attempt
+              if [ $i -eq 3 ]; then
+                echo "::error::All deployment attempts failed after 3 tries"
+                echo "deployment_url=failed" >> $GITHUB_OUTPUT
+                exit 1
+              fi
+            fi
+            
+            # Reset exit code for next iteration
+            unset DEPLOY_EXIT_CODE
+          done
+
+          # Final success check
+          if [ "$DEPLOYMENT_SUCCESS" = true ]; then
+            echo "✓ Deployment workflow completed successfully"
+          else
+            echo "::error::Deployment workflow failed to complete successfully"
+            exit 1
+          fi
+
+      - name: Create deployment status
+        if: steps.check_token.outputs.should_skip != 'true' && github.event_name == 'pull_request' && steps.deploy.outputs.deployment_url != 'rate-limited' && steps.deploy.outputs.deployment_url != 'unknown'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment_url = '${{ steps.deploy.outputs.deployment_url }}';
+
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `🚀 Preview deployment ready at: ${deployment_url}`
+              });
+            } catch (error) {
+              console.error('Failed to create comment:', error);
+              // Don't fail the workflow if comment creation fails
+            }
+
+      - name: Rate limit warning
+        if: steps.deploy.outputs.deployment_url == 'rate-limited'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            if (context.eventName === 'pull_request') {
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: `⚠️ Vercel deployment rate limit reached (100 deployments/day on free tier). The build passed but preview deployment was skipped.\n\nOptions:\n1. Wait a few hours for the limit to reset\n2. Upgrade to Vercel Pro for unlimited deployments\n3. Deploy manually using \`vercel\` CLI`
+                });
+              } catch (error) {
+                console.error('Failed to create rate limit warning comment:', error);
+                // Don't fail the workflow if comment creation fails
+              }
+            }

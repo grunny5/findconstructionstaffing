@@ -1,50 +1,76 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+export interface TestSupabaseResponse {
+  success?: boolean;
+  message?: string;
+  tables?: {
+    agencies: {
+      connected: boolean;
+      count?: number;
+    };
+  };
+  error?: string | any;
+  env?: {
+    url: string;
+    key: string;
+  };
+}
+
 export async function GET() {
   try {
     if (!supabase) {
-      return NextResponse.json({ 
-        error: 'Supabase client not initialized',
-        env: {
-          url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not set',
-          key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Not set'
-        }
-      }, { status: 500 });
+      return NextResponse.json<TestSupabaseResponse>(
+        {
+          error: 'Supabase client not initialized',
+          env: {
+            url: 'Not set',
+            key: 'Not set',
+          },
+        },
+        { status: 500 }
+      );
     }
 
-    // Try a simple query
+    // Try to query agencies table to test connection
     const { data, error } = await supabase
-      .from('test')
-      .select('*')
-      .limit(1);
-
-    if (error && error.message.includes('relation "public.test" does not exist')) {
-      // This is actually good - it means we connected but the table doesn't exist
-      return NextResponse.json({ 
-        status: 'Connected',
-        message: 'Successfully connected to Supabase (table does not exist yet, which is expected)'
-      });
-    }
+      .from('agencies')
+      .select('id', { head: true, count: 'exact' });
 
     if (error) {
-      return NextResponse.json({ 
-        status: 'Error',
-        error: error.message,
-        code: error.code,
-        details: error
-      }, { status: 500 });
+      return NextResponse.json<TestSupabaseResponse>(
+        {
+          success: false,
+          message: 'Failed to connect to Supabase',
+          error: error,
+          tables: {
+            agencies: {
+              connected: false,
+            },
+          },
+        },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ 
-      status: 'Connected',
+    return NextResponse.json<TestSupabaseResponse>({
+      success: true,
       message: 'Successfully connected to Supabase',
-      data 
+      tables: {
+        agencies: {
+          connected: true,
+          count: data?.length || 0,
+        },
+      },
     });
   } catch (error: any) {
-    return NextResponse.json({ 
-      status: 'Error',
-      error: error.message 
-    }, { status: 500 });
+    return NextResponse.json<TestSupabaseResponse>(
+      {
+        success: false,
+        message: 'Connection test failed',
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }

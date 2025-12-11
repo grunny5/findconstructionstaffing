@@ -38,6 +38,7 @@ The script automatically detects when it's running in a non-interactive environm
 2. **No TTY**: When no terminal is attached (e.g., in automated scripts)
 
 In these cases, the script:
+
 - Skips the interactive prompt
 - Defaults to **not** running the stress test
 - Displays a message about running in non-interactive mode
@@ -65,7 +66,7 @@ stage('Load Tests') {
         script {
             // Without stress test
             sh './tests/load/run-load-tests.sh --skip-stress'
-            
+
             // With stress test (e.g., for nightly builds)
             if (env.BUILD_TYPE == 'nightly') {
                 sh './tests/load/run-load-tests.sh --run-stress'
@@ -83,7 +84,7 @@ load-test:
   script:
     # Skip stress test for merge requests
     - ./tests/load/run-load-tests.sh --skip-stress
-  
+
 load-test-full:
   stage: test
   script:
@@ -110,21 +111,23 @@ CMD ["./tests/load/run-load-tests.sh"]
 1. **Default Behavior**: In CI, the script defaults to skipping the stress test to save time and resources.
 
 2. **Explicit Control**: Always use explicit flags in CI to make the behavior clear:
+
    ```bash
    # Good - explicit
    ./tests/load/run-load-tests.sh --skip-stress
-   
+
    # Less clear - relies on default
    ./tests/load/run-load-tests.sh
    ```
 
 3. **Scheduled Stress Tests**: Run stress tests in scheduled/nightly builds:
+
    ```yaml
    # GitHub Actions scheduled workflow
    on:
      schedule:
-       - cron: '0 2 * * *'  # 2 AM daily
-   
+       - cron: '0 2 * * *' # 2 AM daily
+
    jobs:
      stress-test:
        runs-on: ubuntu-latest
@@ -142,6 +145,7 @@ CMD ["./tests/load/run-load-tests.sh"]
 ### Script Still Prompts in CI
 
 If the script prompts despite being in CI:
+
 1. Ensure `CI` environment variable is set
 2. Check if stdin is being piped unexpectedly
 3. Use explicit `--skip-stress` or `--run-stress` flags
@@ -149,6 +153,7 @@ If the script prompts despite being in CI:
 ### Invalid Environment Variable Value
 
 The script warns about invalid `RUN_STRESS_TEST` values:
+
 ```
 Warning: Invalid RUN_STRESS_TEST value: invalid
 Expected: true, false, yes, no, y, n, 1, or 0
@@ -164,10 +169,11 @@ Expected: true, false, yes, no, y, n, 1, or 0
 If you have existing CI pipelines using the old interactive script:
 
 1. **Add explicit flags**:
+
    ```bash
    # Old (would hang in CI)
    echo "n" | ./tests/load/run-load-tests.sh
-   
+
    # New
    ./tests/load/run-load-tests.sh --skip-stress
    ```

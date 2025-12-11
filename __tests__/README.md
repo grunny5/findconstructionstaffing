@@ -14,7 +14,11 @@ This project uses a centralized Supabase mock system to ensure consistent test b
 
 ```typescript
 // 1. Import mock utilities FIRST
-import { configureSupabaseMock, supabaseMockHelpers, resetSupabaseMock } from '@/__tests__/utils/supabase-mock';
+import {
+  configureSupabaseMock,
+  supabaseMockHelpers,
+  resetSupabaseMock,
+} from '@/__tests__/utils/supabase-mock';
 
 // 2. Import Supabase (already mocked)
 import { supabase } from '@/lib/supabase';
@@ -25,9 +29,9 @@ jest.mock('next/server', () => ({
     json: jest.fn((data: any, init?: ResponseInit) => ({
       status: init?.status || 200,
       json: async () => data,
-      headers: new Headers(init?.headers)
-    }))
-  }
+      headers: new Headers(init?.headers),
+    })),
+  },
 }));
 
 // 4. Import the code under test LAST
@@ -42,7 +46,7 @@ describe('Your Test Suite', () => {
   it('should handle successful queries', async () => {
     // Configure mock for success
     configureSupabaseMock(supabase, {
-      defaultData: [{ id: '1', name: 'Test' }]
+      defaultData: [{ id: '1', name: 'Test' }],
     });
 
     // Your test code here
@@ -51,7 +55,7 @@ describe('Your Test Suite', () => {
   it('should handle errors', async () => {
     // Configure mock for errors
     configureSupabaseMock(supabase, {
-      error: { message: 'Database error' }
+      error: { message: 'Database error' },
     });
 
     // Your test code here
@@ -65,13 +69,13 @@ describe('Your Test Suite', () => {
 interface SupabaseMockConfig {
   // Simulate an error response
   error?: Error | { message: string; code?: string };
-  
+
   // Throw the error instead of returning it
   throwError?: boolean;
-  
+
   // Default data to return from queries
   defaultData?: any;
-  
+
   // Default count for queries
   defaultCount?: number;
 }
@@ -95,7 +99,12 @@ supabaseMockHelpers.expectFilterApplied(supabase, 'eq', 'status', 'active');
 supabaseMockHelpers.expectMethodCallCount(supabase, 'select', 1);
 
 // Assert complete query chain
-supabaseMockHelpers.expectQueryChain(supabase, ['from', 'select', 'eq', 'order']);
+supabaseMockHelpers.expectQueryChain(supabase, [
+  'from',
+  'select',
+  'eq',
+  'order',
+]);
 ```
 
 ### Multi-Table Query Helper
@@ -108,19 +117,19 @@ import { configureMockForFilters } from '@/__tests__/utils/supabase-mock';
 // Setup mocks for trade filtering
 configureMockForFilters(supabase, {
   trades: {
-    slugs: ['electricians', 'plumbers'],    // Input trade slugs
-    ids: ['trade-1', 'trade-2'],           // IDs returned by trades table
-    agencyIds: ['agency-1', 'agency-2']    // IDs returned by agency_trades table
-  }
+    slugs: ['electricians', 'plumbers'], // Input trade slugs
+    ids: ['trade-1', 'trade-2'], // IDs returned by trades table
+    agencyIds: ['agency-1', 'agency-2'], // IDs returned by agency_trades table
+  },
 });
 
-// Setup mocks for state filtering  
+// Setup mocks for state filtering
 configureMockForFilters(supabase, {
   states: {
-    codes: ['TX', 'CA'],                   // Input state codes
-    regionIds: ['region-1', 'region-2'],  // IDs returned by regions table
-    agencyIds: ['agency-1', 'agency-3']   // IDs returned by agency_regions table
-  }
+    codes: ['TX', 'CA'], // Input state codes
+    regionIds: ['region-1', 'region-2'], // IDs returned by regions table
+    agencyIds: ['agency-1', 'agency-3'], // IDs returned by agency_regions table
+  },
 });
 
 // Combined filtering (intersection logic)
@@ -128,17 +137,18 @@ configureMockForFilters(supabase, {
   trades: {
     slugs: ['electricians'],
     ids: ['trade-1'],
-    agencyIds: ['agency-1', 'agency-2']
+    agencyIds: ['agency-1', 'agency-2'],
   },
   states: {
     codes: ['TX'],
     regionIds: ['region-tx'],
-    agencyIds: ['agency-1']  // Only agency-1 matches both filters
-  }
+    agencyIds: ['agency-1'], // Only agency-1 matches both filters
+  },
 });
 ```
 
 This helper automatically handles the complex query chains:
+
 - `trades` table → `agency_trades` table → filtered agency IDs
 - `regions` table → `agency_regions` table → filtered agency IDs
 - Preserves main query mock configuration
@@ -149,7 +159,7 @@ This helper automatically handles the complex query chains:
 
 ```typescript
 configureSupabaseMock(supabase, {
-  defaultCount: 42
+  defaultCount: 42,
 });
 
 // The mock handles count('*', { count: 'exact' }) automatically
@@ -160,13 +170,13 @@ configureSupabaseMock(supabase, {
 ```typescript
 // Return error in response
 configureSupabaseMock(supabase, {
-  error: { message: 'Connection refused' }
+  error: { message: 'Connection refused' },
 });
 
 // Or throw error
 configureSupabaseMock(supabase, {
   error: new Error('Network error'),
-  throwError: true
+  throwError: true,
 });
 ```
 
@@ -174,23 +184,26 @@ configureSupabaseMock(supabase, {
 
 ```typescript
 configureSupabaseMock(supabase, {
-  defaultData: []
+  defaultData: [],
 });
 ```
 
 ### Troubleshooting
 
 #### General Issues
+
 1. **Mock not working**: Check import order - mocks must be imported before the code under test
 2. **Type errors**: The mock includes all Supabase methods with proper TypeScript types
 3. **Unexpected behavior**: Use `resetSupabaseMock()` in `beforeEach` to ensure clean state
 
 #### Multi-Table Query Issues
+
 4. **Filter tests failing**: Use `configureMockForFilters()` for trade/state filtering tests
 5. **Wrong table calls**: Verify the helper is called AFTER `configureSupabaseMock()`
 6. **Infinite loops**: Make sure not to call both helpers on the same mock - use one or the other
 
 #### Common Error Messages
+
 - `Cannot read property 'mockResolvedValue' of undefined`: Import order issue
 - `TypeError: supabase.from is not a function`: Missing mock import
 - `AssertionError: Expected mock function to have been called`: Mock not configured properly
@@ -205,6 +218,7 @@ configureSupabaseMock(supabase, {
 ### Advanced Usage
 
 #### Custom Mock Behavior
+
 ```typescript
 // For tests requiring special behavior
 supabase.from.mockImplementation((table) => {
@@ -216,11 +230,12 @@ supabase.from.mockImplementation((table) => {
 ```
 
 #### Testing Error Recovery
+
 ```typescript
 // Test how code handles database failures
 configureSupabaseMock(supabase, {
   error: { message: 'Connection timeout', code: 'TIMEOUT' },
-  throwError: true
+  throwError: true,
 });
 ```
 
@@ -245,6 +260,7 @@ The centralized mock handles all the chaining automatically and ensures consiste
 ## Implementation Status
 
 ### Migrated Test Files ✅
+
 The following test files have been successfully migrated to the centralized mock system:
 
 - `app/api/agencies/__tests__/state-filter.test.ts` (15 tests) - Uses `configureMockForFilters`
@@ -257,12 +273,13 @@ The following test files have been successfully migrated to the centralized mock
 - `app/api/agencies/__tests__/trade-filter.test.ts` (12 tests) - Uses `configureMockForFilters`
 
 ### Migration Complete ✅
+
 All 8/8 test files have been successfully migrated to the centralized mock system.
 
 ### Available Helpers
 
 1. **Basic Mock**: `configureSupabaseMock()` - For simple queries
-2. **Filter Mock**: `configureMockForFilters()` - For multi-table filter queries  
+2. **Filter Mock**: `configureMockForFilters()` - For multi-table filter queries
 3. **Assertions**: `supabaseMockHelpers.*` - For verifying mock calls
 4. **Reset**: `resetSupabaseMock()` - For cleaning state between tests
 
@@ -272,7 +289,7 @@ All 8/8 test files have been successfully migrated to the centralized mock syste
 __tests__/
 ├── utils/
 │   ├── supabase-mock.ts                    # Main centralized mock
-│   ├── supabase-mock-filters.test.ts       # Helper tests  
+│   ├── supabase-mock-filters.test.ts       # Helper tests
 │   ├── filter-mock-example.test.ts         # Usage examples
 │   └── api-mocks.ts                        # Request mocking utilities
 └── README.md                               # This documentation

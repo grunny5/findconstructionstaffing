@@ -35,35 +35,38 @@ This document breaks down the feature into sprint-ready engineering tasks. All t
 ### Engineering Tasks for this Story:
 
 ---
+
 ### ✅ Task Brief: [Task Title, e.g., Implement Avatar Upload Endpoint]
 
-* **Role:** Backend Developer
-* **Objective:** Create a new API endpoint to handle the uploading and processing of a user's avatar image.
-* **Context:** This endpoint directly implements the server-side logic for Story 1 of FSD-003 and must adhere to the security and data handling rules in the PKD.
-* **Key Files to Reference:**
-    * `docs/features/003-user-profile-photo.md` (for specific request/response behavior)
-    * `PROJECT-PKD.md` (for architecture, security standards, and NFRs)
-* **Key Patterns to Follow:**
-    * **API Design:** Adhere to the API style guide defined in the PKD.
-    * **Security:** Sanitize all incoming files as per the "Security & Compliance" section of the PKD.
-    * **Data:** Update the `Users` table as specified in the FSD's "Technical Impact Analysis."
-* **Acceptance Criteria (for this task):**
-    * [ ] A `POST /api/users/me/avatar` endpoint is created.
-    * [ ] The endpoint validates file type and size as specified in the FSD.
-    * [ ] The endpoint successfully stores the optimized image and updates the user's `avatar_url`.
-    * [ ] Unit tests are written to cover success, validation errors, and auth failure cases.
-* **Definition of Done:**
-    * [ ] Code complete.
-    * [ ] Unit tests written and passing, meeting the test coverage standard from the PKD.
-    * [ ] API documentation (e.g., OpenAPI spec) is updated.
-    * [ ] PR submitted and approved by at least one other team member.
-    * [ ] **Final Check:** Work aligns with all relevant standards in `PROJECT-PKD.md`.
+- **Role:** Backend Developer
+- **Objective:** Create a new API endpoint to handle the uploading and processing of a user's avatar image.
+- **Context:** This endpoint directly implements the server-side logic for Story 1 of FSD-003 and must adhere to the security and data handling rules in the PKD.
+- **Key Files to Reference:**
+  - `docs/features/003-user-profile-photo.md` (for specific request/response behavior)
+  - `PROJECT-PKD.md` (for architecture, security standards, and NFRs)
+- **Key Patterns to Follow:**
+  - **API Design:** Adhere to the API style guide defined in the PKD.
+  - **Security:** Sanitize all incoming files as per the "Security & Compliance" section of the PKD.
+  - **Data:** Update the `Users` table as specified in the FSD's "Technical Impact Analysis."
+- **Acceptance Criteria (for this task):**
+  - [ ] A `POST /api/users/me/avatar` endpoint is created.
+  - [ ] The endpoint validates file type and size as specified in the FSD.
+  - [ ] The endpoint successfully stores the optimized image and updates the user's `avatar_url`.
+  - [ ] Unit tests are written to cover success, validation errors, and auth failure cases.
+- **Definition of Done:**
+  - [ ] Code complete.
+  - [ ] Unit tests written and passing, meeting the test coverage standard from the PKD.
+  - [ ] API documentation (e.g., OpenAPI spec) is updated.
+  - [ ] PR submitted and approved by at least one other team member.
+  - [ ] **Final Check:** Work aligns with all relevant standards in `PROJECT-PKD.md`.
 
 ---
-*(Repeat the "Task Brief" block for all tasks required to complete the User Story)*
+
+_(Repeat the "Task Brief" block for all tasks required to complete the User Story)_
 
 ---
 
 ## ➡️ Story 2: [Title of User Story from FSD]
+
 ...
 (Repeat structure with new Task Briefs for all subsequent stories)

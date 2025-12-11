@@ -1,14 +1,14 @@
-import { 
-  isErrorResponse, 
-  API_CONSTANTS, 
-  HTTP_STATUS, 
+import {
+  isErrorResponse,
+  API_CONSTANTS,
+  HTTP_STATUS,
   ERROR_CODES,
   type Agency,
   type Trade,
   type Region,
   type AgenciesApiResponse,
   type ErrorResponse,
-  type AgenciesQueryParams
+  type AgenciesQueryParams,
 } from '../api';
 
 describe('API Types', () => {
@@ -18,8 +18,8 @@ describe('API Types', () => {
         const errorResponse: ErrorResponse = {
           error: {
             code: 'TEST_ERROR',
-            message: 'Test error message'
-          }
+            message: 'Test error message',
+          },
         };
         expect(isErrorResponse(errorResponse)).toBe(true);
       });
@@ -29,8 +29,8 @@ describe('API Types', () => {
           error: {
             code: 'TEST_ERROR',
             message: 'Test error message',
-            details: { field: 'value' }
-          }
+            details: { field: 'value' },
+          },
         };
         expect(isErrorResponse(errorResponse)).toBe(true);
       });
@@ -42,8 +42,8 @@ describe('API Types', () => {
             total: 0,
             limit: 20,
             offset: 0,
-            hasMore: false
-          }
+            hasMore: false,
+          },
         };
         expect(isErrorResponse(successResponse)).toBe(false);
       });
@@ -112,7 +112,7 @@ describe('API Types', () => {
         verified: true,
         featured: false,
         trades: [],
-        regions: []
+        regions: [],
       };
       expect(agency).toBeDefined();
     });
@@ -122,7 +122,7 @@ describe('API Types', () => {
         id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'Electricians',
         slug: 'electricians',
-        description: 'Electrical work specialists'
+        description: 'Electrical work specialists',
       };
       expect(trade).toBeDefined();
     });
@@ -131,7 +131,7 @@ describe('API Types', () => {
       const region: Region = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'Texas',
-        code: 'TX'
+        code: 'TX',
       };
       expect(region).toBeDefined();
     });
@@ -143,8 +143,8 @@ describe('API Types', () => {
           total: 100,
           limit: 20,
           offset: 0,
-          hasMore: true
-        }
+          hasMore: true,
+        },
       };
       expect(response).toBeDefined();
     });
@@ -155,7 +155,7 @@ describe('API Types', () => {
         trades: ['electricians', 'plumbers'],
         states: ['TX', 'CA'],
         limit: 50,
-        offset: 20
+        offset: 20,
       };
       expect(params).toBeDefined();
     });
@@ -165,7 +165,7 @@ describe('API Types', () => {
       const params2: AgenciesQueryParams = { trades: ['electricians'] };
       const params3: AgenciesQueryParams = { limit: 10, offset: 0 };
       const params4: AgenciesQueryParams = {};
-      
+
       expect(params1).toBeDefined();
       expect(params2).toBeDefined();
       expect(params3).toBeDefined();

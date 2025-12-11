@@ -8,14 +8,14 @@ const TEST_SALT = 'fcs-ip-hash-default-salt-2024';
 describe('IP Extraction Utilities', () => {
   // Store original env var
   const originalSalt = process.env.IP_HASH_SALT;
-  
+
   beforeEach(() => {
     // Mock environment variable for consistent testing
     // This ensures the test uses the same salt regardless of the actual environment
     // and matches how the implementation reads the salt value
     process.env.IP_HASH_SALT = TEST_SALT;
   });
-  
+
   afterEach(() => {
     // Restore original env var to avoid affecting other tests
     if (originalSalt !== undefined) {
@@ -28,11 +28,11 @@ describe('IP Extraction Utilities', () => {
     it('should hash known IP addresses using SHA-256', () => {
       const testIp = '192.168.1.1';
       const hashedIp = hashIpForRateLimiting(testIp);
-      
+
       // Verify it returns a hash, not the raw IP
       expect(hashedIp).not.toBe(testIp);
       expect(hashedIp).toHaveLength(16); // Should be truncated to 16 chars
-      
+
       // Verify the hash is consistent
       const expectedHash = createHash('sha256')
         .update(testIp + TEST_SALT)
@@ -45,7 +45,7 @@ describe('IP Extraction Utilities', () => {
       const testIp = '10.0.0.1';
       const hash1 = hashIpForRateLimiting(testIp);
       const hash2 = hashIpForRateLimiting(testIp);
-      
+
       expect(hash1).toBe(hash2);
     });
 
@@ -54,7 +54,7 @@ describe('IP Extraction Utilities', () => {
       const ip2 = '192.168.1.2';
       const hash1 = hashIpForRateLimiting(ip1);
       const hash2 = hashIpForRateLimiting(ip2);
-      
+
       expect(hash1).not.toBe(hash2);
     });
 
@@ -62,13 +62,13 @@ describe('IP Extraction Utilities', () => {
       // Mock Date.now() for consistent testing
       const mockTime = 1640995200000; // 2022-01-01 00:00:00
       jest.spyOn(Date, 'now').mockReturnValue(mockTime);
-      
+
       const hashedUnknown = hashIpForRateLimiting('unknown');
-      
+
       // Should be a hash, not the literal "unknown-timestamp"
       expect(hashedUnknown).not.toContain('unknown');
       expect(hashedUnknown).toHaveLength(16);
-      
+
       // Verify it uses the time slot in the hash
       const timeSlot = Math.floor(mockTime / (5 * 60 * 1000));
       const expectedHash = createHash('sha256')
@@ -76,7 +76,7 @@ describe('IP Extraction Utilities', () => {
         .digest('hex')
         .substring(0, 16);
       expect(hashedUnknown).toBe(expectedHash);
-      
+
       jest.restoreAllMocks();
     });
 
@@ -88,10 +88,10 @@ describe('IP Extraction Utilities', () => {
         '8.8.8.8',
         '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
         '::1',
-        'fe80::1'
+        'fe80::1',
       ];
-      
-      testIps.forEach(ip => {
+
+      testIps.forEach((ip) => {
         const hash = hashIpForRateLimiting(ip);
         expect(hash).not.toBe(ip);
         expect(hash).not.toContain(ip);
@@ -101,22 +101,24 @@ describe('IP Extraction Utilities', () => {
 
     it('should produce different hashes with different salts', () => {
       const testIp = '192.168.1.1';
-      
+
       // Get hash with current salt
       const hash1 = hashIpForRateLimiting(testIp);
-      
+
       // Change salt
       process.env.IP_HASH_SALT = 'different-salt-for-testing';
-      
+
       // Need to clear the module cache to reload with new env var
       jest.resetModules();
-      const { hashIpForRateLimiting: hashIpForRateLimitingNew } = require('../ip-extraction');
-      
+      const {
+        hashIpForRateLimiting: hashIpForRateLimitingNew,
+      } = require('../ip-extraction');
+
       const hash2 = hashIpForRateLimitingNew(testIp);
-      
+
       // Hashes should be different with different salts
       expect(hash1).not.toBe(hash2);
-      
+
       // Both should still be valid hashes
       expect(hash1).toMatch(/^[a-f0-9]{16}$/);
       expect(hash2).toMatch(/^[a-f0-9]{16}$/);
@@ -127,111 +129,110 @@ describe('IP Extraction Utilities', () => {
     function createMockRequest(headers: Record<string, string>): NextRequest {
       return {
         headers: {
-          get: (name: string) => headers[name.toLowerCase()] || null
-        }
+          get: (name: string) => headers[name.toLowerCase()] || null,
+        },
       } as NextRequest;
     }
 
     it('should extract IP from x-forwarded-for header', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '203.0.113.1, 10.0.0.1'
+        'x-forwarded-for': '203.0.113.1, 10.0.0.1',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('203.0.113.1');
     });
 
     it('should skip private IPs in x-forwarded-for', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '10.0.0.1, 192.168.1.1, 203.0.113.1'
+        'x-forwarded-for': '10.0.0.1, 192.168.1.1, 203.0.113.1',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('203.0.113.1');
     });
 
     it('should return unknown for invalid IPs', () => {
       const request = createMockRequest({
-        'x-forwarded-for': 'not-an-ip'
+        'x-forwarded-for': 'not-an-ip',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('unknown');
     });
 
     it('should handle IPv6 addresses with ports', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '[2001:db8::1]:8080'
+        'x-forwarded-for': '[2001:db8::1]:8080',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('2001:db8::1');
     });
 
     it('should handle IPv4 addresses with ports', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '203.0.113.1:8080'
+        'x-forwarded-for': '203.0.113.1:8080',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('203.0.113.1');
     });
 
     it('should handle IPv6 addresses without brackets', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '2001:db8::1'
+        'x-forwarded-for': '2001:db8::1',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('2001:db8::1');
     });
 
     it('should not confuse IPv6 colons with port separators', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '2001:db8:85a3:0000:0000:8a2e:0370:7334'
+        'x-forwarded-for': '2001:db8:85a3:0000:0000:8a2e:0370:7334',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('2001:db8:85a3:0000:0000:8a2e:0370:7334');
     });
 
     it('should handle IPv6 addresses in brackets without port', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '[fe80::1]'
+        'x-forwarded-for': '[fe80::1]',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('fe80::1');
     });
 
     it('should handle trailing colon in IPv4', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '8.8.8.8:'
+        'x-forwarded-for': '8.8.8.8:',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('8.8.8.8');
     });
 
     it('should handle trailing colon in bracketed IPv6', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '[2001:db8::1]:'
+        'x-forwarded-for': '[2001:db8::1]:',
       });
-      
+
       const ip = getClientIp(request);
       expect(ip).toBe('2001:db8::1');
     });
 
     it('should handle non-numeric port in IPv4', () => {
       const request = createMockRequest({
-        'x-forwarded-for': '1.1.1.1:abc'
+        'x-forwarded-for': '1.1.1.1:abc',
       });
-      
+
       const ip = getClientIp(request);
       // Non-numeric port means it's not a valid port, so keep the whole thing
       // But this might fail validation, returning 'unknown'
       expect(ip).toBe('unknown');
     });
   });
-
 });

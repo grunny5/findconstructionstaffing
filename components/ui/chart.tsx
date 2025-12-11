@@ -74,24 +74,43 @@ ChartContainer.displayName = 'Chart';
 const isValidColor = (color: string): boolean => {
   // Allow hex colors, rgb/rgba, hsl/hsla, and common color names
   const colorPatterns = [
-    /^#[0-9A-Fa-f]{3,8}$/,  // Hex colors
-    /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/,  // rgb
-    /^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[0-1]?\.?\d*\s*\)$/,  // rgba
-    /^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/,  // hsl
-    /^hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*,\s*[0-1]?\.?\d*\s*\)$/,  // hsla
+    /^#[0-9A-Fa-f]{3,8}$/, // Hex colors
+    /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/, // rgb
+    /^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[0-1]?\.?\d*\s*\)$/, // rgba
+    /^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/, // hsl
+    /^hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*,\s*[0-1]?\.?\d*\s*\)$/, // hsla
   ];
-  
+
   // Common safe color keywords
   const safeColorKeywords = [
-    'transparent', 'currentColor', 'inherit', 'initial', 'revert', 'unset',
-    'black', 'white', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta',
-    'gray', 'grey', 'orange', 'purple', 'brown', 'pink', 'lime', 'indigo'
+    'transparent',
+    'currentColor',
+    'inherit',
+    'initial',
+    'revert',
+    'unset',
+    'black',
+    'white',
+    'red',
+    'green',
+    'blue',
+    'yellow',
+    'cyan',
+    'magenta',
+    'gray',
+    'grey',
+    'orange',
+    'purple',
+    'brown',
+    'pink',
+    'lime',
+    'indigo',
   ];
-  
+
   const normalizedColor = color.trim().toLowerCase();
-  
+
   return (
-    colorPatterns.some(pattern => pattern.test(color)) ||
+    colorPatterns.some((pattern) => pattern.test(color)) ||
     safeColorKeywords.includes(normalizedColor)
   );
 };
@@ -102,7 +121,7 @@ const getThemeStyles = (
   theme: keyof typeof THEMES
 ): Record<string, string> => {
   const styles: Record<string, string> = {};
-  
+
   Object.entries(config).forEach(([key, itemConfig]) => {
     if (itemConfig.theme || itemConfig.color) {
       const color = itemConfig.theme?.[theme] || itemConfig.color;
@@ -111,7 +130,7 @@ const getThemeStyles = (
       }
     }
   });
-  
+
   return styles;
 };
 

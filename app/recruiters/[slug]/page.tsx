@@ -1,16 +1,17 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Building2, 
-  MapPin, 
-  Globe, 
-  Phone, 
-  Mail, 
+import {
+  Building2,
+  MapPin,
+  Globe,
+  Phone,
+  Mail,
   Calendar,
   Users,
   Award,
@@ -19,7 +20,7 @@ import {
   CheckCircle,
   Briefcase,
   DollarSign,
-  Shield
+  Shield,
 } from 'lucide-react';
 import { Agency, AgencyResponse, isErrorResponse } from '@/types/api';
 import Link from 'next/link';
@@ -35,11 +36,11 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   // Fetch agency data from API
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/agencies/${params.slug}`,
-    { 
+    {
       cache: 'no-store', // Ensure fresh data
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
     }
   );
 
@@ -57,7 +58,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -65,10 +66,12 @@ export default async function AgencyProfilePage({ params }: PageProps) {
             {/* Logo and Basic Info */}
             <div className="flex-shrink-0">
               {agency.logo_url ? (
-                <img 
-                  src={agency.logo_url} 
+                <Image
+                  src={agency.logo_url}
                   alt={`${agency.name} logo`}
-                  className="w-32 h-32 rounded-lg object-cover"
+                  width={128}
+                  height={128}
+                  className="rounded-lg object-cover"
                 />
               ) : (
                 <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -105,10 +108,11 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     )}
                   </div>
                   <p className="text-gray-600 text-lg max-w-3xl">
-                    {agency.description || 'Professional construction staffing services.'}
+                    {agency.description ||
+                      'Professional construction staffing services.'}
                   </p>
                 </div>
-                
+
                 {/* CTA Buttons */}
                 <div className="flex flex-col gap-3">
                   <Button size="lg" className="min-w-[200px]">
@@ -116,7 +120,11 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                   </Button>
                   {agency.website && (
                     <Button variant="outline" size="lg" asChild>
-                      <a href={agency.website} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={agency.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         Visit Website
                         <ExternalLink className="ml-2 h-4 w-4" />
                       </a>
@@ -180,68 +188,92 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 <TabsTrigger value="trades">Trade Specialties</TabsTrigger>
                 <TabsTrigger value="regions">Service Areas</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="overview" className="mt-6">
                 <Card>
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">About {agency.name}</h2>
+                    <h2 className="text-xl font-semibold mb-4">
+                      About {agency.name}
+                    </h2>
                     <p className="text-gray-600 mb-6">
-                      {agency.description || 'Professional construction staffing services specializing in skilled trades placement.'}
+                      {agency.description ||
+                        'Professional construction staffing services specializing in skilled trades placement.'}
                     </p>
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
                         <MapPin className="h-5 w-5 text-gray-400" />
                         <span>{agency.headquarters || 'United States'}</span>
                       </div>
-                      
+
                       {agency.offers_per_diem !== null && (
                         <div className="flex items-center gap-3">
                           <DollarSign className="h-5 w-5 text-gray-400" />
-                          <span>{agency.offers_per_diem ? 'Offers Per Diem' : 'No Per Diem'}</span>
+                          <span>
+                            {agency.offers_per_diem
+                              ? 'Offers Per Diem'
+                              : 'No Per Diem'}
+                          </span>
                         </div>
                       )}
-                      
+
                       {agency.is_union !== null && (
                         <div className="flex items-center gap-3">
                           <Users className="h-5 w-5 text-gray-400" />
-                          <span>{agency.is_union ? 'Union Partner' : 'Non-Union'}</span>
+                          <span>
+                            {agency.is_union ? 'Union Partner' : 'Non-Union'}
+                          </span>
                         </div>
                       )}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="trades" className="mt-6">
                 <Card>
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Trade Specialties</h2>
+                    <h2 className="text-xl font-semibold mb-4">
+                      Trade Specialties
+                    </h2>
                     {agency.trades && agency.trades.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {agency.trades.map((trade) => (
-                          <Badge key={trade.id} variant="secondary" className="text-sm">
+                          <Badge
+                            key={trade.id}
+                            variant="secondary"
+                            className="text-sm"
+                          >
                             {trade.name}
                           </Badge>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500">No trade specialties listed.</p>
+                      <p className="text-gray-500">
+                        No trade specialties listed.
+                      </p>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="regions" className="mt-6">
                 <Card>
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Service Areas</h2>
+                    <h2 className="text-xl font-semibold mb-4">
+                      Service Areas
+                    </h2>
                     {agency.regions && agency.regions.length > 0 ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {agency.regions.map((region) => (
-                          <div key={region.id} className="flex items-center gap-2">
+                          <div
+                            key={region.id}
+                            className="flex items-center gap-2"
+                          >
                             <MapPin className="h-4 w-4 text-gray-400" />
-                            <span>{region.name}, {region.code}</span>
+                            <span>
+                              {region.name}, {region.code}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -258,7 +290,9 @@ export default async function AgencyProfilePage({ params }: PageProps) {
           <div className="space-y-6">
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                  Contact Information
+                </h2>
                 <div className="space-y-4">
                   {agency.phone && (
                     <div>
@@ -266,33 +300,39 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         <Phone className="h-4 w-4" />
                         <span className="text-sm">Phone</span>
                       </div>
-                      <a href={`tel:${agency.phone}`} className="text-blue-600 hover:underline">
+                      <a
+                        href={`tel:${agency.phone}`}
+                        className="text-blue-600 hover:underline"
+                      >
                         {agency.phone}
                       </a>
                     </div>
                   )}
-                  
+
                   {agency.email && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 mb-1">
                         <Mail className="h-4 w-4" />
                         <span className="text-sm">Email</span>
                       </div>
-                      <a href={`mailto:${agency.email}`} className="text-blue-600 hover:underline">
+                      <a
+                        href={`mailto:${agency.email}`}
+                        className="text-blue-600 hover:underline"
+                      >
                         {agency.email}
                       </a>
                     </div>
                   )}
-                  
+
                   {agency.website && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 mb-1">
                         <Globe className="h-4 w-4" />
                         <span className="text-sm">Website</span>
                       </div>
-                      <a 
-                        href={agency.website} 
-                        target="_blank" 
+                      <a
+                        href={agency.website}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline flex items-center gap-1"
                       >
@@ -302,7 +342,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="mt-6 pt-6 border-t">
                   <Button className="w-full" size="lg">
                     Request Workers
@@ -314,7 +354,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
             {/* Back to Directory */}
             <Card>
               <CardContent className="p-6">
-                <Link 
+                <Link
                   href="/"
                   className="flex items-center gap-2 text-blue-600 hover:underline"
                 >

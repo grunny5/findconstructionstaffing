@@ -8,10 +8,10 @@ The agencies API endpoint implements offset-based pagination to efficiently hand
 
 ### Query Parameters
 
-| Parameter | Type | Default | Min | Max | Description |
-|-----------|------|---------|-----|-----|-------------|
-| `limit` | integer | 20 | 1 | 100 | Number of results per page |
-| `offset` | integer | 0 | 0 | - | Starting position in result set |
+| Parameter | Type    | Default | Min | Max | Description                     |
+| --------- | ------- | ------- | --- | --- | ------------------------------- |
+| `limit`   | integer | 20      | 1   | 100 | Number of results per page      |
+| `offset`  | integer | 0       | 0   | -   | Starting position in result set |
 
 ### Examples
 
@@ -57,10 +57,11 @@ Every response includes pagination metadata:
 ### hasMore Calculation
 
 ```typescript
-hasMore = total > (offset + limit)
+hasMore = total > offset + limit;
 ```
 
 Examples:
+
 - Total: 100, Offset: 0, Limit: 20 → hasMore: true
 - Total: 100, Offset: 80, Limit: 20 → hasMore: false
 - Total: 25, Offset: 20, Limit: 20 → hasMore: false
@@ -87,6 +88,7 @@ GET /api/agencies?trades[]=electricians&limit=10
 ```
 
 Response:
+
 ```json
 {
   "data": [...10 electrician agencies...],
@@ -129,7 +131,7 @@ const allAgencies = [];
 while (hasMore) {
   const response = await fetch(`/api/agencies?limit=${limit}&offset=${offset}`);
   const data = await response.json();
-  
+
   allAgencies.push(...data.data);
   hasMore = data.pagination.hasMore;
   offset += limit;
@@ -168,6 +170,7 @@ const totalPages = Math.ceil(total / limit);
 ### Large Offsets
 
 For very large offsets, consider:
+
 - Cursor-based pagination (future enhancement)
 - Search/filter to reduce result set
 - Index optimization for common queries
@@ -212,6 +215,7 @@ For very large offsets, consider:
 ### Empty Results
 
 When no agencies match filters:
+
 ```json
 {
   "data": [],
@@ -227,13 +231,14 @@ When no agencies match filters:
 ### Offset Beyond Total
 
 When offset exceeds total results:
+
 ```json
 {
   "data": [],
   "pagination": {
     "total": 50,
     "limit": 20,
-    "offset": 100,  // Beyond total
+    "offset": 100, // Beyond total
     "hasMore": false
   }
 }
@@ -242,6 +247,7 @@ When offset exceeds total results:
 ### Exact Boundary
 
 When results end exactly at page boundary:
+
 ```json
 {
   "data": [...20 agencies...],
@@ -257,17 +263,21 @@ When results end exactly at page boundary:
 ## Combined with Other Features
 
 ### With Search
+
 ```http
 GET /api/agencies?search=construction&limit=10&offset=20
 ```
 
 ### With Multiple Filters
+
 ```http
 GET /api/agencies?search=elite&trades[]=electricians&states[]=TX&limit=5&offset=10
 ```
 
 ### With Caching
+
 Pagination parameters are included in cache keys:
+
 - Different pages have different ETags
 - Each page can be cached independently
 - Cache respects limit/offset combinations
@@ -275,47 +285,51 @@ Pagination parameters are included in cache keys:
 ## Client Implementation Examples
 
 ### React Hook
+
 ```typescript
 function useAgencies(filters) {
   const [page, setPage] = useState(1);
   const limit = 20;
-  
+
   const { data, error, isLoading } = useSWR(
     `/api/agencies?${buildQuery({
       ...filters,
       limit,
-      offset: (page - 1) * limit
+      offset: (page - 1) * limit,
     })}`
   );
-  
+
   return {
     agencies: data?.data || [],
     pagination: data?.pagination,
     page,
     setPage,
-    totalPages: Math.ceil((data?.pagination?.total || 0) / limit)
+    totalPages: Math.ceil((data?.pagination?.total || 0) / limit),
   };
 }
 ```
 
 ### Pagination Component
+
 ```jsx
 function Pagination({ pagination, onPageChange }) {
   const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
   const totalPages = Math.ceil(pagination.total / pagination.limit);
-  
+
   return (
     <div>
-      <button 
+      <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
         Previous
       </button>
-      
-      <span>Page {currentPage} of {totalPages}</span>
-      
-      <button 
+
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!pagination.hasMore}
       >
@@ -340,6 +354,7 @@ function Pagination({ pagination, onPageChange }) {
 ## Future Enhancements
 
 Potential improvements for pagination:
+
 - Cursor-based pagination for better performance at scale
 - Page size preferences per user
 - Sorting options with pagination

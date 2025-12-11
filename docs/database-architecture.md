@@ -27,70 +27,75 @@ The FindConstructionStaffing platform uses Supabase (PostgreSQL) as its primary 
 ## Tables Detail
 
 ### agencies
+
 Primary table storing staffing agency information.
 
-| Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| name | TEXT | NOT NULL | Agency business name |
-| slug | TEXT | UNIQUE NOT NULL | URL-friendly identifier |
-| rating | NUMERIC(3,2) | CHECK 0-10 | Average rating (0.00-10.00) |
-| review_count | INTEGER | DEFAULT 0 | Number of reviews |
-| description | TEXT | | Business description |
-| website | TEXT | | Company website URL |
-| phone | TEXT | | Contact phone |
-| email | TEXT | | Contact email |
-| address | TEXT | | Street address |
-| city | TEXT | | City name |
-| state | TEXT | | State abbreviation |
-| zip_code | TEXT | | Postal code |
-| is_active | BOOLEAN | DEFAULT true | Soft delete flag |
-| featured | BOOLEAN | DEFAULT false | Premium placement flag |
-| verified | BOOLEAN | DEFAULT false | Verification status |
-| year_established | INTEGER | | Year founded |
-| license_number | TEXT | | Business license |
-| insurance_verified | BOOLEAN | DEFAULT false | Insurance verification |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
+| Column             | Type         | Constraints     | Description                 |
+| ------------------ | ------------ | --------------- | --------------------------- |
+| id                 | UUID         | PRIMARY KEY     | Unique identifier           |
+| name               | TEXT         | NOT NULL        | Agency business name        |
+| slug               | TEXT         | UNIQUE NOT NULL | URL-friendly identifier     |
+| rating             | NUMERIC(3,2) | CHECK 0-10      | Average rating (0.00-10.00) |
+| review_count       | INTEGER      | DEFAULT 0       | Number of reviews           |
+| description        | TEXT         |                 | Business description        |
+| website            | TEXT         |                 | Company website URL         |
+| phone              | TEXT         |                 | Contact phone               |
+| email              | TEXT         |                 | Contact email               |
+| address            | TEXT         |                 | Street address              |
+| city               | TEXT         |                 | City name                   |
+| state              | TEXT         |                 | State abbreviation          |
+| zip_code           | TEXT         |                 | Postal code                 |
+| is_active          | BOOLEAN      | DEFAULT true    | Soft delete flag            |
+| featured           | BOOLEAN      | DEFAULT false   | Premium placement flag      |
+| verified           | BOOLEAN      | DEFAULT false   | Verification status         |
+| year_established   | INTEGER      |                 | Year founded                |
+| license_number     | TEXT         |                 | Business license            |
+| insurance_verified | BOOLEAN      | DEFAULT false   | Insurance verification      |
+| created_at         | TIMESTAMPTZ  | DEFAULT NOW()   | Creation timestamp          |
+| updated_at         | TIMESTAMPTZ  | DEFAULT NOW()   | Last update timestamp       |
 
 ### trades
+
 Construction trade specializations.
 
-| Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| name | TEXT | UNIQUE NOT NULL | Trade name |
-| slug | TEXT | UNIQUE NOT NULL | URL-friendly identifier |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
+| Column     | Type        | Constraints     | Description             |
+| ---------- | ----------- | --------------- | ----------------------- |
+| id         | UUID        | PRIMARY KEY     | Unique identifier       |
+| name       | TEXT        | UNIQUE NOT NULL | Trade name              |
+| slug       | TEXT        | UNIQUE NOT NULL | URL-friendly identifier |
+| created_at | TIMESTAMPTZ | DEFAULT NOW()   | Creation timestamp      |
 
 ### regions
+
 Service areas by city/region within states.
 
-| Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| name | TEXT | NOT NULL | Region/city name |
-| state_code | TEXT | NOT NULL | Two-letter state code |
-| slug | TEXT | UNIQUE NOT NULL | URL-friendly identifier |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
+| Column     | Type        | Constraints     | Description             |
+| ---------- | ----------- | --------------- | ----------------------- |
+| id         | UUID        | PRIMARY KEY     | Unique identifier       |
+| name       | TEXT        | NOT NULL        | Region/city name        |
+| state_code | TEXT        | NOT NULL        | Two-letter state code   |
+| slug       | TEXT        | UNIQUE NOT NULL | URL-friendly identifier |
+| created_at | TIMESTAMPTZ | DEFAULT NOW()   | Creation timestamp      |
 
 ### agency_trades
+
 Junction table for agency-trade relationships.
 
-| Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
-| agency_id | UUID | FOREIGN KEY | Reference to agencies.id |
-| trade_id | UUID | FOREIGN KEY | Reference to trades.id |
-| PRIMARY KEY | | (agency_id, trade_id) | Composite primary key |
+| Column      | Type | Constraints           | Description              |
+| ----------- | ---- | --------------------- | ------------------------ |
+| agency_id   | UUID | FOREIGN KEY           | Reference to agencies.id |
+| trade_id    | UUID | FOREIGN KEY           | Reference to trades.id   |
+| PRIMARY KEY |      | (agency_id, trade_id) | Composite primary key    |
 
 ### agency_regions
+
 Junction table for agency-region relationships.
 
-| Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
-| agency_id | UUID | FOREIGN KEY | Reference to agencies.id |
-| region_id | UUID | FOREIGN KEY | Reference to regions.id |
-| PRIMARY KEY | | (agency_id, region_id) | Composite primary key |
+| Column      | Type | Constraints            | Description              |
+| ----------- | ---- | ---------------------- | ------------------------ |
+| agency_id   | UUID | FOREIGN KEY            | Reference to agencies.id |
+| region_id   | UUID | FOREIGN KEY            | Reference to regions.id  |
+| PRIMARY KEY |      | (agency_id, region_id) | Composite primary key    |
 
 ## Indexes
 
@@ -115,6 +120,7 @@ CREATE INDEX idx_regions_state_code ON regions(state_code);
 All tables have RLS enabled with the following policies:
 
 ### Read Policies
+
 - **agencies**: Only active agencies visible to public
 - **trades**: All trades visible to public
 - **regions**: All regions visible to public
@@ -122,31 +128,37 @@ All tables have RLS enabled with the following policies:
 - **agency_regions**: Only relationships for active agencies
 
 ### Write Policies
+
 - No public write access (admin-only through service role)
 
 ## Design Decisions
 
 ### 1. UUID Primary Keys
+
 - **Reasoning**: Better for distributed systems, no sequence conflicts
 - **Trade-off**: Slightly larger storage than integers
 - **Alternative considered**: Serial integers
 
 ### 2. Soft Delete Pattern
+
 - **Implementation**: `is_active` boolean flag
 - **Reasoning**: Preserve data integrity, allow recovery
 - **Trade-off**: Requires filtering in all queries
 
 ### 3. Separate Junction Tables
+
 - **Reasoning**: Clean many-to-many relationships
 - **Benefits**: Flexible, normalized, efficient queries
 - **Alternative considered**: Array columns
 
 ### 4. NUMERIC for Ratings
+
 - **Type**: NUMERIC(3,2)
 - **Reasoning**: Exact decimal precision for ratings
 - **Range**: 0.00 to 10.00
 
 ### 5. Slug Pattern
+
 - **Purpose**: SEO-friendly URLs
 - **Format**: lowercase-with-hyphens
 - **Uniqueness**: Enforced at database level
@@ -156,8 +168,9 @@ All tables have RLS enabled with the following policies:
 ### Common Queries
 
 1. **Find agencies by trade and location**
+
 ```sql
-SELECT DISTINCT a.* 
+SELECT DISTINCT a.*
 FROM agencies a
 JOIN agency_trades at ON a.id = at.agency_id
 JOIN trades t ON at.trade_id = t.id
@@ -169,8 +182,9 @@ WHERE a.is_active = true
 ```
 
 2. **Get agency with all relationships**
+
 ```sql
-SELECT 
+SELECT
   a.*,
   array_agg(DISTINCT t.name) as trades,
   array_agg(DISTINCT r.name || ', ' || r.state_code) as regions
@@ -187,18 +201,21 @@ GROUP BY a.id;
 ## Performance Considerations
 
 ### Current Optimizations
+
 - Indexes on all foreign keys
 - Indexes on commonly queried columns
 - Composite primary keys on junction tables
 - RLS policies use indexed columns
 
 ### Monitoring Metrics
+
 - Query execution time: Target <100ms
 - Index hit rate: Target >95%
 - Table bloat: Monitor weekly
 - Connection pool usage: Target <80%
 
 ### Scaling Strategies
+
 1. **Short term** (10K-100K records)
    - Current indexes sufficient
    - Monitor query patterns
@@ -216,12 +233,14 @@ GROUP BY a.id;
 ## Data Integrity Rules
 
 ### Constraints
+
 1. Agencies must have unique slugs
 2. Ratings must be between 0 and 10
 3. Foreign keys cascade on delete
 4. No orphaned junction records
 
 ### Triggers
+
 ```sql
 -- Auto-update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -241,11 +260,13 @@ CREATE TRIGGER update_agencies_updated_at
 ## Migration Strategy
 
 ### Version Control
+
 - Sequential migration files
 - Rollback scripts for each migration
 - Test migrations on staging first
 
 ### Zero-Downtime Deployments
+
 1. All migrations must be backwards compatible
 2. Add columns as nullable first
 3. Backfill data in separate transaction
@@ -254,10 +275,12 @@ CREATE TRIGGER update_agencies_updated_at
 ## Backup and Recovery
 
 ### Automated Backups
+
 - Supabase daily backups (30 day retention)
 - Point-in-time recovery available
 
 ### Manual Backup Commands
+
 ```bash
 # Full backup
 pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
@@ -272,6 +295,7 @@ pg_dump $DATABASE_URL --data-only > data.sql
 ## Future Enhancements
 
 ### Planned Features
+
 1. **User Authentication**
    - User profiles table
    - Role-based access control

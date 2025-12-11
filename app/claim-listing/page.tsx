@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -13,7 +13,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Search, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  Building2,
+  Search,
+  Mail,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
 import { mockAgencies } from '@/lib/mock-data';
 import { toast } from 'sonner';
 
@@ -32,7 +38,9 @@ const claimSchema = z.object({
   contactEmail: z.string().email('Please enter a valid email address'),
   contactName: z.string().min(2, 'Contact name must be at least 2 characters'),
   jobTitle: z.string().min(2, 'Job title must be at least 2 characters'),
-  verificationDetails: z.string().min(10, 'Please provide verification details'),
+  verificationDetails: z
+    .string()
+    .min(10, 'Please provide verification details'),
 });
 
 type ClaimFormData = z.infer<typeof claimSchema>;
@@ -53,9 +61,11 @@ export default function ClaimListingPage() {
   });
 
   // Filter agencies based on search
-  const filteredAgencies = mockAgencies.filter(agency =>
-    agency.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(0, 10);
+  const filteredAgencies = mockAgencies
+    .filter((agency) =>
+      agency.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .slice(0, 10);
 
   const selectAgency = (agency: any) => {
     setSelectedAgency(agency);
@@ -66,11 +76,13 @@ export default function ClaimListingPage() {
     setIsSubmitting(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       console.log('Claim request submitted:', data);
       setIsSubmitted(true);
-      toast.success('Claim request submitted! We will review and contact you within 2 business days.');
+      toast.success(
+        'Claim request submitted! We will review and contact you within 2 business days.'
+      );
     } catch (error) {
       toast.error('Failed to submit claim request. Please try again.');
     } finally {
@@ -91,34 +103,44 @@ export default function ClaimListingPage() {
               Claim Request Submitted!
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Your claim request has been received and is under review. 
-              We&apos;ll contact you within 2 business days to verify your ownership.
+              Your claim request has been received and is under review.
+              We&apos;ll contact you within 2 business days to verify your
+              ownership.
             </p>
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <h3 className="font-semibold text-lg mb-4">What happens next?</h3>
               <div className="text-left space-y-3">
                 <div className="flex items-start space-x-3">
                   <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">1</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      1
+                    </span>
                   </div>
                   <p className="text-gray-600">
-                    Our team will verify your email domain matches the agency website
+                    Our team will verify your email domain matches the agency
+                    website
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">2</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      2
+                    </span>
                   </div>
                   <p className="text-gray-600">
-                    We&apos;ll contact you via email to confirm your identity and role
+                    We&apos;ll contact you via email to confirm your identity
+                    and role
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">3</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      3
+                    </span>
                   </div>
                   <p className="text-gray-600">
-                    Once verified, you&apos;ll receive login credentials to manage your listing
+                    Once verified, you&apos;ll receive login credentials to
+                    manage your listing
                   </p>
                 </div>
               </div>
@@ -158,8 +180,9 @@ export default function ClaimListingPage() {
             <Alert className="mb-8">
               <Building2 className="h-4 w-4" />
               <AlertDescription>
-                <strong>Free to claim:</strong> All agency listings are free. Once verified, you&apos;ll be able to 
-                edit your profile, manage leads, and enhance your visibility to potential clients.
+                <strong>Free to claim:</strong> All agency listings are free.
+                Once verified, you&apos;ll be able to edit your profile, manage
+                leads, and enhance your visibility to potential clients.
               </AlertDescription>
             </Alert>
 
@@ -204,7 +227,11 @@ export default function ClaimListingPage() {
                                 </p>
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {agency.trades.slice(0, 3).map((trade, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs">
+                                    <Badge
+                                      key={i}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       {trade}
                                     </Badge>
                                   ))}
@@ -219,9 +246,12 @@ export default function ClaimListingPage() {
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           <Building2 className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                          <p>No agencies found matching &quot;{searchTerm}&quot;</p>
+                          <p>
+                            No agencies found matching &quot;{searchTerm}&quot;
+                          </p>
                           <p className="text-sm mt-1">
-                            Can&apos;t find your agency? Contact us to get it added.
+                            Can&apos;t find your agency? Contact us to get it
+                            added.
                           </p>
                         </div>
                       )}
@@ -257,7 +287,9 @@ export default function ClaimListingPage() {
                         className={selectedAgency ? 'bg-gray-50' : ''}
                       />
                       {errors.agencyName && (
-                        <p className="text-sm text-red-600">{errors.agencyName.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.agencyName.message}
+                        </p>
                       )}
                     </div>
 
@@ -269,7 +301,9 @@ export default function ClaimListingPage() {
                         placeholder="Your full name"
                       />
                       {errors.contactName && (
-                        <p className="text-sm text-red-600">{errors.contactName.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.contactName.message}
+                        </p>
                       )}
                     </div>
 
@@ -281,12 +315,16 @@ export default function ClaimListingPage() {
                         placeholder="e.g., Owner, President, HR Director"
                       />
                       {errors.jobTitle && (
-                        <p className="text-sm text-red-600">{errors.jobTitle.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.jobTitle.message}
+                        </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="contactEmail">Business Email Address *</Label>
+                      <Label htmlFor="contactEmail">
+                        Business Email Address *
+                      </Label>
                       <Input
                         id="contactEmail"
                         type="email"
@@ -294,15 +332,20 @@ export default function ClaimListingPage() {
                         placeholder="your.email@yourcompany.com"
                       />
                       {errors.contactEmail && (
-                        <p className="text-sm text-red-600">{errors.contactEmail.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.contactEmail.message}
+                        </p>
                       )}
                       <p className="text-xs text-gray-500">
-                        Email domain should match your agency website for faster verification
+                        Email domain should match your agency website for faster
+                        verification
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="verificationDetails">Verification Details *</Label>
+                      <Label htmlFor="verificationDetails">
+                        Verification Details *
+                      </Label>
                       <Textarea
                         id="verificationDetails"
                         {...register('verificationDetails')}
@@ -310,15 +353,19 @@ export default function ClaimListingPage() {
                         rows={4}
                       />
                       {errors.verificationDetails && (
-                        <p className="text-sm text-red-600">{errors.verificationDetails.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.verificationDetails.message}
+                        </p>
                       )}
                     </div>
 
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        We&apos;ll verify your claim within 2 business days. If your email domain matches the agency website, 
-                        verification will be automatic. Otherwise, we may request additional documentation.
+                        We&apos;ll verify your claim within 2 business days. If
+                        your email domain matches the agency website,
+                        verification will be automatic. Otherwise, we may
+                        request additional documentation.
                       </AlertDescription>
                     </Alert>
 
@@ -327,7 +374,9 @@ export default function ClaimListingPage() {
                       className="w-full"
                       disabled={isSubmitting || !selectedAgency}
                     >
-                      {isSubmitting ? 'Submitting Claim...' : 'Submit Claim Request'}
+                      {isSubmitting
+                        ? 'Submitting Claim...'
+                        : 'Submit Claim Request'}
                     </Button>
                   </form>
                 </CardContent>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,10 +10,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CalendarDays, MapPin, Users, Briefcase, Phone, Mail, Building2 } from 'lucide-react';
+import {
+  CalendarDays,
+  MapPin,
+  Users,
+  Briefcase,
+  Phone,
+  Mail,
+  Building2,
+} from 'lucide-react';
 import { allTrades, allStates } from '@/lib/mock-data';
 import { toast } from 'sonner';
 
@@ -51,11 +65,13 @@ export default function RequestLaborPage() {
     setIsSubmitting(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       console.log('Labor request submitted:', data);
       setIsSubmitted(true);
-      toast.success('Labor request submitted successfully! Agencies will be notified within 24 hours.');
+      toast.success(
+        'Labor request submitted successfully! Agencies will be notified within 24 hours.'
+      );
     } catch (error) {
       toast.error('Failed to submit request. Please try again.');
     } finally {
@@ -76,7 +92,7 @@ export default function RequestLaborPage() {
               Request Submitted Successfully!
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Your labor request has been sent to qualified staffing agencies. 
+              Your labor request has been sent to qualified staffing agencies.
               You should expect to receive responses within 24 hours.
             </p>
             <div className="bg-white rounded-lg p-6 shadow-sm border">
@@ -84,26 +100,35 @@ export default function RequestLaborPage() {
               <div className="text-left space-y-3">
                 <div className="flex items-start space-x-3">
                   <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">1</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      1
+                    </span>
                   </div>
                   <p className="text-gray-600">
-                    Our system matches your requirements with the top 5 qualified agencies
+                    Our system matches your requirements with the top 5
+                    qualified agencies
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">2</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      2
+                    </span>
                   </div>
                   <p className="text-gray-600">
-                    Selected agencies receive your project details and contact information
+                    Selected agencies receive your project details and contact
+                    information
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">3</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      3
+                    </span>
                   </div>
                   <p className="text-gray-600">
-                    Agencies will contact you directly with proposals and availability
+                    Agencies will contact you directly with proposals and
+                    availability
                   </p>
                 </div>
               </div>
@@ -130,7 +155,8 @@ export default function RequestLaborPage() {
               Request Skilled Labor
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Tell us about your project and we&apos;ll connect you with qualified staffing agencies
+              Tell us about your project and we&apos;ll connect you with
+              qualified staffing agencies
             </p>
           </div>
         </div>
@@ -143,8 +169,10 @@ export default function RequestLaborPage() {
             <Alert className="mb-8">
               <Building2 className="h-4 w-4" />
               <AlertDescription>
-                <strong>How it works:</strong> Fill out this form and we&apos;ll automatically match you with the top 5 staffing agencies 
-                that specialize in your required trade and location. Agencies typically respond within 24 hours.
+                <strong>How it works:</strong> Fill out this form and we&apos;ll
+                automatically match you with the top 5 staffing agencies that
+                specialize in your required trade and location. Agencies
+                typically respond within 24 hours.
               </AlertDescription>
             </Alert>
 
@@ -167,13 +195,21 @@ export default function RequestLaborPage() {
                         placeholder="e.g., Refinery Turnaround 2024"
                       />
                       {errors.projectName && (
-                        <p className="text-sm text-red-600">{errors.projectName.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.projectName.message}
+                        </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="tradeNeeded">Trade Specialty Needed *</Label>
-                      <Select onValueChange={(value) => setValue('tradeNeeded', value)}>
+                      <Label htmlFor="tradeNeeded">
+                        Trade Specialty Needed *
+                      </Label>
+                      <Select
+                        onValueChange={(value) =>
+                          setValue('tradeNeeded', value)
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select trade specialty" />
                         </SelectTrigger>
@@ -186,12 +222,16 @@ export default function RequestLaborPage() {
                         </SelectContent>
                       </Select>
                       {errors.tradeNeeded && (
-                        <p className="text-sm text-red-600">{errors.tradeNeeded.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.tradeNeeded.message}
+                        </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="headcount">Number of Workers Needed *</Label>
+                      <Label htmlFor="headcount">
+                        Number of Workers Needed *
+                      </Label>
                       <Input
                         id="headcount"
                         type="number"
@@ -200,7 +240,9 @@ export default function RequestLaborPage() {
                         placeholder="e.g., 15"
                       />
                       {errors.headcount && (
-                        <p className="text-sm text-red-600">{errors.headcount.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.headcount.message}
+                        </p>
                       )}
                     </div>
 
@@ -212,7 +254,9 @@ export default function RequestLaborPage() {
                         placeholder="e.g., 6 weeks, 3 months"
                       />
                       {errors.duration && (
-                        <p className="text-sm text-red-600">{errors.duration.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.duration.message}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -230,20 +274,26 @@ export default function RequestLaborPage() {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="location">City / Project Location *</Label>
+                      <Label htmlFor="location">
+                        City / Project Location *
+                      </Label>
                       <Input
                         id="location"
                         {...register('location')}
                         placeholder="e.g., Houston, TX"
                       />
                       {errors.location && (
-                        <p className="text-sm text-red-600">{errors.location.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.location.message}
+                        </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="state">State *</Label>
-                      <Select onValueChange={(value) => setValue('state', value)}>
+                      <Select
+                        onValueChange={(value) => setValue('state', value)}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
@@ -256,7 +306,9 @@ export default function RequestLaborPage() {
                         </SelectContent>
                       </Select>
                       {errors.state && (
-                        <p className="text-sm text-red-600">{errors.state.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.state.message}
+                        </p>
                       )}
                     </div>
 
@@ -269,7 +321,9 @@ export default function RequestLaborPage() {
                         min={new Date().toISOString().split('T')[0]}
                       />
                       {errors.startDate && (
-                        <p className="text-sm text-red-600">{errors.startDate.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.startDate.message}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -294,7 +348,9 @@ export default function RequestLaborPage() {
                         placeholder="Your full name"
                       />
                       {errors.contactName && (
-                        <p className="text-sm text-red-600">{errors.contactName.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.contactName.message}
+                        </p>
                       )}
                     </div>
 
@@ -307,7 +363,9 @@ export default function RequestLaborPage() {
                         placeholder="your.email@company.com"
                       />
                       {errors.contactEmail && (
-                        <p className="text-sm text-red-600">{errors.contactEmail.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.contactEmail.message}
+                        </p>
                       )}
                     </div>
 
@@ -320,13 +378,17 @@ export default function RequestLaborPage() {
                         placeholder="(555) 123-4567"
                       />
                       {errors.contactPhone && (
-                        <p className="text-sm text-red-600">{errors.contactPhone.message}</p>
+                        <p className="text-sm text-red-600">
+                          {errors.contactPhone.message}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="additionalDetails">Additional Project Details</Label>
+                    <Label htmlFor="additionalDetails">
+                      Additional Project Details
+                    </Label>
                     <Textarea
                       id="additionalDetails"
                       {...register('additionalDetails')}

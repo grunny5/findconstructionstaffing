@@ -5,6 +5,7 @@ This directory contains TypeScript type definitions used throughout the applicat
 ## Files
 
 ### `api.ts`
+
 Contains comprehensive type definitions for the agencies API endpoint, including:
 
 - **Core Types**: `Agency`, `Trade`, `Region`
@@ -17,11 +18,11 @@ Contains comprehensive type definitions for the agencies API endpoint, including
 ## Usage
 
 ```typescript
-import { 
-  Agency, 
-  AgenciesApiResponse, 
+import {
+  Agency,
+  AgenciesApiResponse,
   AgenciesQueryParams,
-  isErrorResponse 
+  isErrorResponse,
 } from '@/types/api';
 
 // Use in API route handler
@@ -31,8 +32,8 @@ const response: AgenciesApiResponse = {
     total: 100,
     limit: 20,
     offset: 0,
-    hasMore: true
-  }
+    hasMore: true,
+  },
 };
 
 // Check for errors
@@ -44,6 +45,7 @@ if (isErrorResponse(response)) {
 ## Type Safety
 
 All types are designed to:
+
 - Match the database schema exactly
 - Provide full type safety for API consumers
 - Support TypeScript strict mode
@@ -52,6 +54,7 @@ All types are designed to:
 ## Testing
 
 Types are tested in `__tests__/api.test.ts` to ensure:
+
 - Type guards work correctly
 - Constants have expected values
 - Types allow valid data structures

@@ -83,15 +83,30 @@
 
 /* Modern gradient backgrounds */
 .modern-gradient-bg {
-  background: linear-gradient(to bottom right, rgb(248, 250, 252), rgb(255, 255, 255), rgb(248, 250, 252));
+  background: linear-gradient(
+    to bottom right,
+    rgb(248, 250, 252),
+    rgb(255, 255, 255),
+    rgb(248, 250, 252)
+  );
 }
 
 .modern-hero-bg {
-  background: linear-gradient(to bottom right, rgb(15, 23, 42), rgb(30, 41, 59), rgb(15, 23, 42));
+  background: linear-gradient(
+    to bottom right,
+    rgb(15, 23, 42),
+    rgb(30, 41, 59),
+    rgb(15, 23, 42)
+  );
 }
 
 .modern-footer-bg {
-  background: linear-gradient(to bottom right, rgb(15, 23, 42), rgb(30, 41, 59), rgb(15, 23, 42));
+  background: linear-gradient(
+    to bottom right,
+    rgb(15, 23, 42),
+    rgb(30, 41, 59),
+    rgb(15, 23, 42)
+  );
 }
 
 /* Glass morphism effects */
@@ -145,12 +160,24 @@
 }
 
 /* Agency card gradient colors */
-.agency-gradient-1 { @apply bg-gradient-to-br from-blue-500 to-cyan-500; }
-.agency-gradient-2 { @apply bg-gradient-to-br from-purple-500 to-pink-500; }
-.agency-gradient-3 { @apply bg-gradient-to-br from-emerald-500 to-teal-500; }
-.agency-gradient-4 { @apply bg-gradient-to-br from-orange-500 to-red-500; }
-.agency-gradient-5 { @apply bg-gradient-to-br from-indigo-500 to-purple-500; }
-.agency-gradient-6 { @apply bg-gradient-to-br from-amber-500 to-orange-500; }
+.agency-gradient-1 {
+  @apply bg-gradient-to-br from-blue-500 to-cyan-500;
+}
+.agency-gradient-2 {
+  @apply bg-gradient-to-br from-purple-500 to-pink-500;
+}
+.agency-gradient-3 {
+  @apply bg-gradient-to-br from-emerald-500 to-teal-500;
+}
+.agency-gradient-4 {
+  @apply bg-gradient-to-br from-orange-500 to-red-500;
+}
+.agency-gradient-5 {
+  @apply bg-gradient-to-br from-indigo-500 to-purple-500;
+}
+.agency-gradient-6 {
+  @apply bg-gradient-to-br from-amber-500 to-orange-500;
+}
 
 /* Hero section decorative elements */
 .hero-decoration {
@@ -233,7 +260,7 @@
   .modern-search-container {
     @apply p-4 rounded-2xl;
   }
-  
+
   .modern-logo {
     @apply w-16 h-16 text-lg;
   }

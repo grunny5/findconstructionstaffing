@@ -1,15 +1,19 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { loadEnvironmentVariables, extractProjectReference } = require('./utils/env-loader');
+const {
+  loadEnvironmentVariables,
+  extractProjectReference,
+} = require('./utils/env-loader');
 
 // Load environment variables
 loadEnvironmentVariables();
 
 // Get project reference from environment or extract from URL
-const projectRef = process.env.SUPABASE_PROJECT_REF || 
-                  extractProjectReference(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
-                  'your-project-ref';
+const projectRef =
+  process.env.SUPABASE_PROJECT_REF ||
+  extractProjectReference(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+  'your-project-ref';
 
 console.log('🚀 Supabase CLI Setup\n');
 
@@ -30,16 +34,16 @@ try {
 } catch (error) {
   console.log('❌ Supabase CLI is not installed\n');
   console.log('📋 Installation Instructions:\n');
-  
+
   console.log('Option 1: Using npm (Recommended)');
   console.log('```bash');
   console.log('npm install -g supabase');
   console.log('```\n');
-  
+
   console.log('Option 2: Download from GitHub');
   console.log('Visit: https://github.com/supabase/cli/releases');
   console.log('Download the appropriate version for your OS\n');
-  
+
   console.log('After installation, run this script again.');
   process.exit(1);
 }
@@ -47,7 +51,7 @@ try {
 // Check if already initialized
 if (fs.existsSync(path.join(__dirname, '..', 'supabase', 'config.toml'))) {
   console.log('\n✅ Supabase is already initialized in this project');
-  
+
   // Check if linked
   try {
     const projectStatus = execSync('supabase status', { encoding: 'utf8' });
@@ -62,16 +66,16 @@ if (fs.existsSync(path.join(__dirname, '..', 'supabase', 'config.toml'))) {
   }
 } else {
   console.log('\n📋 Next Steps:\n');
-  
+
   console.log('1. Login to Supabase:');
   console.log('   supabase login\n');
-  
+
   console.log('2. Initialize Supabase in this project:');
   console.log('   supabase init\n');
-  
+
   console.log('3. Link to your remote project:');
   console.log(`   supabase link --project-ref ${projectRef}\n`);
-  
+
   console.log('4. Push the migration:');
   console.log('   supabase db push\n');
 }

@@ -1,5 +1,11 @@
 name: Deploy to Staging
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  deployments: write
+
 on:
   push:
     branches:
@@ -17,32 +23,57 @@ env:
 jobs:
   deploy-staging:
     concurrency:
-      group: deploy-staging-${{ github.ref }}
+      group: deploy-staging-${{ replace(github.ref, '/', '-') }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     # Only run on merged PRs or direct pushes to staging/develop
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-      
+
       # Debug step removed for security - do not log secret lengths or structure
-      
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
-      
+
       - name: Build Project Artifacts
-        run: vercel build --token="${{ secrets.VERCEL_TOKEN }}"
-      
+        run: |
+          set -eo pipefail  # Exit on error and pipe failures
+
+          echo "Starting Vercel build..."
+
+          # Capture output while preserving exit code
+          BUILD_OUTPUT=$(vercel build --token="${{ secrets.VERCEL_TOKEN }}" 2>&1) || BUILD_EXIT_CODE=$?
+
+          # Always show build output for debugging
+          echo "Build output:"
+          echo "$BUILD_OUTPUT"
+
+          # Handle build failure
+          if [ -n "${BUILD_EXIT_CODE:-}" ] && [ "$BUILD_EXIT_CODE" -ne 0 ]; then
+            echo "::error::Vercel build failed with exit code: $BUILD_EXIT_CODE"
+            exit 1
+          fi
+
+          # Verify build artifacts
+          if [ ! -d ".vercel/output" ] || [ ! -f ".vercel/output/config.json" ]; then
+            echo "::error::Build completed but artifacts are missing"
+            exit 1
+          fi
+
+          echo "✓ Build completed successfully"
+          echo "✓ Build artifacts verified"
+
       - name: Deploy to Staging
         run: |
           vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}" > deployment-url.txt
           DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
           echo "DEPLOYMENT_URL=${DEPLOYMENT_URL}" >> "$GITHUB_ENV"
-      
+
       - name: Alias to Staging URL
         run: |
           DEPLOYMENT_URL="$(tr -d '\n' < deployment-url.txt)"
@@ -50,7 +81,7 @@ jobs:
             echo "::warning::Failed to set staging alias. This is non-critical and deployment continues."
             echo "::warning::Error details: $?"
           fi
-      
+
       - name: Add Deployment Summary
         run: |
           echo "## 🚀 Staging Deployment" >> $GITHUB_STEP_SUMMARY
@@ -59,7 +90,7 @@ jobs:
           echo "**URL:** ${{ env.DEPLOYMENT_URL }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-      
+
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
