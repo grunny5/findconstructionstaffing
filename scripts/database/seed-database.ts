@@ -34,7 +34,7 @@ if (
 if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
   throw new Error('All states data is not available or empty');
 }
-import type { Agency, Trade, Region } from '../lib/supabase';
+import type { Agency, Trade, Region } from '../../lib/supabase';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

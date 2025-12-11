@@ -73,6 +73,7 @@ node scripts/test-supabase-connection.js
 ## Troubleshooting
 
 See individual guides for detailed troubleshooting:
+
 - Connection issues → [supabase-setup-guide.md](./supabase-setup-guide.md#troubleshooting)
 - CLI problems → [SUPABASE_CLI_SETUP.md](./SUPABASE_CLI_SETUP.md)
 - Authentication → [SUPABASE_KEY_GUIDE.md](./SUPABASE_KEY_GUIDE.md)

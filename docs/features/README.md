@@ -28,6 +28,7 @@ NNN-feature-name.md
 ```
 
 Where:
+
 - `NNN` = 3-digit sequential number (001, 002, 003...)
 - `feature-name` = kebab-case description
 
@@ -39,18 +40,23 @@ When creating new features, use this structure:
 # Feature NNN: Feature Name
 
 ## Overview
+
 Brief description
 
 ## Requirements
+
 What needs to be implemented
 
 ## Implementation
+
 How it was/will be implemented
 
 ## Testing
+
 Test coverage and verification
 
 ## Documentation
+
 Related docs and guides
 ```
 

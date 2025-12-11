@@ -6,8 +6,8 @@
  * Ensures test data matches between mock data and test files
  */
 
-import { mockAgencies, allTrades, allStates } from '../lib/mock-data';
-import { createSlug } from '../lib/supabase';
+import { mockAgencies, allTrades, allStates } from '../../lib/mock-data';
+import { createSlug } from '../../lib/supabase';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';

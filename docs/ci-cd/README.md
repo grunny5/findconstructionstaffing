@@ -52,28 +52,33 @@ The pipeline consists of several key workflows:
 ## Key Features
 
 ✅ **Automated Quality Checks**
+
 - TypeScript strict mode verification
 - ESLint with max warnings: 0
 - Prettier formatting
 - 85%+ test coverage requirement
 
 ✅ **Comprehensive Testing**
+
 - 733+ tests across 66 test suites
 - Unit, integration, and E2E tests
 - Mock-free database testing option
 
 ✅ **Security**
+
 - npm audit scanning (critical vulnerabilities only)
 - Dependency vulnerability tracking
 - Secrets management
 
 ✅ **Performance**
+
 - Parallel job execution
 - Dependency caching
 - Build artifact reuse
 - Average pipeline duration: 3-5 minutes
 
 ✅ **Deployment**
+
 - Preview deployments for all PRs
 - Production deployments on merge
 - Automatic aliasing and DNS management
@@ -105,6 +110,7 @@ SUPABASE_SERVICE_ROLE_KEY
 ### Branch Protection Rules
 
 The main branch is protected with:
+
 - Required status checks (all CI jobs must pass)
 - Required reviews (1 approver)
 - No force pushes
@@ -117,6 +123,7 @@ See `.github/BRANCH_PROTECTION.md` for full configuration.
 ### Performance Dashboard
 
 A daily-updated performance dashboard tracks:
+
 - Success rates
 - Average duration
 - Failure trends
@@ -127,6 +134,7 @@ Access at: [Performance Dashboard](./performance.md)
 ### Alerts
 
 The pipeline automatically:
+
 - Comments on PRs with deployment URLs
 - Creates issues for failed deployments (optional)
 - Sends notifications for security vulnerabilities
@@ -137,6 +145,7 @@ The pipeline automatically:
 See [troubleshooting.md](./troubleshooting.md) for common issues and solutions.
 
 Quick links:
+
 - [Tests failing in CI but passing locally](./troubleshooting.md#tests-failing-in-ci)
 - [Deployment failures](./troubleshooting.md#deployment-failures)
 - [Rate limit errors](./troubleshooting.md#rate-limits)
@@ -193,6 +202,7 @@ graph TD
 ## Performance Optimization
 
 Current optimizations:
+
 - Matrix strategy for parallel quality checks
 - Conditional job execution
 - Artifact reuse between jobs
@@ -204,6 +214,7 @@ See [performance.md](./performance.md) for detailed metrics and optimization gui
 ## Future Improvements
 
 See [docs/PR9-FOLLOWUP-ISSUES.md](../PR9-FOLLOWUP-ISSUES.md) for planned enhancements:
+
 - Enhanced dependency caching (node_modules)
 - Improved dashboard data population
 - Security hardening (SHA-pinned actions)
@@ -219,6 +230,7 @@ See [docs/PR9-FOLLOWUP-ISSUES.md](../PR9-FOLLOWUP-ISSUES.md) for planned enhance
 ## Support
 
 For issues or questions:
+
 1. Check [troubleshooting.md](./troubleshooting.md)
 2. Review [PR9-FOLLOWUP-ISSUES.md](../PR9-FOLLOWUP-ISSUES.md)
 3. Create a GitHub issue with the `ci-cd` label
