@@ -267,8 +267,13 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
       return queryBuilder;
     });
 
-    // Mock the final order method to return data
+    // Mock the order method to return the query builder for chaining
     queryBuilder.order.mockImplementation(() => {
+      return queryBuilder;
+    });
+
+    // Mock the range method to return the final promise with data
+    queryBuilder.range.mockImplementation(() => {
       // Ensure data has proper structure with trades and regions arrays
       const formattedData = data.map((agency) => ({
         ...agency,
