@@ -15,6 +15,16 @@ jest.mock('next/link', () => {
   return MockLink;
 });
 
+// Mock auth context
+jest.mock('@/lib/auth/auth-context', () => ({
+  useAuth: jest.fn(() => ({
+    user: null,
+    profile: null,
+    signOut: jest.fn(),
+    loading: false,
+  })),
+}));
+
 // Mock Radix UI Sheet component for better mobile menu testing
 jest.mock('@/components/ui/sheet', () => ({
   Sheet: ({
@@ -55,6 +65,26 @@ jest.mock('@/components/ui/sheet', () => ({
     ),
 }));
 
+// Mock dropdown-menu components
+jest.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuItem: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DropdownMenuSeparator: () => <div />,
+}));
+
 describe('Header', () => {
   it('should render the logo and brand name', () => {
     render(<Header />);
@@ -84,14 +114,15 @@ describe('Header', () => {
   it('should render action buttons on desktop', () => {
     render(<Header />);
 
-    const claimLinks = screen.getAllByRole('link', { name: /claim listing/i });
-    const getStartedLinks = screen.getAllByRole('link', {
-      name: /get started/i,
+    // When not logged in, should show Sign In and Sign Up buttons
+    const signInLinks = screen.getAllByRole('link', { name: /sign in/i });
+    const signUpLinks = screen.getAllByRole('link', {
+      name: /sign up/i,
     });
 
     // Check that these links exist (at least one for desktop)
-    expect(claimLinks.length).toBeGreaterThan(0);
-    expect(getStartedLinks.length).toBeGreaterThan(0);
+    expect(signInLinks.length).toBeGreaterThan(0);
+    expect(signUpLinks.length).toBeGreaterThan(0);
   });
 
   it('should have proper header styling', () => {
@@ -150,8 +181,9 @@ describe('Header', () => {
     render(<Header />);
 
     // Mobile menu should contain action buttons (multiple instances due to desktop + mobile)
-    expect(screen.getAllByText('Claim Listing').length).toBeGreaterThan(1);
-    expect(screen.getAllByText('Get Started').length).toBeGreaterThan(1);
+    // When not logged in, should show Sign In and Sign Up buttons
+    expect(screen.getAllByText('Sign In').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('Sign Up').length).toBeGreaterThan(1);
   });
 
   it('should have responsive container', () => {

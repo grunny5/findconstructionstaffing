@@ -12,12 +12,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Building2, Users, FileText, Search, User, LogOut } from 'lucide-react';
+import {
+  Menu,
+  Building2,
+  Users,
+  FileText,
+  Search,
+  User,
+  LogOut,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   const navItems = [
     { label: 'Browse Directory', href: '/', icon: Building2 },
@@ -85,7 +93,9 @@ export default function Header() {
                       className="modern-button-primary h-9 px-4"
                     >
                       <User className="h-4 w-4 mr-2" />
-                      {profile?.full_name || user.email?.split('@')[0] || 'Account'}
+                      {profile?.full_name ||
+                        user.email?.split('@')[0] ||
+                        'Account'}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
@@ -210,16 +220,15 @@ export default function Header() {
                           className="w-full modern-button-primary"
                           asChild
                         >
-                          <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setIsOpen(false)}
+                          >
                             Dashboard
                           </Link>
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        asChild
-                      >
+                      <Button variant="outline" className="w-full" asChild>
                         <Link href="/account" onClick={() => setIsOpen(false)}>
                           <User className="h-4 w-4 mr-2" />
                           Account Settings
