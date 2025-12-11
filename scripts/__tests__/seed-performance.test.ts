@@ -1,4 +1,4 @@
-import { seedTrades } from '../seed-database';
+import { seedTrades } from '../database/seed-database';
 
 describe('Trade Seeding Performance', () => {
   it('should complete seeding in under 2 seconds', async () => {

@@ -2,7 +2,7 @@ import {
   verifySeededData,
   extractUniqueTrades,
   extractUniqueStates,
-} from '../seed-database';
+} from '../database/seed-database';
 import { mockAgencies } from '../../lib/mock-data';
 
 describe('Verification Functions', () => {

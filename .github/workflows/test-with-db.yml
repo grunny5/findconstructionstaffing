@@ -105,9 +105,9 @@ jobs:
           export USER=postgres
 
           # Make setup script executable and run it
-          if [ -f scripts/setup-test-environment.sh ]; then
-            chmod +x scripts/setup-test-environment.sh
-            ./scripts/setup-test-environment.sh
+          if [ -f scripts/setup/setup-test-environment.sh ]; then
+            chmod +x scripts/setup/setup-test-environment.sh
+            ./scripts/setup/setup-test-environment.sh
           fi
 
       - name: Check database health
@@ -140,7 +140,7 @@ jobs:
         run: |
           echo "Seeding test database..."
           # Check if seed script exists before running
-          if [ -f "scripts/seed-database.ts" ]; then
+          if [ -f "scripts/database/seed-database.ts" ]; then
             npm run seed || {
               echo "Warning: Database seeding failed. Tests may fail if they depend on seeded data."
               echo "Error details:"

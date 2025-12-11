@@ -2,7 +2,7 @@ import {
   createAgencyTradeRelationships,
   createAgencyRegionRelationships,
   createStateMapping,
-} from '../seed-database';
+} from '../database/seed-database';
 import { mockAgencies } from '../../lib/mock-data';
 
 describe('Agency-Trade Relationship Functions', () => {
@@ -489,7 +489,7 @@ describe('Agency-Trade Relationship Functions', () => {
       // Re-import the function with mocked data
       const {
         createAgencyRegionRelationships: mockedCreateRelationships,
-      } = require('../seed-database');
+      } = require('../database/seed-database');
 
       const agencyIdMap = new Map([['Test Agency', 'agency-1']]);
 

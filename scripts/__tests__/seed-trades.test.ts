@@ -2,7 +2,7 @@ import {
   extractUniqueTrades,
   seedTrades,
   createSupabaseClient,
-} from '../seed-database';
+} from '../database/seed-database';
 import { mockAgencies } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
 

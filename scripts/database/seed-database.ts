@@ -13,8 +13,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { mockAgencies, allStates } from '../lib/mock-data';
-import { createSlug } from '../lib/supabase';
+import { mockAgencies, allStates } from '../../lib/mock-data';
+import { createSlug } from '../../lib/supabase';
 
 // Helper to check if we're in test environment
 const isTestEnvironment = (): boolean => {
@@ -34,7 +34,7 @@ if (
 if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
   throw new Error('All states data is not available or empty');
 }
-import type { Agency, Trade, Region } from '../lib/supabase';
+import type { Agency, Trade, Region } from '../../lib/supabase';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
