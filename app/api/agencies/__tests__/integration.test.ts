@@ -684,8 +684,8 @@ describe('GET /api/agencies - Comprehensive Integration Tests', () => {
       // Setup mocks with error
       setupMocks();
 
-      // Override the order method to return an error
-      queryBuilder.order.mockResolvedValue({
+      // Override the range method to return an error (matches our new mock chain)
+      queryBuilder.range.mockResolvedValue({
         data: null,
         error: {
           message: 'Database connection failed',
