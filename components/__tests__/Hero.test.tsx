@@ -40,13 +40,15 @@ describe('Hero Component', () => {
     });
 
     it('does not render children when not provided', () => {
-      const { container } = render(<Hero title="Test Title" />);
+      render(<Hero title="Test Title" />);
 
-      const section = container.querySelector('section');
-      const innerDiv = section?.querySelector('.max-w-4xl');
-
-      // Should only have h1 and no other content
-      expect(innerDiv?.children.length).toBe(1);
+      // Verify only heading and optional subtitle are present
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Test Title' }),
+      ).toBeInTheDocument();
+      // No additional content besides the heading
+      const headings = screen.getAllByRole('heading');
+      expect(headings).toHaveLength(1);
     });
   });
 

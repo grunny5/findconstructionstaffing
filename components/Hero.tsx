@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface HeroProps {
   /**
@@ -38,7 +39,7 @@ export default function Hero({
   children,
 }: HeroProps) {
   return (
-    <section className={`${className} py-16 text-white`}>
+    <section className={cn(className, 'py-16 text-white')}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">

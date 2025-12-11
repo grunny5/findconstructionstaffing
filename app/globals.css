@@ -170,35 +170,20 @@
 
 /**
  * ==========================================================================
- * GLASS MORPHISM EFFECTS
+ * GLASS MORPHISM EFFECTS (Design System - Available for Future Use)
  * ==========================================================================
  * Semi-transparent elements with backdrop blur for modern UI
- * NOTE: Currently .glass-card, .glass-button are UNUSED in codebase
+ * These are part of the design system and available when needed
  */
 
-/**
- * .glass-card
- * Glass morphism card with semi-transparent background
- * Usage: Cards with frosted glass effect (UNUSED - kept for future use)
- */
 .glass-card {
   @apply bg-white/80 backdrop-blur-sm border-0 shadow-2xl shadow-slate-900/10;
 }
 
-/**
- * .glass-header
- * Glass morphism header/navigation bar
- * Usage: Fixed headers with see-through effect (UNUSED - kept for future use)
- */
 .glass-header {
   @apply backdrop-blur-xl bg-white/80 border-b border-slate-200/60;
 }
 
-/**
- * .glass-button
- * Glass morphism button styling
- * Usage: Buttons with frosted glass effect (UNUSED - kept for future use)
- */
 .glass-button {
   @apply bg-white/80 backdrop-blur-sm border-slate-300/60 hover:bg-white;
 }
@@ -220,34 +205,18 @@
 
 /**
  * ==========================================================================
- * GRADIENT TEXT EFFECTS
+ * GRADIENT TEXT EFFECTS (Design System - Available for Future Use)
  * ==========================================================================
- * Gradient text styling for headings and emphasis
  */
 
-/**
- * .gradient-text-primary
- * Dark gradient text (slate-900 to slate-700)
- * Usage: Primary headings, emphasis text (UNUSED - kept for future use)
- */
 .gradient-text-primary {
   @apply bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent;
 }
 
-/**
- * .gradient-text-hero
- * Light gradient text for dark backgrounds
- * Usage: Hero section headings (UNUSED - kept for future use)
- */
 .gradient-text-hero {
   @apply bg-gradient-to-r from-white via-white to-slate-300 bg-clip-text text-transparent;
 }
 
-/**
- * .gradient-text-accent
- * Cyan/blue accent gradient text
- * Usage: Call-to-action text, highlights (UNUSED - kept for future use)
- */
 .gradient-text-accent {
   @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
 }
@@ -279,25 +248,14 @@
 
 /**
  * ==========================================================================
- * FORM INPUT STYLES
+ * FORM INPUT STYLES (Design System - Available for Future Use)
  * ==========================================================================
- * Modern form input styling
  */
 
-/**
- * .modern-input
- * Modern text input with light background
- * Usage: Form text inputs (UNUSED - kept for future use)
- */
 .modern-input {
   @apply bg-slate-50/50 border-slate-200/60 rounded-2xl text-slate-900 placeholder:text-slate-400;
 }
 
-/**
- * .modern-select
- * Modern select dropdown styling
- * Usage: Form select elements (UNUSED - kept for future use)
- */
 .modern-select {
   @apply bg-slate-50/50 border-slate-200/60 rounded-2xl;
 }
@@ -333,30 +291,6 @@
   @apply bg-gradient-to-br from-amber-500 to-orange-500;
 }
 
-/**
- * ==========================================================================
- * HERO SECTION DECORATIONS
- * ==========================================================================
- */
-
-/**
- * .hero-decoration
- * Decorative gradient overlay for hero sections
- * Usage: Hero sections (UNUSED - kept for future use)
- */
-.hero-decoration {
-  @apply absolute inset-0 opacity-30;
-}
-
-.hero-decoration::before {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-y-12;
-}
-
-.hero-decoration::after {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-l from-transparent via-white/5 to-transparent transform skew-y-12;
-}
 
 /**
  * ==========================================================================
@@ -382,14 +316,6 @@
   @apply w-2 h-2 bg-emerald-500 rounded-full;
 }
 
-/**
- * .rating-badge
- * Amber rating badge for star ratings
- * Usage: Rating displays (UNUSED - kept for future use)
- */
-.rating-badge {
-  @apply flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full;
-}
 
 /**
  * .specialty-badge
@@ -415,14 +341,6 @@
   @apply w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center;
 }
 
-/**
- * .modern-logo
- * Large rounded logo container with hover effect
- * Usage: Agency logos (UNUSED - kept for future use)
- */
-.modern-logo {
-  @apply w-20 h-20 rounded-3xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-slate-900/20 group-hover:scale-105 transition-transform duration-300;
-}
 
 /**
  * ==========================================================================
@@ -430,71 +348,4 @@
  * ==========================================================================
  */
 
-/**
- * .trust-indicator
- * Semi-transparent trust/security indicator badge
- * Usage: Trust signals in hero sections (UNUSED - kept for future use)
- */
-.trust-indicator {
-  @apply inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2;
-}
 
-/**
- * .modern-search-container
- * Modern search bar with glass morphism effect
- * Usage: Search containers (UNUSED - kept for future use)
- */
-.modern-search-container {
-  @apply bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl shadow-slate-900/25 border border-white/20;
-}
-
-/**
- * .action-button-hover
- * Subtle diagonal lift effect on button hover
- * Usage: Action button hover states (UNUSED - kept for future use)
- */
-.action-button-hover {
-  @apply group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform;
-}
-
-/**
- * ==========================================================================
- * STATS SECTION
- * ==========================================================================
- */
-
-/**
- * Stats grid layout with responsive columns
- * Usage: Statistics display sections (UNUSED - kept for future use)
- */
-.stats-grid {
-  @apply grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-8 border-t border-slate-600;
-}
-
-.stat-item {
-  @apply text-center;
-}
-
-.stat-number {
-  @apply text-2xl font-bold text-cyan-400;
-}
-
-.stat-label {
-  @apply text-sm text-slate-300;
-}
-
-/**
- * ==========================================================================
- * RESPONSIVE UTILITIES
- * ==========================================================================
- * Mobile-specific adjustments for utility classes
- */
-@media (max-width: 768px) {
-  .modern-search-container {
-    @apply p-4 rounded-2xl;
-  }
-
-  .modern-logo {
-    @apply w-16 h-16 text-lg;
-  }
-}
