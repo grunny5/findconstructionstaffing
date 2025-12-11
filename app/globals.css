@@ -81,7 +81,20 @@
   }
 }
 
+/**
+ * ==========================================================================
+ * BACKGROUND UTILITY CLASSES
+ * ==========================================================================
+ * Various gradient backgrounds used throughout the application
+ */
+
 /* Modern gradient backgrounds */
+
+/**
+ * .modern-gradient-bg
+ * Light subtle gradient for page backgrounds
+ * Usage: General page sections, background areas
+ */
 .modern-gradient-bg {
   background: linear-gradient(
     to bottom right,
@@ -91,6 +104,11 @@
   );
 }
 
+/**
+ * .modern-hero-bg
+ * Dark slate gradient for modern hero sections
+ * Usage: Hero sections with dark theme
+ */
 .modern-hero-bg {
   background: linear-gradient(
     to bottom right,
@@ -100,6 +118,47 @@
   );
 }
 
+/**
+ * .construction-hero
+ * Construction-industry themed hero with blue-orange gradient
+ * Features diagonal stripe pattern overlay for construction aesthetic
+ * Usage: Hero sections on construction-themed pages (7 pages use this)
+ */
+.construction-hero {
+  background: linear-gradient(
+    135deg,
+    rgb(15, 23, 42) 0%,
+    rgb(30, 58, 138) 25%,
+    rgb(251, 146, 60) 50%,
+    rgb(30, 58, 138) 75%,
+    rgb(15, 23, 42) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.construction-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(251, 146, 60, 0.03) 10px,
+    rgba(251, 146, 60, 0.03) 20px
+  );
+  pointer-events: none;
+}
+
+/**
+ * .modern-footer-bg
+ * Dark footer background gradient
+ * Usage: Footer sections
+ */
 .modern-footer-bg {
   background: linear-gradient(
     to bottom right,
@@ -109,7 +168,14 @@
   );
 }
 
-/* Glass morphism effects */
+/**
+ * ==========================================================================
+ * GLASS MORPHISM EFFECTS (Design System - Available for Future Use)
+ * ==========================================================================
+ * Semi-transparent elements with backdrop blur for modern UI
+ * These are part of the design system and available when needed
+ */
+
 .glass-card {
   @apply bg-white/80 backdrop-blur-sm border-0 shadow-2xl shadow-slate-900/10;
 }
@@ -122,12 +188,27 @@
   @apply bg-white/80 backdrop-blur-sm border-slate-300/60 hover:bg-white;
 }
 
-/* Modern card hover effects */
+/**
+ * ==========================================================================
+ * CARD & INTERACTIVE EFFECTS
+ * ==========================================================================
+ */
+
+/**
+ * .modern-card
+ * Smooth hover animation for cards (lift on hover)
+ * Usage: Agency cards, profile cards
+ */
 .modern-card {
   @apply transition-all duration-500 hover:shadow-2xl hover:shadow-slate-900/10 hover:-translate-y-1;
 }
 
-/* Gradient text effects */
+/**
+ * ==========================================================================
+ * GRADIENT TEXT EFFECTS (Design System - Available for Future Use)
+ * ==========================================================================
+ */
+
 .gradient-text-primary {
   @apply bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent;
 }
@@ -140,26 +221,57 @@
   @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
 }
 
-/* Modern button styles */
+/**
+ * ==========================================================================
+ * BUTTON STYLES
+ * ==========================================================================
+ * Custom button variants (prefer Shadcn Button component variants)
+ */
+
+/**
+ * .modern-button-primary
+ * Primary button with dark gradient
+ * Usage: Main call-to-action buttons (Used in app/page.tsx)
+ */
 .modern-button-primary {
   @apply bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white shadow-lg shadow-slate-900/25 rounded-2xl;
 }
 
+/**
+ * .modern-button-secondary
+ * Secondary button with glass effect
+ * Usage: Secondary actions (Used in app/page.tsx)
+ */
 .modern-button-secondary {
   @apply bg-white/80 text-slate-700 border-slate-300/60 hover:bg-white backdrop-blur-sm rounded-xl;
 }
 
-/* Modern input styles */
+/**
+ * ==========================================================================
+ * FORM INPUT STYLES (Design System - Available for Future Use)
+ * ==========================================================================
+ */
+
 .modern-input {
   @apply bg-slate-50/50 border-slate-200/60 rounded-2xl text-slate-900 placeholder:text-slate-400;
 }
 
-/* Modern select styles */
 .modern-select {
   @apply bg-slate-50/50 border-slate-200/60 rounded-2xl;
 }
 
-/* Agency card gradient colors */
+/**
+ * ==========================================================================
+ * AGENCY CARD STYLES
+ * ==========================================================================
+ * Gradient colors for agency logo placeholders
+ */
+
+/**
+ * Agency logo gradient colors (6 variants)
+ * Usage: Agency card logo backgrounds when no image is available
+ * Applied in: components/AgencyCard.tsx
+ */
 .agency-gradient-1 {
   @apply bg-gradient-to-br from-blue-500 to-cyan-500;
 }
@@ -179,89 +291,56 @@
   @apply bg-gradient-to-br from-amber-500 to-orange-500;
 }
 
-/* Hero section decorative elements */
-.hero-decoration {
-  @apply absolute inset-0 opacity-30;
-}
+/**
+ * ==========================================================================
+ * BADGE & STATUS INDICATORS
+ * ==========================================================================
+ */
 
-.hero-decoration::before {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-y-12;
-}
-
-.hero-decoration::after {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-l from-transparent via-white/5 to-transparent transform skew-y-12;
-}
-
-/* Verification badge styles */
+/**
+ * .verification-badge
+ * Green verification badge for verified agencies
+ * Usage: Agency verification status (defined but uses inline styles in AgencyCard)
+ */
 .verification-badge {
   @apply inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium;
 }
 
+/**
+ * .verification-dot
+ * Green dot indicator for verification badge
+ * Usage: Part of verification badge (defined but uses inline styles)
+ */
 .verification-dot {
   @apply w-2 h-2 bg-emerald-500 rounded-full;
 }
 
-/* Rating badge styles */
-.rating-badge {
-  @apply flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full;
-}
-
-/* Icon container styles */
-.icon-container {
-  @apply w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center;
-}
-
-/* Modern logo styles */
-.modern-logo {
-  @apply w-20 h-20 rounded-3xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-slate-900/20 group-hover:scale-105 transition-transform duration-300;
-}
-
-/* Trust indicator styles */
-.trust-indicator {
-  @apply inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2;
-}
-
-/* Search bar styles */
-.modern-search-container {
-  @apply bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl shadow-slate-900/25 border border-white/20;
-}
-
-/* Specialty badge styles */
+/**
+ * .specialty-badge
+ * Gray badge for specialty/trade tags
+ * Usage: Trade/specialty tags (defined but uses inline styles in AgencyCard)
+ */
 .specialty-badge {
   @apply bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 rounded-lg font-medium transition-colors;
 }
 
-/* Action button hover effects */
-.action-button-hover {
-  @apply group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform;
+/**
+ * ==========================================================================
+ * ICON & LOGO CONTAINERS
+ * ==========================================================================
+ */
+
+/**
+ * .icon-container
+ * Small square container for icons
+ * Usage: Agency contact icons (defined but uses inline styles)
+ */
+.icon-container {
+  @apply w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center;
 }
 
-/* Stats section styles */
-.stats-grid {
-  @apply grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-8 border-t border-slate-600;
-}
-
-.stat-item {
-  @apply text-center;
-}
-
-.stat-number {
-  @apply text-2xl font-bold text-cyan-400;
-}
-
-.stat-label {
-  @apply text-sm text-slate-300;
-}
-
-/* Responsive utilities */
-@media (max-width: 768px) {
-  .modern-search-container {
-    @apply p-4 rounded-2xl;
-  }
-
-  .modern-logo {
-    @apply w-16 h-16 text-lg;
-  }
-}
+/**
+ * ==========================================================================
+ * SPECIALIZED COMPONENTS
+ * ==========================================================================
+ */
