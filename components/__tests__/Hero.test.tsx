@@ -9,7 +9,7 @@ describe('Hero Component', () => {
       render(<Hero title="Test Title" />);
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Test Title' }),
+        screen.getByRole('heading', { level: 1, name: 'Test Title' })
       ).toBeInTheDocument();
     });
 
@@ -24,7 +24,7 @@ describe('Hero Component', () => {
       render(<Hero title="Test Title" />);
 
       expect(
-        screen.queryByText('text-slate-200', { exact: false }),
+        screen.queryByText('text-slate-200', { exact: false })
       ).not.toBeInTheDocument();
     });
 
@@ -32,7 +32,7 @@ describe('Hero Component', () => {
       render(
         <Hero title="Test Title">
           <div data-testid="child-element">Child Content</div>
-        </Hero>,
+        </Hero>
       );
 
       expect(screen.getByTestId('child-element')).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('Hero Component', () => {
 
     it('respects custom className override', () => {
       const { container } = render(
-        <Hero title="Test Title" className="custom-hero" />,
+        <Hero title="Test Title" className="custom-hero" />
       );
 
       const section = container.querySelector('section');
@@ -132,14 +132,16 @@ describe('Hero Component', () => {
           className="custom-class"
         >
           <button>Click me</button>
-        </Hero>,
+        </Hero>
       );
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Full Test' }),
+        screen.getByRole('heading', { level: 1, name: 'Full Test' })
       ).toBeInTheDocument();
       expect(screen.getByText('Full Subtitle')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Click me' })
+      ).toBeInTheDocument();
 
       const section = container.querySelector('section');
       expect(section).toHaveClass('custom-class');
@@ -149,7 +151,7 @@ describe('Hero Component', () => {
       render(<Hero title="Minimal Test" />);
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Minimal Test' }),
+        screen.getByRole('heading', { level: 1, name: 'Minimal Test' })
       ).toBeInTheDocument();
     });
 
@@ -157,7 +159,7 @@ describe('Hero Component', () => {
       render(<Hero title="Title Only" subtitle="With Subtitle" />);
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Title Only' }),
+        screen.getByRole('heading', { level: 1, name: 'Title Only' })
       ).toBeInTheDocument();
       expect(screen.getByText('With Subtitle')).toBeInTheDocument();
     });
@@ -166,11 +168,11 @@ describe('Hero Component', () => {
       render(
         <Hero title="Title with Children">
           <span>Child element</span>
-        </Hero>,
+        </Hero>
       );
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Title with Children' }),
+        screen.getByRole('heading', { level: 1, name: 'Title with Children' })
       ).toBeInTheDocument();
       expect(screen.getByText('Child element')).toBeInTheDocument();
     });
