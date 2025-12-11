@@ -52,7 +52,9 @@ describe('Supabase Client', () => {
 
     expect(() => {
       require('../supabase');
-    }).toThrow('Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL');
+    }).toThrow(
+      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL'
+    );
 
     (process.env as any).NODE_ENV = 'test';
   });
@@ -68,7 +70,9 @@ describe('Supabase Client', () => {
 
     expect(() => {
       require('../supabase');
-    }).toThrow('Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    }).toThrow(
+      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    );
 
     (process.env as any).NODE_ENV = 'test';
   });
