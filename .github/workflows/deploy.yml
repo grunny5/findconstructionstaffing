@@ -150,11 +150,8 @@ jobs:
           set -e  # Exit on any error
           echo "Starting deployment..."
 
-          # Verify jq is available
-          command -v jq >/dev/null 2>&1 || { echo "::error::jq not found"; exit 1; }
-
-          # Deploy and capture both output and exit code using JSON for reliable parsing
-          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --json --yes) || DEPLOY_EXIT_CODE=$?
+          # Deploy and capture both stdout and stderr
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1) || DEPLOY_EXIT_CODE=$?
 
           # Check if deployment succeeded
           if [ -z "${DEPLOY_EXIT_CODE:-}" ]; then
@@ -165,25 +162,40 @@ jobs:
           echo "$DEPLOY_OUTPUT"
 
           if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
-            # Parse JSON output to extract deployment information
-            DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.url // empty')
-            DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | jq -r '.id // .uid // empty')
-            
-            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" != "null" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            # Strip ANSI escape codes from output first
+            CLEAN_OUTPUT=$(echo "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g')
+
+            # Extract URL from cleaned output using multiple patterns
+            # Pattern 1: Direct URL on its own line
+            DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -E "^https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)$" | tail -1 || true)
+
+            # Pattern 2: URL after "Ready!" or "Deployed to:"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "(Ready!|Deployed to:)\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
+            fi
+
+            # Pattern 3: URL after "Inspect:"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "Inspect:\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
+            fi
+
+            # Pattern 4: Any URL in the output (fallback)
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
+            fi
+
+            # Output the URL
+            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
               echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
               echo "Preview deployed to: $DEPLOYMENT_URL"
-              
-              # Set deployment ID if available
-              if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
-                echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-                echo "Deployment ID: $DEPLOYMENT_ID"
-              fi
             else
-              echo "::warning::Could not extract deployment URL from JSON output"
+              echo "::warning::Could not extract deployment URL from output"
+              echo "Cleaned output: $CLEAN_OUTPUT"
               echo "deployment_url=unknown" >> $GITHUB_OUTPUT
             fi
           else
             echo "::error::Deployment failed with exit code: $DEPLOY_EXIT_CODE"
+            echo "Deployment output: $DEPLOY_OUTPUT"
             exit 1
           fi
 
@@ -382,18 +394,36 @@ jobs:
             echo "No previous deployment found"
           fi
 
-          # Deploy to production using JSON output for reliable parsing
+          # Deploy to production and capture both stdout and stderr
           echo "Deploying to production..."
-          DEPLOYMENT_OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --json 2>&1)
+          DEPLOYMENT_OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           DEPLOYMENT_EXIT_CODE=$?
 
           if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
-            # Parse JSON output to extract deployment information
-            DEPLOYMENT_URL=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.url // empty')
-            DEPLOYMENT_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.uid // empty')
-            
+            # Strip ANSI escape codes from output first
+            CLEAN_OUTPUT=$(echo "$DEPLOYMENT_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g')
+
+            # Extract URL from cleaned output using multiple patterns
+            # Pattern 1: Direct URL on its own line
+            DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -E "^https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)$" | tail -1 || true)
+
+            # Pattern 2: URL after "Ready!" or "Deployed to:"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "(Ready!|Deployed to:)\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
+            fi
+
+            # Pattern 3: URL after "Inspect:"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "Inspect:\s*https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
+            fi
+
+            # Pattern 4: Any URL in the output (fallback)
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+              DEPLOYMENT_URL=$(echo "$CLEAN_OUTPUT" | grep -oE "https://[a-zA-Z0-9.-]+\.vercel\.(app|sh)" | tail -1 || true)
+            fi
+
             # Validate we got the required information
-            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" != "null" ]]; then
+            if [[ -n "$DEPLOYMENT_URL" && "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
               echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
               echo "Production deployed to: $DEPLOYMENT_URL"
             else
@@ -402,24 +432,26 @@ jobs:
               echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
               echo "Production deployed to: $DEPLOYMENT_URL (using fallback URL)"
             fi
-            
-            # Set deployment ID - use actual deployment UID for rollback functionality
+
+            # Get deployment ID from vercel list for rollback functionality
+            echo "Fetching deployment ID..."
+            DEPLOYMENT_LIST_JSON=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} --json || echo '{"deployments":[]}')
+            DEPLOYMENT_ID=$(echo "$DEPLOYMENT_LIST_JSON" | jq -r '
+              .deployments // [] |
+              map(select(.target == "production" and .state == "READY")) |
+              sort_by(.createdAt) |
+              reverse |
+              .[0].uid // empty
+            ')
+
             if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
               echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
               echo "Deployment ID: $DEPLOYMENT_ID"
             else
-              # Try to extract deployment ID from JSON output using alternative field names
-              DEPLOYMENT_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.id // .deploymentId // empty')
-              
-              if [[ -n "$DEPLOYMENT_ID" && "$DEPLOYMENT_ID" != "null" ]]; then
-                echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-                echo "Deployment ID: $DEPLOYMENT_ID"
-              else
-                echo "::warning::Could not determine deployment ID - rollback commands may not work"
-                echo "deployment_id=unknown" >> $GITHUB_OUTPUT
-              fi
+              echo "::warning::Could not determine deployment ID - rollback commands may not work"
+              echo "deployment_id=unknown" >> $GITHUB_OUTPUT
             fi
-            
+
             echo "✓ Deployment completed successfully"
           else
             echo "::error::Deployment failed with exit code: $DEPLOYMENT_EXIT_CODE"
