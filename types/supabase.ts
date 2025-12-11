@@ -1,4 +1,6 @@
 // Shared Supabase type definitions
+import type { Profile } from './database';
+
 export type Agency = {
   id: string;
   name: string;
@@ -50,3 +52,31 @@ export type Lead = {
   status: 'pending' | 'sent' | 'responded';
   matched_agencies?: string[];
 };
+
+// Database interface for Supabase client
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: Profile;
+        Insert: Omit<Profile, 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Profile, 'id' | 'created_at'>>;
+      };
+      agencies: {
+        Row: Agency;
+        Insert: Omit<Agency, 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Agency, 'id' | 'created_at'>>;
+      };
+      trades: {
+        Row: Trade;
+        Insert: Omit<Trade, 'id'>;
+        Update: Partial<Omit<Trade, 'id'>>;
+      };
+      regions: {
+        Row: Region;
+        Insert: Omit<Region, 'id'>;
+        Update: Partial<Omit<Region, 'id'>>;
+      };
+    };
+  };
+}

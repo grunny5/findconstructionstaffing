@@ -28,16 +28,15 @@ export default async function AdminIntegrationsPageOptimized() {
     return null; // Ensure we don't continue execution in tests
   }
 
-  // Check if user is admin
-  // TODO: Implement proper role-based authorization with profiles table
-  // For now, using email-based check as a security measure
-  const adminEmails = [
-    'admin@findconstructionstaffing.com',
-    'devops@findconstructionstaffing.com',
-    // Add more admin emails as needed
-  ];
+  // Check authorization - fetch profile with role
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
-  if (!user.email || !adminEmails.includes(user.email)) {
+  if (profileError || !profile || profile.role !== 'admin') {
+    // Not an admin - redirect to home
     redirect('/');
     return null; // Ensure we don't continue execution in tests
   }
