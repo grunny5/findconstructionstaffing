@@ -7,7 +7,7 @@ import {
   extractUniqueTrades,
   extractUniqueStates,
   createStateMapping,
-} from '../seed-database';
+} from '../database/seed-database';
 import { mockAgencies } from '../../lib/mock-data';
 
 describe('Idempotency Tests', () => {

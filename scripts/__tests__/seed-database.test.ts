@@ -3,7 +3,7 @@ import {
   createSupabaseClient,
   testConnection,
   log,
-} from '../seed-database';
+} from '../database/seed-database';
 
 // Mock console methods
 const originalConsole = { ...console };

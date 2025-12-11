@@ -1,4 +1,4 @@
-import { resetDatabase } from '../seed-database';
+import { resetDatabase } from '../database/seed-database';
 
 describe('Reset Database Function', () => {
   describe('resetDatabase', () => {

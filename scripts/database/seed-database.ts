@@ -13,8 +13,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { mockAgencies, allStates } from '../lib/mock-data';
-import { createSlug } from '../lib/supabase';
+import { mockAgencies, allStates } from '../../lib/mock-data';
+import { createSlug } from '../../lib/supabase';
 
 // Helper to check if we're in test environment
 const isTestEnvironment = (): boolean => {

@@ -2,7 +2,7 @@ import {
   extractUniqueStates,
   createStateMapping,
   seedRegions,
-} from '../seed-database';
+} from '../database/seed-database';
 import { mockAgencies, allStates } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
 
@@ -20,7 +20,7 @@ function createMockedSeedRegions(customAgencies: any[], customStates: any[]) {
   }));
 
   // Import the module with mocked data
-  const { seedRegions: mockSeedRegions } = require('../seed-database');
+  const { seedRegions: mockSeedRegions } = require('../database/seed-database');
 
   // Return both the mocked function and a cleanup function
   return {
