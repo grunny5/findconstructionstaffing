@@ -44,7 +44,7 @@ describe('Hero Component', () => {
 
       // Verify only heading and optional subtitle are present
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Test Title' }),
+        screen.getByRole('heading', { level: 1, name: 'Test Title' })
       ).toBeInTheDocument();
       // No additional content besides the heading
       const headings = screen.getAllByRole('heading');

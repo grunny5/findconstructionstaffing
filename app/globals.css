@@ -291,7 +291,6 @@
   @apply bg-gradient-to-br from-amber-500 to-orange-500;
 }
 
-
 /**
  * ==========================================================================
  * BADGE & STATUS INDICATORS
@@ -315,7 +314,6 @@
 .verification-dot {
   @apply w-2 h-2 bg-emerald-500 rounded-full;
 }
-
 
 /**
  * .specialty-badge
@@ -341,11 +339,8 @@
   @apply w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center;
 }
 
-
 /**
  * ==========================================================================
  * SPECIALIZED COMPONENTS
  * ==========================================================================
  */
-
-
