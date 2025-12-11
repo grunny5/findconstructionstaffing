@@ -93,8 +93,8 @@ export default function ContactPage() {
                       Claim Listing
                     </a>{' '}
                     page to get started. Fill out the form with your agency
-                    details and we&apos;ll verify and publish your listing within
-                    24-48 hours.
+                    details and we&apos;ll verify and publish your listing
+                    within 24-48 hours.
                   </p>
                 </div>
                 <div>
@@ -104,7 +104,8 @@ export default function ContactPage() {
                   <p className="text-gray-600">
                     Yes! Searching for construction staffing agencies is
                     completely free for contractors and construction companies.
-                    Agency listings have both free and premium options available.
+                    Agency listings have both free and premium options
+                    available.
                   </p>
                 </div>
                 <div>
@@ -119,8 +120,8 @@ export default function ContactPage() {
                     >
                       Request Labor
                     </a>{' '}
-                    form to submit your staffing needs. We&apos;ll connect you with
-                    relevant agencies that match your trade and location
+                    form to submit your staffing needs. We&apos;ll connect you
+                    with relevant agencies that match your trade and location
                     requirements.
                   </p>
                 </div>
@@ -140,7 +141,9 @@ export default function ContactPage() {
                   <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-900">Business Hours</p>
-                    <p className="text-gray-600">Monday - Friday: 8:00 AM - 6:00 PM EST</p>
+                    <p className="text-gray-600">
+                      Monday - Friday: 8:00 AM - 6:00 PM EST
+                    </p>
                     <p className="text-gray-600">Saturday - Sunday: Closed</p>
                   </div>
                 </div>

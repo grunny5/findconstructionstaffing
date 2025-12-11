@@ -4,7 +4,6 @@ import Hero from '@/components/Hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Search,
-  Users,
   Building2,
   FileText,
   HelpCircle,
@@ -33,8 +32,8 @@ export default function HelpPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">
-                    Learn how to search and filter construction staffing agencies
-                    by trade, location, and specialty.
+                    Learn how to search and filter construction staffing
+                    agencies by trade, location, and specialty.
                   </p>
                   <a
                     href="/"
@@ -75,8 +74,8 @@ export default function HelpPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">
-                    Construction staffing agency? Learn how to claim your listing
-                    and reach more clients.
+                    Construction staffing agency? Learn how to claim your
+                    listing and reach more clients.
                   </p>
                   <a
                     href="/claim-listing"
@@ -118,8 +117,9 @@ export default function HelpPage() {
                       </p>
                       <p className="text-gray-600 mt-1">
                         You&apos;ll need your company details, project location,
-                        required trades, number of workers, and project timeline.
-                        This helps us match you with the right agencies.
+                        required trades, number of workers, and project
+                        timeline. This helps us match you with the right
+                        agencies.
                       </p>
                     </div>
                     <div>
@@ -128,9 +128,9 @@ export default function HelpPage() {
                       </p>
                       <p className="text-gray-600 mt-1">
                         Verified agencies have completed our vetting process,
-                        including license verification and reference checks. While
-                        all listed agencies are legitimate, verified status
-                        provides additional assurance.
+                        including license verification and reference checks.
+                        While all listed agencies are legitimate, verified
+                        status provides additional assurance.
                       </p>
                     </div>
                   </div>
@@ -159,12 +159,13 @@ export default function HelpPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">
-                        What&apos;s the difference between free and premium listings?
+                        What&apos;s the difference between free and premium
+                        listings?
                       </p>
                       <p className="text-gray-600 mt-1">
-                        Free listings include basic information. Premium listings
-                        get enhanced visibility, featured placement, and access to
-                        labor request leads. Visit our{' '}
+                        Free listings include basic information. Premium
+                        listings get enhanced visibility, featured placement,
+                        and access to labor request leads. Visit our{' '}
                         <a
                           href="/pricing"
                           className="text-blue-600 hover:text-blue-700"
