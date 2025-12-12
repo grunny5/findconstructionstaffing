@@ -32,6 +32,8 @@ describe('SignupPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Use fake timers to prevent test pollution from setTimeout
+    jest.useFakeTimers();
 
     (useAuth as jest.Mock).mockReturnValue({
       signUp: mockSignUp,
@@ -40,6 +42,12 @@ describe('SignupPage', () => {
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
     });
+  });
+
+  afterEach(() => {
+    // Run any pending timers and restore real timers
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   describe('Rendering', () => {
@@ -99,7 +107,7 @@ describe('SignupPage', () => {
 
   describe('Form Validation', () => {
     it('should show error for short name', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
       const nameInput = screen.getByPlaceholderText(/full name/i);
@@ -118,7 +126,7 @@ describe('SignupPage', () => {
     });
 
     it('should show error for invalid email', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
       const nameInput = screen.getByPlaceholderText(/full name/i);
@@ -145,7 +153,7 @@ describe('SignupPage', () => {
     });
 
     it('should show error for short password', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
       const emailInput = screen.getByPlaceholderText(/email address/i);
@@ -166,7 +174,7 @@ describe('SignupPage', () => {
     });
 
     it('should show error when passwords do not match', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
       const nameInput = screen.getByPlaceholderText(/full name/i);
@@ -188,7 +196,7 @@ describe('SignupPage', () => {
     });
 
     it('should not show errors for valid input', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
       render(<SignupPage />);
 
@@ -221,7 +229,7 @@ describe('SignupPage', () => {
 
   describe('Form Submission', () => {
     it('should call signUp with correct data on valid submission', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
@@ -249,7 +257,7 @@ describe('SignupPage', () => {
     });
 
     it('should show success message after signup', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
@@ -278,7 +286,7 @@ describe('SignupPage', () => {
     });
 
     it('should redirect to home after successful signup', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
@@ -302,17 +310,15 @@ describe('SignupPage', () => {
         ).toBeInTheDocument();
       });
 
-      // Wait for redirect (component uses setTimeout)
-      await waitFor(
-        () => {
-          expect(mockPush).toHaveBeenCalledWith('/');
-        },
-        { timeout: 3000 }
-      );
+      // Fast-forward time to trigger redirect (component uses setTimeout with 2000ms)
+      jest.advanceTimersByTime(2000);
+
+      // Verify redirect was called
+      expect(mockPush).toHaveBeenCalledWith('/');
     });
 
     it('should show loading state during submission', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       mockSignUp.mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 100))
       );
@@ -332,8 +338,10 @@ describe('SignupPage', () => {
       await user.type(passwordInputs[1], 'password123');
       await user.click(submitButton);
 
-      // Should show loading text
-      expect(screen.getByText(/creating account.../i)).toBeInTheDocument();
+      // Wait for loading state to appear
+      await waitFor(() => {
+        expect(screen.getByText(/creating account.../i)).toBeInTheDocument();
+      });
 
       // Button should be disabled
       const loadingButton = screen.getByRole('button', {
@@ -341,18 +349,18 @@ describe('SignupPage', () => {
       });
       expect(loadingButton).toBeDisabled();
 
-      await waitFor(
-        () => {
-          expect(
-            screen.getByText(/account created successfully!/i)
-          ).toBeInTheDocument();
-        },
-        { timeout: 200 }
-      );
+      // Fast-forward the mock signup delay
+      jest.advanceTimersByTime(100);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/account created successfully!/i)
+        ).toBeInTheDocument();
+      });
     });
 
     it('should handle signup error', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       const errorMessage = 'Email already exists';
       mockSignUp.mockRejectedValue({ message: errorMessage });
 
@@ -385,7 +393,7 @@ describe('SignupPage', () => {
     });
 
     it('should show generic error message when error has no message', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       mockSignUp.mockRejectedValue({});
 
       render(<SignupPage />);
@@ -411,7 +419,7 @@ describe('SignupPage', () => {
     });
 
     it('should clear error message on new submission', async () => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       const errorMessage = 'Email already exists';
       mockSignUp
         .mockRejectedValueOnce({ message: errorMessage })
