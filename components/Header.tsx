@@ -4,16 +4,42 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Building2, Users, FileText, Search } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Menu,
+  Building2,
+  Users,
+  FileText,
+  Search,
+  User,
+  LogOut,
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth/auth-context';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
 
   const navItems = [
     { label: 'Browse Directory', href: '/', icon: Building2 },
     { label: 'Request Labor', href: '/request-labor', icon: Users },
     { label: 'Resources', href: '/resources', icon: FileText },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <header className="glass-header sticky top-0 z-50">
@@ -49,21 +75,80 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="glass-button"
-              asChild
-            >
-              <Link href="/claim-listing">Claim Listing</Link>
-            </Button>
-            <Button
-              size="sm"
-              className="modern-button-primary h-9 px-4"
-              asChild
-            >
-              <Link href="/request-labor">Get Started</Link>
-            </Button>
+            {user ? (
+              // Logged in - show Claim Listing + User Menu
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="glass-button"
+                  asChild
+                >
+                  <Link href="/claim-listing">Claim Listing</Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="modern-button-primary h-9 px-4"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      {profile?.full_name ||
+                        user.email?.split('@')[0] ||
+                        'Account'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">
+                          {profile?.full_name || 'My Account'}
+                        </p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {profile?.role === 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/integrations">Admin Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    {profile?.role === 'agency_owner' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard">Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link href="/account">Account Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              // Not logged in - show Sign In / Sign Up
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="glass-button"
+                  asChild
+                >
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  className="modern-button-primary h-9 px-4"
+                  asChild
+                >
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -102,26 +187,84 @@ export default function Header() {
                 ))}
 
                 <div className="border-t pt-6 space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full glass-button"
-                    asChild
-                  >
-                    <Link
-                      href="/claim-listing"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Claim Listing
-                    </Link>
-                  </Button>
-                  <Button className="w-full modern-button-primary" asChild>
-                    <Link
-                      href="/request-labor"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Get Started
-                    </Link>
-                  </Button>
+                  {user ? (
+                    // Logged in - show user-specific actions
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full glass-button"
+                        asChild
+                      >
+                        <Link
+                          href="/claim-listing"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Claim Listing
+                        </Link>
+                      </Button>
+                      {profile?.role === 'admin' && (
+                        <Button
+                          className="w-full modern-button-primary"
+                          asChild
+                        >
+                          <Link
+                            href="/admin/integrations"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Admin Dashboard
+                          </Link>
+                        </Button>
+                      )}
+                      {profile?.role === 'agency_owner' && (
+                        <Button
+                          className="w-full modern-button-primary"
+                          asChild
+                        >
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Dashboard
+                          </Link>
+                        </Button>
+                      )}
+                      <Button variant="outline" className="w-full" asChild>
+                        <Link href="/account" onClick={() => setIsOpen(false)}>
+                          <User className="h-4 w-4 mr-2" />
+                          Account Settings
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          handleSignOut();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
+                    // Not logged in - show Sign In / Sign Up
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full glass-button"
+                        asChild
+                      >
+                        <Link href="/login" onClick={() => setIsOpen(false)}>
+                          Sign In
+                        </Link>
+                      </Button>
+                      <Button className="w-full modern-button-primary" asChild>
+                        <Link href="/signup" onClick={() => setIsOpen(false)}>
+                          Sign Up
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>

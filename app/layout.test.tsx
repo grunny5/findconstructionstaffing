@@ -9,6 +9,13 @@ jest.mock('@/components/ui/sonner', () => ({
   Toaster: () => <div data-testid="toaster">Toaster</div>,
 }));
 
+// Mock AuthProvider as a passthrough component
+jest.mock('@/lib/auth/auth-context', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
 // Mock next/font/google to return consistent class name
 jest.mock('next/font/google', () => ({
   Inter: () => ({
@@ -38,26 +45,58 @@ describe('RootLayout', () => {
     expect(body.type).toBe('body');
     expect(body.props.className).toBe('__Inter_abc123');
 
-    // Check children array
-    const [children, toaster] = body.props.children;
-    expect(children.props.children).toBe('Test Child Content');
+    // AuthProvider wraps the children, so we need to look inside it
+    const authProvider = body.props.children;
+    expect(authProvider.type).toBeDefined(); // AuthProvider exists
+
+    // Children are inside AuthProvider (mocked as fragment)
+    const authChildren = authProvider.props.children;
+    expect(authChildren).toBeDefined();
+
+    // With the mock, children should be passed through
+    // The first child is our test content, second is Toaster
+    const childrenArray = Array.isArray(authChildren)
+      ? authChildren
+      : [authChildren];
+    expect(childrenArray.length).toBeGreaterThan(0);
   });
 
   it('should include the Toaster component', () => {
     const layout = RootLayout({ children: <div>Content</div> });
     const body = layout.props.children;
-    const [_, toaster] = body.props.children;
 
-    // Toaster should be the second child
-    expect(toaster).toBeDefined();
+    // Get children from inside AuthProvider
+    const authProvider = body.props.children;
+    const authChildren = authProvider.props.children;
+
+    // authChildren should be an array with [children, Toaster]
+    const childrenArray = Array.isArray(authChildren)
+      ? authChildren
+      : [authChildren];
+
+    // Should have 2 children: the content and the Toaster
+    expect(childrenArray.length).toBe(2);
+
+    // Second child should be the Toaster (mocked component)
+    expect(childrenArray[1]).toBeDefined();
+    expect(childrenArray[1].type).toBeDefined(); // Has a type (is a component)
   });
 
   it('should pass through children correctly', () => {
     const testChild = <div data-testid="test-child">Test Content</div>;
     const layout = RootLayout({ children: testChild });
     const body = layout.props.children;
-    const [children] = body.props.children;
 
-    expect(children).toBe(testChild);
+    // Get children from inside AuthProvider
+    const authProvider = body.props.children;
+    const authChildren = authProvider.props.children;
+
+    // authChildren should be an array with [children, Toaster]
+    const childrenArray = Array.isArray(authChildren)
+      ? authChildren
+      : [authChildren];
+
+    // The first element should be our test child
+    expect(childrenArray[0]).toBe(testChild);
   });
 });

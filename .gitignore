@@ -41,8 +41,9 @@ next-env.d.ts
 # test results
 docs/*-test-results.json
 
-# Supabase CLI executable
+# Supabase CLI executable and config
 supabase.exe
+.supabase/
 
 # Temporary test files
 test-sanitize*.js

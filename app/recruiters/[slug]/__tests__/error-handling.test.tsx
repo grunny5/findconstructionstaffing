@@ -1,6 +1,19 @@
 /**
  * @jest-environment jsdom
  */
+
+// Mock auth context
+jest.mock('@/lib/auth/auth-context', () => ({
+  useAuth: jest.fn(() => ({
+    user: null,
+    profile: null,
+    signOut: jest.fn(),
+    loading: false,
+    isAdmin: false,
+    isAgencyOwner: false,
+  })),
+}));
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import ProfileError from '../error';
 import AgencyNotFound from '../not-found';
