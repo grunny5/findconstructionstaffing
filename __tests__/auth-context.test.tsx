@@ -108,7 +108,9 @@ describe('AuthProvider and useAuth', () => {
 
     // Set the onAuthStateChange mock implementation
     if (supabase?.auth?.onAuthStateChange) {
-      (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(mockOnAuthStateChange);
+      (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
+        mockOnAuthStateChange
+      );
     }
   });
 

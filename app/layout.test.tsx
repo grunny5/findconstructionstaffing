@@ -11,7 +11,9 @@ jest.mock('@/components/ui/sonner', () => ({
 
 // Mock AuthProvider as a passthrough component
 jest.mock('@/lib/auth/auth-context', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock next/font/google to return consistent class name
@@ -53,7 +55,9 @@ describe('RootLayout', () => {
 
     // With the mock, children should be passed through
     // The first child is our test content, second is Toaster
-    const childrenArray = Array.isArray(authChildren) ? authChildren : [authChildren];
+    const childrenArray = Array.isArray(authChildren)
+      ? authChildren
+      : [authChildren];
     expect(childrenArray.length).toBeGreaterThan(0);
   });
 
@@ -66,7 +70,9 @@ describe('RootLayout', () => {
     const authChildren = authProvider.props.children;
 
     // authChildren should be an array with [children, Toaster]
-    const childrenArray = Array.isArray(authChildren) ? authChildren : [authChildren];
+    const childrenArray = Array.isArray(authChildren)
+      ? authChildren
+      : [authChildren];
 
     // Should have 2 children: the content and the Toaster
     expect(childrenArray.length).toBe(2);
@@ -86,7 +92,9 @@ describe('RootLayout', () => {
     const authChildren = authProvider.props.children;
 
     // authChildren should be an array with [children, Toaster]
-    const childrenArray = Array.isArray(authChildren) ? authChildren : [authChildren];
+    const childrenArray = Array.isArray(authChildren)
+      ? authChildren
+      : [authChildren];
 
     // The first element should be our test child
     expect(childrenArray[0]).toBe(testChild);

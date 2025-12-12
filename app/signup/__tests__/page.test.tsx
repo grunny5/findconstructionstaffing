@@ -134,9 +134,14 @@ describe('SignupPage', () => {
       await user.type(passwordInputs[1], 'validpassword123');
       await user.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(/invalid email address/i)
+          ).toBeInTheDocument();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it('should show error for short password', async () => {
@@ -298,9 +303,12 @@ describe('SignupPage', () => {
       });
 
       // Wait for redirect (component uses setTimeout)
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/');
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(mockPush).toHaveBeenCalledWith('/');
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should show loading state during submission', async () => {
