@@ -49,6 +49,16 @@ const mockUserProfile: Profile = {
   updated_at: new Date().toISOString(),
 };
 
+// Mock Session helper for proper TypeScript typing
+const mockSession = {
+  access_token: 'mock-access-token',
+  refresh_token: 'mock-refresh-token',
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  token_type: 'bearer' as const,
+  user: mockUser,
+};
+
 // Wrapper component for AuthProvider
 const createWrapper = () => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -97,6 +107,7 @@ describe('AuthProvider and useAuth', () => {
     it('should initialize with loading state when no session', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
 
       const { result } = renderHook(() => useAuth(), {
@@ -119,7 +130,8 @@ describe('AuthProvider and useAuth', () => {
 
     it('should initialize with session and fetch profile', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
 
       const mockFrom = jest.fn(() => ({
@@ -132,7 +144,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -150,7 +162,8 @@ describe('AuthProvider and useAuth', () => {
 
     it('should handle profile fetch error gracefully', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
 
       const mockFrom = jest.fn(() => ({
@@ -163,7 +176,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -188,6 +201,7 @@ describe('AuthProvider and useAuth', () => {
     it('should subscribe to auth state changes', () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
 
       renderHook(() => useAuth(), {
@@ -200,6 +214,7 @@ describe('AuthProvider and useAuth', () => {
     it('should unsubscribe on unmount', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
 
       const { unmount } = renderHook(() => useAuth(), {
@@ -220,9 +235,10 @@ describe('AuthProvider and useAuth', () => {
     it('should sign in successfully', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
       mockedSupabase.auth.signInWithPassword.mockResolvedValue({
-        data: { user: mockUser, session: {} },
+        data: { user: mockUser, session: mockSession },
         error: null,
       });
 
@@ -247,10 +263,15 @@ describe('AuthProvider and useAuth', () => {
     it('should throw error on sign in failure', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
       mockedSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { user: null, session: null },
-        error: { message: 'Invalid credentials' },
+        error: {
+          message: 'Invalid credentials',
+          name: 'AuthApiError',
+          status: 400,
+        } as any,
       });
 
       const { result } = renderHook(() => useAuth(), {
@@ -263,7 +284,11 @@ describe('AuthProvider and useAuth', () => {
 
       await expect(
         result.current.signIn('wrong@example.com', 'wrongpassword')
-      ).rejects.toEqual({ message: 'Invalid credentials' });
+      ).rejects.toEqual({
+        message: 'Invalid credentials',
+        name: 'AuthApiError',
+        status: 400,
+      });
     });
   });
 
@@ -271,6 +296,7 @@ describe('AuthProvider and useAuth', () => {
     it('should sign up successfully', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
       mockedSupabase.auth.signUp.mockResolvedValue({
         data: { user: mockUser, session: null },
@@ -307,6 +333,7 @@ describe('AuthProvider and useAuth', () => {
     it('should sign up without full name', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
       mockedSupabase.auth.signUp.mockResolvedValue({
         data: { user: mockUser, session: null },
@@ -339,10 +366,15 @@ describe('AuthProvider and useAuth', () => {
     it('should throw error on sign up failure', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
       mockedSupabase.auth.signUp.mockResolvedValue({
         data: { user: null, session: null },
-        error: { message: 'Email already exists' },
+        error: {
+          message: 'Email already exists',
+          name: 'AuthApiError',
+          status: 400,
+        } as any,
       });
 
       const { result } = renderHook(() => useAuth(), {
@@ -355,14 +387,19 @@ describe('AuthProvider and useAuth', () => {
 
       await expect(
         result.current.signUp('existing@example.com', 'password123')
-      ).rejects.toEqual({ message: 'Email already exists' });
+      ).rejects.toEqual({
+        message: 'Email already exists',
+        name: 'AuthApiError',
+        status: 400,
+      });
     });
   });
 
   describe('Sign Out', () => {
     it('should sign out successfully', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
       mockedSupabase.auth.signOut.mockResolvedValue({
         error: null,
@@ -378,7 +415,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -397,10 +434,15 @@ describe('AuthProvider and useAuth', () => {
 
     it('should throw error on sign out failure', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
       mockedSupabase.auth.signOut.mockResolvedValue({
-        error: { message: 'Sign out failed' },
+        error: {
+          message: 'Sign out failed',
+          name: 'AuthApiError',
+          status: 400,
+        } as any,
       });
 
       const mockFrom = jest.fn(() => ({
@@ -413,7 +455,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -425,6 +467,8 @@ describe('AuthProvider and useAuth', () => {
 
       await expect(result.current.signOut()).rejects.toEqual({
         message: 'Sign out failed',
+        name: 'AuthApiError',
+        status: 400,
       });
     });
   });
@@ -432,7 +476,8 @@ describe('AuthProvider and useAuth', () => {
   describe('Role Checking', () => {
     it('should correctly identify admin users', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
 
       const mockFrom = jest.fn(() => ({
@@ -445,7 +490,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -461,7 +506,8 @@ describe('AuthProvider and useAuth', () => {
 
     it('should correctly identify agency owner users', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
 
       const mockFrom = jest.fn(() => ({
@@ -474,7 +520,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -490,7 +536,8 @@ describe('AuthProvider and useAuth', () => {
 
     it('should correctly identify regular users', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
 
       const mockFrom = jest.fn(() => ({
@@ -503,7 +550,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -520,6 +567,7 @@ describe('AuthProvider and useAuth', () => {
     it('should return false for role checks when profile is null', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
 
       const { result } = renderHook(() => useAuth(), {
@@ -539,6 +587,7 @@ describe('AuthProvider and useAuth', () => {
     it('should update state when user signs in via auth state change', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
 
       let authStateCallback: (event: string, session: any) => void = () => {};
@@ -559,7 +608,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -586,7 +635,8 @@ describe('AuthProvider and useAuth', () => {
 
     it('should clear state when user signs out via auth state change', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
-        data: { session: { user: mockUser } },
+        data: { session: mockSession },
+        error: null,
       });
 
       let authStateCallback: (event: string, session: any) => void = () => {};
@@ -607,7 +657,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom;
+      mockedSupabase.from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -634,6 +684,7 @@ describe('AuthProvider and useAuth', () => {
     it('should provide all required context values', async () => {
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
+        error: null,
       });
 
       const { result } = renderHook(() => useAuth(), {
