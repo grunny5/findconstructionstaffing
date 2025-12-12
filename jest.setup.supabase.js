@@ -55,6 +55,31 @@ jest.mock('@/lib/supabase', () => {
   // Ensure from method exists on root object
   mockSupabase.from = jest.fn(() => createMockChain());
 
+  // Add auth mock for authentication tests
+  mockSupabase.auth = {
+    getSession: jest.fn(() =>
+      Promise.resolve({ data: { session: null }, error: null })
+    ),
+    signInWithPassword: jest.fn(() =>
+      Promise.resolve({ data: { user: null, session: null }, error: null })
+    ),
+    signUp: jest.fn(() =>
+      Promise.resolve({ data: { user: null, session: null }, error: null })
+    ),
+    signOut: jest.fn(() => Promise.resolve({ error: null })),
+    onAuthStateChange: jest.fn((callback) => {
+      // Immediately call callback with initial state (no session)
+      callback('INITIAL_SESSION', null);
+      return {
+        data: {
+          subscription: {
+            unsubscribe: jest.fn(),
+          },
+        },
+      };
+    }),
+  };
+
   return {
     supabase: mockSupabase,
     createSlug: jest.fn((name) => name.toLowerCase().replace(/\s+/g, '-')),
