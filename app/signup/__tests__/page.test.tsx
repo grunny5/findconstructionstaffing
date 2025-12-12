@@ -2,7 +2,8 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import SignupPage from '../page';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter } from 'next/navigation';
@@ -31,7 +32,6 @@ describe('SignupPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
 
     (useAuth as jest.Mock).mockReturnValue({
       signUp: mockSignUp,
@@ -40,10 +40,6 @@ describe('SignupPage', () => {
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
     });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe('Rendering', () => {
@@ -103,6 +99,7 @@ describe('SignupPage', () => {
 
   describe('Form Validation', () => {
     it('should show error for short name', async () => {
+      const user = userEvent.setup();
       render(<SignupPage />);
 
       const nameInput = screen.getByPlaceholderText(/full name/i);
@@ -110,8 +107,8 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'A' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'A');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(
@@ -121,6 +118,7 @@ describe('SignupPage', () => {
     });
 
     it('should show error for invalid email', async () => {
+      const user = userEvent.setup();
       render(<SignupPage />);
 
       const emailInput = screen.getByPlaceholderText(/email address/i);
@@ -128,8 +126,8 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      fireEvent.click(submitButton);
+      await user.type(emailInput, 'invalid-email');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
@@ -137,6 +135,7 @@ describe('SignupPage', () => {
     });
 
     it('should show error for short password', async () => {
+      const user = userEvent.setup();
       render(<SignupPage />);
 
       const emailInput = screen.getByPlaceholderText(/email address/i);
@@ -145,9 +144,9 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: '12345' } });
-      fireEvent.click(submitButton);
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], '12345');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(
@@ -157,6 +156,7 @@ describe('SignupPage', () => {
     });
 
     it('should show error when passwords do not match', async () => {
+      const user = userEvent.setup();
       render(<SignupPage />);
 
       const nameInput = screen.getByPlaceholderText(/full name/i);
@@ -166,11 +166,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password456' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password456');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/passwords don't match/i)).toBeInTheDocument();
@@ -178,6 +178,7 @@ describe('SignupPage', () => {
     });
 
     it('should not show errors for valid input', async () => {
+      const user = userEvent.setup();
       mockSignUp.mockResolvedValue(undefined);
       render(<SignupPage />);
 
@@ -188,11 +189,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(
@@ -210,6 +211,7 @@ describe('SignupPage', () => {
 
   describe('Form Submission', () => {
     it('should call signUp with correct data on valid submission', async () => {
+      const user = userEvent.setup();
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
@@ -221,11 +223,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockSignUp).toHaveBeenCalledWith(
@@ -237,6 +239,7 @@ describe('SignupPage', () => {
     });
 
     it('should show success message after signup', async () => {
+      const user = userEvent.setup();
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
@@ -248,11 +251,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(
@@ -265,6 +268,7 @@ describe('SignupPage', () => {
     });
 
     it('should redirect to home after successful signup', async () => {
+      const user = userEvent.setup();
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
@@ -276,11 +280,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(
@@ -288,15 +292,14 @@ describe('SignupPage', () => {
         ).toBeInTheDocument();
       });
 
-      // Fast-forward time to trigger redirect
-      jest.advanceTimersByTime(2000);
-
+      // Wait for redirect (component uses setTimeout)
       await waitFor(() => {
         expect(mockPush).toHaveBeenCalledWith('/');
-      });
+      }, { timeout: 3000 });
     });
 
     it('should show loading state during submission', async () => {
+      const user = userEvent.setup();
       mockSignUp.mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 100))
       );
@@ -310,11 +313,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       // Should show loading text
       expect(screen.getByText(/creating account.../i)).toBeInTheDocument();
@@ -325,7 +328,6 @@ describe('SignupPage', () => {
       });
       expect(loadingButton).toBeDisabled();
 
-      jest.useRealTimers();
       await waitFor(
         () => {
           expect(
@@ -337,6 +339,7 @@ describe('SignupPage', () => {
     });
 
     it('should handle signup error', async () => {
+      const user = userEvent.setup();
       const errorMessage = 'Email already exists';
       mockSignUp.mockRejectedValue({ message: errorMessage });
 
@@ -349,13 +352,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, {
-        target: { value: 'existing@example.com' },
-      });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'existing@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -371,6 +372,7 @@ describe('SignupPage', () => {
     });
 
     it('should show generic error message when error has no message', async () => {
+      const user = userEvent.setup();
       mockSignUp.mockRejectedValue({});
 
       render(<SignupPage />);
@@ -382,11 +384,11 @@ describe('SignupPage', () => {
         name: /create account/i,
       });
 
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(
@@ -396,6 +398,7 @@ describe('SignupPage', () => {
     });
 
     it('should clear error message on new submission', async () => {
+      const user = userEvent.setup();
       const errorMessage = 'Email already exists';
       mockSignUp
         .mockRejectedValueOnce({ message: errorMessage })
@@ -411,21 +414,20 @@ describe('SignupPage', () => {
       });
 
       // First submission - error
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, {
-        target: { value: 'existing@example.com' },
-      });
-      fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
-      fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'existing@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
 
       // Second submission - success
-      fireEvent.change(emailInput, { target: { value: 'new@example.com' } });
-      fireEvent.click(submitButton);
+      await user.clear(emailInput);
+      await user.type(emailInput, 'new@example.com');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.queryByText(errorMessage)).not.toBeInTheDocument();

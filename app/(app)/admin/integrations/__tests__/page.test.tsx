@@ -13,11 +13,21 @@ jest.mock('next/navigation', () => ({
 }));
 
 describe('AdminIntegrationsPageOptimized', () => {
+  const mockFrom = jest.fn(() => ({
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({
+      data: { role: 'admin' },
+      error: null,
+    }),
+  }));
+
   const mockSupabase = {
     auth: {
       getUser: jest.fn(),
     },
     rpc: jest.fn(),
+    from: mockFrom,
   };
 
   beforeEach(() => {

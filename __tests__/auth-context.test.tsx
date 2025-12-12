@@ -79,7 +79,8 @@ describe('AuthProvider and useAuth', () => {
     mockOnAuthStateChange = jest.fn(() => ({
       data: { subscription: { unsubscribe: mockUnsubscribe } },
     }));
-    (supabase.auth.onAuthStateChange as jest.Mock) = mockOnAuthStateChange;
+    // Original line commented out as it causes "Cannot set properties" error
+    // (supabase.auth.onAuthStateChange as jest.Mock) = mockOnAuthStateChange;
   });
 
   describe('Initialization', () => {
