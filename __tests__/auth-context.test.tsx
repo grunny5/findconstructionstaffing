@@ -4,26 +4,30 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { AuthProvider, useAuth } from '@/lib/auth/auth-context';
+import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/types/database';
 
-// Mock the supabase client
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: jest.fn(),
-      signInWithPassword: jest.fn(),
-      signUp: jest.fn(),
-      signOut: jest.fn(),
-      onAuthStateChange: jest.fn(),
-    },
-    from: jest.fn(),
-  },
-  createClient: jest.fn(),
-}));
+// Mock the supabase module
+jest.mock('@/lib/supabase', () => {
+  const mockAuth = {
+    getSession: jest.fn(),
+    signInWithPassword: jest.fn(),
+    signUp: jest.fn(),
+    signOut: jest.fn(),
+    onAuthStateChange: jest.fn(),
+  };
 
-// Import supabase using jest.mocked for proper typing
-const supabase = jest.requireMock<typeof import('@/lib/supabase')>('@/lib/supabase').supabase;
+  const mockSupabase = {
+    auth: mockAuth,
+    from: jest.fn(),
+  };
+
+  return {
+    supabase: mockSupabase,
+    createClient: jest.fn(() => mockSupabase),
+  };
+});
 
 // Mock user data
 const mockUser: User = {
@@ -77,27 +81,24 @@ describe('AuthProvider and useAuth', () => {
   let mockUnsubscribe: jest.Mock;
 
   beforeEach(() => {
-    // Get the mocked module
-    const mockedSupabase = require('@/lib/supabase').supabase;
-
-    // Reset individual mock functions
-    if (mockedSupabase?.auth?.getSession) {
-      (mockedSupabase.auth.getSession as jest.Mock).mockReset();
+    // Clear call history for each mock function (don't use jest.clearAllMocks!)
+    if (supabase?.auth?.getSession) {
+      (supabase.auth.getSession as jest.Mock).mockClear();
     }
-    if (mockedSupabase?.auth?.signInWithPassword) {
-      (mockedSupabase.auth.signInWithPassword as jest.Mock).mockReset();
+    if (supabase?.auth?.signInWithPassword) {
+      (supabase.auth.signInWithPassword as jest.Mock).mockClear();
     }
-    if (mockedSupabase?.auth?.signUp) {
-      (mockedSupabase.auth.signUp as jest.Mock).mockReset();
+    if (supabase?.auth?.signUp) {
+      (supabase.auth.signUp as jest.Mock).mockClear();
     }
-    if (mockedSupabase?.auth?.signOut) {
-      (mockedSupabase.auth.signOut as jest.Mock).mockReset();
+    if (supabase?.auth?.signOut) {
+      (supabase.auth.signOut as jest.Mock).mockClear();
     }
-    if (mockedSupabase?.auth?.onAuthStateChange) {
-      (mockedSupabase.auth.onAuthStateChange as jest.Mock).mockReset();
+    if (supabase?.auth?.onAuthStateChange) {
+      (supabase.auth.onAuthStateChange as jest.Mock).mockClear();
     }
-    if (mockedSupabase?.from) {
-      (mockedSupabase.from as jest.Mock).mockReset();
+    if (supabase?.from) {
+      (supabase.from as jest.Mock).mockClear();
     }
 
     mockUnsubscribe = jest.fn();
@@ -105,9 +106,9 @@ describe('AuthProvider and useAuth', () => {
       data: { subscription: { unsubscribe: mockUnsubscribe } },
     }));
 
-    // Set the onAuthStateChange mock
-    if (mockedSupabase?.auth?.onAuthStateChange) {
-      (mockedSupabase.auth.onAuthStateChange as jest.Mock).mockImplementation(mockOnAuthStateChange);
+    // Set the onAuthStateChange mock implementation
+    if (supabase?.auth?.onAuthStateChange) {
+      (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(mockOnAuthStateChange);
     }
   });
 
