@@ -28,6 +28,7 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 ### Current Status
 
 **✅ Working:**
+
 - Email/password signup and login
 - Session persistence (cookie-based)
 - Automatic profile creation
@@ -35,8 +36,12 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 - Server-side route protection
 - Comprehensive test coverage
 
+**🚧 Partially Implemented:**
+
+- ⚠️ **Email verification** - Config enabled (Task 1.1.1 ✅), template & routes pending
+
 **❌ Not Implemented:**
-- ⚠️ **Email verification** (CRITICAL)
+
 - Password reset flow
 - Role assignment UI
 - Account settings/profile management
@@ -84,14 +89,14 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 
 ### Key Components
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| `AuthProvider` | `lib/auth/auth-context.tsx` | Client-side auth state management |
-| `useAuth()` | `lib/auth/auth-context.tsx` | React hook for auth access |
-| Supabase Server Client | `lib/supabase/server.ts` | Server-side auth for SSR |
-| Signup Page | `app/signup/page.tsx` | User registration form |
-| Login Page | `app/login/page.tsx` | User login form |
-| Profile Migration | `supabase/migrations/20251211_001_create_profiles_and_roles.sql` | Database schema |
+| Component              | Location                                                         | Purpose                           |
+| ---------------------- | ---------------------------------------------------------------- | --------------------------------- |
+| `AuthProvider`         | `lib/auth/auth-context.tsx`                                      | Client-side auth state management |
+| `useAuth()`            | `lib/auth/auth-context.tsx`                                      | React hook for auth access        |
+| Supabase Server Client | `lib/supabase/server.ts`                                         | Server-side auth for SSR          |
+| Signup Page            | `app/signup/page.tsx`                                            | User registration form            |
+| Login Page             | `app/login/page.tsx`                                             | User login form                   |
+| Profile Migration      | `supabase/migrations/20251211_001_create_profiles_and_roles.sql` | Database schema                   |
 
 ---
 
@@ -124,7 +129,7 @@ User fills form → Validation (Zod) → signUp(email, password, fullName)
                               └────────────────────────┴─→ Display error
 ```
 
-**Current Issue:** Users can sign up with unverified email addresses because `enable_confirmations = false` in config.
+**Status:** Email confirmations now enabled (`enable_confirmations = true`). Email verification callback route and UI updates still needed (Tasks 1.1.2-1.1.5).
 
 ### 2. Login Flow
 
@@ -187,7 +192,7 @@ App Mount → AuthProvider initialization
 ```toml
 [auth.email]
 enable_signup = true                    # ✅ Signup enabled
-enable_confirmations = false            # ⚠️ CRITICAL: Verification disabled
+enable_confirmations = true             # ✅ Email verification enabled (Task 1.1.1 complete)
 double_confirm_changes = true           # ✅ Confirm email changes
 secure_email_change_enabled = true      # ✅ Secure email updates
 ```
@@ -289,6 +294,7 @@ CREATE TRIGGER on_auth_user_created
 ```
 
 **Flow:**
+
 1. User signs up via `supabase.auth.signUp()`
 2. Supabase creates record in `auth.users`
 3. Trigger `on_auth_user_created` fires
@@ -315,20 +321,21 @@ CREATE INDEX idx_profiles_role ON public.profiles(role);
 
 ```typescript
 interface AuthContextType {
-  user: User | null;                    // Supabase auth.users record
-  profile: Profile | null;              // Custom profiles record
-  loading: boolean;                     // Initial load state
+  user: User | null; // Supabase auth.users record
+  profile: Profile | null; // Custom profiles record
+  loading: boolean; // Initial load state
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName?: string) => Promise<void>;
   signOut: () => Promise<void>;
-  isAdmin: boolean;                     // Computed: profile.role === 'admin'
-  isAgencyOwner: boolean;               // Computed: profile.role === 'agency_owner'
+  isAdmin: boolean; // Computed: profile.role === 'admin'
+  isAgencyOwner: boolean; // Computed: profile.role === 'agency_owner'
 }
 ```
 
 #### Authentication Methods
 
 **Sign Up:**
+
 ```typescript
 const signUp = async (email: string, password: string, fullName?: string) => {
   const { error } = await supabase.auth.signUp({
@@ -336,7 +343,7 @@ const signUp = async (email: string, password: string, fullName?: string) => {
     password,
     options: {
       data: {
-        full_name: fullName,  // Stored in raw_user_meta_data
+        full_name: fullName, // Stored in raw_user_meta_data
       },
     },
   });
@@ -345,6 +352,7 @@ const signUp = async (email: string, password: string, fullName?: string) => {
 ```
 
 **Sign In:**
+
 ```typescript
 const signIn = async (email: string, password: string) => {
   const { error } = await supabase.auth.signInWithPassword({
@@ -356,6 +364,7 @@ const signIn = async (email: string, password: string) => {
 ```
 
 **Sign Out:**
+
 ```typescript
 const signOut = async () => {
   const { error } = await supabase.auth.signOut();
@@ -378,17 +387,17 @@ useEffect(() => {
   });
 
   // Listen for auth state changes
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+    if (session?.user) {
+      fetchProfile(session.user.id);
+    } else {
+      setProfile(null);
+      setLoading(false);
     }
-  );
+  });
 
   return () => subscription.unsubscribe();
 }, []);
@@ -431,13 +440,17 @@ export const createClient = () => {
 ```
 
 **Usage in Protected Routes:**
+
 ```typescript
 // Example: app/(app)/admin/integrations/page.tsx
 export default async function AdminIntegrationsPage() {
   const supabase = createClient();
 
   // Check if user is authenticated
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
   if (!user || authError) {
     redirect('/login');
@@ -465,6 +478,7 @@ export default async function AdminIntegrationsPage() {
 **File:** `app/signup/page.tsx`
 
 **Features:**
+
 - React Hook Form with Zod validation
 - Fields: Full Name, Email, Password, Confirm Password
 - Client-side validation
@@ -474,6 +488,7 @@ export default async function AdminIntegrationsPage() {
 - Link to login page
 
 **Validation Schema:**
+
 ```typescript
 const signupSchema = z
   .object({
@@ -493,6 +508,7 @@ const signupSchema = z
 **File:** `app/login/page.tsx`
 
 **Features:**
+
 - React Hook Form with Zod validation
 - Fields: Email, Password
 - Support for redirect URL (`?redirectTo=`)
@@ -501,6 +517,7 @@ const signupSchema = z
 - Link to signup page
 
 **Redirect Logic:**
+
 ```typescript
 const onSubmit = async (data: LoginFormData) => {
   try {
@@ -524,6 +541,7 @@ const onSubmit = async (data: LoginFormData) => {
 **File:** `components/Header.tsx`
 
 **Auth Integration:**
+
 ```typescript
 const { user, profile, signOut } = useAuth();
 
@@ -565,24 +583,27 @@ const { user, profile, signOut } = useAuth();
 
 ### 🔴 Critical Issues
 
-#### 1. Email Verification Disabled
+#### 1. Email Verification Flow Incomplete
 
-**Status:** ⚠️ CRITICAL SECURITY ISSUE
-**Impact:** Users can register with any email address without verification
+**Status:** ⚠️ IN PROGRESS (Task 1.1.1 Complete)
+**Impact:** Email verification enabled but supporting infrastructure still needed
 
 **Current State:**
-- `enable_confirmations = false` in `supabase/config.toml` (line 161)
-- No email confirmation flow
-- Users login immediately after signup
-- No verification callback route
+
+- ✅ `enable_confirmations = true` in `supabase/config.toml` (Task 1.1.1)
+- ❌ No email confirmation template (Task 1.1.2 pending)
+- ❌ No verification callback route (Task 1.1.3 pending)
+- ❌ Signup page doesn't show verification message (Task 1.1.4 pending)
 
 **Risk:**
+
 - Spam accounts
 - Invalid email addresses in database
 - No email ownership verification
 - Potential for abuse
 
 **Required Fix:**
+
 1. Enable email confirmations in config
 2. Set up email templates in Supabase Dashboard
 3. Create email confirmation callback route
@@ -591,6 +612,7 @@ const { user, profile, signOut } = useAuth();
 6. Test with Inbucket locally
 
 **Files to Modify:**
+
 - `supabase/config.toml` - Enable confirmations
 - `app/signup/page.tsx` - Update success message
 - `app/auth/callback/route.ts` - Create callback handler (NEW FILE)
@@ -601,6 +623,7 @@ const { user, profile, signOut } = useAuth();
 **Impact:** Users cannot recover forgotten passwords
 
 **Missing:**
+
 - "Forgot password" link on login page
 - Password reset request page
 - Email template for reset links
@@ -608,6 +631,7 @@ const { user, profile, signOut } = useAuth();
 - New password submission form
 
 **Required Implementation:**
+
 1. Create `/app/forgot-password/page.tsx`
 2. Create `/app/reset-password/page.tsx`
 3. Add Supabase email template
@@ -623,11 +647,13 @@ const { user, profile, signOut } = useAuth();
 **Impact:** Cannot promote users to agency_owner or admin via UI
 
 **Current Limitation:**
+
 - All new users get role = 'user'
 - Role changes require direct database access
 - No admin panel for user management
 
 **Workaround:**
+
 ```sql
 -- Manual role update in database
 UPDATE public.profiles
@@ -636,6 +662,7 @@ WHERE email = 'user@example.com';
 ```
 
 **Required Features:**
+
 1. Admin user management page
 2. Role selection dropdown
 3. RLS policy for admin role updates
@@ -647,12 +674,14 @@ WHERE email = 'user@example.com';
 **Impact:** Poor UX, no self-service options
 
 **Missing:**
+
 - Profile view/edit page
 - Email change form
 - Password change form
 - Account deletion option
 
 **Suggested Route:**
+
 - `/app/settings/page.tsx` - Account settings
 - `/app/settings/profile/page.tsx` - Edit profile
 - `/app/settings/security/page.tsx` - Change password
@@ -664,19 +693,25 @@ WHERE email = 'user@example.com';
 **Impact:** Code duplication, easy to forget auth check
 
 **Current Pattern:**
+
 ```typescript
 // Each protected route must do this:
 const supabase = createClient();
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (!user) redirect('/login');
 ```
 
 **Better Approach:**
 Create Next.js middleware at `middleware.ts`:
+
 ```typescript
 export async function middleware(request: NextRequest) {
   const supabase = createMiddlewareClient({ req: request });
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   // Protected routes
   if (request.nextUrl.pathname.startsWith('/admin') && !session) {
@@ -693,12 +728,14 @@ export async function middleware(request: NextRequest) {
 
 **Status:** Not implemented
 **Providers to consider:**
+
 - Google
 - GitHub
 - Microsoft
 - LinkedIn (relevant for construction industry)
 
 **Implementation:**
+
 - Enable providers in Supabase dashboard
 - Add OAuth buttons to login/signup pages
 - Handle OAuth callbacks
@@ -743,6 +780,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ### Local Development Setup
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
@@ -753,12 +791,14 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
    - Copy project URL and anon key
 
 3. **Configure environment:**
+
    ```bash
    cp .env.example .env.local
    # Edit .env.local with your credentials
    ```
 
 4. **Run database migrations:**
+
    ```bash
    # If using Supabase CLI:
    supabase db push
@@ -768,6 +808,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
    ```
 
 5. **Start development server:**
+
    ```bash
    npm run dev
    ```
@@ -782,6 +823,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 Supabase local development includes Inbucket for email testing:
 
 1. **Start Supabase locally:**
+
    ```bash
    supabase start
    ```
@@ -795,7 +837,7 @@ Supabase local development includes Inbucket for email testing:
    - Sign up with any email
    - Check Inbucket inbox at http://localhost:54324
 
-**Note:** Currently not connected to signup flow since `enable_confirmations = false`.
+**Note:** Email confirmations now enabled (`enable_confirmations = true`). Template and callback route implementation needed (Tasks 1.1.2-1.1.3).
 
 ---
 
@@ -858,6 +900,7 @@ npm test -- --watch
 ### Manual Testing Checklist
 
 #### Signup Flow
+
 - [ ] Navigate to /signup
 - [ ] Fill form with valid data
 - [ ] Submit form
@@ -868,6 +911,7 @@ npm test -- --watch
 - [ ] Verify profile has correct email, full_name, role='user'
 
 #### Login Flow
+
 - [ ] Navigate to /login
 - [ ] Enter credentials
 - [ ] Submit form
@@ -876,6 +920,7 @@ npm test -- --watch
 - [ ] Verify user dropdown shows full name or email
 
 #### Session Persistence
+
 - [ ] Login successfully
 - [ ] Refresh page
 - [ ] Verify still logged in (header shows user dropdown)
@@ -883,6 +928,7 @@ npm test -- --watch
 - [ ] Verify still logged in
 
 #### Sign Out
+
 - [ ] Click user dropdown
 - [ ] Click "Sign Out"
 - [ ] Verify redirect to home
@@ -891,6 +937,7 @@ npm test -- --watch
 - [ ] Verify redirect to /login
 
 #### Error Handling
+
 - [ ] Try signup with existing email
 - [ ] Verify error message displayed
 - [ ] Try login with wrong password
@@ -903,6 +950,7 @@ npm test -- --watch
 ## Roadmap
 
 ### Phase 1: Current State (✅ Complete)
+
 - [x] Basic signup/login with email/password
 - [x] Session management
 - [x] Profile creation
@@ -911,6 +959,7 @@ npm test -- --watch
 - [x] Test coverage
 
 ### Phase 2: Email Verification (🔴 URGENT)
+
 - [ ] Enable email confirmations in config
 - [ ] Set up email templates
 - [ ] Create confirmation callback route
@@ -919,6 +968,7 @@ npm test -- --watch
 - [ ] Production email service configuration
 
 ### Phase 3: Password Management
+
 - [ ] Forgot password page
 - [ ] Reset password page
 - [ ] Email template for reset links
@@ -926,6 +976,7 @@ npm test -- --watch
 - [ ] Test password reset flow
 
 ### Phase 4: Account Management
+
 - [ ] Account settings page
 - [ ] Edit profile form
 - [ ] Change email form (with verification)
@@ -933,6 +984,7 @@ npm test -- --watch
 - [ ] Delete account flow
 
 ### Phase 5: Admin Features
+
 - [ ] Admin dashboard
 - [ ] User management interface
 - [ ] Role assignment UI
@@ -940,6 +992,7 @@ npm test -- --watch
 - [ ] Audit log for role changes
 
 ### Phase 6: Middleware & Security
+
 - [ ] Next.js middleware for route protection
 - [ ] Rate limiting for auth endpoints
 - [ ] CSRF protection
@@ -947,12 +1000,14 @@ npm test -- --watch
 - [ ] Suspicious activity detection
 
 ### Phase 7: OAuth Integration
+
 - [ ] Google OAuth
 - [ ] GitHub OAuth
 - [ ] LinkedIn OAuth (industry-specific)
 - [ ] OAuth profile merging
 
 ### Phase 8: Advanced Features
+
 - [ ] Two-factor authentication (2FA)
 - [ ] Active sessions management
 - [ ] Device/session revocation
