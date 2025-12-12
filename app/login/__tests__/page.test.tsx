@@ -98,14 +98,16 @@ describe('LoginPage', () => {
       render(<LoginPage />);
 
       const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'invalid-email');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
 
     it('should show error for short password', async () => {

@@ -94,7 +94,8 @@ describe('AdminIntegrationsPageOptimized', () => {
       error: null,
     });
 
-    const { container } = render(await AdminIntegrationsPageOptimized());
+    const component = await AdminIntegrationsPageOptimized();
+    const { container } = render(component);
 
     // Verify RPC was called
     expect(mockSupabase.rpc).toHaveBeenCalledWith(
@@ -167,6 +168,16 @@ describe('AdminIntegrationsPageOptimized', () => {
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: nonAdminUser },
       error: null,
+    });
+
+    // Override mockFrom to return non-admin role for this test
+    mockSupabase.from.mockReturnValueOnce({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { role: 'user' },
+        error: null,
+      }),
     });
 
     // Mock RPC to return empty data (won't be used due to redirect)

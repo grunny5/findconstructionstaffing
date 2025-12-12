@@ -4,7 +4,6 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { AuthProvider, useAuth } from '@/lib/auth/auth-context';
-import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/types/database';
 
@@ -20,7 +19,11 @@ jest.mock('@/lib/supabase', () => ({
     },
     from: jest.fn(),
   },
+  createClient: jest.fn(),
 }));
+
+// Import supabase using jest.mocked for proper typing
+const supabase = jest.requireMock<typeof import('@/lib/supabase')>('@/lib/supabase').supabase;
 
 // Mock user data
 const mockUser: User = {
@@ -74,13 +77,38 @@ describe('AuthProvider and useAuth', () => {
   let mockUnsubscribe: jest.Mock;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Get the mocked module
+    const mockedSupabase = require('@/lib/supabase').supabase;
+
+    // Reset individual mock functions
+    if (mockedSupabase?.auth?.getSession) {
+      (mockedSupabase.auth.getSession as jest.Mock).mockReset();
+    }
+    if (mockedSupabase?.auth?.signInWithPassword) {
+      (mockedSupabase.auth.signInWithPassword as jest.Mock).mockReset();
+    }
+    if (mockedSupabase?.auth?.signUp) {
+      (mockedSupabase.auth.signUp as jest.Mock).mockReset();
+    }
+    if (mockedSupabase?.auth?.signOut) {
+      (mockedSupabase.auth.signOut as jest.Mock).mockReset();
+    }
+    if (mockedSupabase?.auth?.onAuthStateChange) {
+      (mockedSupabase.auth.onAuthStateChange as jest.Mock).mockReset();
+    }
+    if (mockedSupabase?.from) {
+      (mockedSupabase.from as jest.Mock).mockReset();
+    }
+
     mockUnsubscribe = jest.fn();
     mockOnAuthStateChange = jest.fn(() => ({
       data: { subscription: { unsubscribe: mockUnsubscribe } },
     }));
-    // Original line commented out as it causes "Cannot set properties" error
-    // (supabase.auth.onAuthStateChange as jest.Mock) = mockOnAuthStateChange;
+
+    // Set the onAuthStateChange mock
+    if (mockedSupabase?.auth?.onAuthStateChange) {
+      (mockedSupabase.auth.onAuthStateChange as jest.Mock).mockImplementation(mockOnAuthStateChange);
+    }
   });
 
   describe('Initialization', () => {

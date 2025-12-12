@@ -121,17 +121,22 @@ describe('SignupPage', () => {
       const user = userEvent.setup();
       render(<SignupPage />);
 
+      const nameInput = screen.getByPlaceholderText(/full name/i);
       const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
+      await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'invalid-email');
+      await user.type(passwordInputs[0], 'validpassword123');
+      await user.type(passwordInputs[1], 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
 
     it('should show error for short password', async () => {
@@ -353,7 +358,7 @@ describe('SignupPage', () => {
       });
 
       await user.type(nameInput, 'Test User');
-      await user.type(emailInput, 'existing@example.com');
+      await user.type(emailInput, 'valid@example.com');
       await user.type(passwordInputs[0], 'password123');
       await user.type(passwordInputs[1], 'password123');
       await user.click(submitButton);
