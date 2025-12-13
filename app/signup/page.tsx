@@ -71,7 +71,7 @@ export default function SignupPage() {
             </div>
             <CardTitle className="text-2xl">Check your email</CardTitle>
             <CardDescription className="text-base">
-              We've sent a verification link to{' '}
+              We&apos;ve sent a verification link to{' '}
               <span className="font-semibold text-foreground">
                 {submittedEmail}
               </span>
@@ -94,7 +94,7 @@ export default function SignupPage() {
 
             <div className="space-y-3 pt-2">
               <p className="text-center text-sm text-muted-foreground">
-                Didn't receive the email?
+                Didn&apos;t receive the email?
               </p>
               <Button asChild variant="outline" className="w-full" size="lg">
                 <Link href="/signup">Resend verification email</Link>
