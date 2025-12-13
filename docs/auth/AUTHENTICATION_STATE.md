@@ -193,28 +193,29 @@ App Mount → AuthProvider initialization
 [auth.email]
 enable_signup = true                    # ✅ Signup enabled
 enable_confirmations = true             # ✅ Email verification enabled (Task 1.1.1 complete)
-double_confirm_changes = true           # ✅ Confirm email changes
-secure_email_change_enabled = true      # ✅ Secure email updates
+double_confirm_changes = true           # ✅ Confirm email changes on both old and new addresses
+secure_password_change = false          # ⚠️ Reauthentication for password change disabled
 ```
 
 #### Password Requirements (Line 127)
 
 ```toml
-min_password_length = 6                 # Minimum 6 characters
+minimum_password_length = 6             # Minimum 6 characters (recommended: 8+)
+password_requirements = ""              # No additional complexity requirements
 ```
 
 #### Session Tokens (Lines 114-119)
 
 ```toml
 jwt_expiry = 3600                       # 1 hour
-enable_refresh_token_rotation = true
-refresh_token_reuse_interval = 10       # 10 seconds
+enable_refresh_token_rotation = true    # ✅ Rotate refresh tokens for security
+refresh_token_reuse_interval = 10       # 10 seconds reuse window
 ```
 
-#### Rate Limiting (Line 134)
+#### Rate Limiting (Line 165)
 
 ```toml
-max_frequency = "2h"                    # 2 emails per hour per user
+max_frequency = "1s"                    # Minimum time between auth emails (currently 1 second)
 ```
 
 #### Testing Infrastructure (Lines 80-88)
@@ -227,7 +228,7 @@ smtp_port = 54325
 pop3_port = 54326
 ```
 
-**Note:** Inbucket is available for local email testing but currently unused since email confirmations are disabled.
+**Note:** Inbucket is available for local email testing. With `enable_confirmations = true`, verification emails will be captured by Inbucket during local development for testing.
 
 ---
 

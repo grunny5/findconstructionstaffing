@@ -386,23 +386,14 @@ $$;
 ```toml
 [auth.email]
 enable_signup = true
-enable_confirmations = true              # CHANGE: Enable email verification
+enable_confirmations = true              # CHANGE: Enable email verification (Task 1.1.1 ✅ COMPLETE)
 double_confirm_changes = true
-secure_email_change_enabled = true
-enable_sign_ups = true
-
-[auth.email.template.confirmation]
-subject = "Verify your FindConstructionStaffing account"
-content_path = "./supabase/templates/confirmation.html"
-
-[auth.email.template.recovery]
-subject = "Reset your FindConstructionStaffing password"
-content_path = "./supabase/templates/recovery.html"
-
-[auth.email.template.email_change]
-subject = "Confirm your email change"
-content_path = "./supabase/templates/email_change.html"
+secure_password_change = false
+minimum_password_length = 6
+max_frequency = "1s"
 ```
+
+**Note:** Email templates are configured separately via Supabase Dashboard or template files (Tasks 1.1.2, 2.1.2).
 
 **Email Templates:**
 
