@@ -12,20 +12,27 @@ interface RateLimitEntry {
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_REQUESTS_PER_WINDOW = 2;
 
-// In-memory rate limit store (for development)
-// In production, use Redis or database
+// In-memory rate limit store (for development/testing only)
+// WARNING: This will lose state on Vercel cold starts and doesn't scale across instances
+// Production migration: Use Upstash Redis, Vercel KV, or similar external store
+// See: https://upstash.com/docs/redis/sdks/ratelimit-ts/overview
 const rateLimitStore = new Map<string, RateLimitEntry>();
+
+function normalizeEmailKey(email: string): string {
+  return email.trim().toLowerCase();
+}
 
 export function checkRateLimit(email: string): {
   allowed: boolean;
   retryAfter?: number;
 } {
   const now = Date.now();
-  const entry = rateLimitStore.get(email);
+  const key = normalizeEmailKey(email);
+  const entry = rateLimitStore.get(key);
 
   // No previous requests or window expired
   if (!entry || now > entry.windowEndsAt) {
-    rateLimitStore.set(email, {
+    rateLimitStore.set(key, {
       count: 1,
       firstRequestAt: now,
       windowEndsAt: now + RATE_LIMIT_WINDOW_MS,
@@ -36,7 +43,7 @@ export function checkRateLimit(email: string): {
   // Within window, check count
   if (entry.count < MAX_REQUESTS_PER_WINDOW) {
     entry.count += 1;
-    rateLimitStore.set(email, entry);
+    rateLimitStore.set(key, entry);
     return { allowed: true };
   }
 
