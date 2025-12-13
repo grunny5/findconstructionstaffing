@@ -356,4 +356,165 @@ describe('LoginPage', () => {
       expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
     });
   });
+
+  describe('Email Verification', () => {
+    it('should show email verification error when user is not verified', async () => {
+      const user = userEvent.setup();
+      const verificationError = new Error(
+        'Please verify your email address before signing in.'
+      );
+      (verificationError as any).isEmailNotVerified = true;
+      mockSignIn.mockRejectedValue(verificationError);
+
+      render(<LoginPage />);
+
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+      await user.type(emailInput, 'unverified@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please verify your email address/i)
+        ).toBeInTheDocument();
+      });
+
+      // Should not redirect
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it('should show "Resend verification email" button for unverified users', async () => {
+      const user = userEvent.setup();
+      const verificationError = new Error(
+        'Please verify your email address before signing in.'
+      );
+      (verificationError as any).isEmailNotVerified = true;
+      mockSignIn.mockRejectedValue(verificationError);
+
+      render(<LoginPage />);
+
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+      await user.type(emailInput, 'unverified@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        const resendButton = screen.getByRole('link', {
+          name: /resend verification email/i,
+        });
+        expect(resendButton).toBeInTheDocument();
+        expect(resendButton).toHaveAttribute('href', '/signup');
+      });
+    });
+
+    it('should NOT show "Resend verification email" button for other errors', async () => {
+      const user = userEvent.setup();
+      mockSignIn.mockRejectedValue({ message: 'Invalid credentials' });
+
+      render(<LoginPage />);
+
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+      await user.type(emailInput, 'wrong@example.com');
+      await user.type(passwordInput, 'wrongpassword');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+      });
+
+      // Should NOT show resend button
+      expect(
+        screen.queryByRole('link', { name: /resend verification email/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('should clear email verification error on new submission', async () => {
+      const user = userEvent.setup();
+      const verificationError = new Error(
+        'Please verify your email address before signing in.'
+      );
+      (verificationError as any).isEmailNotVerified = true;
+      mockSignIn
+        .mockRejectedValueOnce(verificationError)
+        .mockResolvedValueOnce(undefined);
+      mockGet.mockReturnValue(null);
+
+      render(<LoginPage />);
+
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+      // First submission - unverified error
+      await user.type(emailInput, 'unverified@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please verify your email address/i)
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('link', { name: /resend verification email/i })
+        ).toBeInTheDocument();
+      });
+
+      // Second submission - success (user verified their email)
+      await user.clear(emailInput);
+      await user.clear(passwordInput);
+      await user.type(emailInput, 'verified@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(/please verify your email address/i)
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('link', { name: /resend verification email/i })
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should allow verified users to login normally', async () => {
+      const user = userEvent.setup();
+      mockSignIn.mockResolvedValue(undefined);
+      mockGet.mockReturnValue(null);
+
+      render(<LoginPage />);
+
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+      await user.type(emailInput, 'verified@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockSignIn).toHaveBeenCalledWith(
+          'verified@example.com',
+          'password123'
+        );
+        expect(mockPush).toHaveBeenCalledWith('/');
+      });
+
+      // Should NOT show any verification errors
+      expect(
+        screen.queryByText(/please verify your email address/i)
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: /resend verification email/i })
+      ).not.toBeInTheDocument();
+    });
+  });
 });

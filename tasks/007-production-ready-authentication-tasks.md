@@ -158,21 +158,21 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use existing error display pattern
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] When unverified user attempts login, Supabase returns error
-  - [ ] Catch error in `signIn()`: check for email verification error code
-  - [ ] Display error: "Please verify your email address"
-  - [ ] Show "Resend verification email" button below error
-  - [ ] Button triggers resend flow (links to Task 1.2.1)
-  - [ ] Verified users login normally (no change to happy path)
-  - [ ] Error state clears when user corrects issue
+  - [x] When unverified user attempts login, Supabase returns error
+  - [x] Catch error in `signIn()`: check for email verification error code
+  - [x] Display error: "Please verify your email address"
+  - [x] Show "Resend verification email" button below error
+  - [x] Button triggers resend flow (links to Task 1.2.1)
+  - [x] Verified users login normally (no change to happy path)
+  - [x] Error state clears when user corrects issue
 - **Definition of Done:**
-  - [ ] Login verification check implemented
-  - [ ] Error message clear and actionable
-  - [ ] Unit test: login with unverified user shows error
-  - [ ] Integration test: verified user logs in successfully
-  - [ ] Existing login tests still pass
-  - [ ] PR includes test coverage report
-  - [ ] **Final Check:** User experience is clear and helpful
+  - [x] Login verification check implemented
+  - [x] Error message clear and actionable
+  - [x] Unit test: login with unverified user shows error
+  - [x] Integration test: verified user logs in successfully
+  - [x] Existing login tests still pass
+  - [x] PR includes test coverage report
+  - [x] **Final Check:** User experience is clear and helpful
 
 **Estimated Effort:** 2-3 hours
 
