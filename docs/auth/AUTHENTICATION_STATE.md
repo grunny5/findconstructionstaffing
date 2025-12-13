@@ -586,13 +586,13 @@ const { user, profile, signOut } = useAuth();
 
 #### 1. Email Verification Flow Incomplete
 
-**Status:** ⚠️ IN PROGRESS (Task 1.1.1 Complete)
-**Impact:** Email verification enabled but supporting infrastructure still needed
+**Status:** ⚠️ IN PROGRESS (Tasks 1.1.1-1.1.2 Complete)
+**Impact:** Email verification enabled with template, callback route and UI updates still needed
 
 **Current State:**
 
 - ✅ `enable_confirmations = true` in `supabase/config.toml` (Task 1.1.1)
-- ❌ No email confirmation template (Task 1.1.2 pending)
+- ✅ Email confirmation template created (`supabase/templates/confirmation.html`) (Task 1.1.2)
 - ❌ No verification callback route (Task 1.1.3 pending)
 - ❌ Signup page doesn't show verification message (Task 1.1.4 pending)
 
@@ -838,7 +838,7 @@ Supabase local development includes Inbucket for email testing:
    - Sign up with any email
    - Check Inbucket inbox at [http://localhost:54324](http://localhost:54324)
 
-**Note:** Email confirmations now enabled (`enable_confirmations = true`). Template and callback route implementation needed (Tasks 1.1.2-1.1.3).
+**Note:** Email confirmations enabled with professional HTML template. Verification emails are now captured by Inbucket during local development. Callback route implementation still needed (Task 1.1.3).
 
 ---
 
