@@ -94,21 +94,21 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - TypeScript strict mode compliance
   - Server-side rendering for callback
 - **Acceptance Criteria (for this task):**
-  - [ ] GET `/auth/verify-email` route created
-  - [ ] Route extracts token from URL query params
-  - [ ] Route exchanges token with Supabase: `supabase.auth.exchangeCodeForSession(code)`
-  - [ ] On success: redirect to `/auth/verify-email?success=true`
-  - [ ] On error: redirect to `/auth/verify-email/error?message=...`
-  - [ ] Success page shows celebration message and "Sign In" button
-  - [ ] Error page shows friendly message with "Resend Email" link
-  - [ ] TypeScript types defined for query params
+  - [x] GET `/auth/verify-email` route created
+  - [x] Route extracts token from URL query params
+  - [x] Route exchanges token with Supabase: `supabase.auth.exchangeCodeForSession(code)`
+  - [x] On success: redirect to `/auth/verify-email?success=true`
+  - [x] On error: redirect to `/auth/verify-email/error?message=...`
+  - [x] Success page shows celebration message and "Sign In" button
+  - [x] Error page shows friendly message with "Resend Email" link
+  - [x] TypeScript types defined for query params
 - **Definition of Done:**
-  - [ ] Route implementation complete
-  - [ ] Unit tests for success and error paths
+  - [x] Route implementation complete
+  - [x] Unit tests for success and error paths
   - [ ] Integration test: signup → click link → verify → login
-  - [ ] Error handling covers: expired token, invalid token, already verified
+  - [x] Error handling covers: expired token, invalid token, already verified
   - [ ] PR approved by senior developer
-  - [ ] **Final Check:** Adheres to Next.js App Router patterns
+  - [x] **Final Check:** Adheres to Next.js App Router patterns
 
 **Estimated Effort:** 3-4 hours
 
