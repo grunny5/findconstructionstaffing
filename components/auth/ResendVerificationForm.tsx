@@ -59,8 +59,6 @@ export function ResendVerificationForm({
         body: JSON.stringify({ email: data.email }),
       });
 
-      const result = await response.json();
-
       if (response.status === 429) {
         setError('Please wait before requesting another email.');
       } else if (!response.ok) {
@@ -113,7 +111,11 @@ export function ResendVerificationForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+          noValidate
+        >
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
             <Input
@@ -148,7 +150,9 @@ export function ResendVerificationForm({
             type="submit"
             className="w-full"
             disabled={loading}
-            aria-label={loading ? 'Sending verification email' : 'Send verification email'}
+            aria-label={
+              loading ? 'Sending verification email' : 'Send verification email'
+            }
           >
             {loading ? (
               <>

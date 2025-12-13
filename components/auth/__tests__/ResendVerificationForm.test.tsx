@@ -211,7 +211,9 @@ describe('ResendVerificationForm', () => {
         expect(
           screen.queryByRole('button', { name: /send verification email/i })
         ).not.toBeInTheDocument();
-        expect(screen.queryByLabelText(/email address/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByLabelText(/email address/i)
+        ).not.toBeInTheDocument();
         expect(
           screen.getByRole('heading', { name: /check your email/i })
         ).toBeInTheDocument();
@@ -261,7 +263,10 @@ describe('ResendVerificationForm', () => {
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       await user.click(
         screen.getByRole('button', { name: /send verification email/i })
       );
@@ -291,7 +296,10 @@ describe('ResendVerificationForm', () => {
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       await user.click(
         screen.getByRole('button', { name: /send verification email/i })
       );
@@ -312,7 +320,10 @@ describe('ResendVerificationForm', () => {
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       await user.click(
         screen.getByRole('button', { name: /send verification email/i })
       );
@@ -329,24 +340,19 @@ describe('ResendVerificationForm', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
 
-      (global.fetch as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  status: 200,
-                  json: async () => ({ message: 'Success' }),
-                }),
-              100
-            )
-          )
-      );
+      let resolveFetch!: (value: any) => void;
+      const fetchPromise = new Promise((resolve) => {
+        resolveFetch = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockReturnValueOnce(fetchPromise);
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       await user.click(
         screen.getByRole('button', { name: /send verification email/i })
       );
@@ -355,29 +361,35 @@ describe('ResendVerificationForm', () => {
         screen.getByRole('button', { name: /sending verification email/i })
       ).toBeInTheDocument();
       expect(screen.getByText(/sending\.\.\./i)).toBeInTheDocument();
+
+      resolveFetch({
+        ok: true,
+        status: 200,
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: /check your email/i })
+        ).toBeInTheDocument();
+      });
     });
 
     it('should disable submit button during submission', async () => {
       const user = userEvent.setup();
 
-      (global.fetch as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  status: 200,
-                  json: async () => ({ message: 'Success' }),
-                }),
-              100
-            )
-          )
-      );
+      let resolveFetch!: (value: any) => void;
+      const fetchPromise = new Promise((resolve) => {
+        resolveFetch = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockReturnValueOnce(fetchPromise);
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       const submitButton = screen.getByRole('button', {
         name: /send verification email/i,
       });
@@ -385,25 +397,28 @@ describe('ResendVerificationForm', () => {
       await user.click(submitButton);
 
       expect(submitButton).toBeDisabled();
+
+      resolveFetch({
+        ok: true,
+        status: 200,
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: /check your email/i })
+        ).toBeInTheDocument();
+      });
     });
 
     it('should disable email input during submission', async () => {
       const user = userEvent.setup();
 
-      (global.fetch as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  status: 200,
-                  json: async () => ({ message: 'Success' }),
-                }),
-              100
-            )
-          )
-      );
+      let resolveFetch!: (value: any) => void;
+      const fetchPromise = new Promise((resolve) => {
+        resolveFetch = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockReturnValueOnce(fetchPromise);
 
       render(<ResendVerificationForm />);
 
@@ -414,6 +429,17 @@ describe('ResendVerificationForm', () => {
       );
 
       expect(emailInput).toBeDisabled();
+
+      resolveFetch({
+        ok: true,
+        status: 200,
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: /check your email/i })
+        ).toBeInTheDocument();
+      });
     });
   });
 
@@ -484,24 +510,19 @@ describe('ResendVerificationForm', () => {
     it('should update button aria-label during loading state', async () => {
       const user = userEvent.setup();
 
-      (global.fetch as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  status: 200,
-                  json: async () => ({ message: 'Success' }),
-                }),
-              100
-            )
-          )
-      );
+      let resolveFetch!: (value: any) => void;
+      const fetchPromise = new Promise((resolve) => {
+        resolveFetch = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockReturnValueOnce(fetchPromise);
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       await user.click(
         screen.getByRole('button', { name: /send verification email/i })
       );
@@ -513,6 +534,17 @@ describe('ResendVerificationForm', () => {
         'aria-label',
         'Sending verification email'
       );
+
+      resolveFetch({
+        ok: true,
+        status: 200,
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: /check your email/i })
+        ).toBeInTheDocument();
+      });
     });
   });
 
@@ -534,7 +566,10 @@ describe('ResendVerificationForm', () => {
 
       render(<ResendVerificationForm />);
 
-      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/email address/i),
+        'test@example.com'
+      );
       await user.click(
         screen.getByRole('button', { name: /send verification email/i })
       );
