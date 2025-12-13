@@ -72,7 +72,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - [ ] Templates created and committed
   - [ ] Templates referenced in `supabase/config.toml`
   - [ ] Screenshot of rendered email attached to PR
-  - [ ] Tested with local Inbucket (http://localhost:54324)
+  - [ ] Tested with local Inbucket ([http://localhost:54324](http://localhost:54324))
   - [ ] **Final Check:** Accessible and brand-consistent
 
 **Estimated Effort:** 2-3 hours

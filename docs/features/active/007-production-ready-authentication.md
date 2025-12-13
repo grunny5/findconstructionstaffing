@@ -462,7 +462,7 @@ Each template should use Supabase variables:
 
 #### New Routes
 
-```
+```text
 /auth/verify-email           - Email verification callback page
 /forgot-password             - Request password reset page
 /reset-password              - Reset password with token page
@@ -961,7 +961,7 @@ Each template should use Supabase variables:
 
 ### Timeline Summary
 
-```
+```text
 Week 1:      Email Verification + Password Recovery (Phase 1-2)
 Week 2-3:    Account Settings (Phase 3)
 Week 3-4:    Role Management (Phase 4)

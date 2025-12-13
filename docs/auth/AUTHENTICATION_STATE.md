@@ -54,7 +54,7 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 
 ### High-Level Flow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      Next.js App Router                     │
 ├─────────────────────────────────────────────────────────────┤
@@ -104,7 +104,7 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 
 ### 1. Signup Flow
 
-```
+```text
 User fills form → Validation (Zod) → signUp(email, password, fullName)
                                           ↓
                                   Supabase.auth.signUp()
@@ -133,7 +133,7 @@ User fills form → Validation (Zod) → signUp(email, password, fullName)
 
 ### 2. Login Flow
 
-```
+```text
 User enters credentials → Validation → signIn(email, password)
                                             ↓
                                 Supabase.auth.signInWithPassword()
@@ -153,7 +153,7 @@ User enters credentials → Validation → signIn(email, password)
 
 ### 3. Session Management
 
-```
+```text
 App Mount → AuthProvider initialization
                 ↓
     supabase.auth.getSession()
@@ -787,7 +787,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
    ```
 
 2. **Set up Supabase project:**
-   - Create account at https://supabase.com
+   - Create account at [Supabase](https://supabase.com)
    - Create new project
    - Copy project URL and anon key
 
@@ -815,7 +815,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
    ```
 
 6. **Test signup/login:**
-   - Navigate to http://localhost:3000/signup
+   - Navigate to [http://localhost:3000/signup](http://localhost:3000/signup)
    - Create test account
    - Verify profile created in Supabase Dashboard
 
@@ -830,13 +830,13 @@ Supabase local development includes Inbucket for email testing:
    ```
 
 2. **Access Inbucket:**
-   - Web UI: http://localhost:54324
+   - Web UI: [http://localhost:54324](http://localhost:54324)
    - SMTP: localhost:54325
    - POP3: localhost:54326
 
 3. **View test emails:**
    - Sign up with any email
-   - Check Inbucket inbox at http://localhost:54324
+   - Check Inbucket inbox at [http://localhost:54324](http://localhost:54324)
 
 **Note:** Email confirmations now enabled (`enable_confirmations = true`). Template and callback route implementation needed (Tasks 1.1.2-1.1.3).
 
