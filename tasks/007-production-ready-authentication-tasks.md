@@ -232,23 +232,23 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Prevent email enumeration (same response for all emails)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] POST `/api/auth/resend-verification` endpoint created
-  - [ ] Request body: `{ email: string }`
-  - [ ] Validate email format
-  - [ ] Check rate limit using timestamp tracking (session or DB)
-  - [ ] If rate limit exceeded: return 429 with "Please wait" message
-  - [ ] Call Supabase: `supabase.auth.resend({ type: 'signup', email })`
-  - [ ] Always return 200 success (prevent email enumeration)
-  - [ ] Response: `{ message: "If this email exists, we sent a verification link" }`
-  - [ ] Handle Supabase errors gracefully (log but don't expose)
+  - [x] POST `/api/auth/resend-verification` endpoint created
+  - [x] Request body: `{ email: string }`
+  - [x] Validate email format
+  - [x] Check rate limit using timestamp tracking (session or DB)
+  - [x] If rate limit exceeded: return 429 with "Please wait" message
+  - [x] Call Supabase: `supabase.auth.resend({ type: 'signup', email })`
+  - [x] Always return 200 success (prevent email enumeration)
+  - [x] Response: `{ message: "If this email exists, we sent a verification link" }`
+  - [x] Handle Supabase errors gracefully (log but don't expose)
 - **Definition of Done:**
-  - [ ] API route implemented
-  - [ ] Rate limiting tested (multiple requests in 10 mins)
-  - [ ] Unit tests for validation, rate limiting, success, errors
-  - [ ] API documentation added (OpenAPI spec or similar)
-  - [ ] Security review completed
+  - [x] API route implemented
+  - [x] Rate limiting tested (multiple requests in 10 mins)
+  - [x] Unit tests for validation, rate limiting, success, errors
+  - [x] API documentation added (OpenAPI spec or similar)
+  - [x] Security review completed
   - [ ] PR approved
-  - [ ] **Final Check:** Secure against abuse
+  - [x] **Final Check:** Secure against abuse
 
 **Estimated Effort:** 3-4 hours
 
