@@ -9,7 +9,7 @@ To complete your registration and start exploring staffing opportunities, please
 
 {{ .ConfirmationURL }}
 
-IMPORTANT: This verification link will expire in 24 hours.
+IMPORTANT: This verification link will expire in 1 hour.
 If you don't verify your email within this time, you'll need to request a new verification link.
 
 ---

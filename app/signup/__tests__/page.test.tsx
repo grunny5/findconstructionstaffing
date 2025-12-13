@@ -514,7 +514,7 @@ describe('SignupPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/verification link will expire in 24 hours/i)
+          screen.getByText(/verification link will expire in 1 hour/i)
         ).toBeInTheDocument();
       });
     });

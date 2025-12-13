@@ -87,8 +87,8 @@ export default function SignupPage() {
 
             <div className="rounded-md bg-yellow-50 p-4">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> The verification link will expire in 24
-                hours.
+                <strong>Note:</strong> The verification link will expire in 1
+                hour.
               </p>
             </div>
 

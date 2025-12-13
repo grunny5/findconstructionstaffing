@@ -18,7 +18,7 @@ This directory contains email templates for Supabase authentication flows.
 
 - Responsive design (mobile and desktop)
 - Clear call-to-action button
-- 24-hour expiration notice
+- 1-hour expiration notice
 - Plain text fallback for email clients without HTML support
 - Brand-consistent styling
 
