@@ -20,6 +20,7 @@
 4. **Manual role assignment** - Admin and agency_owner roles require direct database access to assign
 
 **User Impact:**
+
 - **Job Seekers & Construction Workers** cannot recover forgotten passwords, leading to account abandonment
 - **Staffing Agency Owners** cannot verify legitimate business emails, risking spam/fake accounts
 - **Site Administrators** lack tools to manage user roles and permissions through the UI
@@ -28,12 +29,14 @@
 ### Goal & Hypothesis
 
 We believe that by implementing **complete authentication workflows with email verification, password recovery, and account management** for all user personas, we will achieve:
+
 - Verified email addresses for 95%+ of new signups
 - <5% account abandonment due to password recovery issues
 - Zero manual database interventions for role assignments
 - 90%+ user satisfaction with account management capabilities
 
 We will know this is true when we see:
+
 - Email verification completion rate >90% within 24 hours of signup
 - Password reset usage >80% success rate
 - Account settings page engagement from 60%+ of active users
@@ -44,6 +47,7 @@ We will know this is true when we see:
 ### Epic Breakdown
 
 This feature encompasses 4 major sub-features:
+
 1. **Email Verification** (Critical - Security)
 2. **Password Recovery** (Critical - UX)
 3. **Account Management** (High Priority - User Experience)
@@ -221,6 +225,7 @@ This feature encompasses 4 major sub-features:
 ### UX/UI Requirements
 
 #### Email Verification Flow
+
 - **Signup Success Page:** Full-screen confirmation with email icon, message "Check your email", and "Didn't receive it? Resend" link
 - **Verification Email Template:**
   - Subject: "Verify your FindConstructionStaffing account"
@@ -232,6 +237,7 @@ This feature encompasses 4 major sub-features:
 - **Verification Error Page:** Expired/invalid link message with "Request New Link" form
 
 #### Password Reset Flow
+
 - **Forgot Password Page:** Simple form with email input, submit button, and "Remember your password? Sign in" link
 - **Reset Email Template:**
   - Subject: "Reset your FindConstructionStaffing password"
@@ -242,6 +248,7 @@ This feature encompasses 4 major sub-features:
 - **Reset Success:** Success message with auto-redirect to login after 3 seconds
 
 #### Account Settings Page
+
 - **Layout:** Sidebar navigation with sections: Profile, Email, Password, Account
 - **Profile Section:** Display-only fields (email, role, created date) + editable full name with inline edit
 - **Email Section:** Current email display + "Change Email" button that opens modal
@@ -249,6 +256,7 @@ This feature encompasses 4 major sub-features:
 - **Account Section:** Danger zone with "Delete Account" button in red
 
 #### Admin Dashboard
+
 - **Users Table:** Responsive table with sortable columns, search bar, role filter dropdown
 - **Role Change:** Inline dropdown in Actions column, confirmation modal on change
 - **User Detail Modal:** Popup showing full user info, role history timeline, action buttons
@@ -399,11 +407,13 @@ content_path = "./supabase/templates/email_change.html"
 **Email Templates:**
 
 Create template files in `supabase/templates/`:
+
 - `confirmation.html` - Email verification template
 - `recovery.html` - Password reset template
 - `email_change.html` - Email change confirmation template
 
 Each template should use Supabase variables:
+
 - `{{ .ConfirmationURL }}` or `{{ .Token }}`
 - `{{ .SiteURL }}`
 - `{{ .Email }}`
@@ -504,6 +514,7 @@ Each template should use Supabase variables:
 ### Non-Functional Requirements
 
 #### Performance
+
 - Email delivery: <60 seconds for all transactional emails
 - Email verification callback: <200ms response time
 - Password reset: <300ms response time
@@ -511,6 +522,7 @@ Each template should use Supabase variables:
 - Settings page: Load in <300ms
 
 #### Accessibility
+
 - All forms must be WCAG 2.2 AA compliant
 - Keyboard navigation for all interactive elements
 - Screen reader labels for all form fields
@@ -518,6 +530,7 @@ Each template should use Supabase variables:
 - Focus management in modals
 
 #### Testing
+
 - Unit tests for all auth helper functions
 - Integration tests for email verification flow
 - Integration tests for password reset flow
@@ -527,6 +540,7 @@ Each template should use Supabase variables:
 - Maintain 85%+ code coverage
 
 #### Monitoring & Observability
+
 - Track email delivery success rate
 - Monitor verification completion rate
 - Track password reset success rate
@@ -538,6 +552,7 @@ Each template should use Supabase variables:
 ### In Scope (MVP)
 
 **Phase 1: Email Verification (Sprint 1)**
+
 - Enable email confirmations in Supabase config
 - Create email verification templates
 - Implement verification callback route
@@ -546,6 +561,7 @@ Each template should use Supabase variables:
 - Test with local Inbucket
 
 **Phase 2: Password Recovery (Sprint 2)**
+
 - Create forgot password page
 - Create reset password page
 - Configure password reset email template
@@ -554,6 +570,7 @@ Each template should use Supabase variables:
 - Test complete reset flow
 
 **Phase 3: Account Settings (Sprint 3)**
+
 - Create settings page layout
 - Implement profile editing (full name)
 - Implement email change with double verification
@@ -562,6 +579,7 @@ Each template should use Supabase variables:
 - Add "Settings" link to header dropdown
 
 **Phase 4: Role Management (Sprint 4)**
+
 - Create admin users dashboard
 - Implement users table with search/filter
 - Implement role change dropdown
@@ -640,18 +658,21 @@ Each template should use Supabase variables:
 ### Dependencies
 
 **External Dependencies:**
+
 - Supabase Auth service (existing)
 - Email service provider (to be determined)
 - Next.js 13+ with App Router (existing)
 - React Hook Form + Zod (existing)
 
 **Internal Dependencies:**
+
 - Feature #001: Supabase Infrastructure (✅ Complete)
 - Feature #010: Phase 1 Authentication (✅ Complete - PR #28)
 - Profiles table migration (✅ Complete)
 - Auth context implementation (✅ Complete)
 
 **Blocking Issues:**
+
 - None currently identified
 
 ### Success Metrics
@@ -684,6 +705,7 @@ Each template should use Supabase variables:
 ### Phase 1: Email Verification (Week 1)
 
 **Tasks:**
+
 1. Update `supabase/config.toml` to enable confirmations
 2. Create email templates in `supabase/templates/`
 3. Create `/app/auth/verify-email/route.ts` callback handler
@@ -699,6 +721,7 @@ Each template should use Supabase variables:
 ### Phase 2: Password Recovery (Week 1-2)
 
 **Tasks:**
+
 1. Create `/app/forgot-password/page.tsx`
 2. Create `/app/reset-password/page.tsx`
 3. Create password reset email template
@@ -713,6 +736,7 @@ Each template should use Supabase variables:
 ### Phase 3: Account Settings (Week 2-3)
 
 **Tasks:**
+
 1. Create `/app/settings/page.tsx` layout
 2. Implement profile editing
 3. Implement email change with verification
@@ -727,6 +751,7 @@ Each template should use Supabase variables:
 ### Phase 4: Role Management (Week 3-4)
 
 **Tasks:**
+
 1. Create audit log table migration
 2. Create `change_user_role` RPC function
 3. Create `/app/admin/users/page.tsx`
@@ -742,24 +767,28 @@ Each template should use Supabase variables:
 ### Testing Strategy
 
 **Unit Tests:**
+
 - Auth helper functions
 - Email validation
 - Token generation/validation
 - Role change logic
 
 **Integration Tests:**
+
 - Email verification flow
 - Password reset flow
 - Profile update operations
 - Role change with audit logging
 
 **E2E Tests:**
+
 - Complete signup→verify→login flow
 - Complete forgot→reset→login flow
 - Settings page interactions
 - Admin role management flow
 
 **Manual QA Checklist:**
+
 - Test all email deliveries
 - Verify link expiration handling
 - Test error states
@@ -770,6 +799,7 @@ Each template should use Supabase variables:
 ### Deployment Plan
 
 **Staging Deployment:**
+
 1. Deploy Phase 1 to staging
 2. Test email verification with real email service
 3. Gather internal feedback
@@ -777,6 +807,7 @@ Each template should use Supabase variables:
 5. Complete regression testing
 
 **Production Deployment:**
+
 1. Enable feature flag for email verification
 2. Monitor email delivery rates
 3. Roll out to 10% of new signups
@@ -786,6 +817,7 @@ Each template should use Supabase variables:
 7. Roll out to 100%
 
 **Rollback Plan:**
+
 - Feature flag can disable email verification
 - Revert to `enable_confirmations = false`
 - Password reset can be disabled via feature flag
@@ -794,6 +826,7 @@ Each template should use Supabase variables:
 ### Documentation Updates
 
 **Files to Create/Update:**
+
 - `docs/auth/AUTHENTICATION_STATE.md` - Update status to "Production Ready"
 - `docs/auth/EMAIL_TEMPLATES.md` - Document email template customization
 - `docs/auth/ADMIN_GUIDE.md` - Guide for role management
@@ -805,30 +838,36 @@ Each template should use Supabase variables:
 ### High Risk
 
 **Risk:** Email delivery failures in production
+
 - **Mitigation:** Test with multiple email providers in staging, set up monitoring alerts
 - **Contingency:** Have backup email service configured
 
 **Risk:** Users locked out during email verification rollout
+
 - **Mitigation:** Grandfather existing users (don't require verification), use feature flag for gradual rollout
 - **Contingency:** Quick rollback capability
 
 ### Medium Risk
 
 **Risk:** Rate limiting too aggressive, blocking legitimate users
+
 - **Mitigation:** Start with conservative limits, monitor support tickets
 - **Contingency:** Adjust rate limits via config without code deploy
 
 **Risk:** Admin accidentally demotes all admins
+
 - **Mitigation:** Prevent self-demotion in code, require 2+ admins minimum
 - **Contingency:** Manual database restoration procedure
 
 ### Low Risk
 
 **Risk:** Email templates look broken in some email clients
+
 - **Mitigation:** Test with Email on Acid or Litmus before launch
 - **Contingency:** Provide plain text fallback
 
 **Risk:** Accessibility issues with modals
+
 - **Mitigation:** Use Radix UI components with built-in a11y
 - **Contingency:** Manual testing with screen readers before launch
 
@@ -839,11 +878,13 @@ Each template should use Supabase variables:
 **Description:** Use passwordless authentication with email links instead of passwords
 
 **Pros:**
+
 - Simpler UX (no password to remember)
 - More secure (no password to steal)
 - No password reset needed
 
 **Cons:**
+
 - Requires email access every time
 - Slower login flow (wait for email)
 - User confusion (less familiar pattern)
@@ -856,11 +897,13 @@ Each template should use Supabase variables:
 **Description:** Use phone number + SMS for account verification
 
 **Pros:**
+
 - Higher verification completion rate
 - Faster (SMS arrives in seconds)
 - Phone numbers less likely to be fake
 
 **Cons:**
+
 - SMS costs ($0.01-0.05 per message)
 - International SMS complexity
 - Privacy concerns (not all users want to share phone)
@@ -873,11 +916,13 @@ Each template should use Supabase variables:
 **Description:** Keep email verification disabled, trust users
 
 **Pros:**
+
 - Simpler implementation (already done)
 - Faster signup flow
 - No email deliverability concerns
 
 **Cons:**
+
 - Security risk (spam accounts)
 - Invalid email addresses in database
 - Cannot send reliable notifications
@@ -890,11 +935,13 @@ Each template should use Supabase variables:
 **Description:** Remove email/password auth, require Google/Microsoft OAuth
 
 **Pros:**
+
 - More secure (delegated to OAuth provider)
 - No password management
 - Faster login (if already logged into provider)
 
 **Cons:**
+
 - Requires OAuth provider account
 - Privacy concerns (user doesn't trust Google with job search)
 - Complexity for non-tech-savvy users
@@ -934,16 +981,17 @@ Total: 4 weeks for complete implementation
 
 ### Stakeholder Sign-Off
 
-- [ ] Product Owner: _____________________ Date: _______
-- [ ] Engineering Lead: __________________ Date: _______
-- [ ] UX/UI Designer: ____________________ Date: _______
-- [ ] QA Lead: ___________________________ Date: _______
-- [ ] Security Review: ___________________ Date: _______
+- [ ] Product Owner: \***\*\*\*\*\***\_\***\*\*\*\*\*** Date: **\_\_\_**
+- [ ] Engineering Lead: **\*\*\*\***\_\_**\*\*\*\*** Date: **\_\_\_**
+- [ ] UX/UI Designer: **\*\*\*\***\_\_\_\_**\*\*\*\*** Date: **\_\_\_**
+- [ ] QA Lead: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\*** Date: **\_\_\_**
+- [ ] Security Review: **\*\*\*\***\_\_\_**\*\*\*\*** Date: **\_\_\_**
 
 ---
 
 **Status:** Draft - Awaiting Review
 **Next Steps:**
+
 1. Review this FSD with stakeholders
 2. Answer open questions
 3. Create engineering task breakdown
