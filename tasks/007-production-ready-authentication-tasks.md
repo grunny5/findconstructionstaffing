@@ -191,21 +191,21 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Test happy path and error cases
   - 85%+ coverage requirement
 - **Acceptance Criteria (for this task):**
-  - [ ] Test: User signs up → sees "Check your email" message
-  - [ ] Test: Verification callback with valid token → success page shown
-  - [ ] Test: Verification callback with expired token → error page shown
-  - [ ] Test: Verification callback with invalid token → error page shown
-  - [ ] Test: Unverified user tries to login → sees verification error
-  - [ ] Test: Verified user logs in → succeeds normally
-  - [ ] Test: Already verified user clicks old link → handled gracefully
-  - [ ] All tests use proper mocks (don't call real Supabase)
-  - [ ] Coverage report shows >85% for modified files
+  - [x] Test: User signs up → sees "Check your email" message
+  - [x] Test: Verification callback with valid token → success page shown
+  - [x] Test: Verification callback with expired token → error page shown
+  - [x] Test: Verification callback with invalid token → error page shown
+  - [x] Test: Unverified user tries to login → sees verification error
+  - [x] Test: Verified user logs in → succeeds normally
+  - [x] Test: Already verified user clicks old link → handled gracefully
+  - [x] All tests use proper mocks (don't call real Supabase)
+  - [x] Coverage report shows >85% for modified files
 - **Definition of Done:**
-  - [ ] All integration tests written and passing
-  - [ ] Tests included in CI/CD pipeline
-  - [ ] Coverage meets 85%+ threshold
-  - [ ] PR includes test execution screenshot
-  - [ ] **Final Check:** Tests are maintainable and clear
+  - [x] All integration tests written and passing
+  - [x] Tests included in CI/CD pipeline
+  - [x] Coverage meets 85%+ threshold
+  - [x] PR includes test execution screenshot
+  - [x] **Final Check:** Tests are maintainable and clear
 
 **Estimated Effort:** 3-4 hours
 
