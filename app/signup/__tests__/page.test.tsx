@@ -274,6 +274,12 @@ describe('SignupPage', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('test@example.com')).toBeInTheDocument();
       });
+
+      expect(mockSignUp).toHaveBeenCalledWith(
+        'test@example.com',
+        'password123',
+        'Test User'
+      );
     });
 
     it('should not auto-redirect after successful signup', async () => {
