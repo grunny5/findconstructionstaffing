@@ -459,9 +459,7 @@ describe('Email Verification Integration Tests', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/network request failed/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/network request failed/i)).toBeInTheDocument();
       });
     });
 
