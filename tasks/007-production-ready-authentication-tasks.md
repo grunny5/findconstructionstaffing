@@ -267,24 +267,24 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Zod for validation
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts optional `initialEmail` prop
-  - [ ] Form has email input field
-  - [ ] Submit button disabled during API call
-  - [ ] Shows loading state: "Sending..."
-  - [ ] On success: shows success message "Check your email"
-  - [ ] On rate limit: shows error "Please wait before requesting another email"
-  - [ ] On error: shows generic error "Something went wrong. Try again."
-  - [ ] Email validation (format check)
-  - [ ] Accessible: labels, ARIA attributes, keyboard navigation
+  - [x] Component accepts optional `initialEmail` prop
+  - [x] Form has email input field
+  - [x] Submit button disabled during API call
+  - [x] Shows loading state: "Sending..."
+  - [x] On success: shows success message "Check your email"
+  - [x] On rate limit: shows error "Please wait before requesting another email"
+  - [x] On error: shows generic error "Something went wrong. Try again."
+  - [x] Email validation (format check)
+  - [x] Accessible: labels, ARIA attributes, keyboard navigation
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Component tests written (render, submit, success, error, rate limit)
+  - [x] Component implemented
+  - [x] Component tests written (render, submit, success, error, rate limit)
   - [ ] Storybook story created (optional but recommended)
   - [ ] Integrated into login page error state
   - [ ] Integrated into verification error page
   - [ ] Accessibility tested with screen reader
   - [ ] PR approved
-  - [ ] **Final Check:** Follows Shadcn/ui patterns
+  - [x] **Final Check:** Follows Shadcn/ui patterns
 
 **Estimated Effort:** 2-3 hours
 
