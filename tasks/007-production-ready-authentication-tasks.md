@@ -1535,7 +1535,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ### Dependencies Flow:
 
-```
+```text
 Phase 1 (Email Verification)
     ↓
 Phase 2 (Password Recovery) - Can overlap with Phase 1
