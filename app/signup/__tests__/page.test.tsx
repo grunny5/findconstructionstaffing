@@ -32,8 +32,6 @@ describe('SignupPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Use fake timers to prevent test pollution from setTimeout
-    jest.useFakeTimers();
 
     (useAuth as jest.Mock).mockReturnValue({
       signUp: mockSignUp,
@@ -42,12 +40,6 @@ describe('SignupPage', () => {
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
     });
-  });
-
-  afterEach(() => {
-    // Run any pending timers and restore real timers
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
   });
 
   describe('Rendering', () => {
@@ -256,7 +248,7 @@ describe('SignupPage', () => {
       });
     });
 
-    it('should show success message after signup', async () => {
+    it('should show email verification message after signup', async () => {
       const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
@@ -276,16 +268,21 @@ describe('SignupPage', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
         expect(
-          screen.getByText(/account created successfully!/i)
+          screen.getByText(/we've sent a verification link to/i)
         ).toBeInTheDocument();
-        expect(
-          screen.getByText(/please check your email to verify your account/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText('test@example.com')).toBeInTheDocument();
       });
+
+      expect(mockSignUp).toHaveBeenCalledWith(
+        'test@example.com',
+        'password123',
+        'Test User'
+      );
     });
 
-    it('should redirect to home after successful signup', async () => {
+    it('should not auto-redirect after successful signup', async () => {
       const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
@@ -305,16 +302,11 @@ describe('SignupPage', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/account created successfully!/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
       });
 
-      // Fast-forward time to trigger redirect (component uses setTimeout with 2000ms)
-      jest.advanceTimersByTime(2000);
-
-      // Verify redirect was called
-      expect(mockPush).toHaveBeenCalledWith('/');
+      // Verify no redirect was called
+      expect(mockPush).not.toHaveBeenCalled();
     });
 
     it('should show loading state during submission', async () => {
@@ -349,13 +341,8 @@ describe('SignupPage', () => {
       });
       expect(loadingButton).toBeDisabled();
 
-      // Fast-forward the mock signup delay
-      jest.advanceTimersByTime(100);
-
       await waitFor(() => {
-        expect(
-          screen.getByText(/account created successfully!/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
       });
     });
 
@@ -384,9 +371,7 @@ describe('SignupPage', () => {
       });
 
       // Should not show success message
-      expect(
-        screen.queryByText(/account created successfully!/i)
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/check your email/i)).not.toBeInTheDocument();
 
       // Should not redirect
       expect(mockPush).not.toHaveBeenCalled();
@@ -486,6 +471,138 @@ describe('SignupPage', () => {
       const passwordInputs = screen.getAllByPlaceholderText(/password/i);
       expect(passwordInputs[0]).toHaveAttribute('autoComplete', 'new-password');
       expect(passwordInputs[1]).toHaveAttribute('autoComplete', 'new-password');
+    });
+  });
+
+  describe('Email Verification Success UI', () => {
+    it('should display submitted email address in success message', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockSignUp.mockResolvedValue(undefined);
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'user@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('user@example.com')).toBeInTheDocument();
+      });
+    });
+
+    it('should show 1-hour expiration notice', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockSignUp.mockResolvedValue(undefined);
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/verification link will expire in 1 hour/i)
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should display "Resend verification email" button', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockSignUp.mockResolvedValue(undefined);
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        const resendLink = screen.getByRole('link', {
+          name: /resend verification email/i,
+        });
+        expect(resendLink).toBeInTheDocument();
+        expect(resendLink).toHaveAttribute('href', '/signup');
+      });
+    });
+
+    it('should display "Return to home" link', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockSignUp.mockResolvedValue(undefined);
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        const homeLink = screen.getByRole('link', {
+          name: /return to home/i,
+        });
+        expect(homeLink).toBeInTheDocument();
+        expect(homeLink).toHaveAttribute('href', '/');
+      });
+    });
+
+    it('should display "Check your email" success message', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockSignUp.mockResolvedValue(undefined);
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      });
     });
   });
 });

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Verify Your Email</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        background-color: #f4f4f5;
+        color: #18181b;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+      }
+      .header {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ffffff;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #18181b;
+        margin: 0 0 16px 0;
+        line-height: 1.3;
+      }
+      .text {
+        font-size: 16px;
+        line-height: 1.6;
+        color: #52525b;
+        margin: 0 0 24px 0;
+      }
+      .button-container {
+        text-align: center;
+        margin: 32px 0;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 32px;
+        background-color: #2563eb;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: background-color 0.2s;
+      }
+      .button:hover {
+        background-color: #1d4ed8;
+      }
+      .divider {
+        border: 0;
+        border-top: 1px solid #e4e4e7;
+        margin: 32px 0;
+      }
+      .alt-link {
+        font-size: 14px;
+        color: #71717a;
+        margin: 24px 0;
+        line-height: 1.6;
+      }
+      .alt-link a {
+        color: #2563eb;
+        text-decoration: none;
+        word-break: break-all;
+      }
+      .info-box {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 16px;
+        margin: 24px 0;
+        border-radius: 4px;
+      }
+      .info-box p {
+        margin: 0;
+        font-size: 14px;
+        color: #92400e;
+        line-height: 1.5;
+      }
+      .footer {
+        background-color: #fafafa;
+        padding: 30px;
+        text-align: center;
+        border-top: 1px solid #e4e4e7;
+      }
+      .footer-text {
+        font-size: 14px;
+        color: #71717a;
+        margin: 0 0 8px 0;
+        line-height: 1.5;
+      }
+      .footer-link {
+        color: #2563eb;
+        text-decoration: none;
+      }
+      @media only screen and (max-width: 600px) {
+        .content {
+          padding: 30px 20px;
+        }
+        .title {
+          font-size: 20px;
+        }
+        .text {
+          font-size: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      width="100%"
+      style="background-color: #f4f4f5; padding: 20px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            class="email-container"
+            width="600"
+            style="
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td class="header">
+                <a href="{{ .SiteURL }}" class="logo" style="color: #ffffff"
+                  >FindConstructionStaffing</a
+                >
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td class="content">
+                <h1 class="title">Verify Your Email Address</h1>
+                <p class="text">
+                  Hi there,<br /><br />
+                  Thanks for signing up for FindConstructionStaffing! We're
+                  excited to help you connect with top construction staffing
+                  agencies across North America.
+                </p>
+                <p class="text">
+                  To complete your registration and start exploring staffing
+                  opportunities, please verify your email address by clicking
+                  the button below:
+                </p>
+
+                <!-- CTA Button -->
+                <div class="button-container">
+                  <a
+                    href="{{ .ConfirmationURL }}"
+                    class="button"
+                    style="color: #ffffff"
+                    >Verify Email Address</a
+                  >
+                </div>
+
+                <hr class="divider" />
+
+                <!-- Alternative Link -->
+                <p class="alt-link">
+                  If the button doesn't work, copy and paste this link into your
+                  browser:<br />
+                  <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+                </p>
+
+                <!-- Expiration Notice -->
+                <div class="info-box">
+                  <p>
+                    <strong
+                      >⏰ This verification link will expire in 1 hour.</strong
+                    ><br />
+                    If you don't verify your email within this time, you'll need
+                    to request a new verification link.
+                  </p>
+                </div>
+
+                <hr class="divider" />
+
+                <!-- Help Text -->
+                <p class="text" style="margin-bottom: 0">
+                  If you didn't create an account with FindConstructionStaffing,
+                  you can safely ignore this email.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td class="footer">
+                <p class="footer-text">
+                  Need help? Contact us at
+                  <a
+                    href="mailto:support@findconstructionstaffing.com"
+                    class="footer-link"
+                    >support@findconstructionstaffing.com</a
+                  >
+                </p>
+                <p class="footer-text">
+                  &copy; 2025 FindConstructionStaffing. All rights reserved.
+                </p>
+                <p class="footer-text">
+                  <a href="{{ .SiteURL }}/privacy" class="footer-link"
+                    >Privacy Policy</a
+                  >
+                  &nbsp;|&nbsp;
+                  <a href="{{ .SiteURL }}/help" class="footer-link">Help</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

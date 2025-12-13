@@ -73,7 +73,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      // Check if error is due to unverified email
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        const verificationError = new Error(
+          'Please verify your email address before signing in.'
+        );
+        (verificationError as any).isEmailNotVerified = true;
+        throw verificationError;
+      }
+      throw error;
+    }
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {

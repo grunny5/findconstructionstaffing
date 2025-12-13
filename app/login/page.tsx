@@ -21,6 +21,7 @@ function LoginForm() {
   const { signIn } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isEmailNotVerified, setIsEmailNotVerified] = useState(false);
 
   const {
     register,
@@ -34,13 +35,20 @@ function LoginForm() {
     try {
       setLoading(true);
       setError('');
+      setIsEmailNotVerified(false);
       await signIn(data.email, data.password);
 
       // Redirect to callback URL or home
       const redirectTo = searchParams.get('redirectTo') || '/';
       router.push(redirectTo);
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      // Check if error is due to unverified email
+      if (err.isEmailNotVerified) {
+        setIsEmailNotVerified(true);
+        setError(err.message || 'Please verify your email address');
+      } else {
+        setError(err.message || 'Failed to sign in');
+      }
     } finally {
       setLoading(false);
     }
@@ -72,6 +80,16 @@ function LoginForm() {
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <p className="text-sm text-red-800">{error}</p>
+              {isEmailNotVerified && (
+                <div className="mt-3">
+                  <Link
+                    href="/signup"
+                    className="inline-block w-full text-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    Resend verification email
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
