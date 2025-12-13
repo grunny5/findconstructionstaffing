@@ -1,12 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const signupSchema = z
   .object({
@@ -23,11 +32,11 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const router = useRouter();
   const { signUp } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
   const {
     register,
@@ -43,11 +52,8 @@ export default function SignupPage() {
       setError('');
       await signUp(data.email, data.password, data.fullName);
 
+      setSubmittedEmail(data.email);
       setSuccess(true);
-      // Redirect to home after 2 seconds
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
     } finally {
@@ -57,17 +63,54 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="rounded-md bg-green-50 p-4">
-            <h3 className="text-lg font-medium text-green-800">
-              Account created successfully!
-            </h3>
-            <p className="mt-2 text-sm text-green-700">
-              Please check your email to verify your account. Redirecting...
-            </p>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+              <Mail className="h-10 w-10 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl">Check your email</CardTitle>
+            <CardDescription className="text-base">
+              We've sent a verification link to{' '}
+              <span className="font-semibold text-foreground">
+                {submittedEmail}
+              </span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <AlertDescription>
+                Click the link in the email to verify your account and complete
+                the signup process.
+              </AlertDescription>
+            </Alert>
+
+            <div className="rounded-md bg-yellow-50 p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Note:</strong> The verification link will expire in 24
+                hours.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <p className="text-center text-sm text-muted-foreground">
+                Didn't receive the email?
+              </p>
+              <Button asChild variant="outline" className="w-full" size="lg">
+                <Link href="/signup">Resend verification email</Link>
+              </Button>
+            </div>
+
+            <div className="text-center">
+              <Link
+                href="/"
+                className="text-sm text-muted-foreground hover:text-primary"
+              >
+                Return to home
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

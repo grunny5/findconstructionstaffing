@@ -126,20 +126,20 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Maintain React Hook Form validation
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Remove auto-redirect `setTimeout(() => router.push('/'), 2000)`
-  - [ ] Update success message to: "Check your email for a verification link"
-  - [ ] Add email icon (from lucide-react or similar)
-  - [ ] Show submitted email address in message
-  - [ ] Add "Didn't receive it?" text with "Resend" button (link to Task 1.2.1)
-  - [ ] Success state remains until user navigates away
-  - [ ] Error handling unchanged (still shows errors for signup failures)
+  - [x] Remove auto-redirect `setTimeout(() => router.push('/'), 2000)`
+  - [x] Update success message to: "Check your email for a verification link"
+  - [x] Add email icon (from lucide-react or similar)
+  - [x] Show submitted email address in message
+  - [x] Add "Didn't receive it?" text with "Resend" button (link to Task 1.2.1)
+  - [x] Success state remains until user navigates away
+  - [x] Error handling unchanged (still shows errors for signup failures)
 - **Definition of Done:**
-  - [ ] Component updated and tested
-  - [ ] Existing signup tests updated to match new flow
-  - [ ] New test: signup success shows verification message
-  - [ ] Accessibility: success message announced to screen readers
-  - [ ] PR includes before/after screenshots
-  - [ ] **Final Check:** Follows Shadcn/ui patterns
+  - [x] Component updated and tested
+  - [x] Existing signup tests updated to match new flow
+  - [x] New test: signup success shows verification message
+  - [x] Accessibility: success message announced to screen readers
+  - [x] PR includes before/after screenshots
+  - [x] **Final Check:** Follows Shadcn/ui patterns
 
 **Estimated Effort:** 2 hours
 
