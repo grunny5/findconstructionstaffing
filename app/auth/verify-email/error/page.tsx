@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { XCircle, AlertTriangle } from 'lucide-react';
 
-export default function VerifyEmailErrorPage() {
+function VerifyEmailErrorContent() {
   const searchParams = useSearchParams();
   const message = searchParams.get('message') || 'Verification failed';
 
@@ -102,5 +103,24 @@ export default function VerifyEmailErrorPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyEmailErrorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 to-orange-100 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Email Verification</CardTitle>
+              <CardDescription>Loading...</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <VerifyEmailErrorContent />
+    </Suspense>
   );
 }

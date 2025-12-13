@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -12,18 +13,26 @@ import {
 } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
 
-export default function VerifyEmailPage() {
+function VerifyEmailSuccessContent() {
   const searchParams = useSearchParams();
-  const success = searchParams.get('success');
+  const verified = searchParams.get('verified');
 
-  if (!success) {
+  if (!verified) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Email Verification</CardTitle>
-            <CardDescription>Processing your verification...</CardDescription>
+            <CardDescription>
+              Invalid verification link. Please check your email for the correct
+              link.
+            </CardDescription>
           </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/">Return to Home</Link>
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
@@ -60,5 +69,24 @@ export default function VerifyEmailPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyEmailSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Email Verification</CardTitle>
+              <CardDescription>Loading...</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <VerifyEmailSuccessContent />
+    </Suspense>
   );
 }

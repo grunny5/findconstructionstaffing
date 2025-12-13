@@ -79,7 +79,7 @@ describe('GET /auth/verify-email', () => {
     );
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toContain(
-      '/auth/verify-email?success=true'
+      '/auth/verify-email/success?verified=true'
     );
   });
 

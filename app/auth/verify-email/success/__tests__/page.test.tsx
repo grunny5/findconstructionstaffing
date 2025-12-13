@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { useSearchParams } from 'next/navigation';
-import VerifyEmailPage from '../page';
+import VerifyEmailSuccessPage from '../page';
 
 jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(),
@@ -10,21 +10,21 @@ const mockUseSearchParams = useSearchParams as jest.MockedFunction<
   typeof useSearchParams
 >;
 
-describe('VerifyEmailPage', () => {
+describe('VerifyEmailSuccessPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should render processing state when no success param', () => {
+  it('should render invalid link message when no verified param', () => {
     mockUseSearchParams.mockReturnValue({
       get: jest.fn().mockReturnValue(null),
     } as any);
 
-    render(<VerifyEmailPage />);
+    render(<VerifyEmailSuccessPage />);
 
     expect(screen.getByText('Email Verification')).toBeInTheDocument();
     expect(
-      screen.getByText('Processing your verification...')
+      screen.getByText(/Invalid verification link/)
     ).toBeInTheDocument();
   });
 
@@ -33,7 +33,7 @@ describe('VerifyEmailPage', () => {
       get: jest.fn().mockReturnValue('true'),
     } as any);
 
-    render(<VerifyEmailPage />);
+    render(<VerifyEmailSuccessPage />);
 
     expect(screen.getByText('Email Verified!')).toBeInTheDocument();
     expect(
@@ -46,7 +46,7 @@ describe('VerifyEmailPage', () => {
       get: jest.fn().mockReturnValue('true'),
     } as any);
 
-    render(<VerifyEmailPage />);
+    render(<VerifyEmailSuccessPage />);
 
     const signInButton = screen.getByRole('link', { name: /sign in/i });
     expect(signInButton).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe('VerifyEmailPage', () => {
       get: jest.fn().mockReturnValue('true'),
     } as any);
 
-    render(<VerifyEmailPage />);
+    render(<VerifyEmailSuccessPage />);
 
     const homeLink = screen.getByText('Return to Home');
     expect(homeLink).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe('VerifyEmailPage', () => {
       get: jest.fn().mockReturnValue('true'),
     } as any);
 
-    render(<VerifyEmailPage />);
+    render(<VerifyEmailSuccessPage />);
 
     expect(
       screen.getByText(/You can now sign in to your FindConstructionStaffing/)

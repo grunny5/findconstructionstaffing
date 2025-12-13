@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.redirect(
-      new URL('/auth/verify-email?success=true', request.url)
+      new URL('/auth/verify-email/success?verified=true', request.url)
     );
   } catch (error) {
     console.error('Unexpected error during email verification:', error);
