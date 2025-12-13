@@ -493,7 +493,7 @@ describe('SignupPage', () => {
       });
     });
 
-    it('should show 24-hour expiration notice', async () => {
+    it('should show 1-hour expiration notice', async () => {
       const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
@@ -575,7 +575,7 @@ describe('SignupPage', () => {
       });
     });
 
-    it('should have accessible mail icon (aria-hidden)', async () => {
+    it('should display "Check your email" success message', async () => {
       const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 

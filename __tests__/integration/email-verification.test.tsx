@@ -491,13 +491,13 @@ describe('Email Verification Integration Tests', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('should allow multiple signup attempts with different emails', async () => {
+    it('should successfully signup with valid data', async () => {
       const user = userEvent.setup({ delay: null });
       mockSignUp.mockResolvedValue(undefined);
 
       render(<SignupPage />);
 
-      // First signup
+      // Signup attempt
       const nameInput = screen.getByPlaceholderText(/full name/i);
       const emailInput = screen.getByPlaceholderText(/email address/i);
       const passwordInputs = screen.getAllByPlaceholderText(/password/i);
