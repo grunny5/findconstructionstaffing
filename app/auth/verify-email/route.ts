@@ -22,12 +22,16 @@ export async function GET(request: NextRequest) {
       console.error('Email verification error:', error);
 
       let errorMessage = 'Verification failed';
-      const message = error.message.toLowerCase();
-      if (message.includes('expired')) {
+
+      // Use error.code for structured error handling (more reliable than message matching)
+      const code = error.code?.toLowerCase() ?? '';
+      const message = error.message?.toLowerCase() ?? '';
+
+      if (code.includes('expired') || message.includes('expired')) {
         errorMessage = 'Verification link has expired';
-      } else if (message.includes('invalid')) {
+      } else if (code.includes('invalid') || code === 'bad_jwt' || message.includes('invalid')) {
         errorMessage = 'Invalid verification link';
-      } else if (message.includes('already')) {
+      } else if (code.includes('exists') || message.includes('already')) {
         errorMessage = 'Email already verified';
       }
 
