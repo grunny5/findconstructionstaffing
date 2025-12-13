@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { checkRateLimit } from './rate-limiter';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,47 +22,6 @@ interface RateLimitError {
   retryAfter: number;
 }
 
-// In-memory rate limit store (for development)
-// In production, use Redis or database
-interface RateLimitEntry {
-  count: number;
-  firstRequestAt: number;
-  windowEndsAt: number;
-}
-
-const rateLimitStore = new Map<string, RateLimitEntry>();
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const MAX_REQUESTS_PER_WINDOW = 2;
-
-function checkRateLimit(email: string): {
-  allowed: boolean;
-  retryAfter?: number;
-} {
-  const now = Date.now();
-  const entry = rateLimitStore.get(email);
-
-  // No previous requests or window expired
-  if (!entry || now > entry.windowEndsAt) {
-    rateLimitStore.set(email, {
-      count: 1,
-      firstRequestAt: now,
-      windowEndsAt: now + RATE_LIMIT_WINDOW_MS,
-    });
-    return { allowed: true };
-  }
-
-  // Within window, check count
-  if (entry.count < MAX_REQUESTS_PER_WINDOW) {
-    entry.count += 1;
-    rateLimitStore.set(email, entry);
-    return { allowed: true };
-  }
-
-  // Rate limit exceeded
-  const retryAfter = Math.ceil((entry.windowEndsAt - now) / 1000); // seconds
-  return { allowed: false, retryAfter };
-}
-
 function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -78,13 +38,6 @@ function createAdminClient() {
       persistSession: false,
     },
   });
-}
-
-// Test-only helper to clear rate limits between tests
-export function __TEST__clearRateLimits(): void {
-  if (process.env.NODE_ENV === 'test') {
-    rateLimitStore.clear();
-  }
 }
 
 export async function POST(

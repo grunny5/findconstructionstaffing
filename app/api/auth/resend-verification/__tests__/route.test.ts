@@ -1,7 +1,8 @@
 /**
  * @jest-environment node
  */
-import { POST, __TEST__clearRateLimits } from '../route';
+import { POST } from '../route';
+import { clearRateLimits } from '../rate-limiter';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -24,7 +25,7 @@ describe('POST /api/auth/resend-verification', () => {
     jest.clearAllMocks();
 
     // Clear rate limit store between tests
-    __TEST__clearRateLimits();
+    clearRateLimits();
 
     // Mock environment variables
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
