@@ -23,9 +23,7 @@ describe('VerifyEmailSuccessPage', () => {
     render(<VerifyEmailSuccessPage />);
 
     expect(screen.getByText('Email Verification')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Invalid verification link/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Invalid verification link/)).toBeInTheDocument();
   });
 
   it('should render success message when verification succeeds', () => {

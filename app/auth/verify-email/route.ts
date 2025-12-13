@@ -29,7 +29,11 @@ export async function GET(request: NextRequest) {
 
       if (code.includes('expired') || message.includes('expired')) {
         errorMessage = 'Verification link has expired';
-      } else if (code.includes('invalid') || code === 'bad_jwt' || message.includes('invalid')) {
+      } else if (
+        code.includes('invalid') ||
+        code === 'bad_jwt' ||
+        message.includes('invalid')
+      ) {
         errorMessage = 'Invalid verification link';
       } else if (code.includes('exists') || message.includes('already')) {
         errorMessage = 'Email already verified';
