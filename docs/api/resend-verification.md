@@ -28,8 +28,8 @@ Content-Type: application/json
 
 ### Parameters
 
-| Field | Type   | Required | Description                                   |
-| ----- | ------ | -------- | --------------------------------------------- |
+| Field | Type   | Required | Description                                    |
+| ----- | ------ | -------- | ---------------------------------------------- |
 | email | string | Yes      | The email address to send verification link to |
 
 ## Response
@@ -175,10 +175,10 @@ Retry-After: 540
 
 ## Error Codes
 
-| Status Code | Meaning                                                                |
-| ----------- | ---------------------------------------------------------------------- |
-| 200         | Request processed (email may or may not have been sent)                |
-| 429         | Rate limit exceeded (see `retryAfter` for wait time)                   |
+| Status Code | Meaning                                                 |
+| ----------- | ------------------------------------------------------- |
+| 200         | Request processed (email may or may not have been sent) |
+| 429         | Rate limit exceeded (see `retryAfter` for wait time)    |
 
 Note: Even validation errors return 200 to prevent email enumeration.
 

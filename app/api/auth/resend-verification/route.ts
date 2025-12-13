@@ -92,8 +92,7 @@ export async function POST(
 ): Promise<NextResponse<ResendVerificationResponse | RateLimitError>> {
   try {
     // Parse and validate request body
-    const body =
-      (await request.json()) as unknown as ResendVerificationRequest;
+    const body = (await request.json()) as unknown as ResendVerificationRequest;
 
     const validationResult = requestSchema.safeParse(body);
 
