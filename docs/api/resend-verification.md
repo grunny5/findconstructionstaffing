@@ -2,7 +2,7 @@
 
 ## Endpoint
 
-```
+```http
 POST /api/auth/resend-verification
 ```
 
@@ -14,7 +14,7 @@ Resends the email verification link to users who have registered but not yet ver
 
 ### Headers
 
-```
+```http
 Content-Type: application/json
 ```
 
@@ -57,7 +57,7 @@ Returned when the user has exceeded the rate limit of 2 requests per 10 minutes.
 
 **Headers:**
 
-```
+```http
 Retry-After: 540
 ```
 
@@ -148,7 +148,7 @@ curl -X POST http://localhost:3000/api/auth/resend-verification \
 }
 ```
 
-### Rate Limited Request
+### Rate-Limited Request
 
 ```bash
 curl -X POST http://localhost:3000/api/auth/resend-verification \
@@ -169,7 +169,7 @@ curl -X POST http://localhost:3000/api/auth/resend-verification \
 
 **Headers:**
 
-```
+```http
 Retry-After: 540
 ```
 
