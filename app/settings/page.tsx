@@ -25,8 +25,8 @@ export default function SettingsProfilePage() {
 
       <div className="rounded-lg bg-blue-50 p-4">
         <p className="text-sm text-blue-800">
-          <strong>Note:</strong> Click the Edit button to update your full
-          name. Email changes are managed in the Email section.
+          <strong>Note:</strong> Click the Edit button to update your full name.
+          Email changes are managed in the Email section.
         </p>
       </div>
     </div>

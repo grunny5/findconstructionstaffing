@@ -89,6 +89,7 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -116,6 +117,7 @@ describe('ProfileSection', () => {
           full_name: null,
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -139,7 +141,8 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: null,
-        },
+          updated_at: '2023-01-15T10:00:00Z',
+        } as any,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -164,6 +167,7 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -188,6 +192,7 @@ describe('ProfileSection', () => {
           full_name: 'Jane Smith',
           role: 'agency_owner',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -212,6 +217,7 @@ describe('ProfileSection', () => {
           full_name: 'Admin User',
           role: 'admin',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -238,6 +244,7 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -249,7 +256,9 @@ describe('ProfileSection', () => {
 
       render(<ProfileSection onEditClick={mockOnEditClick} />);
 
-      const editButton = screen.getByRole('button', { name: /edit full name/i });
+      const editButton = screen.getByRole('button', {
+        name: /edit full name/i,
+      });
       expect(editButton).toBeInTheDocument();
     });
 
@@ -263,6 +272,7 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -274,7 +284,9 @@ describe('ProfileSection', () => {
 
       render(<ProfileSection onEditClick={mockOnEditClick} />);
 
-      const editButton = screen.getByRole('button', { name: /edit full name/i });
+      const editButton = screen.getByRole('button', {
+        name: /edit full name/i,
+      });
       await user.click(editButton);
 
       expect(mockOnEditClick).toHaveBeenCalledTimes(1);
@@ -290,6 +302,7 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -301,7 +314,9 @@ describe('ProfileSection', () => {
 
       render(<ProfileSection />);
 
-      const editButton = screen.getByRole('button', { name: /edit full name/i });
+      const editButton = screen.getByRole('button', {
+        name: /edit full name/i,
+      });
 
       // Should not throw when clicked without callback
       await expect(user.click(editButton)).resolves.not.toThrow();
@@ -318,6 +333,7 @@ describe('ProfileSection', () => {
           full_name: 'John Doe',
           role: 'user',
           created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
         },
         loading: false,
         signIn: jest.fn(),
@@ -334,7 +350,9 @@ describe('ProfileSection', () => {
       expect(screen.getByText('Role')).toBeInTheDocument();
       expect(screen.getByText('Account Created')).toBeInTheDocument();
 
-      const editButton = screen.getByRole('button', { name: /edit full name/i });
+      const editButton = screen.getByRole('button', {
+        name: /edit full name/i,
+      });
       expect(editButton).toHaveAttribute('aria-label', 'Edit full name');
     });
   });
