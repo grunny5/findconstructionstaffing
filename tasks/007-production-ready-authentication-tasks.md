@@ -576,23 +576,23 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Responsive design
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page at `/settings` with sidebar navigation
-  - [ ] Sidebar sections: Profile, Email, Password, Account (danger zone)
-  - [ ] Active section highlighted
-  - [ ] Content area shows selected section
-  - [ ] Mobile: sidebar collapses to dropdown/tabs
-  - [ ] Protected route: redirects to `/login?redirectTo=/settings` if not authenticated
-  - [ ] Page title: "Account Settings"
-  - [ ] Breadcrumb navigation (optional)
-  - [ ] Accessible: keyboard navigation between sections
+  - [x] Page at `/settings` with sidebar navigation
+  - [x] Sidebar sections: Profile, Email, Password, Account (danger zone)
+  - [x] Active section highlighted
+  - [x] Content area shows selected section
+  - [x] Mobile: sidebar collapses to dropdown/tabs
+  - [x] Protected route: redirects to `/login?redirectTo=/settings` if not authenticated
+  - [x] Page title: "Account Settings"
+  - [x] Breadcrumb navigation (optional)
+  - [x] Accessible: keyboard navigation between sections
 - **Definition of Done:**
-  - [ ] Layout implemented
-  - [ ] Responsive on mobile, tablet, desktop
-  - [ ] Protected route middleware working
-  - [ ] Component tests written
+  - [x] Layout implemented
+  - [x] Responsive on mobile, tablet, desktop
+  - [x] Protected route middleware working
+  - [x] Component tests written
   - [ ] Visual QA completed
   - [ ] PR approved
-  - [ ] **Final Check:** Intuitive navigation
+  - [x] **Final Check:** Intuitive navigation
 
 **Estimated Effort:** 3-4 hours
 
