@@ -31,6 +31,7 @@ const mockedUseAuth = jest.mocked(useAuth);
 
 describe('SettingsLayout', () => {
   const mockPush = jest.fn();
+  const mockReplace = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,7 +40,7 @@ describe('SettingsLayout', () => {
       back: jest.fn(),
       forward: jest.fn(),
       refresh: jest.fn(),
-      replace: jest.fn(),
+      replace: mockReplace,
       prefetch: jest.fn(),
     });
     mockedUsePathname.mockReturnValue('/settings');
@@ -86,7 +87,7 @@ describe('SettingsLayout', () => {
     );
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/login?redirectTo=%2Fsettings');
+      expect(mockReplace).toHaveBeenCalledWith('/login?redirectTo=%2Fsettings');
     });
   });
 
@@ -170,7 +171,7 @@ describe('SettingsLayout', () => {
     );
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
+      expect(mockReplace).toHaveBeenCalledWith(
         '/login?redirectTo=%2Fsettings%2Fpassword'
       );
     });

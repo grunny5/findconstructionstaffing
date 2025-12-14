@@ -24,33 +24,9 @@ const settingsTabs = [
 ];
 
 /**
- * Layout component for the settings section with authentication protection.
- *
- * This layout wraps all settings pages and provides:
- * - **Authentication Guard**: Redirects unauthenticated users to login
- * - **Responsive Navigation**:
- *   - Desktop (lg+): Sticky sidebar with SettingsSidebar component
- *   - Mobile/Tablet: Tab-based navigation using Shadcn/ui Tabs
- * - **Loading States**: Shows loading spinner while checking auth
- * - **Redirect Preservation**: Maintains redirectTo query param for post-login redirect
- *
- * The layout automatically:
- * 1. Checks user authentication status on mount
- * 2. Redirects to `/login?redirectTo=/settings/*` if not authenticated
- * 3. Displays appropriate navigation based on screen size
- *
- * @param props - Component props
- * @param props.children - Child components (settings pages) to render in the main content area
- * @returns Protected settings layout with responsive navigation
- *
- * @example
- * ```tsx
- * // In app/settings/page.tsx
- * export default function SettingsPage() {
- *   return <div>Settings content here</div>
- * }
- * // This page will automatically be wrapped by SettingsLayout
- * ```
+ * Protected settings layout with authentication guard and responsive navigation.
+ * Redirects unauthenticated users to login, preserving the return path.
+ * Desktop: sticky sidebar. Mobile: tab-based navigation.
  */
 export default function SettingsLayout({
   children,
@@ -63,7 +39,7 @@ export default function SettingsLayout({
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      router.replace(`/login?redirectTo=${encodeURIComponent(pathname)}`);
     }
   }, [user, loading, router, pathname]);
 
@@ -82,7 +58,6 @@ export default function SettingsLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
           <p className="mt-2 text-sm text-gray-600">
@@ -90,22 +65,18 @@ export default function SettingsLayout({
           </p>
         </div>
 
-        {/* Desktop Layout with Sidebar */}
         <div className="hidden lg:flex lg:gap-8">
-          {/* Sidebar */}
           <aside className="w-64 flex-shrink-0">
             <div className="sticky top-8">
               <SettingsSidebar />
             </div>
           </aside>
 
-          {/* Main Content */}
           <main className="flex-1">
             <div className="rounded-lg bg-white shadow">{children}</div>
           </main>
         </div>
 
-        {/* Mobile/Tablet Layout with Tabs */}
         <div className="lg:hidden">
           <Tabs value={pathname} className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-6">
