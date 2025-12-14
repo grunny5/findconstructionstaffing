@@ -524,22 +524,22 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Mock Supabase auth responses
   - Test happy path and error cases
 - **Acceptance Criteria (for this task):**
-  - [ ] Test: User requests reset → submits email → sees success
-  - [ ] Test: User clicks email link (mocked) → lands on reset page
-  - [ ] Test: Valid token → form shown
-  - [ ] Test: User sets new password → success → redirected to login
-  - [ ] Test: User logs in with new password → succeeds
-  - [ ] Test: Expired token → error shown → link to request new
-  - [ ] Test: Invalid token → error shown
-  - [ ] Test: Passwords don't match → validation error
-  - [ ] Test: Weak password → validation error
-  - [ ] Coverage >85%
+  - [x] Test: User requests reset → submits email → sees success
+  - [x] Test: User clicks email link (mocked) → lands on reset page
+  - [x] Test: Valid token → form shown
+  - [x] Test: User sets new password → success → redirected to login
+  - [x] Test: User logs in with new password → succeeds
+  - [x] Test: Expired token → error shown → link to request new
+  - [x] Test: Invalid token → error shown
+  - [x] Test: Passwords don't match → validation error
+  - [x] Test: Weak password → validation error
+  - [x] Coverage >85% (17 passing tests)
 - **Definition of Done:**
-  - [ ] All integration tests written and passing
-  - [ ] Tests in CI pipeline
-  - [ ] Coverage report generated
+  - [x] All integration tests written and passing (17/17)
+  - [x] Tests in CI pipeline
+  - [x] Coverage report generated
   - [ ] PR approved
-  - [ ] **Final Check:** Security scenarios covered
+  - [x] **Final Check:** Security scenarios covered
 
 **Estimated Effort:** 3-4 hours
 
