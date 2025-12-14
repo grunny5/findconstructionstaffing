@@ -11,11 +11,13 @@ This document breaks down the HomePage performance optimization into sprint-read
 ## 📦 Performance Issue Summary
 
 **Current Status:**
+
 - ✅ Local performance: ~20ms (excellent)
 - ❌ CI performance: 424ms (fails 350ms threshold)
 - ❌ Slowdown factor: 21x slower in CI vs local
 
 **Root Causes:**
+
 1. Heavy synchronous imports (1,851 lines of component code)
 2. DirectoryFilters component (550 lines) - single largest bottleneck
 3. 23+ lucide-react icons loaded eagerly
@@ -439,6 +441,7 @@ This document breaks down the HomePage performance optimization into sprint-read
 ## 📊 Success Metrics
 
 ### Must Have ✅
+
 1. CI initial render time < 350ms (currently 424ms)
 2. All existing tests pass
 3. No visible layout shifts during lazy loading
@@ -446,6 +449,7 @@ This document breaks down the HomePage performance optimization into sprint-read
 5. Test coverage maintained at 85%+
 
 ### Nice to Have 🎯
+
 1. CI render time < 300ms (stretch goal)
 2. Local render time < 15ms
 3. Improved Lighthouse performance score
@@ -456,14 +460,17 @@ This document breaks down the HomePage performance optimization into sprint-read
 ## 🚨 Risks & Mitigations
 
 ### Risk 1: Lazy Loading Introduces Layout Shift
+
 - **Mitigation**: Use proper Suspense fallbacks with matching heights
 - **Validation**: Visual QA and manual testing
 
 ### Risk 2: Optimizations Don't Achieve <350ms
+
 - **Mitigation**: Have fallback plan (increase threshold to 450ms)
 - **Validation**: Test with CI=true flag before committing
 
 ### Risk 3: Breaking Changes to Component Behavior
+
 - **Mitigation**: Comprehensive test coverage
 - **Validation**: All existing tests must pass
 
@@ -471,30 +478,33 @@ This document breaks down the HomePage performance optimization into sprint-read
 
 ## 📈 Expected Performance Breakdown
 
-| Component | Before | After | Savings |
-|-----------|--------|-------|---------|
-| DirectoryFilters parse | 100-150ms | 0ms (async) | 100-150ms |
-| Footer parse | 30-50ms | 0ms (async) | 30-50ms |
-| Icon imports | 50-100ms | 15-30ms | 35-70ms |
-| UI components | 40-80ms | 30-50ms | 10-30ms |
-| State init | 30-50ms | 25-40ms | 5-10ms |
-| **TOTAL** | **~424ms** | **~220ms** | **~200ms** |
+| Component              | Before     | After       | Savings    |
+| ---------------------- | ---------- | ----------- | ---------- |
+| DirectoryFilters parse | 100-150ms  | 0ms (async) | 100-150ms  |
+| Footer parse           | 30-50ms    | 0ms (async) | 30-50ms    |
+| Icon imports           | 50-100ms   | 15-30ms     | 35-70ms    |
+| UI components          | 40-80ms    | 30-50ms     | 10-30ms    |
+| State init             | 30-50ms    | 25-40ms     | 5-10ms     |
+| **TOTAL**              | **~424ms** | **~220ms**  | **~200ms** |
 
 ---
 
 ## 🔄 Alternative Approaches (If Primary Plan Fails)
 
 ### Option 1: Server Components
+
 - Convert static sections to Next.js Server Components
 - Reduces client-side JavaScript
 - Requires Next.js 13+ App Router refactoring
 
 ### Option 2: Route Splitting
+
 - Move filters to `/directory` route
 - Keep `/` as lightweight landing page
 - Requires routing changes
 
 ### Option 3: Increase Threshold
+
 - Accept 424ms as acceptable for CI
 - Update threshold to 450ms or 500ms
 - Document performance limitation
@@ -517,6 +527,7 @@ This document breaks down the HomePage performance optimization into sprint-read
 ## ✅ Task Completion Checklist
 
 Before closing this task list, ensure:
+
 - [ ] All Phase 1 tasks completed
 - [ ] All Phase 2 tasks completed
 - [ ] All Phase 3 tasks completed
