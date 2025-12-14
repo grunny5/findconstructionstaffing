@@ -38,7 +38,13 @@ if (!mockedSupabase.auth.getSession) {
 
 // Mock Next/Link
 jest.mock('next/link', () => {
-  return function Link({ children, href }: any) {
+  return function Link({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) {
     return <a href={href}>{children}</a>;
   };
 });
