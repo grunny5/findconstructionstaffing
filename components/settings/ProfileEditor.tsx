@@ -86,7 +86,10 @@ export function ProfileEditor({
       onOpenChange(false);
       reset({ full_name: data.full_name });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error(
+        'Error updating profile:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
 
       toast({
         variant: 'destructive',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import {
   Card,
@@ -24,6 +24,11 @@ export function ProfileSection() {
   const { user, profile, loading } = useAuth();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [optimisticName, setOptimisticName] = useState<string | null>(null);
+
+  // Reset optimistic name when profile.full_name changes (e.g., from server refresh)
+  useEffect(() => {
+    setOptimisticName(null);
+  }, [profile?.full_name]);
 
   if (loading) {
     return (
