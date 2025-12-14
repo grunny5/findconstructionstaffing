@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().trim().email('Invalid email address'),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -30,8 +30,9 @@ export default function ForgotPasswordPage() {
       setLoading(true);
       setSuccess(false);
 
-      const redirectUrl =
-        process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const redirectUrl = (
+        process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      ).replace(/\/+$/, '');
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         data.email,
         {
@@ -43,7 +44,7 @@ export default function ForgotPasswordPage() {
 
       // Always show success message to prevent email enumeration
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Show generic success message even on error to prevent email enumeration
       setSuccess(true);
     } finally {
@@ -120,10 +121,11 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
+                aria-invalid={errors.email ? true : undefined}
                 aria-describedby={errors.email ? 'email-error' : undefined}
               />
               {errors.email && (
-                <p id="email-error" className="mt-1 text-sm text-red-600">
+                <p id="email-error" role="alert" className="mt-1 text-sm text-red-600">
                   {errors.email.message}
                 </p>
               )}
