@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import type { ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
@@ -9,6 +10,9 @@ import ResetPasswordPage from '@/app/reset-password/page';
 import LoginPage from '@/app/login/page';
 import { useAuth } from '@/lib/auth/auth-context';
 import { supabase } from '@/lib/supabase';
+
+// Test constants
+const TEST_PASSWORD = 'newAlicePass123';
 
 // Mock Next.js navigation
 const mockPush = jest.fn();
@@ -25,7 +29,7 @@ jest.mock('next/link', () => {
     children,
     href,
   }: {
-    children: React.ReactNode;
+    children: ReactNode;
     href: string;
   }) {
     return <a href={href}>{children}</a>;
@@ -73,9 +77,8 @@ describe('Password Reset Integration Tests', () => {
       mockedSupabase.auth.updateUser = jest.fn();
     }
 
-    // Mock window.location
-    delete (window as any).location;
-    (window as any).location = { hash: '' };
+    // Reset hash between tests
+    window.location.hash = '';
   });
 
   describe('Story 2.1: Request Password Reset', () => {
@@ -505,8 +508,8 @@ describe('Password Reset Integration Tests', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'newAlicePass123');
-      await user.type(confirmInput, 'newAlicePass123');
+      await user.type(passwordInput, TEST_PASSWORD);
+      await user.type(confirmInput, TEST_PASSWORD);
       await user.click(resetButton);
 
       await waitFor(() => {
@@ -527,13 +530,13 @@ describe('Password Reset Integration Tests', () => {
       const loginButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(loginEmailInput, 'alice@example.com');
-      await user.type(loginPasswordInput, 'newAlicePass123');
+      await user.type(loginPasswordInput, TEST_PASSWORD);
       await user.click(loginButton);
 
       await waitFor(() => {
         expect(mockSignIn).toHaveBeenCalledWith(
           'alice@example.com',
-          'newAlicePass123'
+          TEST_PASSWORD
         );
         expect(mockPush).toHaveBeenCalledWith('/');
       });
