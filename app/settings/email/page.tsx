@@ -8,6 +8,19 @@ import {
   CardContent,
 } from '@/components/ui/card';
 
+/**
+ * Email settings page component (placeholder).
+ *
+ * Future implementation will allow users to:
+ * - Update their email address
+ * - Manage email preferences and notifications
+ * - Configure email verification settings
+ *
+ * Currently displays a placeholder message indicating the feature
+ * is not yet implemented.
+ *
+ * @returns Email settings placeholder page
+ */
 export default function SettingsEmailPage() {
   return (
     <div className="p-6 space-y-6">

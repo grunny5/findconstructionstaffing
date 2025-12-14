@@ -7,6 +7,10 @@ import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { User, Mail, Lock, AlertTriangle } from 'lucide-react';
 
+/**
+ * Tab configuration for mobile settings navigation.
+ * Includes Profile, Email, Password, and Account sections.
+ */
 const settingsTabs = [
   { name: 'Profile', href: '/settings', icon: User },
   { name: 'Email', href: '/settings/email', icon: Mail },
@@ -19,6 +23,35 @@ const settingsTabs = [
   },
 ];
 
+/**
+ * Layout component for the settings section with authentication protection.
+ *
+ * This layout wraps all settings pages and provides:
+ * - **Authentication Guard**: Redirects unauthenticated users to login
+ * - **Responsive Navigation**:
+ *   - Desktop (lg+): Sticky sidebar with SettingsSidebar component
+ *   - Mobile/Tablet: Tab-based navigation using Shadcn/ui Tabs
+ * - **Loading States**: Shows loading spinner while checking auth
+ * - **Redirect Preservation**: Maintains redirectTo query param for post-login redirect
+ *
+ * The layout automatically:
+ * 1. Checks user authentication status on mount
+ * 2. Redirects to `/login?redirectTo=/settings/*` if not authenticated
+ * 3. Displays appropriate navigation based on screen size
+ *
+ * @param props - Component props
+ * @param props.children - Child components (settings pages) to render in the main content area
+ * @returns Protected settings layout with responsive navigation
+ *
+ * @example
+ * ```tsx
+ * // In app/settings/page.tsx
+ * export default function SettingsPage() {
+ *   return <div>Settings content here</div>
+ * }
+ * // This page will automatically be wrapped by SettingsLayout
+ * ```
+ */
 export default function SettingsLayout({
   children,
 }: {

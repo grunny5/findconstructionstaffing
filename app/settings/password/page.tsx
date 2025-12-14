@@ -8,6 +8,20 @@ import {
   CardContent,
 } from '@/components/ui/card';
 
+/**
+ * Password settings page component (placeholder).
+ *
+ * Future implementation will allow users to:
+ * - Change their current password
+ * - View password strength requirements
+ * - Enable two-factor authentication
+ * - View active sessions and security logs
+ *
+ * Currently displays a placeholder message indicating the feature
+ * is not yet implemented.
+ *
+ * @returns Password settings placeholder page
+ */
 export default function SettingsPasswordPage() {
   return (
     <div className="p-6 space-y-6">

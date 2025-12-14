@@ -11,6 +11,31 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/**
+ * Settings profile page component.
+ *
+ * Displays the user's profile information in read-only mode:
+ * - **Full Name**: User's display name (or "Not set" if null)
+ * - **Email Address**: User's email (read-only)
+ * - **Role**: User's role with colored badge (User, Agency Owner, or Admin)
+ * - **Account Created**: Formatted creation date
+ *
+ * Features:
+ * - Loading state with skeleton placeholders
+ * - Role-based badge styling:
+ *   - Admin: Destructive variant (red)
+ *   - Agency Owner: Default variant (blue)
+ *   - User: Secondary variant (gray)
+ * - Informational note about future edit capability
+ *
+ * @returns Profile settings page with user information display
+ *
+ * @example
+ * ```tsx
+ * // Rendered at /settings route
+ * // Automatically wrapped by SettingsLayout
+ * ```
+ */
 export default function SettingsProfilePage() {
   const { user, profile, loading } = useAuth();
 

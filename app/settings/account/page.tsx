@@ -8,6 +8,23 @@ import {
   CardContent,
 } from '@/components/ui/card';
 
+/**
+ * Account settings page component (placeholder) - Danger Zone.
+ *
+ * Future implementation will include destructive actions:
+ * - Delete account permanently
+ * - Export user data
+ * - Deactivate account temporarily
+ * - Revoke all active sessions
+ *
+ * This page should include strong warnings and confirmation dialogs
+ * for all destructive actions.
+ *
+ * Currently displays a placeholder message with danger zone styling
+ * to indicate the critical nature of these actions.
+ *
+ * @returns Account settings placeholder page with danger zone indication
+ */
 export default function SettingsAccountPage() {
   return (
     <div className="p-6 space-y-6">
