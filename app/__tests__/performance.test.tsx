@@ -97,8 +97,8 @@ describe('Page Load Performance Tests', () => {
       const renderTime = endTime - startTime;
 
       // Initial render should be fast in test environment
-      // CI environments need 3x multiplier due to slower hardware
-      const threshold = process.env.CI ? 300 : 100;
+      // CI environments need 3.5x multiplier due to hardware variability
+      const threshold = process.env.CI ? 350 : 100;
       expect(renderTime).toBeLessThan(threshold);
     });
 
@@ -124,8 +124,8 @@ describe('Page Load Performance Tests', () => {
       );
       expect(skeletons.length).toBeGreaterThan(0);
 
-      // Should render quickly (3x multiplier for CI)
-      const threshold = process.env.CI ? 300 : 100;
+      // Should render quickly (3.5x multiplier for CI)
+      const threshold = process.env.CI ? 350 : 100;
       expect(renderTime).toBeLessThan(threshold);
     });
   });

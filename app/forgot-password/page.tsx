@@ -125,7 +125,11 @@ export default function ForgotPasswordPage() {
                 aria-describedby={errors.email ? 'email-error' : undefined}
               />
               {errors.email && (
-                <p id="email-error" role="alert" className="mt-1 text-sm text-red-600">
+                <p
+                  id="email-error"
+                  role="alert"
+                  className="mt-1 text-sm text-red-600"
+                >
                   {errors.email.message}
                 </p>
               )}
