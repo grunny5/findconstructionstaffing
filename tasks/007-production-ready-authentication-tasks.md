@@ -630,7 +630,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 3.2: Update Profile Information
+### [x] ➡️ Story 3.2: Update Profile Information
 
 > As a **Job Seeker**, I want **to update my profile information**, so that **my account details are current**.
 
@@ -638,7 +638,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
-### ✅ Task 3.2.1: Create Profile Editor Component
+### [x] Task 3.2.1: Create Profile Editor Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build inline/modal form for editing profile (full name)
@@ -673,7 +673,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
-### ✅ Task 3.2.2: Update Header to Show Latest Profile Name
+### [x] Task 3.2.2: Update Header to Show Latest Profile Name
 
 - **Role:** Frontend Developer
 - **Objective:** Ensure header user dropdown reflects profile changes immediately
