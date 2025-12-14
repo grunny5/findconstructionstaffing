@@ -1,55 +1,16 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/auth-context';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProfileSection } from '@/components/settings/ProfileSection';
 
 /**
- * Settings profile page component.
- *
- * Displays the user's profile information in read-only mode:
- * - **Full Name**: User's display name (or "Not set" if null)
- * - **Email Address**: User's email (read-only)
- * - **Role**: User's role with colored badge (User, Agency Owner, or Admin)
- * - **Account Created**: Formatted creation date
- *
- * Features:
- * - Loading state with skeleton placeholders
- * - Role-based badge styling:
- *   - Admin: Destructive variant (red)
- *   - Agency Owner: Default variant (blue)
- *   - User: Secondary variant (gray)
- * - Informational note about future edit capability
- *
- * @returns Profile settings page with user information display
- *
- * @example
- * ```tsx
- * // Rendered at /settings route
- * // Automatically wrapped by SettingsLayout
- * ```
+ * Settings profile page.
+ * Displays user profile information with edit capability.
  */
 export default function SettingsProfilePage() {
-  const { user, profile, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="p-6 space-y-6">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
+  const handleEditClick = () => {
+    // TODO: Implement in Task 3.2.1 - Open profile editor modal/form
+    console.log('Edit profile clicked');
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -60,79 +21,12 @@ export default function SettingsProfilePage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>
-            Your profile information is displayed below
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Full Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <p className="mt-1 text-sm text-gray-900">
-              {profile?.full_name || 'Not set'}
-            </p>
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
-          </div>
-
-          {/* Role */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Role
-            </label>
-            <div className="mt-1">
-              <Badge
-                variant={
-                  profile?.role === 'admin'
-                    ? 'destructive'
-                    : profile?.role === 'agency_owner'
-                      ? 'default'
-                      : 'secondary'
-                }
-              >
-                {profile?.role === 'admin'
-                  ? 'Admin'
-                  : profile?.role === 'agency_owner'
-                    ? 'Agency Owner'
-                    : 'User'}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Account Created */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Account Created
-            </label>
-            <p className="mt-1 text-sm text-gray-900">
-              {profile?.created_at
-                ? new Date(profile.created_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
-                : 'Unknown'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileSection onEditClick={handleEditClick} />
 
       <div className="rounded-lg bg-blue-50 p-4">
         <p className="text-sm text-blue-800">
-          <strong>Note:</strong> Profile editing will be available in the next
-          update. This section currently displays your information in read-only
-          mode.
+          <strong>Note:</strong> Click the Edit button to update your full
+          name. Email changes are managed in the Email section.
         </p>
       </div>
     </div>

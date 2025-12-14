@@ -610,21 +610,21 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Shadcn/ui Card component
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Section displays: Full Name, Email (read-only), Role (read-only), Account Created (read-only)
-  - [ ] Full Name has "Edit" button next to it (links to Task 3.2.1)
-  - [ ] Role shown as badge: "User", "Agency Owner", or "Admin"
-  - [ ] Account creation date formatted nicely
-  - [ ] Email shown but not editable here (separate Email section)
-  - [ ] Loading state while fetching profile
-  - [ ] Error state if profile fails to load
-  - [ ] Empty state if no profile (shouldn't happen but handle it)
+  - [x] Section displays: Full Name, Email (read-only), Role (read-only), Account Created (read-only)
+  - [x] Full Name has "Edit" button next to it (links to Task 3.2.1)
+  - [x] Role shown as badge: "User", "Agency Owner", or "Admin"
+  - [x] Account creation date formatted nicely
+  - [x] Email shown but not editable here (separate Email section)
+  - [x] Loading state while fetching profile
+  - [x] Error state if profile fails to load
+  - [x] Empty state if no profile (shouldn't happen but handle it)
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Displays correct user data
-  - [ ] Component tests written
+  - [x] Component implemented
+  - [x] Displays correct user data
+  - [x] Component tests written
   - [ ] Visual QA
   - [ ] PR approved
-  - [ ] **Final Check:** Clear data presentation
+  - [x] **Final Check:** Clear data presentation
 
 **Estimated Effort:** 2 hours
 

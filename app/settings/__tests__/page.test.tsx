@@ -27,8 +27,11 @@ describe('SettingsProfilePage', () => {
 
     render(<SettingsProfilePage />);
 
-    expect(screen.queryByText('Profile')).not.toBeInTheDocument();
-    expect(screen.queryByText('Personal Information')).not.toBeInTheDocument();
+    // Page header is always rendered
+    expect(screen.getByText('Profile')).toBeInTheDocument();
+    // ProfileSection shows skeleton while loading
+    const skeletons = document.querySelectorAll('.animate-pulse');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it('should display user profile information', () => {
@@ -131,7 +134,7 @@ describe('SettingsProfilePage', () => {
     expect(screen.getByText('Agency Owner')).toBeInTheDocument();
   });
 
-  it('should display informational note about read-only mode', () => {
+  it('should display informational note about editing', () => {
     mockedUseAuth.mockReturnValue({
       user: { id: '1', email: 'test@example.com' } as any,
       profile: {
@@ -153,7 +156,7 @@ describe('SettingsProfilePage', () => {
     render(<SettingsProfilePage />);
 
     expect(
-      screen.getByText(/Profile editing will be available in the next update/i)
+      screen.getByText(/Click the Edit button to update your full name/i)
     ).toBeInTheDocument();
   });
 
