@@ -231,8 +231,14 @@ export const createClient = jest.fn(
         signInWithOAuth: jest.fn(),
         signInWithOtp: jest.fn(),
         verifyOtp: jest.fn(),
-        updateUser: jest.fn(),
-        resetPasswordForEmail: jest.fn(),
+        updateUser: jest.fn().mockResolvedValue({
+          data: { user: null },
+          error: null,
+        }),
+        resetPasswordForEmail: jest.fn().mockResolvedValue({
+          data: {},
+          error: null,
+        }),
         onAuthStateChange: jest.fn(),
       },
 

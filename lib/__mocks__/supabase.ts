@@ -1,5 +1,13 @@
 // Consolidated Supabase mock for @/lib/supabase
-// This mock provides a factory function for better control and testing flexibility
+// This mock uses the mocked createClient from @supabase/supabase-js
+
+import { createClient } from '@supabase/supabase-js';
+
+// Create and export the default mock instance using the mocked createClient
+export const supabase = createClient(
+  'https://test.supabase.co',
+  'test-anon-key'
+);
 
 // Define comprehensive Supabase method types for type safety
 type SupabaseMethod =
@@ -40,10 +48,14 @@ type SupabaseMethod =
   | 'maybeSingle'
   | 'csv';
 
-// Factory function to create a mock Supabase instance
+// Factory function to create a mock Supabase instance (kept for backwards compatibility)
 // This approach provides better control for test-specific configurations
 export function createMockSupabase() {
-  const mock: Record<string, jest.Mock | any> = {
+  return createClient('https://test.supabase.co', 'test-anon-key');
+}
+
+// Legacy mock object for backwards compatibility with tests that don't use createClient
+const legacyMock: Record<string, jest.Mock | any> = {
     // Add _error property to signal this is a mock to API routes
     _error: true,
 
@@ -93,13 +105,13 @@ export function createMockSupabase() {
   };
 
   // Set up method chaining - each method returns the mock object
-  Object.keys(mock).forEach((method) => {
+  Object.keys(legacyMock).forEach((method) => {
     // Skip non-function properties
-    if (typeof mock[method] !== 'function') return;
+    if (typeof legacyMock[method] !== 'function') return;
 
     // Terminal methods that return promises
     if (['single', 'maybeSingle', 'csv'].includes(method)) {
-      mock[method].mockImplementation(() =>
+      legacyMock[method].mockImplementation(() =>
         Promise.resolve({
           data: null,
           error: null,
@@ -107,7 +119,7 @@ export function createMockSupabase() {
         })
       );
     } else if (method === 'count') {
-      mock[method].mockImplementation(() =>
+      legacyMock[method].mockImplementation(() =>
         Promise.resolve({
           data: null,
           error: null,
@@ -116,7 +128,7 @@ export function createMockSupabase() {
       );
     } else if (method === 'order') {
       // Order is often the final method in a chain before execution
-      mock[method].mockImplementation(() =>
+      legacyMock[method].mockImplementation(() =>
         Promise.resolve({
           data: [],
           error: null,
@@ -125,15 +137,12 @@ export function createMockSupabase() {
       );
     } else {
       // All other methods return the mock for chaining
-      mock[method].mockReturnValue(mock);
+      legacyMock[method].mockReturnValue(legacyMock);
     }
   });
 
-  return mock;
+  return legacyMock;
 }
-
-// Create and export the default mock instance
-export const supabase = createMockSupabase();
 
 // Re-export types from shared locations
 export type { Agency, Trade, Region, Lead } from '@/types/supabase';
@@ -143,14 +152,17 @@ export { createSlug, formatPhoneNumber } from '@/lib/utils/formatting';
 
 // Export a reset function for tests that need to reset the mock
 export function resetSupabaseMock() {
-  Object.keys(supabase).forEach((method) => {
-    if (
-      typeof supabase[method] === 'function' &&
-      jest.isMockFunction(supabase[method])
-    ) {
-      supabase[method].mockClear();
-    }
-  });
-  // Ensure _error property remains true after reset
-  (supabase as any)._error = true;
+  // Reset all auth mocks
+  if (supabase.auth) {
+    Object.values(supabase.auth).forEach((method) => {
+      if (typeof method === 'function' && jest.isMockFunction(method)) {
+        method.mockClear();
+      }
+    });
+  }
+
+  // Reset from method
+  if (jest.isMockFunction(supabase.from)) {
+    supabase.from.mockClear();
+  }
 }
