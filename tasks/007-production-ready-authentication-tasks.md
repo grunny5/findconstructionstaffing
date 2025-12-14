@@ -232,23 +232,23 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Prevent email enumeration (same response for all emails)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] POST `/api/auth/resend-verification` endpoint created
-  - [ ] Request body: `{ email: string }`
-  - [ ] Validate email format
-  - [ ] Check rate limit using timestamp tracking (session or DB)
-  - [ ] If rate limit exceeded: return 429 with "Please wait" message
-  - [ ] Call Supabase: `supabase.auth.resend({ type: 'signup', email })`
-  - [ ] Always return 200 success (prevent email enumeration)
-  - [ ] Response: `{ message: "If this email exists, we sent a verification link" }`
-  - [ ] Handle Supabase errors gracefully (log but don't expose)
+  - [x] POST `/api/auth/resend-verification` endpoint created
+  - [x] Request body: `{ email: string }`
+  - [x] Validate email format
+  - [x] Check rate limit using timestamp tracking (session or DB)
+  - [x] If rate limit exceeded: return 429 with "Please wait" message
+  - [x] Call Supabase: `supabase.auth.resend({ type: 'signup', email })`
+  - [x] Always return 200 success (prevent email enumeration)
+  - [x] Response: `{ message: "If this email exists, we sent a verification link" }`
+  - [x] Handle Supabase errors gracefully (log but don't expose)
 - **Definition of Done:**
-  - [ ] API route implemented
-  - [ ] Rate limiting tested (multiple requests in 10 mins)
-  - [ ] Unit tests for validation, rate limiting, success, errors
-  - [ ] API documentation added (OpenAPI spec or similar)
-  - [ ] Security review completed
+  - [x] API route implemented
+  - [x] Rate limiting tested (multiple requests in 10 mins)
+  - [x] Unit tests for validation, rate limiting, success, errors
+  - [x] API documentation added (OpenAPI spec or similar)
+  - [x] Security review completed
   - [ ] PR approved
-  - [ ] **Final Check:** Secure against abuse
+  - [x] **Final Check:** Secure against abuse
 
 **Estimated Effort:** 3-4 hours
 
@@ -267,24 +267,24 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Zod for validation
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts optional `initialEmail` prop
-  - [ ] Form has email input field
-  - [ ] Submit button disabled during API call
-  - [ ] Shows loading state: "Sending..."
-  - [ ] On success: shows success message "Check your email"
-  - [ ] On rate limit: shows error "Please wait before requesting another email"
-  - [ ] On error: shows generic error "Something went wrong. Try again."
-  - [ ] Email validation (format check)
-  - [ ] Accessible: labels, ARIA attributes, keyboard navigation
+  - [x] Component accepts optional `initialEmail` prop
+  - [x] Form has email input field
+  - [x] Submit button disabled during API call
+  - [x] Shows loading state: "Sending..."
+  - [x] On success: shows success message "Check your email"
+  - [x] On rate limit: shows error "Please wait before requesting another email"
+  - [x] On error: shows generic error "Something went wrong. Try again."
+  - [x] Email validation (format check)
+  - [x] Accessible: labels, ARIA attributes, keyboard navigation
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Component tests written (render, submit, success, error, rate limit)
+  - [x] Component implemented
+  - [x] Component tests written (render, submit, success, error, rate limit)
   - [ ] Storybook story created (optional but recommended)
-  - [ ] Integrated into login page error state
+  - [x] Integrated into login page error state
   - [ ] Integrated into verification error page
   - [ ] Accessibility tested with screen reader
   - [ ] PR approved
-  - [ ] **Final Check:** Follows Shadcn/ui patterns
+  - [x] **Final Check:** Follows Shadcn/ui patterns
 
 **Estimated Effort:** 2-3 hours
 
@@ -302,19 +302,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use ResendVerificationForm component (Task 1.2.2)
   - Maintain existing login functionality
 - **Acceptance Criteria (for this task):**
-  - [ ] Detect email verification error from Supabase
-  - [ ] Show error message: "Please verify your email address"
-  - [ ] Render `<ResendVerificationForm initialEmail={email} />` below error
-  - [ ] Successful resend shows confirmation without hiding error
-  - [ ] Other login errors don't show resend form
-  - [ ] Form is visually distinct from login form
-  - [ ] Mobile responsive
+  - [x] Detect email verification error from Supabase
+  - [x] Show error message: "Please verify your email address"
+  - [x] Render `<ResendVerificationForm initialEmail={email} />` below error
+  - [x] Successful resend shows confirmation without hiding error
+  - [x] Other login errors don't show resend form
+  - [x] Form is visually distinct from login form
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Integration complete
-  - [ ] Tests updated: unverified login shows resend form
+  - [x] Integration complete
+  - [x] Tests updated: unverified login shows resend form
   - [ ] Visual QA completed (desktop + mobile)
   - [ ] PR approved
-  - [ ] **Final Check:** UX is intuitive
+  - [x] **Final Check:** UX is intuitive
 
 **Estimated Effort:** 1-2 hours
 

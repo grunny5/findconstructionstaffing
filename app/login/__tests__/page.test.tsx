@@ -29,6 +29,16 @@ jest.mock('next/link', () => {
   };
 });
 
+// Mock ResendVerificationForm component
+jest.mock('@/components/auth/ResendVerificationForm', () => ({
+  ResendVerificationForm: ({ initialEmail }: { initialEmail?: string }) => (
+    <div data-testid="resend-verification-form">
+      <p>Resend Verification Form</p>
+      {initialEmail && <p data-testid="initial-email">{initialEmail}</p>}
+    </div>
+  ),
+}));
+
 describe('LoginPage', () => {
   const mockSignIn = jest.fn();
 
@@ -386,7 +396,7 @@ describe('LoginPage', () => {
       expect(mockPush).not.toHaveBeenCalled();
     });
 
-    it('should show "Resend verification email" button for unverified users', async () => {
+    it('should show ResendVerificationForm for unverified users', async () => {
       const user = userEvent.setup();
       const verificationError = new Error(
         'Please verify your email address before signing in.'
@@ -405,15 +415,15 @@ describe('LoginPage', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        const resendButton = screen.getByRole('link', {
-          name: /resend verification email/i,
-        });
-        expect(resendButton).toBeInTheDocument();
-        expect(resendButton).toHaveAttribute('href', '/signup');
+        const resendForm = screen.getByTestId('resend-verification-form');
+        expect(resendForm).toBeInTheDocument();
+        expect(screen.getByTestId('initial-email')).toHaveTextContent(
+          'unverified@example.com'
+        );
       });
     });
 
-    it('should NOT show "Resend verification email" button for other errors', async () => {
+    it('should NOT show ResendVerificationForm for other errors', async () => {
       const user = userEvent.setup();
       mockSignIn.mockRejectedValue({ message: 'Invalid credentials' });
 
@@ -431,9 +441,9 @@ describe('LoginPage', () => {
         expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
       });
 
-      // Should NOT show resend button
+      // Should NOT show resend form
       expect(
-        screen.queryByRole('link', { name: /resend verification email/i })
+        screen.queryByTestId('resend-verification-form')
       ).not.toBeInTheDocument();
     });
 
@@ -464,7 +474,7 @@ describe('LoginPage', () => {
           screen.getByText(/please verify your email address/i)
         ).toBeInTheDocument();
         expect(
-          screen.getByRole('link', { name: /resend verification email/i })
+          screen.getByTestId('resend-verification-form')
         ).toBeInTheDocument();
       });
 
@@ -480,7 +490,7 @@ describe('LoginPage', () => {
           screen.queryByText(/please verify your email address/i)
         ).not.toBeInTheDocument();
         expect(
-          screen.queryByRole('link', { name: /resend verification email/i })
+          screen.queryByTestId('resend-verification-form')
         ).not.toBeInTheDocument();
       });
     });
