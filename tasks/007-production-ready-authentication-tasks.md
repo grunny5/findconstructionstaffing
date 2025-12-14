@@ -380,19 +380,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Similar structure to login/signup pages
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page renders at `/forgot-password`
-  - [ ] Form with email input field
-  - [ ] Submit button calls Supabase `resetPasswordForEmail()`
-  - [ ] Loading state while submitting
-  - [ ] Success message: "If this email exists, you will receive a reset link"
-  - [ ] Always show success (prevent email enumeration)
-  - [ ] Link to login: "Remember your password? Sign in"
-  - [ ] Email validation (format check)
-  - [ ] Rate limiting handled by Supabase (3 per hour)
-  - [ ] Accessible: labels, keyboard navigation, screen reader support
-  - [ ] Mobile responsive
+  - [x] Page renders at `/forgot-password`
+  - [x] Form with email input field
+  - [x] Submit button calls Supabase `resetPasswordForEmail()`
+  - [x] Loading state while submitting
+  - [x] Success message: "If this email exists, you will receive a reset link"
+  - [x] Always show success (prevent email enumeration)
+  - [x] Link to login: "Remember your password? Sign in"
+  - [x] Email validation (format check)
+  - [x] Rate limiting handled by Supabase (3 per hour)
+  - [x] Accessible: labels, keyboard navigation, screen reader support
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Page implemented
+  - [x] Page implemented
   - [ ] Component tests written
   - [ ] Accessibility tested
   - [ ] Visual QA (desktop + mobile)
