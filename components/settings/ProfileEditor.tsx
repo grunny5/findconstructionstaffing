@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -64,6 +64,13 @@ export function ProfileEditor({
       full_name: currentName || '',
     },
   });
+
+  // Sync form when dialog opens or currentName changes
+  useEffect(() => {
+    if (open) {
+      reset({ full_name: currentName || '' });
+    }
+  }, [currentName, open, reset]);
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true);
