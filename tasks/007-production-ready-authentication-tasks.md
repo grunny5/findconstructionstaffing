@@ -280,7 +280,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - [x] Component implemented
   - [x] Component tests written (render, submit, success, error, rate limit)
   - [ ] Storybook story created (optional but recommended)
-  - [ ] Integrated into login page error state
+  - [x] Integrated into login page error state
   - [ ] Integrated into verification error page
   - [ ] Accessibility tested with screen reader
   - [ ] PR approved
@@ -302,19 +302,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use ResendVerificationForm component (Task 1.2.2)
   - Maintain existing login functionality
 - **Acceptance Criteria (for this task):**
-  - [ ] Detect email verification error from Supabase
-  - [ ] Show error message: "Please verify your email address"
-  - [ ] Render `<ResendVerificationForm initialEmail={email} />` below error
-  - [ ] Successful resend shows confirmation without hiding error
-  - [ ] Other login errors don't show resend form
-  - [ ] Form is visually distinct from login form
-  - [ ] Mobile responsive
+  - [x] Detect email verification error from Supabase
+  - [x] Show error message: "Please verify your email address"
+  - [x] Render `<ResendVerificationForm initialEmail={email} />` below error
+  - [x] Successful resend shows confirmation without hiding error
+  - [x] Other login errors don't show resend form
+  - [x] Form is visually distinct from login form
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Integration complete
-  - [ ] Tests updated: unverified login shows resend form
+  - [x] Integration complete
+  - [x] Tests updated: unverified login shows resend form
   - [ ] Visual QA completed (desktop + mobile)
   - [ ] PR approved
-  - [ ] **Final Check:** UX is intuitive
+  - [x] **Final Check:** UX is intuitive
 
 **Estimated Effort:** 1-2 hours
 

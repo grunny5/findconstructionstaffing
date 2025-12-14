@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { ResendVerificationForm } from '@/components/auth/ResendVerificationForm';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -22,6 +23,7 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEmailNotVerified, setIsEmailNotVerified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
 
   const {
     register,
@@ -36,6 +38,7 @@ function LoginForm() {
       setLoading(true);
       setError('');
       setIsEmailNotVerified(false);
+      setUnverifiedEmail('');
       await signIn(data.email, data.password);
 
       // Redirect to callback URL or home
@@ -45,6 +48,7 @@ function LoginForm() {
       // Check if error is due to unverified email
       if (err.isEmailNotVerified) {
         setIsEmailNotVerified(true);
+        setUnverifiedEmail(data.email);
         setError(err.message || 'Please verify your email address');
       } else {
         setError(err.message || 'Failed to sign in');
@@ -80,16 +84,6 @@ function LoginForm() {
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <p className="text-sm text-red-800">{error}</p>
-              {isEmailNotVerified && (
-                <div className="mt-3">
-                  <Link
-                    href="/signup"
-                    className="inline-block w-full text-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Resend verification email
-                  </Link>
-                </div>
-              )}
             </div>
           )}
 
@@ -142,6 +136,12 @@ function LoginForm() {
             </button>
           </div>
         </form>
+
+        {isEmailNotVerified && unverifiedEmail && (
+          <div className="mt-6">
+            <ResendVerificationForm initialEmail={unverifiedEmail} />
+          </div>
+        )}
       </div>
     </div>
   );
