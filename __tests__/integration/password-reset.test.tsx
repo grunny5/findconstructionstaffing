@@ -235,7 +235,11 @@ describe('Password Reset Integration Tests', () => {
       (window as any).location.hash = '#access_token=expired-token';
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
-        error: { message: 'Token expired', name: 'AuthError', status: 401 } as any,
+        error: {
+          message: 'Token expired',
+          name: 'AuthError',
+          status: 401,
+        } as any,
       });
 
       render(<ResetPasswordPage />);
@@ -542,7 +546,11 @@ describe('Password Reset Integration Tests', () => {
       (window as any).location.hash = '#access_token=expired-token-xyz';
       mockedSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
-        error: { message: 'Token expired', name: 'AuthError', status: 401 } as any,
+        error: {
+          message: 'Token expired',
+          name: 'AuthError',
+          status: 401,
+        } as any,
       });
 
       const { unmount: unmountReset } = render(<ResetPasswordPage />);
