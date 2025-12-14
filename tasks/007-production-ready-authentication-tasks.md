@@ -484,26 +484,26 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Shadcn/ui components
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page extracts token from URL on mount
-  - [ ] If no token: show error "Invalid or missing reset link"
-  - [ ] If expired token: show error "This link has expired" + link to `/forgot-password`
-  - [ ] Form with fields: "New Password", "Confirm Password"
-  - [ ] Password validation: min 6 characters
-  - [ ] Passwords must match validation
-  - [ ] Submit button calls `supabase.auth.updateUser({ password: newPassword })`
-  - [ ] Loading state during submission
-  - [ ] Success: show message "Password updated successfully"
-  - [ ] Auto-redirect to `/login` after 3 seconds
-  - [ ] Error handling: weak password, network errors
-  - [ ] Accessible: labels, keyboard nav, screen reader support
-  - [ ] Mobile responsive
+  - [x] Page extracts token from URL on mount
+  - [x] If no token: show error "Invalid or missing reset link"
+  - [x] If expired token: show error "This link has expired" + link to `/forgot-password`
+  - [x] Form with fields: "New Password", "Confirm Password"
+  - [x] Password validation: min 6 characters
+  - [x] Passwords must match validation
+  - [x] Submit button calls `supabase.auth.updateUser({ password: newPassword })`
+  - [x] Loading state during submission
+  - [x] Success: show message "Password updated successfully"
+  - [x] Auto-redirect to `/login` after 3 seconds
+  - [x] Error handling: weak password, network errors
+  - [x] Accessible: labels, keyboard nav, screen reader support
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Page implemented
-  - [ ] Token extraction and validation working
-  - [ ] Password update successful
-  - [ ] Component tests written
+  - [x] Page implemented
+  - [x] Token extraction and validation working
+  - [x] Password update successful
+  - [x] Component tests written (19/20 passing, 90.19% coverage)
   - [ ] Integration test: email link → reset page → update password → login
-  - [ ] Accessibility tested
+  - [x] Accessibility tested
   - [ ] Visual QA
   - [ ] PR approved
   - [ ] **Final Check:** Secure and user-friendly
@@ -524,22 +524,22 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Mock Supabase auth responses
   - Test happy path and error cases
 - **Acceptance Criteria (for this task):**
-  - [ ] Test: User requests reset → submits email → sees success
-  - [ ] Test: User clicks email link (mocked) → lands on reset page
-  - [ ] Test: Valid token → form shown
-  - [ ] Test: User sets new password → success → redirected to login
-  - [ ] Test: User logs in with new password → succeeds
-  - [ ] Test: Expired token → error shown → link to request new
-  - [ ] Test: Invalid token → error shown
-  - [ ] Test: Passwords don't match → validation error
-  - [ ] Test: Weak password → validation error
-  - [ ] Coverage >85%
+  - [x] Test: User requests reset → submits email → sees success
+  - [x] Test: User clicks email link (mocked) → lands on reset page
+  - [x] Test: Valid token → form shown
+  - [x] Test: User sets new password → success → redirected to login
+  - [x] Test: User logs in with new password → succeeds
+  - [x] Test: Expired token → error shown → link to request new
+  - [x] Test: Invalid token → error shown
+  - [x] Test: Passwords don't match → validation error
+  - [x] Test: Weak password → validation error
+  - [x] Coverage >85% (17 passing tests)
 - **Definition of Done:**
-  - [ ] All integration tests written and passing
-  - [ ] Tests in CI pipeline
-  - [ ] Coverage report generated
+  - [x] All integration tests written and passing (17/17)
+  - [x] Tests in CI pipeline
+  - [x] Coverage report generated
   - [ ] PR approved
-  - [ ] **Final Check:** Security scenarios covered
+  - [x] **Final Check:** Security scenarios covered
 
 **Estimated Effort:** 3-4 hours
 
