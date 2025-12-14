@@ -414,14 +414,14 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use Next.js Link component
   - Maintain existing layout
 - **Acceptance Criteria (for this task):**
-  - [ ] Link added below password field or below submit button
-  - [ ] Text: "Forgot password?"
-  - [ ] Links to `/forgot-password`
-  - [ ] Styled consistently with "create account" link
-  - [ ] Keyboard accessible
-  - [ ] Mobile responsive
+  - [x] Link added below password field or below submit button
+  - [x] Text: "Forgot password?"
+  - [x] Links to `/forgot-password`
+  - [x] Styled consistently with "create account" link
+  - [x] Keyboard accessible
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Link added
+  - [x] Link added
   - [ ] Tests updated: link is present and navigates correctly
   - [ ] Visual QA completed
   - [ ] PR approved
