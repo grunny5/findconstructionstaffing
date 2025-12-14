@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,6 +23,7 @@ import { Loader2 } from 'lucide-react';
 const profileSchema = z.object({
   full_name: z
     .string()
+    .trim()
     .min(2, 'Full name must be at least 2 characters')
     .max(100, 'Full name must be less than 100 characters'),
 });
@@ -52,6 +53,7 @@ export function ProfileEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { refreshProfile } = useAuth();
+  const wasOpenRef = useRef(false);
 
   const {
     register,
@@ -65,11 +67,12 @@ export function ProfileEditor({
     },
   });
 
-  // Sync form when dialog opens or currentName changes
+  // Sync form only when dialog transitions closed -> open
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpenRef.current) {
       reset({ full_name: currentName || '' });
     }
+    wasOpenRef.current = open;
   }, [currentName, open, reset]);
 
   const onSubmit = async (data: ProfileFormData) => {
@@ -87,8 +90,15 @@ export function ProfileEditor({
       // Success: optimistic UI update via callback
       onSuccess?.(data.full_name);
 
-      // Refresh profile in auth context to update header
-      await refreshProfile();
+      // Refresh profile in auth context to update header (best-effort)
+      try {
+        await refreshProfile();
+      } catch (e) {
+        console.error(
+          'Profile updated but refreshProfile failed:',
+          e instanceof Error ? e.message : 'Unknown error'
+        );
+      }
 
       toast({
         title: 'Profile updated',
