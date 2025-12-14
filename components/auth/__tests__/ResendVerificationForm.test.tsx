@@ -340,7 +340,7 @@ describe('ResendVerificationForm', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
 
-      let resolveFetch!: (value: any) => void;
+      let resolveFetch!: (value: { ok: boolean; status: number }) => void;
       const fetchPromise = new Promise((resolve) => {
         resolveFetch = resolve;
       });
@@ -377,7 +377,7 @@ describe('ResendVerificationForm', () => {
     it('should disable submit button during submission', async () => {
       const user = userEvent.setup();
 
-      let resolveFetch!: (value: any) => void;
+      let resolveFetch!: (value: { ok: boolean; status: number }) => void;
       const fetchPromise = new Promise((resolve) => {
         resolveFetch = resolve;
       });
@@ -413,7 +413,7 @@ describe('ResendVerificationForm', () => {
     it('should disable email input during submission', async () => {
       const user = userEvent.setup();
 
-      let resolveFetch!: (value: any) => void;
+      let resolveFetch!: (value: { ok: boolean; status: number }) => void;
       const fetchPromise = new Promise((resolve) => {
         resolveFetch = resolve;
       });
@@ -510,7 +510,7 @@ describe('ResendVerificationForm', () => {
     it('should update button aria-label during loading state', async () => {
       const user = userEvent.setup();
 
-      let resolveFetch!: (value: any) => void;
+      let resolveFetch!: (value: { ok: boolean; status: number }) => void;
       const fetchPromise = new Promise((resolve) => {
         resolveFetch = resolve;
       });
