@@ -4,14 +4,9 @@ import { ProfileSection } from '@/components/settings/ProfileSection';
 
 /**
  * Settings profile page.
- * Displays user profile information with edit capability.
+ * Displays user profile information with inline editing capability.
  */
 export default function SettingsProfilePage() {
-  const handleEditClick = () => {
-    // TODO: Implement in Task 3.2.1 - Open profile editor modal/form
-    console.log('Edit profile clicked');
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -21,7 +16,7 @@ export default function SettingsProfilePage() {
         </p>
       </div>
 
-      <ProfileSection onEditClick={handleEditClick} />
+      <ProfileSection />
 
       <div className="rounded-lg bg-blue-50 p-4">
         <p className="text-sm text-blue-800">

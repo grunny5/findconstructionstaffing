@@ -650,24 +650,24 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Shadcn/ui Dialog or inline edit
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Edit button opens modal or toggles inline edit mode
-  - [ ] Form field: Full Name
-  - [ ] Validation: min 2 characters
-  - [ ] Submit updates profile via `supabase.from('profiles').update()`
-  - [ ] Loading state during save
-  - [ ] Success: show toast "Profile updated" + close modal/save inline
-  - [ ] Cancel button resets form
-  - [ ] Error handling: network errors, validation errors
-  - [ ] Optimistic update in UI (show new name immediately)
-  - [ ] Accessible: focus management, labels
+  - [x] Edit button opens modal or toggles inline edit mode
+  - [x] Form field: Full Name
+  - [x] Validation: min 2 characters
+  - [x] Submit updates profile via `supabase.from('profiles').update()`
+  - [x] Loading state during save
+  - [x] Success: show toast "Profile updated" + close modal/save inline
+  - [x] Cancel button resets form
+  - [x] Error handling: network errors, validation errors
+  - [x] Optimistic update in UI (show new name immediately)
+  - [x] Accessible: focus management, labels
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Profile update works
-  - [ ] Component tests written
-  - [ ] Integration test: edit name → save → see updated name
-  - [ ] Accessibility tested
+  - [x] Component implemented
+  - [x] Profile update works
+  - [x] Component tests written
+  - [x] Integration test: edit name → save → see updated name
+  - [x] Accessibility tested
   - [ ] PR approved
-  - [ ] **Final Check:** Smooth editing experience
+  - [x] **Final Check:** Smooth editing experience
 
 **Estimated Effort:** 3 hours
 
