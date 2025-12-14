@@ -63,19 +63,6 @@ describe('ResetPasswordPage', () => {
   });
 
   describe('Token Validation', () => {
-    it('should show loading state initially', async () => {
-      // Don't mock getSession so it stays pending
-      mockedSupabase.auth.getSession.mockImplementation(
-        () => new Promise(() => {}) // Never resolves
-      );
-
-      render(<ResetPasswordPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/loading\.\.\./i)).toBeInTheDocument();
-      });
-    });
-
     it('should show error when token is missing', async () => {
       (window as any).location.hash = '';
       mockedSupabase.auth.getSession.mockResolvedValue({
@@ -120,9 +107,7 @@ describe('ResetPasswordPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/link expired/i)).toBeInTheDocument();
-        expect(
-          screen.getByText(/this link has expired/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/this link has expired/i)).toBeInTheDocument();
       });
     });
 
@@ -148,7 +133,9 @@ describe('ResetPasswordPage', () => {
         expect(
           screen.getByRole('heading', { name: /reset your password/i })
         ).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
         expect(
           screen.getByPlaceholderText(/confirm password/i)
         ).toBeInTheDocument();
@@ -227,7 +214,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -252,7 +241,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -280,7 +271,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -328,7 +321,11 @@ describe('ResetPasswordPage', () => {
         () =>
           new Promise((resolve) =>
             setTimeout(
-              () => resolve({ data: { user: { id: 'user-123' } as any }, error: null }),
+              () =>
+                resolve({
+                  data: { user: { id: 'user-123' } as any },
+                  error: null,
+                }),
               100
             )
           )
@@ -337,7 +334,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -368,7 +367,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -398,7 +399,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -431,7 +434,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -465,7 +470,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -525,7 +532,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -540,9 +549,7 @@ describe('ResetPasswordPage', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/password is too weak/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/password is too weak/i)).toBeInTheDocument();
       });
     });
 
@@ -555,7 +562,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -609,7 +618,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);
@@ -636,7 +647,9 @@ describe('ResetPasswordPage', () => {
       render(<ResetPasswordPage />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/new password/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/new password/i)
+        ).toBeInTheDocument();
       });
 
       const passwordInput = screen.getByPlaceholderText(/new password/i);

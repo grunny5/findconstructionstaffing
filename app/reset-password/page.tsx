@@ -65,12 +65,26 @@ export default function ResetPasswordPage() {
 
         setTokenState('valid');
       } catch (err: unknown) {
+        console.error('Token validation error:', err);
         setTokenState('error');
       }
     };
 
     checkToken();
   }, []);
+
+  // Auto-redirect to login after successful password reset
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (success) {
+      timeoutId = setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [success, router]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     try {
@@ -84,11 +98,6 @@ export default function ResetPasswordPage() {
       if (updateError) throw updateError;
 
       setSuccess(true);
-
-      // Auto-redirect to login after 3 seconds
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
     } catch (err: unknown) {
       let errorMessage = 'Failed to update password';
       if (err instanceof Error) {
@@ -297,7 +306,9 @@ export default function ResetPasswordPage() {
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="New Password"
                 aria-invalid={errors.password ? true : undefined}
-                aria-describedby={errors.password ? 'password-error' : undefined}
+                aria-describedby={
+                  errors.password ? 'password-error' : undefined
+                }
               />
               {errors.password && (
                 <p
