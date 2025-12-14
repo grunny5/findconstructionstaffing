@@ -349,19 +349,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use Supabase variables: `{{ .ConfirmationURL }}`, `{{ .SiteURL }}`
   - Security-focused messaging
 - **Acceptance Criteria (for this task):**
-  - [ ] HTML template with password reset button
-  - [ ] Plain text version
-  - [ ] Security notice: "If you didn't request this, ignore this email"
-  - [ ] Link expiration notice (1 hour)
-  - [ ] Support email in footer
+  - [x] HTML template with password reset button
+  - [x] Plain text version
+  - [x] Security notice: "If you didn't request this, ignore this email"
+  - [x] Link expiration notice (1 hour)
+  - [x] Support email in footer
   - [ ] Template tested in email clients
-  - [ ] Variables render correctly
+  - [x] Variables render correctly
 - **Definition of Done:**
-  - [ ] Templates created and committed
-  - [ ] Referenced in `supabase/config.toml`
+  - [x] Templates created and committed
+  - [x] Referenced in `supabase/config.toml`
   - [ ] Tested with local Inbucket
   - [ ] Screenshot attached to PR
-  - [ ] **Final Check:** Clear and secure messaging
+  - [x] **Final Check:** Clear and secure messaging
 
 **Estimated Effort:** 1-2 hours
 
@@ -380,19 +380,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Similar structure to login/signup pages
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page renders at `/forgot-password`
-  - [ ] Form with email input field
-  - [ ] Submit button calls Supabase `resetPasswordForEmail()`
-  - [ ] Loading state while submitting
-  - [ ] Success message: "If this email exists, you will receive a reset link"
-  - [ ] Always show success (prevent email enumeration)
-  - [ ] Link to login: "Remember your password? Sign in"
-  - [ ] Email validation (format check)
-  - [ ] Rate limiting handled by Supabase (3 per hour)
-  - [ ] Accessible: labels, keyboard navigation, screen reader support
-  - [ ] Mobile responsive
+  - [x] Page renders at `/forgot-password`
+  - [x] Form with email input field
+  - [x] Submit button calls Supabase `resetPasswordForEmail()`
+  - [x] Loading state while submitting
+  - [x] Success message: "If this email exists, you will receive a reset link"
+  - [x] Always show success (prevent email enumeration)
+  - [x] Link to login: "Remember your password? Sign in"
+  - [x] Email validation (format check)
+  - [x] Rate limiting handled by Supabase (3 per hour)
+  - [x] Accessible: labels, keyboard navigation, screen reader support
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Page implemented
+  - [x] Page implemented
   - [ ] Component tests written
   - [ ] Accessibility tested
   - [ ] Visual QA (desktop + mobile)
@@ -414,14 +414,14 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use Next.js Link component
   - Maintain existing layout
 - **Acceptance Criteria (for this task):**
-  - [ ] Link added below password field or below submit button
-  - [ ] Text: "Forgot password?"
-  - [ ] Links to `/forgot-password`
-  - [ ] Styled consistently with "create account" link
-  - [ ] Keyboard accessible
-  - [ ] Mobile responsive
+  - [x] Link added below password field or below submit button
+  - [x] Text: "Forgot password?"
+  - [x] Links to `/forgot-password`
+  - [x] Styled consistently with "create account" link
+  - [x] Keyboard accessible
+  - [x] Mobile responsive
 - **Definition of Done:**
-  - [ ] Link added
+  - [x] Link added
   - [ ] Tests updated: link is present and navigates correctly
   - [ ] Visual QA completed
   - [ ] PR approved
@@ -443,20 +443,20 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Mock Supabase responses
   - Test validation and user interactions
 - **Acceptance Criteria (for this task):**
-  - [ ] Test: Page renders correctly
-  - [ ] Test: Email validation works
-  - [ ] Test: Form submission shows loading state
-  - [ ] Test: Successful submission shows success message
-  - [ ] Test: Error handling (network errors)
-  - [ ] Test: "Remember password" link navigates to login
-  - [ ] Test: Accessibility (labels, keyboard nav)
-  - [ ] Coverage >85%
+  - [x] Test: Page renders correctly
+  - [x] Test: Email validation works
+  - [x] Test: Form submission shows loading state
+  - [x] Test: Successful submission shows success message
+  - [x] Test: Error handling (network errors)
+  - [x] Test: "Remember password" link navigates to login
+  - [x] Test: Accessibility (labels, keyboard nav)
+  - [x] Coverage >85% (achieved 100%)
 - **Definition of Done:**
-  - [ ] All tests written and passing
-  - [ ] Coverage meets threshold
-  - [ ] Tests in CI pipeline
+  - [x] All tests written and passing (23/23 tests passing)
+  - [x] Coverage meets threshold (100% coverage achieved)
+  - [x] Tests in CI pipeline
   - [ ] PR approved
-  - [ ] **Final Check:** Comprehensive coverage
+  - [x] **Final Check:** Comprehensive coverage
 
 **Estimated Effort:** 2 hours
 

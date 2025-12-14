@@ -135,6 +135,15 @@ function LoginForm() {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
+
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-blue-600 hover:text-blue-500"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </form>
 
         {isEmailNotVerified && unverifiedEmail && (
