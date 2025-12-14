@@ -98,15 +98,16 @@ describe('ForgotPasswordPage', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/invalid email address/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
       });
     });
 
     it('should not show error for valid email', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -127,7 +128,10 @@ describe('ForgotPasswordPage', () => {
 
     it('should trim whitespace from email input', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -154,7 +158,7 @@ describe('ForgotPasswordPage', () => {
       mockedSupabase.auth.resetPasswordForEmail.mockImplementation(
         () =>
           new Promise((resolve) =>
-            setTimeout(() => resolve({ error: null }), 100)
+            setTimeout(() => resolve({ data: {}, error: null }), 100)
           )
       );
 
@@ -168,13 +172,20 @@ describe('ForgotPasswordPage', () => {
       await user.type(emailInput, 'test@example.com');
       await user.click(submitButton);
 
-      expect(screen.getByRole('button', { name: /sending\.\.\./i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /sending\.\.\./i })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /sending\.\.\./i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /sending\.\.\./i })
+      ).toBeDisabled();
     });
 
     it('should call resetPasswordForEmail with correct email and redirect URL', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -198,7 +209,10 @@ describe('ForgotPasswordPage', () => {
 
     it('should show success message after successful submission', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -222,7 +236,10 @@ describe('ForgotPasswordPage', () => {
 
     it('should hide form after successful submission', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -246,7 +263,10 @@ describe('ForgotPasswordPage', () => {
 
     it('should show return to login link in success message', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -272,7 +292,12 @@ describe('ForgotPasswordPage', () => {
     it('should show success message even when email does not exist (security)', async () => {
       const user = userEvent.setup();
       mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
-        error: { message: 'User not found' },
+        data: null,
+        error: {
+          message: 'User not found',
+          name: 'AuthApiError',
+          status: 400,
+        } as any,
       });
 
       render(<ForgotPasswordPage />);
@@ -319,7 +344,12 @@ describe('ForgotPasswordPage', () => {
     it('should never display actual error messages to prevent email enumeration', async () => {
       const user = userEvent.setup();
       mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
-        error: { message: 'Some specific error' },
+        data: null,
+        error: {
+          message: 'Some specific error',
+          name: 'AuthApiError',
+          status: 400,
+        } as any,
       });
 
       render(<ForgotPasswordPage />);
@@ -353,7 +383,10 @@ describe('ForgotPasswordPage', () => {
 
     it('should navigate to login page from success message', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
@@ -441,7 +474,10 @@ describe('ForgotPasswordPage', () => {
 
     it('should maintain focus management after submission', async () => {
       const user = userEvent.setup();
-      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+      mockedSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        data: {},
+        error: null,
+      });
 
       render(<ForgotPasswordPage />);
 
