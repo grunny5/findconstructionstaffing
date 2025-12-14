@@ -1,1 +1,0 @@
-export { ResendVerificationForm } from './ResendVerificationForm';
