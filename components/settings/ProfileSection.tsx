@@ -98,55 +98,55 @@ export function ProfileSection() {
             </Button>
           </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Email Address
-          </label>
-          <p className="mt-1 text-sm text-gray-900">{user.email}</p>
-          <p className="mt-1 text-xs text-gray-500">
-            Email changes are managed in the Email section
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Role
-          </label>
-          <div className="mt-1">
-            <Badge
-              variant={
-                profile.role === 'admin'
-                  ? 'destructive'
-                  : profile.role === 'agency_owner'
-                    ? 'default'
-                    : 'secondary'
-              }
-            >
-              {profile.role === 'admin'
-                ? 'Admin'
-                : profile.role === 'agency_owner'
-                  ? 'Agency Owner'
-                  : 'User'}
-            </Badge>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Email Address
+            </label>
+            <p className="mt-1 text-sm text-gray-900">{user.email}</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Email changes are managed in the Email section
+            </p>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Account Created
-          </label>
-          <p className="mt-1 text-sm text-gray-900">
-            {profile.created_at
-              ? new Date(profile.created_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })
-              : 'Unknown'}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Role
+            </label>
+            <div className="mt-1">
+              <Badge
+                variant={
+                  profile.role === 'admin'
+                    ? 'destructive'
+                    : profile.role === 'agency_owner'
+                      ? 'default'
+                      : 'secondary'
+                }
+              >
+                {profile.role === 'admin'
+                  ? 'Admin'
+                  : profile.role === 'agency_owner'
+                    ? 'Agency Owner'
+                    : 'User'}
+              </Badge>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Account Created
+            </label>
+            <p className="mt-1 text-sm text-gray-900">
+              {profile.created_at
+                ? new Date(profile.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                : 'Unknown'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <ProfileEditor
         userId={user.id}

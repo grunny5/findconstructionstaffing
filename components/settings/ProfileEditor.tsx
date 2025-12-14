@@ -113,7 +113,7 @@ export function ProfileEditor({
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
             <DialogDescription>
-              Update your full name. Click save when you're done.
+              Update your full name. Click save when you are done.
             </DialogDescription>
           </DialogHeader>
 
@@ -155,7 +155,9 @@ export function ProfileEditor({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || !isDirty}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {isSubmitting ? 'Saving...' : 'Save changes'}
             </Button>
           </DialogFooter>

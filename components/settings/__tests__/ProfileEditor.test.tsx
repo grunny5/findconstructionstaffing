@@ -44,9 +44,7 @@ describe('ProfileEditor', () => {
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByText('Edit Profile')).toBeInTheDocument();
-      expect(
-        screen.getByText(/Update your full name/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Update your full name/i)).toBeInTheDocument();
     });
 
     it('should not render when closed', () => {
@@ -202,9 +200,7 @@ describe('ProfileEditor', () => {
 
       resolveUpdate({ error: null });
       await waitFor(() => {
-        expect(
-          screen.queryByText(/Saving.../i)
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/Saving.../i)).not.toBeInTheDocument();
       });
     });
 
