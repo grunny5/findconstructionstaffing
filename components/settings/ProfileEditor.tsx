@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/auth/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 
@@ -39,6 +40,7 @@ interface ProfileEditorProps {
 /**
  * Profile editor dialog for updating user's full name.
  * Uses React Hook Form with Zod validation and optimistic UI updates.
+ * Refreshes auth context after save to update header across all pages.
  */
 export function ProfileEditor({
   userId,
@@ -49,6 +51,7 @@ export function ProfileEditor({
 }: ProfileEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { refreshProfile } = useAuth();
 
   const {
     register,
@@ -76,6 +79,9 @@ export function ProfileEditor({
 
       // Success: optimistic UI update via callback
       onSuccess?.(data.full_name);
+
+      // Refresh profile in auth context to update header
+      await refreshProfile();
 
       toast({
         title: 'Profile updated',

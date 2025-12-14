@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { ProfileEditor } from '../ProfileEditor';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/auth/auth-context';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -17,13 +18,19 @@ jest.mock('@/hooks/use-toast', () => ({
   useToast: jest.fn(),
 }));
 
+jest.mock('@/lib/auth/auth-context', () => ({
+  useAuth: jest.fn(),
+}));
+
 const mockedSupabase = supabase as jest.Mocked<typeof supabase>;
 const mockedUseToast = useToast as jest.MockedFunction<typeof useToast>;
+const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('ProfileEditor', () => {
   const mockToast = jest.fn();
   const mockOnSuccess = jest.fn();
   const mockOnOpenChange = jest.fn();
+  const mockRefreshProfile = jest.fn();
 
   const defaultProps = {
     userId: 'user-123',
@@ -36,6 +43,9 @@ describe('ProfileEditor', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedUseToast.mockReturnValue({ toast: mockToast } as any);
+    mockedUseAuth.mockReturnValue({
+      refreshProfile: mockRefreshProfile,
+    } as any);
   });
 
   describe('Rendering', () => {
@@ -165,11 +175,35 @@ describe('ProfileEditor', () => {
       expect(mockUpdate).toHaveBeenCalledWith({ full_name: 'Jane Smith' });
       expect(mockEq).toHaveBeenCalledWith('id', 'user-123');
       expect(mockOnSuccess).toHaveBeenCalledWith('Jane Smith');
+      expect(mockRefreshProfile).toHaveBeenCalled();
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Profile updated',
         description: 'Your profile has been updated successfully.',
       });
       expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it('should refresh auth context profile after successful update', async () => {
+      const user = userEvent.setup();
+      const mockEq = jest.fn().mockResolvedValue({ error: null });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+
+      mockedSupabase.from.mockReturnValue({
+        update: mockUpdate,
+      } as any);
+
+      render(<ProfileEditor {...defaultProps} />);
+
+      const input = screen.getByLabelText(/Full Name/i);
+      await user.clear(input);
+      await user.type(input, 'Updated Name');
+
+      const saveButton = screen.getByRole('button', { name: /Save changes/i });
+      await user.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockRefreshProfile).toHaveBeenCalledTimes(1);
+      });
     });
 
     it('should show loading state during submit', async () => {

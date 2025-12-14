@@ -21,6 +21,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: false,
       isAgencyOwner: false,
     });
@@ -49,6 +50,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: false,
       isAgencyOwner: false,
     });
@@ -77,6 +79,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: false,
       isAgencyOwner: false,
     });
@@ -101,6 +104,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: true,
       isAgencyOwner: false,
     });
@@ -125,6 +129,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: false,
       isAgencyOwner: true,
     });
@@ -149,6 +154,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: false,
       isAgencyOwner: false,
     });
@@ -175,6 +181,7 @@ describe('SettingsProfilePage', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
+      refreshProfile: jest.fn(),
       isAdmin: false,
       isAgencyOwner: false,
     });

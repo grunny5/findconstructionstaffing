@@ -685,15 +685,15 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use React Context for global state
   - Consider adding profile refresh method to auth context
 - **Acceptance Criteria (for this task):**
-  - [ ] After profile update, header shows new name without page refresh
-  - [ ] Either: optimistic update in auth context, OR: refetch profile after save
-  - [ ] No flickering or delay in name update
-  - [ ] Works across all pages (global context)
+  - [x] After profile update, header shows new name without page refresh
+  - [x] Either: optimistic update in auth context, OR: refetch profile after save
+  - [x] No flickering or delay in name update
+  - [x] Works across all pages (global context)
 - **Definition of Done:**
-  - [ ] Header updates immediately after profile edit
-  - [ ] Tests verify name propagates
+  - [x] Header updates immediately after profile edit
+  - [x] Tests verify name propagates
   - [ ] PR approved
-  - [ ] **Final Check:** Seamless UX
+  - [x] **Final Check:** Seamless UX
 
 **Estimated Effort:** 1-2 hours
 
