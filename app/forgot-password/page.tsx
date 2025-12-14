@@ -16,7 +16,6 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
 
   const {
     register,
@@ -29,13 +28,14 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
       setLoading(true);
-      setError('');
       setSuccess(false);
 
+      const redirectUrl =
+        process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         data.email,
         {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `${redirectUrl}/reset-password`,
         }
       );
 
@@ -109,12 +109,6 @@ export default function ForgotPasswordPage() {
             onSubmit={handleSubmit(onSubmit)}
             noValidate
           >
-            {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
