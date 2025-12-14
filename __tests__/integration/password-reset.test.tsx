@@ -12,7 +12,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { supabase } from '@/lib/supabase';
 
 // Test constants
-const TEST_PASSWORD = 'newAlicePass123';
+const TEST_PASSWORD = 'TestPassword123';
 
 // Mock Next.js navigation
 const mockPush = jest.fn();
