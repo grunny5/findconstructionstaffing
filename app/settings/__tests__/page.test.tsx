@@ -59,7 +59,8 @@ describe('SettingsProfilePage', () => {
 
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    const emailElements = screen.getAllByText('test@example.com');
+    expect(emailElements.length).toBeGreaterThan(0);
     expect(screen.getByText('User')).toBeInTheDocument();
     expect(screen.getByText(/January (14|15), 2024/)).toBeInTheDocument();
   });
@@ -139,7 +140,7 @@ describe('SettingsProfilePage', () => {
     expect(screen.getByText('Agency Owner')).toBeInTheDocument();
   });
 
-  it('should display informational note about editing', () => {
+  it('should display email section with verification note', () => {
     mockedUseAuth.mockReturnValue({
       user: { id: '1', email: 'test@example.com' } as any,
       profile: {
@@ -161,8 +162,12 @@ describe('SettingsProfilePage', () => {
 
     render(<SettingsProfilePage />);
 
+    const emailAddressElements = screen.getAllByText('Email Address');
+    expect(emailAddressElements.length).toBeGreaterThan(0);
     expect(
-      screen.getByText(/Click the Edit button to update your full name/i)
+      screen.getByText(
+        /When you change your email, we'll send verification links/i
+      )
     ).toBeInTheDocument();
   });
 

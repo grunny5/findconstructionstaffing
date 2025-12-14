@@ -707,7 +707,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
-### ✅ Task 3.3.1: Create Email Change Form Component
+### [x] Task 3.3.1: Create Email Change Form Component
 
 - **Role:** Frontend Developer + Backend Developer
 - **Objective:** Build secure email change form with double verification
@@ -721,24 +721,24 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Require password re-entry for security
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Email section shows current email (read-only)
-  - [ ] "Change Email" button opens modal
-  - [ ] Modal form fields: New Email, Current Password
-  - [ ] Validation: email format, password required
-  - [ ] Submit calls `supabase.auth.updateUser({ email: newEmail })`
-  - [ ] Success: show message "Verification emails sent to both addresses"
-  - [ ] Explain: "Click the link in your new email to confirm the change"
-  - [ ] Error handling: email already in use, invalid password
-  - [ ] Modal closes on success
-  - [ ] Accessible: focus management, labels
+  - [x] Email section shows current email (read-only)
+  - [x] "Change Email" button opens modal
+  - [x] Modal form fields: New Email, Current Password
+  - [x] Validation: email format, password required
+  - [x] Submit calls `supabase.auth.updateUser({ email: newEmail })`
+  - [x] Success: show message "Verification emails sent to both addresses"
+  - [x] Explain: "Click the link in your new email to confirm the change"
+  - [x] Error handling: email already in use, invalid password
+  - [x] Modal closes on success
+  - [x] Accessible: focus management, labels
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Email change triggers Supabase verification flow
-  - [ ] Component tests written
+  - [x] Component implemented
+  - [x] Email change triggers Supabase verification flow
+  - [x] Component tests written
   - [ ] Tested with local Inbucket (both emails sent)
-  - [ ] Accessibility tested
+  - [x] Accessibility tested
   - [ ] PR approved
-  - [ ] **Final Check:** Secure and clear process
+  - [x] **Final Check:** Secure and clear process
 
 **Estimated Effort:** 4 hours
 

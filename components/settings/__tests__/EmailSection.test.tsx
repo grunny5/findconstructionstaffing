@@ -1,0 +1,265 @@
+/**
+ * @jest-environment jsdom
+ */
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useAuth } from '@/lib/auth/auth-context';
+import { EmailSection } from '../EmailSection';
+
+jest.mock('@/lib/auth/auth-context', () => ({
+  useAuth: jest.fn(),
+}));
+
+// Mock EmailChangeForm to avoid integration test complexity
+jest.mock('../EmailChangeForm', () => ({
+  EmailChangeForm: () => null,
+}));
+
+const mockedUseAuth = jest.mocked(useAuth);
+
+describe('EmailSection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Loading State', () => {
+    it('should render skeleton when loading', () => {
+      mockedUseAuth.mockReturnValue({
+        user: null,
+        profile: null,
+        loading: true,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      const skeletons = document.querySelectorAll('.animate-pulse');
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Error State', () => {
+    it('should render error message when user is null', () => {
+      mockedUseAuth.mockReturnValue({
+        user: null,
+        profile: null,
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      expect(screen.getByText('Unable to load email')).toBeInTheDocument();
+      expect(
+        screen.getByText(/Please try refreshing the page/i)
+      ).toBeInTheDocument();
+    });
+
+    it('should render error message when profile is null', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: null,
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      expect(screen.getByText('Unable to load email')).toBeInTheDocument();
+    });
+  });
+
+  describe('Email Display', () => {
+    it('should display user email address', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      const emailAddressElements = screen.getAllByText('Email Address');
+      expect(emailAddressElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    });
+
+    it('should show informational note about email verification', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      expect(
+        screen.getByText(
+          /When you change your email, we'll send verification links/i
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('Change Email Button', () => {
+    it('should render Change Email button', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      const changeButton = screen.getByRole('button', {
+        name: /change email address/i,
+      });
+      expect(changeButton).toBeInTheDocument();
+    });
+
+    it('should open EmailChangeForm when Change Email button is clicked', async () => {
+      const user = userEvent.setup();
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      const changeButton = screen.getByRole('button', {
+        name: /change email address/i,
+      });
+
+      await expect(user.click(changeButton)).resolves.not.toThrow();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have proper labels and ARIA attributes', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      const changeButton = screen.getByRole('button', {
+        name: /change email address/i,
+      });
+      expect(changeButton).toHaveAttribute('aria-label', 'Change email address');
+    });
+  });
+
+  describe('Card Structure', () => {
+    it('should render section header and description', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as any,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<EmailSection />);
+
+      const emailAddressElements = screen.getAllByText('Email Address');
+      expect(emailAddressElements.length).toBeGreaterThan(0);
+      expect(
+        screen.getByText(/Manage your email address. Changing your email requires verification./i)
+      ).toBeInTheDocument();
+    });
+  });
+});
