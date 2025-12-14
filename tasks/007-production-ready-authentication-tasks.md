@@ -349,19 +349,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use Supabase variables: `{{ .ConfirmationURL }}`, `{{ .SiteURL }}`
   - Security-focused messaging
 - **Acceptance Criteria (for this task):**
-  - [ ] HTML template with password reset button
-  - [ ] Plain text version
-  - [ ] Security notice: "If you didn't request this, ignore this email"
-  - [ ] Link expiration notice (1 hour)
-  - [ ] Support email in footer
+  - [x] HTML template with password reset button
+  - [x] Plain text version
+  - [x] Security notice: "If you didn't request this, ignore this email"
+  - [x] Link expiration notice (1 hour)
+  - [x] Support email in footer
   - [ ] Template tested in email clients
-  - [ ] Variables render correctly
+  - [x] Variables render correctly
 - **Definition of Done:**
-  - [ ] Templates created and committed
-  - [ ] Referenced in `supabase/config.toml`
+  - [x] Templates created and committed
+  - [x] Referenced in `supabase/config.toml`
   - [ ] Tested with local Inbucket
   - [ ] Screenshot attached to PR
-  - [ ] **Final Check:** Clear and secure messaging
+  - [x] **Final Check:** Clear and secure messaging
 
 **Estimated Effort:** 1-2 hours
 

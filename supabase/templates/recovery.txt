@@ -1,0 +1,27 @@
+FindConstructionStaffing - Reset Your Password
+========================================================
+
+Hi there,
+
+We received a request to reset the password for your FindConstructionStaffing account. If you made this request, click the link below to choose a new password:
+
+{{ .ConfirmationURL }}
+
+IMPORTANT: This password reset link will expire in 1 hour.
+If you don't reset your password within this time, you'll need to request a new reset link.
+
+---
+
+SECURITY NOTICE:
+If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged and your account is secure.
+
+For your security, we never ask for your password via email. If you have concerns about your account security, please contact our support team immediately.
+
+---
+
+Need help? Contact us at support@findconstructionstaffing.com
+
+---
+© 2025 FindConstructionStaffing. All rights reserved.
+Privacy Policy: {{ .SiteURL }}/privacy
+Help: {{ .SiteURL }}/help
