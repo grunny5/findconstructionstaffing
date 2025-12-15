@@ -72,7 +72,9 @@ describe('EmailChangeForm', () => {
         />
       );
 
-      const submitButton = screen.getByRole('button', { name: /Change Email/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Change Email/i,
+      });
       expect(submitButton).toBeDisabled();
     });
   });
@@ -92,7 +94,9 @@ describe('EmailChangeForm', () => {
 
       const emailInput = screen.getByLabelText(/New Email/i);
       const passwordInput = screen.getByLabelText(/Current Password/i);
-      const submitButton = screen.getByRole('button', { name: /Change Email/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Change Email/i,
+      });
 
       await user.type(emailInput, 'invalid');
       await user.type(passwordInput, 'password123');
@@ -232,7 +236,9 @@ describe('EmailChangeForm', () => {
       });
 
       expect(
-        screen.getByText(/Click the link in your new email to confirm the change/i)
+        screen.getByText(
+          /Click the link in your new email to confirm the change/i
+        )
       ).toBeInTheDocument();
     });
   });
@@ -305,9 +311,7 @@ describe('EmailChangeForm', () => {
         data: { user: { id: '123' } as any, session: {} as any },
         error: null,
       });
-      mockUpdateUser.mockRejectedValue(
-        new Error('Network error')
-      );
+      mockUpdateUser.mockRejectedValue(new Error('Network error'));
 
       render(
         <EmailChangeForm
@@ -341,7 +345,9 @@ describe('EmailChangeForm', () => {
         />
       );
 
-      const submitButton = screen.getByRole('button', { name: /Change Email/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Change Email/i,
+      });
       expect(submitButton).toBeDisabled();
 
       const emailInput = screen.getByLabelText(/New Email/i);
@@ -401,7 +407,9 @@ describe('EmailChangeForm', () => {
       await user.click(screen.getByRole('button', { name: /Change Email/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/Verification Emails Sent/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Verification Emails Sent/i)
+        ).toBeInTheDocument();
       });
 
       const gotItButton = screen.getByRole('button', { name: /Got it/i });
@@ -440,7 +448,9 @@ describe('EmailChangeForm', () => {
 
       const emailInput = screen.getByLabelText(/New Email/i);
       const passwordInput = screen.getByLabelText(/Current Password/i);
-      const submitButton = screen.getByRole('button', { name: /Change Email/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Change Email/i,
+      });
 
       await user.type(emailInput, 'invalid');
       await user.type(passwordInput, 'password123');
@@ -468,7 +478,9 @@ describe('EmailChangeForm', () => {
 
       const emailInput = screen.getByLabelText(/New Email/i);
       const passwordInput = screen.getByLabelText(/Current Password/i);
-      const submitButton = screen.getByRole('button', { name: /Change Email/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Change Email/i,
+      });
 
       await user.type(emailInput, 'invalid');
       await user.type(passwordInput, 'password123');
@@ -480,7 +492,10 @@ describe('EmailChangeForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(emailInput).toHaveAttribute('aria-describedby', 'newEmail-error');
+        expect(emailInput).toHaveAttribute(
+          'aria-describedby',
+          'newEmail-error'
+        );
       });
     });
   });
