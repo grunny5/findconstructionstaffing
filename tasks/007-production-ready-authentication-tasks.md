@@ -785,19 +785,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Jest + React Testing Library
   - Mock Supabase responses
 - **Acceptance Criteria (for this task):**
-  - [ ] Test: Form renders correctly
-  - [ ] Test: Email validation works
-  - [ ] Test: Password required
-  - [ ] Test: Successful submission shows success message
-  - [ ] Test: "Email already in use" error shown
-  - [ ] Test: Incorrect password error shown
-  - [ ] Test: Modal closes on success
-  - [ ] Coverage >85%
+  - [x] Test: Form renders correctly
+  - [x] Test: Email validation works
+  - [x] Test: Password required
+  - [x] Test: Successful submission shows success message
+  - [x] Test: "Email already in use" error shown
+  - [x] Test: Incorrect password error shown
+  - [x] Test: Modal closes on success
+  - [x] Coverage >85% (97.22% achieved)
 - **Definition of Done:**
-  - [ ] All tests written and passing
-  - [ ] Coverage meets threshold
+  - [x] All tests written and passing (13 passing tests)
+  - [x] Coverage meets threshold (97.22%)
   - [ ] PR approved
-  - [ ] **Final Check:** Security scenarios covered
+  - [x] **Final Check:** Security scenarios covered
 
 **Estimated Effort:** 2-3 hours
 
