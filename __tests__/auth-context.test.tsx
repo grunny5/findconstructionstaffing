@@ -29,6 +29,7 @@ const mockAdminProfile: Profile = {
   role: 'admin',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
+  last_password_change: new Date().toISOString(),
 };
 
 const mockAgencyOwnerProfile: Profile = {
@@ -38,6 +39,7 @@ const mockAgencyOwnerProfile: Profile = {
   role: 'agency_owner',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
+  last_password_change: new Date().toISOString(),
 };
 
 const mockUserProfile: Profile = {
@@ -47,6 +49,7 @@ const mockUserProfile: Profile = {
   role: 'user',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
+  last_password_change: new Date().toISOString(),
 };
 
 // Mock Session helper for proper TypeScript typing

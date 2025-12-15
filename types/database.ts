@@ -7,6 +7,7 @@ export interface Profile {
   role: UserRole;
   created_at: string;
   updated_at: string;
+  last_password_change: string;
 }
 
 export interface AuthUser {
