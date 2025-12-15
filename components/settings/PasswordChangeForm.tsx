@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Eye, EyeOff, CheckCircle2, Lock } from 'lucide-react';
+import { Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 const passwordChangeSchema = z
   .object({
