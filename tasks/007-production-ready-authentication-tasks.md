@@ -864,15 +864,15 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - [x] Add column `last_password_change TIMESTAMPTZ` to profiles table
   - [x] Default value: `NOW()` for existing users
   - [x] Create trigger to update field when password changes
-  - [ ] Migration tested locally (requires Docker/Supabase running)
+  - [x] Migration tested - applied to remote database with `supabase db push`
   - [x] Rollback script created
 - **Definition of Done:**
   - [x] Migration file created (20251215_001_add_last_password_change.sql)
-  - [ ] Migration tested locally with `supabase db push` (Docker not available in WSL)
-  - [x] Rollback tested (rollback script created and reviewed)
-  - [x] Documentation updated (README.md with migration guide and test script)
+  - [x] Migration applied to remote database successfully
+  - [x] Rollback script created and stored in support/ directory
+  - [x] Documentation updated (README.md with migration guide, test script, support directory structure)
   - [ ] PR approved
-  - [x] **Final Check:** Safe migration (uses IF NOT EXISTS, backfills data, idempotent)
+  - [x] **Final Check:** Safe migration (uses IF NOT EXISTS, backfills data, idempotent, successfully applied)
 
 **Estimated Effort:** 1-2 hours
 

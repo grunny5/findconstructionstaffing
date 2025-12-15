@@ -10,6 +10,11 @@ Migrations follow the pattern: `YYYYMMDD_NNN_description.sql`
 - `NNN`: Sequential number (001, 002, etc.)
 - `description`: Brief description of what the migration does
 
+**Support Files:**
+- Rollback scripts and test scripts are stored in the `support/` directory
+- This prevents them from being treated as migrations by the Supabase CLI
+- Naming: Same as the migration file they support
+
 ## Running Migrations
 
 ### Local Development
@@ -41,9 +46,9 @@ Migrations are automatically applied when pushed to the main branch via CI/CD.
 - Backfills existing users with current timestamp
 - Adds index for efficient querying
 
-**Rollback:** `20251215_001_add_last_password_change_rollback.sql`
+**Rollback:** `support/20251215_001_add_last_password_change_rollback.sql`
 
-**Testing:** `20251215_001_add_last_password_change_test.sql`
+**Testing:** `support/20251215_001_add_last_password_change_test.sql`
 
 **Related Tasks:** Task 3.4.2 - Update Profile Schema to Track Password Changes
 
@@ -70,7 +75,7 @@ supabase db push
 
 # Run the test script
 psql postgres://postgres:postgres@localhost:54322/postgres \
-  -f supabase/migrations/20251215_001_add_last_password_change_test.sql
+  -f supabase/migrations/support/20251215_001_add_last_password_change_test.sql
 ```
 
 ### Manual Testing
@@ -86,9 +91,9 @@ psql postgres://postgres:postgres@localhost:54322/postgres \
 If a migration causes issues:
 
 ```bash
-# Apply the rollback script
+# Apply the rollback script from the support directory
 psql postgres://postgres:postgres@localhost:54322/postgres \
-  -f supabase/migrations/[migration]_rollback.sql
+  -f supabase/migrations/support/[migration]_rollback.sql
 ```
 
 **⚠️ Warning:** Rollbacks may cause data loss. Always backup before rolling back.
