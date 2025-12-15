@@ -25,9 +25,7 @@ const emailChangeSchema = z.object({
     .trim()
     .min(1, 'Email is required')
     .email('Please enter a valid email address'),
-  currentPassword: z
-    .string()
-    .min(1, 'Current password is required'),
+  currentPassword: z.string().min(1, 'Current password is required'),
 });
 
 type EmailChangeFormData = z.infer<typeof emailChangeSchema>;
@@ -147,8 +145,8 @@ export function EmailChangeForm({
               </DialogTitle>
               <DialogDescription className="text-center space-y-2">
                 <p>
-                  We&apos;ve sent verification emails to both your current and new
-                  email addresses.
+                  We&apos;ve sent verification emails to both your current and
+                  new email addresses.
                 </p>
                 <p className="font-medium">
                   Click the link in your new email to confirm the change.
@@ -191,7 +189,9 @@ export function EmailChangeForm({
                   disabled={isSubmitting}
                   autoComplete="email"
                   aria-invalid={errors.newEmail ? 'true' : 'false'}
-                  aria-describedby={errors.newEmail ? 'newEmail-error' : undefined}
+                  aria-describedby={
+                    errors.newEmail ? 'newEmail-error' : undefined
+                  }
                 />
                 {errors.newEmail && (
                   <p

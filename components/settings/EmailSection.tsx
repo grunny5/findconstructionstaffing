@@ -55,7 +55,8 @@ export function EmailSection() {
         <CardHeader>
           <CardTitle>Email Address</CardTitle>
           <CardDescription>
-            Manage your email address. Changing your email requires verification.
+            Manage your email address. Changing your email requires
+            verification.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
