@@ -576,23 +576,23 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Responsive design
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page at `/settings` with sidebar navigation
-  - [ ] Sidebar sections: Profile, Email, Password, Account (danger zone)
-  - [ ] Active section highlighted
-  - [ ] Content area shows selected section
-  - [ ] Mobile: sidebar collapses to dropdown/tabs
-  - [ ] Protected route: redirects to `/login?redirectTo=/settings` if not authenticated
-  - [ ] Page title: "Account Settings"
-  - [ ] Breadcrumb navigation (optional)
-  - [ ] Accessible: keyboard navigation between sections
+  - [x] Page at `/settings` with sidebar navigation
+  - [x] Sidebar sections: Profile, Email, Password, Account (danger zone)
+  - [x] Active section highlighted
+  - [x] Content area shows selected section
+  - [x] Mobile: sidebar collapses to dropdown/tabs
+  - [x] Protected route: redirects to `/login?redirectTo=/settings` if not authenticated
+  - [x] Page title: "Account Settings"
+  - [x] Breadcrumb navigation (optional)
+  - [x] Accessible: keyboard navigation between sections
 - **Definition of Done:**
-  - [ ] Layout implemented
-  - [ ] Responsive on mobile, tablet, desktop
-  - [ ] Protected route middleware working
-  - [ ] Component tests written
+  - [x] Layout implemented
+  - [x] Responsive on mobile, tablet, desktop
+  - [x] Protected route middleware working
+  - [x] Component tests written
   - [ ] Visual QA completed
   - [ ] PR approved
-  - [ ] **Final Check:** Intuitive navigation
+  - [x] **Final Check:** Intuitive navigation
 
 **Estimated Effort:** 3-4 hours
 
@@ -610,27 +610,27 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Shadcn/ui Card component
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Section displays: Full Name, Email (read-only), Role (read-only), Account Created (read-only)
-  - [ ] Full Name has "Edit" button next to it (links to Task 3.2.1)
-  - [ ] Role shown as badge: "User", "Agency Owner", or "Admin"
-  - [ ] Account creation date formatted nicely
-  - [ ] Email shown but not editable here (separate Email section)
-  - [ ] Loading state while fetching profile
-  - [ ] Error state if profile fails to load
-  - [ ] Empty state if no profile (shouldn't happen but handle it)
+  - [x] Section displays: Full Name, Email (read-only), Role (read-only), Account Created (read-only)
+  - [x] Full Name has "Edit" button next to it (links to Task 3.2.1)
+  - [x] Role shown as badge: "User", "Agency Owner", or "Admin"
+  - [x] Account creation date formatted nicely
+  - [x] Email shown but not editable here (separate Email section)
+  - [x] Loading state while fetching profile
+  - [x] Error state if profile fails to load
+  - [x] Empty state if no profile (shouldn't happen but handle it)
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Displays correct user data
-  - [ ] Component tests written
+  - [x] Component implemented
+  - [x] Displays correct user data
+  - [x] Component tests written
   - [ ] Visual QA
   - [ ] PR approved
-  - [ ] **Final Check:** Clear data presentation
+  - [x] **Final Check:** Clear data presentation
 
 **Estimated Effort:** 2 hours
 
 ---
 
-### ➡️ Story 3.2: Update Profile Information
+### [x] ➡️ Story 3.2: Update Profile Information
 
 > As a **Job Seeker**, I want **to update my profile information**, so that **my account details are current**.
 
@@ -638,7 +638,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
-### ✅ Task 3.2.1: Create Profile Editor Component
+### [x] Task 3.2.1: Create Profile Editor Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build inline/modal form for editing profile (full name)
@@ -650,30 +650,30 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Shadcn/ui Dialog or inline edit
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Edit button opens modal or toggles inline edit mode
-  - [ ] Form field: Full Name
-  - [ ] Validation: min 2 characters
-  - [ ] Submit updates profile via `supabase.from('profiles').update()`
-  - [ ] Loading state during save
-  - [ ] Success: show toast "Profile updated" + close modal/save inline
-  - [ ] Cancel button resets form
-  - [ ] Error handling: network errors, validation errors
-  - [ ] Optimistic update in UI (show new name immediately)
-  - [ ] Accessible: focus management, labels
+  - [x] Edit button opens modal or toggles inline edit mode
+  - [x] Form field: Full Name
+  - [x] Validation: min 2 characters
+  - [x] Submit updates profile via `supabase.from('profiles').update()`
+  - [x] Loading state during save
+  - [x] Success: show toast "Profile updated" + close modal/save inline
+  - [x] Cancel button resets form
+  - [x] Error handling: network errors, validation errors
+  - [x] Optimistic update in UI (show new name immediately)
+  - [x] Accessible: focus management, labels
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Profile update works
-  - [ ] Component tests written
-  - [ ] Integration test: edit name → save → see updated name
-  - [ ] Accessibility tested
+  - [x] Component implemented
+  - [x] Profile update works
+  - [x] Component tests written
+  - [x] Integration test: edit name → save → see updated name
+  - [x] Accessibility tested
   - [ ] PR approved
-  - [ ] **Final Check:** Smooth editing experience
+  - [x] **Final Check:** Smooth editing experience
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### ✅ Task 3.2.2: Update Header to Show Latest Profile Name
+### [x] Task 3.2.2: Update Header to Show Latest Profile Name
 
 - **Role:** Frontend Developer
 - **Objective:** Ensure header user dropdown reflects profile changes immediately
@@ -685,15 +685,15 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use React Context for global state
   - Consider adding profile refresh method to auth context
 - **Acceptance Criteria (for this task):**
-  - [ ] After profile update, header shows new name without page refresh
-  - [ ] Either: optimistic update in auth context, OR: refetch profile after save
-  - [ ] No flickering or delay in name update
-  - [ ] Works across all pages (global context)
+  - [x] After profile update, header shows new name without page refresh
+  - [x] Either: optimistic update in auth context, OR: refetch profile after save
+  - [x] No flickering or delay in name update
+  - [x] Works across all pages (global context)
 - **Definition of Done:**
-  - [ ] Header updates immediately after profile edit
-  - [ ] Tests verify name propagates
+  - [x] Header updates immediately after profile edit
+  - [x] Tests verify name propagates
   - [ ] PR approved
-  - [ ] **Final Check:** Seamless UX
+  - [x] **Final Check:** Seamless UX
 
 **Estimated Effort:** 1-2 hours
 
@@ -707,7 +707,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
-### ✅ Task 3.3.1: Create Email Change Form Component
+### [x] Task 3.3.1: Create Email Change Form Component
 
 - **Role:** Frontend Developer + Backend Developer
 - **Objective:** Build secure email change form with double verification
@@ -721,24 +721,24 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Require password re-entry for security
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Email section shows current email (read-only)
-  - [ ] "Change Email" button opens modal
-  - [ ] Modal form fields: New Email, Current Password
-  - [ ] Validation: email format, password required
-  - [ ] Submit calls `supabase.auth.updateUser({ email: newEmail })`
-  - [ ] Success: show message "Verification emails sent to both addresses"
-  - [ ] Explain: "Click the link in your new email to confirm the change"
-  - [ ] Error handling: email already in use, invalid password
-  - [ ] Modal closes on success
-  - [ ] Accessible: focus management, labels
+  - [x] Email section shows current email (read-only)
+  - [x] "Change Email" button opens modal
+  - [x] Modal form fields: New Email, Current Password
+  - [x] Validation: email format, password required
+  - [x] Submit calls `supabase.auth.updateUser({ email: newEmail })`
+  - [x] Success: show message "Verification emails sent to both addresses"
+  - [x] Explain: "Click the link in your new email to confirm the change"
+  - [x] Error handling: email already in use, invalid password
+  - [x] Modal closes on success
+  - [x] Accessible: focus management, labels
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Email change triggers Supabase verification flow
-  - [ ] Component tests written
+  - [x] Component implemented
+  - [x] Email change triggers Supabase verification flow
+  - [x] Component tests written
   - [ ] Tested with local Inbucket (both emails sent)
-  - [ ] Accessibility tested
+  - [x] Accessibility tested
   - [ ] PR approved
-  - [ ] **Final Check:** Secure and clear process
+  - [x] **Final Check:** Secure and clear process
 
 **Estimated Effort:** 4 hours
 
