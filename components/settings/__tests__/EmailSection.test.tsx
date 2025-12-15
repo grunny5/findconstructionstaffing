@@ -3,6 +3,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { User } from '@supabase/supabase-js';
 import { useAuth } from '@/lib/auth/auth-context';
 import { EmailSection } from '../EmailSection';
 
@@ -18,7 +19,7 @@ jest.mock('../EmailChangeForm', () => ({
 const mockedUseAuth = jest.mocked(useAuth);
 
 const createMockAuthContext = (overrides = {}) => ({
-  user: { id: '1', email: 'test@example.com' } as any,
+  user: { id: '1', email: 'test@example.com' } as User,
   profile: {
     id: '1',
     email: 'test@example.com',
