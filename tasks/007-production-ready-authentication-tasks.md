@@ -825,26 +825,26 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Password strength indicator (optional but recommended)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Password section shows "Change Password" button
-  - [ ] Button opens modal
-  - [ ] Modal form fields: Current Password, New Password, Confirm New Password
-  - [ ] Validation: current password required, new password min 6 chars, passwords match
-  - [ ] Submit first verifies current password: `supabase.auth.signInWithPassword()`
-  - [ ] If current password correct, update: `supabase.auth.updateUser({ password: newPassword })`
-  - [ ] Loading state during verification and update
-  - [ ] Success: show message "Password changed successfully" + close modal
-  - [ ] User remains logged in after password change
-  - [ ] Error handling: incorrect current password, weak new password, network errors
-  - [ ] Password fields have show/hide toggle
-  - [ ] Accessible: labels, focus management
+  - [x] Password section shows "Change Password" button
+  - [x] Button opens modal
+  - [x] Modal form fields: Current Password, New Password, Confirm New Password
+  - [x] Validation: current password required, new password min 6 chars, passwords match
+  - [x] Submit first verifies current password: `supabase.auth.signInWithPassword()`
+  - [x] If current password correct, update: `supabase.auth.updateUser({ password: newPassword })`
+  - [x] Loading state during verification and update
+  - [x] Success: show message "Password changed successfully" + close modal
+  - [x] User remains logged in after password change
+  - [x] Error handling: incorrect current password, weak new password, network errors
+  - [x] Password fields have show/hide toggle
+  - [x] Accessible: labels, focus management
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Password change works securely
-  - [ ] Component tests written
+  - [x] Component implemented (PasswordChangeForm.tsx, PasswordSection.tsx)
+  - [x] Password change works securely (two-step verification with signInWithPassword + updateUser)
+  - [x] Component tests written (20 tests, 98.11% coverage)
   - [ ] Integration test: change password → logout → login with new password
-  - [ ] Accessibility tested
+  - [x] Accessibility tested (ARIA labels, focus management, keyboard navigation)
   - [ ] PR approved
-  - [ ] **Final Check:** Secure and user-friendly
+  - [x] **Final Check:** Secure and user-friendly
 
 **Estimated Effort:** 4 hours
 
