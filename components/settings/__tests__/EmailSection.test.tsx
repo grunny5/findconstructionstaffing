@@ -17,6 +17,26 @@ jest.mock('../EmailChangeForm', () => ({
 
 const mockedUseAuth = jest.mocked(useAuth);
 
+const createMockAuthContext = (overrides = {}) => ({
+  user: { id: '1', email: 'test@example.com' } as any,
+  profile: {
+    id: '1',
+    email: 'test@example.com',
+    full_name: 'John Doe',
+    role: 'user',
+    created_at: '2023-01-15T10:00:00Z',
+    updated_at: '2023-01-15T10:00:00Z',
+  },
+  loading: false,
+  signIn: jest.fn(),
+  signUp: jest.fn(),
+  signOut: jest.fn(),
+  refreshProfile: jest.fn(),
+  isAdmin: false,
+  isAgencyOwner: false,
+  ...overrides,
+});
+
 describe('EmailSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -24,17 +44,9 @@ describe('EmailSection', () => {
 
   describe('Loading State', () => {
     it('should render skeleton when loading', () => {
-      mockedUseAuth.mockReturnValue({
-        user: null,
-        profile: null,
-        loading: true,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(
+        createMockAuthContext({ user: null, profile: null, loading: true })
+      );
 
       render(<EmailSection />);
 
@@ -45,17 +57,9 @@ describe('EmailSection', () => {
 
   describe('Error State', () => {
     it('should render error message when user is null', () => {
-      mockedUseAuth.mockReturnValue({
-        user: null,
-        profile: null,
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(
+        createMockAuthContext({ user: null, profile: null })
+      );
 
       render(<EmailSection />);
 
@@ -66,17 +70,7 @@ describe('EmailSection', () => {
     });
 
     it('should render error message when profile is null', () => {
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: null,
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext({ profile: null }));
 
       render(<EmailSection />);
 
@@ -86,24 +80,7 @@ describe('EmailSection', () => {
 
   describe('Email Display', () => {
     it('should display user email address', () => {
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: {
-          id: '1',
-          email: 'test@example.com',
-          full_name: 'John Doe',
-          role: 'user',
-          created_at: '2023-01-15T10:00:00Z',
-          updated_at: '2023-01-15T10:00:00Z',
-        },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext());
 
       render(<EmailSection />);
 
@@ -113,24 +90,7 @@ describe('EmailSection', () => {
     });
 
     it('should show informational note about email verification', () => {
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: {
-          id: '1',
-          email: 'test@example.com',
-          full_name: 'John Doe',
-          role: 'user',
-          created_at: '2023-01-15T10:00:00Z',
-          updated_at: '2023-01-15T10:00:00Z',
-        },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext());
 
       render(<EmailSection />);
 
@@ -144,24 +104,7 @@ describe('EmailSection', () => {
 
   describe('Change Email Button', () => {
     it('should render Change Email button', () => {
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: {
-          id: '1',
-          email: 'test@example.com',
-          full_name: 'John Doe',
-          role: 'user',
-          created_at: '2023-01-15T10:00:00Z',
-          updated_at: '2023-01-15T10:00:00Z',
-        },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext());
 
       render(<EmailSection />);
 
@@ -173,24 +116,7 @@ describe('EmailSection', () => {
 
     it('should open EmailChangeForm when Change Email button is clicked', async () => {
       const user = userEvent.setup();
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: {
-          id: '1',
-          email: 'test@example.com',
-          full_name: 'John Doe',
-          role: 'user',
-          created_at: '2023-01-15T10:00:00Z',
-          updated_at: '2023-01-15T10:00:00Z',
-        },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext());
 
       render(<EmailSection />);
 
@@ -204,24 +130,7 @@ describe('EmailSection', () => {
 
   describe('Accessibility', () => {
     it('should have proper labels and ARIA attributes', () => {
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: {
-          id: '1',
-          email: 'test@example.com',
-          full_name: 'John Doe',
-          role: 'user',
-          created_at: '2023-01-15T10:00:00Z',
-          updated_at: '2023-01-15T10:00:00Z',
-        },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext());
 
       render(<EmailSection />);
 
@@ -237,24 +146,7 @@ describe('EmailSection', () => {
 
   describe('Card Structure', () => {
     it('should render section header and description', () => {
-      mockedUseAuth.mockReturnValue({
-        user: { id: '1', email: 'test@example.com' } as any,
-        profile: {
-          id: '1',
-          email: 'test@example.com',
-          full_name: 'John Doe',
-          role: 'user',
-          created_at: '2023-01-15T10:00:00Z',
-          updated_at: '2023-01-15T10:00:00Z',
-        },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        refreshProfile: jest.fn(),
-        isAdmin: false,
-        isAgencyOwner: false,
-      });
+      mockedUseAuth.mockReturnValue(createMockAuthContext());
 
       render(<EmailSection />);
 
