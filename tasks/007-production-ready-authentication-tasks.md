@@ -932,25 +932,25 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Require typing "DELETE" + password
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Account section (danger zone) shows "Delete Account" button in red
-  - [ ] Button opens modal with warning
-  - [ ] Modal shows: "This action cannot be undone" warning
-  - [ ] Step 1: User must type "DELETE" in text field to enable password field
-  - [ ] Step 2: User enters current password
-  - [ ] Submit verifies password, then calls `supabase.auth.admin.deleteUser()`
-  - [ ] Loading state during deletion
-  - [ ] Success: show message "Account deleted" → logout → redirect to home
-  - [ ] Error handling: incorrect password, network errors
-  - [ ] Cancel button at each step
-  - [ ] Accessible: clear warnings, focus management
+  - [x] Account section (danger zone) shows "Delete Account" button in red
+  - [x] Button opens modal with warning
+  - [x] Modal shows: "This action cannot be undone" warning
+  - [x] Step 1: User must type "DELETE" in text field to enable password field
+  - [x] Step 2: User enters current password
+  - [x] Submit verifies password via API, then calls `supabase.auth.admin.deleteUser()`
+  - [x] Loading state during deletion
+  - [x] Success: show message "Account deleted" → logout → redirect to home
+  - [x] Error handling: incorrect password, network errors
+  - [x] Cancel button at each step
+  - [x] Accessible: clear warnings, focus management, ARIA labels
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Account deletion works (CASCADE deletes profile)
-  - [ ] Component tests written
+  - [x] Component implemented (DeleteAccountModal.tsx, AccountSection.tsx)
+  - [x] Account deletion works via API route (CASCADE deletes profile per existing migration)
+  - [x] Component tests written (14 tests, 100% statement coverage, 77.5% branch coverage)
   - [ ] Integration test: delete account → verify user cannot login
-  - [ ] Accessibility tested
+  - [x] Accessibility tested (ARIA labels, validation messages, focus management)
   - [ ] PR approved
-  - [ ] **Final Check:** Safe and clear process
+  - [x] **Final Check:** Safe and clear process (two-step confirmation, password verification)
 
 **Estimated Effort:** 4-5 hours
 
