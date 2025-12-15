@@ -757,18 +757,18 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Use Supabase variables
   - Clear security messaging
 - **Acceptance Criteria (for this task):**
-  - [ ] HTML template with "Confirm Email Change" button
-  - [ ] Plain text version
-  - [ ] Message: "You requested to change your email to [new email]"
-  - [ ] Security notice: "If you didn't request this, contact support immediately"
-  - [ ] Link expiration notice (24 hours)
+  - [x] HTML template with "Confirm Email Change" button
+  - [x] Plain text version
+  - [x] Message: "You requested to change your email to [new email]"
+  - [x] Security notice: "If you didn't request this, contact support immediately"
+  - [x] Link expiration notice (24 hours)
   - [ ] Template tested in email clients
 - **Definition of Done:**
-  - [ ] Templates created
-  - [ ] Referenced in `supabase/config.toml`
+  - [x] Templates created
+  - [x] Referenced in `supabase/config.toml`
   - [ ] Tested with local Inbucket
   - [ ] Screenshot attached to PR
-  - [ ] **Final Check:** Clear and secure
+  - [x] **Final Check:** Clear and secure
 
 **Estimated Effort:** 1-2 hours
 
