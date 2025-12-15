@@ -23,7 +23,7 @@ const createMockAuthContext = (overrides = {}) => ({
     id: '1',
     email: 'test@example.com',
     full_name: 'John Doe',
-    role: 'user',
+    role: 'user' as const,
     created_at: '2023-01-15T10:00:00Z',
     updated_at: '2023-01-15T10:00:00Z',
   },
