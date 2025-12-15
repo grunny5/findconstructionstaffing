@@ -222,7 +222,6 @@ export function PasswordChangeForm({
                         ? 'Hide current password'
                         : 'Show current password'
                     }
-                    tabIndex={-1}
                   >
                     {showCurrentPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -269,7 +268,6 @@ export function PasswordChangeForm({
                         ? 'Hide new password'
                         : 'Show new password'
                     }
-                    tabIndex={-1}
                   >
                     {showNewPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -321,7 +319,6 @@ export function PasswordChangeForm({
                         ? 'Hide confirm password'
                         : 'Show confirm password'
                     }
-                    tabIndex={-1}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-4 w-4" />
