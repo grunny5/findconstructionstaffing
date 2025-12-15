@@ -228,7 +228,10 @@ describe('EmailSection', () => {
       const changeButton = screen.getByRole('button', {
         name: /change email address/i,
       });
-      expect(changeButton).toHaveAttribute('aria-label', 'Change email address');
+      expect(changeButton).toHaveAttribute(
+        'aria-label',
+        'Change email address'
+      );
     });
   });
 
@@ -258,7 +261,9 @@ describe('EmailSection', () => {
       const emailAddressElements = screen.getAllByText('Email Address');
       expect(emailAddressElements.length).toBeGreaterThan(0);
       expect(
-        screen.getByText(/Manage your email address. Changing your email requires verification./i)
+        screen.getByText(
+          /Manage your email address. Changing your email requires verification./i
+        )
       ).toBeInTheDocument();
     });
   });
