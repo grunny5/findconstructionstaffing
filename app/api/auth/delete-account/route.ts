@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -18,14 +19,11 @@ export async function POST(request: Request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-    // Create a Supabase client with the user's session
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-      },
-      global: {
-        headers: {
-          cookie: cookieStore.toString(),
+    // Create a Supabase server client with proper cookie handling
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
         },
       },
     });
