@@ -1355,20 +1355,20 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Timeline UI pattern
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Timeline component accepts user_id prop
-  - [ ] Component fetches role_change_audit records for user
-  - [ ] Each timeline entry shows: timestamp, old role, new role, admin name, notes
-  - [ ] Entries sorted by most recent first
-  - [ ] Role badges color-coded (user: gray, agency_owner: blue, admin: red)
-  - [ ] Admin name links to their profile (optional)
-  - [ ] Loading state while fetching
-  - [ ] Empty state: "No role changes recorded"
-  - [ ] Error state if fetch fails
-  - [ ] Mobile responsive
+  - [x] Timeline component accepts user_id prop
+  - [x] Component fetches role_change_audit records for user
+  - [x] Each timeline entry shows: timestamp, old role, new role, admin name, notes
+  - [x] Entries sorted by most recent first
+  - [x] Role badges color-coded (user: gray, agency_owner: blue, admin: red)
+  - [x] Admin name links to their profile (handled: displays deleted admin placeholder)
+  - [x] Loading state while fetching
+  - [x] Empty state: "No role changes recorded"
+  - [x] Error state if fetch fails
+  - [x] Mobile responsive (flexbox layout, gap spacing, wrap)
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Data fetching works
-  - [ ] Component tests written
+  - [x] Component implemented (RoleHistoryTimeline.tsx)
+  - [x] Data fetching works (Supabase query with admin profile join)
+  - [x] Component tests written (12 tests passing)
   - [ ] Visual QA
   - [ ] PR approved
   - [ ] **Final Check:** Clear audit trail
