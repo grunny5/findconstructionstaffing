@@ -54,7 +54,10 @@ const roleDisplayName = (role: UserRole) => {
   }
 };
 
-export function UsersTable({ users: initialUsers, currentUserId }: UsersTableProps) {
+export function UsersTable({
+  users: initialUsers,
+  currentUserId,
+}: UsersTableProps) {
   const [users, setUsers] = useState(initialUsers);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -150,7 +153,8 @@ export function UsersTable({ users: initialUsers, currentUserId }: UsersTablePro
 
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update role. Please try again.',
+        description:
+          error.message || 'Failed to update role. Please try again.',
         variant: 'destructive',
       });
     }

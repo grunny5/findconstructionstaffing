@@ -105,7 +105,11 @@ describe('RoleChangeDropdown', () => {
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(mockOnRoleChange).toHaveBeenCalledWith('user-1', 'admin', undefined);
+      expect(mockOnRoleChange).toHaveBeenCalledWith(
+        'user-1',
+        'admin',
+        undefined
+      );
     });
   });
 

@@ -23,7 +23,9 @@ describe('RoleChangeConfirmModal', () => {
 
     expect(screen.getByText('Change User Role')).toBeInTheDocument();
     expect(screen.getByText(/John Doe/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Confirm/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Confirm/i })
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Cancel/i })).toBeInTheDocument();
   });
 
@@ -237,7 +239,9 @@ describe('RoleChangeConfirmModal', () => {
       />
     );
 
-    const notesInputAfter = screen.getByPlaceholderText(/Reason for role change/i);
+    const notesInputAfter = screen.getByPlaceholderText(
+      /Reason for role change/i
+    );
     expect(notesInputAfter).toHaveValue('');
   });
 });

@@ -68,7 +68,7 @@ export function RoleChangeConfirmModal({
         <AlertDialogHeader>
           <AlertDialogTitle>Change User Role</AlertDialogTitle>
           <AlertDialogDescription>
-            Change {userName}'s role from{' '}
+            Change {userName}&apos;s role from{' '}
             <span className="font-semibold">{roleDisplayName(oldRole)}</span> to{' '}
             <span className="font-semibold">{roleDisplayName(newRole)}</span>?
           </AlertDialogDescription>
