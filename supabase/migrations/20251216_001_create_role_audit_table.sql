@@ -5,8 +5,8 @@
 -- Create role_change_audit table
 CREATE TABLE IF NOT EXISTS public.role_change_audit (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  admin_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  admin_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   old_role TEXT NOT NULL CHECK (old_role IN ('user', 'agency_owner', 'admin')),
   new_role TEXT NOT NULL CHECK (new_role IN ('user', 'agency_owner', 'admin')),
   changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -18,8 +18,8 @@ export interface AuthUser {
 
 export interface RoleChangeAudit {
   id: string;
-  user_id: string;
-  admin_id: string;
+  user_id: string | null;
+  admin_id: string | null;
   old_role: UserRole;
   new_role: UserRole;
   changed_at: string;

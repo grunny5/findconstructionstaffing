@@ -72,8 +72,8 @@ Migrations are automatically applied when pushed to the main branch via CI/CD.
 **Changes:**
 - Creates `role_change_audit` table with columns:
   - `id` (UUID, primary key)
-  - `user_id` (UUID, references profiles - who was changed)
-  - `admin_id` (UUID, references profiles - who made the change)
+  - `user_id` (UUID, nullable, references profiles - who was changed)
+  - `admin_id` (UUID, nullable, references profiles - who made the change)
   - `old_role` (TEXT, CHECK constraint for valid roles)
   - `new_role` (TEXT, CHECK constraint for valid roles)
   - `changed_at` (TIMESTAMPTZ, when the change occurred)
@@ -87,7 +87,7 @@ Migrations are automatically applied when pushed to the main branch via CI/CD.
   - `idx_role_audit_admin_id` - for querying changes by admin
   - `idx_role_audit_changed_at` - for chronological queries
   - `idx_role_audit_user_changed` - composite index for user role history
-- Adds foreign key constraints with CASCADE delete
+- Adds foreign key constraints with SET NULL on delete (preserves audit history)
 - Includes comprehensive documentation comments
 
 **Rollback:** `support/20251216_001_create_role_audit_table_rollback.sql`
@@ -99,7 +99,8 @@ Migrations are automatically applied when pushed to the main branch via CI/CD.
 **Security considerations:**
 - Only admins can view or create audit records (enforced via RLS)
 - Audit records are immutable (no UPDATE or DELETE policies)
-- CASCADE delete ensures orphaned records are cleaned up if users are deleted
+- SET NULL on delete preserves audit history even after user deletion (compliance requirement)
+- When a user/admin is deleted, their ID becomes NULL but the audit record remains for investigation
 - CHECK constraints ensure only valid roles ('user', 'agency_owner', 'admin') are recorded
 
 **Use cases:**

@@ -57,6 +57,12 @@ BEGIN
     AND column_name = 'notes' AND data_type = 'text'
   )), 'notes column should exist as TEXT';
 
+  ASSERT (SELECT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'role_change_audit'
+    AND column_name = 'created_at' AND data_type = 'timestamp with time zone'
+  )), 'created_at column should exist as TIMESTAMPTZ';
+
   RAISE NOTICE '✓ All columns exist with correct types';
 END $$;
 
@@ -130,6 +136,9 @@ BEGIN
   RAISE NOTICE '✓ CHECK constraints exist for role validation';
 END $$;
 
-RAISE NOTICE '';
-RAISE NOTICE '=== All Tests Passed ===';
-RAISE NOTICE 'role_change_audit table is correctly configured';
+DO $$
+BEGIN
+  RAISE NOTICE '';
+  RAISE NOTICE '=== All Tests Passed ===';
+  RAISE NOTICE 'role_change_audit table is correctly configured';
+END $$;
