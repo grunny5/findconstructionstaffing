@@ -9,13 +9,14 @@ export const roleDisplayName = (role: UserRole): string => {
       return 'Admin';
     case 'agency_owner':
       return 'Agency Owner';
-    default:
+    case 'user':
       return 'User';
   }
 };
 
 /**
  * Get badge variant for a user role
+ * Note: 'destructive' (red) for admin is intentional - visually highlights elevated privileges
  */
 export const roleBadgeVariant = (
   role: UserRole
@@ -25,7 +26,7 @@ export const roleBadgeVariant = (
       return 'destructive';
     case 'agency_owner':
       return 'default';
-    default:
+    case 'user':
       return 'secondary';
   }
 };
