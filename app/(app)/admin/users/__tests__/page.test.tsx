@@ -135,11 +135,10 @@ describe('AdminUsersPage', () => {
       order: jest.fn().mockReturnThis(),
     };
 
-    mockSupabase.single
-      .mockResolvedValueOnce({
-        data: { role: 'admin' },
-        error: null,
-      });
+    mockSupabase.single.mockResolvedValueOnce({
+      data: { role: 'admin' },
+      error: null,
+    });
 
     mockSupabase.order.mockResolvedValueOnce({
       data: null,
@@ -152,7 +151,9 @@ describe('AdminUsersPage', () => {
     const { container } = render(result as React.ReactElement);
 
     expect(screen.getByText('User Management')).toBeInTheDocument();
-    expect(screen.getByText('Error loading users. Please try again later.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Error loading users. Please try again later.')
+    ).toBeInTheDocument();
     expect(container.querySelector('.bg-red-50')).toBeInTheDocument();
   });
 
@@ -171,11 +172,10 @@ describe('AdminUsersPage', () => {
       order: jest.fn().mockReturnThis(),
     };
 
-    mockSupabase.single
-      .mockResolvedValueOnce({
-        data: { role: 'admin' },
-        error: null,
-      });
+    mockSupabase.single.mockResolvedValueOnce({
+      data: { role: 'admin' },
+      error: null,
+    });
 
     mockSupabase.order.mockResolvedValueOnce({
       data: mockUsers,
@@ -207,11 +207,10 @@ describe('AdminUsersPage', () => {
       order: jest.fn().mockReturnThis(),
     };
 
-    mockSupabase.single
-      .mockResolvedValueOnce({
-        data: { role: 'admin' },
-        error: null,
-      });
+    mockSupabase.single.mockResolvedValueOnce({
+      data: { role: 'admin' },
+      error: null,
+    });
 
     mockSupabase.order.mockResolvedValueOnce({
       data: [],

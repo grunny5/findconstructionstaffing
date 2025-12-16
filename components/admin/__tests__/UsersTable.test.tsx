@@ -62,7 +62,9 @@ describe('UsersTable', () => {
   it('filters users by search query (email)', () => {
     render(<UsersTable users={mockUsers} />);
 
-    const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
     fireEvent.change(searchInput, { target: { value: 'agency' } });
 
     expect(screen.getAllByText('Agency Owner')).toHaveLength(2);
@@ -73,7 +75,9 @@ describe('UsersTable', () => {
   it('filters users by search query (name)', () => {
     render(<UsersTable users={mockUsers} />);
 
-    const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
     fireEvent.change(searchInput, { target: { value: 'john' } });
 
     expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -97,10 +101,14 @@ describe('UsersTable', () => {
   it('shows empty state when no users match filters', () => {
     render(<UsersTable users={mockUsers} />);
 
-    const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
     fireEvent.change(searchInput, { target: { value: 'nonexistent' } });
 
-    expect(screen.getByText('No users found matching your filters.')).toBeInTheDocument();
+    expect(
+      screen.getByText('No users found matching your filters.')
+    ).toBeInTheDocument();
   });
 
   it('shows empty state when no users provided', () => {
@@ -141,7 +149,9 @@ describe('UsersTable', () => {
 
     expect(screen.getByText(/Page 2 of/)).toBeInTheDocument();
 
-    const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
     fireEvent.change(searchInput, { target: { value: '@example.com' } });
 
     expect(screen.getByText(/Page 1 of 3/)).toBeInTheDocument();

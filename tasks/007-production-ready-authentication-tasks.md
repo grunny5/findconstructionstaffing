@@ -1201,6 +1201,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 **Actual Effort:** ~4 hours
 
 **Implementation Details:**
+
 - Added Shadcn/ui table component via CLI
 - Server component at `app/(app)/admin/users/page.tsx`:
   - Auth check with `supabase.auth.getUser()`

@@ -2,8 +2,21 @@
 
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -166,7 +179,8 @@ export function UsersTable({ users }: UsersTableProps) {
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of{' '}
+                Showing {startIndex + 1}-
+                {Math.min(endIndex, filteredUsers.length)} of{' '}
                 {filteredUsers.length} users
               </p>
               <div className="flex items-center gap-2">
