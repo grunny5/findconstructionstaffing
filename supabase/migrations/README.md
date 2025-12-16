@@ -109,6 +109,70 @@ Migrations are automatically applied when pushed to the main branch via CI/CD.
 - Accountability: Permanent record of administrative actions
 - Compliance: Meet regulatory requirements for access control auditing
 
+---
+
+### 20251218_001_create_change_role_function.sql
+
+**Purpose:** Create secure RPC function for admins to change user roles with automatic audit logging
+
+**Changes:**
+- Creates `change_user_role(target_user_id UUID, new_role TEXT, admin_notes TEXT)` function
+- Function security features:
+  - Uses `SECURITY DEFINER` to bypass RLS for audit log insertion
+  - Validates caller is authenticated admin
+  - Prevents self-demotion (admins cannot change their own role)
+  - Validates new_role is one of: 'user', 'agency_owner', 'admin'
+  - Checks target user exists
+  - Verifies role is actually changing
+- Atomic transaction:
+  - Updates `profiles.role` and `profiles.updated_at`
+  - Inserts record into `role_change_audit`
+  - Both operations succeed or both roll back
+- Clear error messages for all validation failures
+- Granted to `authenticated` role (function validates admin internally)
+
+**Rollback:** `support/20251218_001_create_change_role_function_rollback.sql`
+
+**Testing:** `support/20251218_001_create_change_role_function_test.sql`
+
+**Related Tasks:** Task 4.1.2 - Create Change User Role RPC Function
+
+**Function signature:**
+```sql
+change_user_role(
+  target_user_id UUID,     -- User whose role to change
+  new_role TEXT,           -- New role: 'user' | 'agency_owner' | 'admin'
+  admin_notes TEXT         -- Optional notes explaining the change
+) RETURNS BOOLEAN
+```
+
+**Usage example:**
+```sql
+-- Promote a user to agency owner
+SELECT change_user_role(
+  '123e4567-e89b-12d3-a456-426614174000'::UUID,
+  'agency_owner',
+  'Verified as legitimate staffing agency'
+);
+
+-- Returns: TRUE on success
+-- Raises exception with clear message on failure
+```
+
+**Security validations:**
+1. Caller must be authenticated
+2. Caller must have 'admin' role
+3. Target user must exist
+4. Caller cannot modify their own role (prevent self-demotion)
+5. New role must be valid enum value
+6. Role must actually be changing (not already the target role)
+
+**Error handling:**
+- Each validation failure raises a specific exception
+- All exceptions include helpful hints for resolution
+- Transaction rolls back automatically on any failure
+- No partial updates possible (atomic operation)
+
 ## Testing Migrations
 
 ### Automated Testing
