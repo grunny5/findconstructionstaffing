@@ -46,7 +46,7 @@ describe('UsersTable', () => {
     render(<UsersTable users={mockUsers} />);
 
     expect(screen.getByText('Admin User')).toBeInTheDocument();
-    expect(screen.getAllByText('Agency Owner')).toHaveLength(2);
+    expect(screen.getAllByText('Agency Owner')).toHaveLength(3);
     expect(screen.getByText('Regular User')).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
   });
@@ -54,9 +54,9 @@ describe('UsersTable', () => {
   it('displays correct role badges', () => {
     render(<UsersTable users={mockUsers} />);
 
-    expect(screen.getByText('Admin')).toBeInTheDocument();
-    expect(screen.getAllByText('Agency Owner')).toHaveLength(2);
-    expect(screen.getAllByText('User')).toHaveLength(2);
+    expect(screen.getAllByText('Admin')).toHaveLength(2);
+    expect(screen.getAllByText('Agency Owner')).toHaveLength(3);
+    expect(screen.getAllByText('User')).toHaveLength(4);
   });
 
   it('filters users by search query (email)', () => {
@@ -67,7 +67,7 @@ describe('UsersTable', () => {
     );
     fireEvent.change(searchInput, { target: { value: 'agency' } });
 
-    expect(screen.getAllByText('Agency Owner')).toHaveLength(2);
+    expect(screen.getAllByText('Agency Owner')).toHaveLength(3);
     expect(screen.queryByText('Admin User')).not.toBeInTheDocument();
     expect(screen.queryByText('Regular User')).not.toBeInTheDocument();
   });
@@ -87,7 +87,7 @@ describe('UsersTable', () => {
   it('filters users by role', () => {
     render(<UsersTable users={mockUsers} />);
 
-    const roleSelect = screen.getByRole('combobox');
+    const roleSelect = screen.getAllByRole('combobox')[0];
     fireEvent.click(roleSelect);
 
     const adminOption = screen.getByRole('option', { name: 'Admin' });
@@ -124,11 +124,11 @@ describe('UsersTable', () => {
     expect(screen.getByText(/Jan 2, 2024/)).toBeInTheDocument();
   });
 
-  it('shows Change Role button for each user', () => {
+  it('shows role dropdown for each user', () => {
     render(<UsersTable users={mockUsers} />);
 
-    const changeRoleButtons = screen.getAllByText('Change Role');
-    expect(changeRoleButtons).toHaveLength(mockUsers.length);
+    const roleDropdowns = screen.getAllByRole('combobox');
+    expect(roleDropdowns.length).toBeGreaterThanOrEqual(mockUsers.length);
   });
 
   it('resets to page 1 when search query changes', () => {

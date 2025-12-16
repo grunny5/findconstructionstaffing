@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -18,12 +19,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
+import { RoleChangeDropdown } from './RoleChangeDropdown';
 import type { Profile, UserRole } from '@/types/database';
 
 interface UsersTableProps {
   users: Profile[];
+  currentUserId?: string;
 }
 
 const USERS_PER_PAGE = 50;
@@ -50,10 +54,12 @@ const roleDisplayName = (role: UserRole) => {
   }
 };
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users: initialUsers, currentUserId }: UsersTableProps) {
+  const [users, setUsers] = useState(initialUsers);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
     let filtered = users;
@@ -95,6 +101,59 @@ export function UsersTable({ users }: UsersTableProps) {
   const handleRoleFilterChange = (value: string) => {
     setRoleFilter(value);
     setCurrentPage(1);
+  };
+
+  const handleRoleChange = async (
+    userId: string,
+    newRole: UserRole,
+    notes?: string
+  ) => {
+    if (userId === currentUserId) {
+      toast({
+        title: 'Error',
+        description: 'You cannot change your own role.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const userToUpdate = users.find((u) => u.id === userId);
+    if (!userToUpdate) return;
+
+    const oldRole = userToUpdate.role;
+
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId ? { ...user, role: newRole } : user
+      )
+    );
+
+    try {
+      const { data, error } = await supabase.rpc('change_user_role', {
+        target_user_id: userId,
+        new_role: newRole,
+        admin_notes: notes || null,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Role updated from ${roleDisplayName(oldRole)} to ${roleDisplayName(newRole)}.`,
+      });
+    } catch (error: any) {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, role: oldRole } : user
+        )
+      );
+
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update role. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -165,9 +224,13 @@ export function UsersTable({ users }: UsersTableProps) {
                         })}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
-                          Change Role
-                        </Button>
+                        <RoleChangeDropdown
+                          userId={user.id}
+                          userName={user.full_name}
+                          currentRole={user.role}
+                          onRoleChange={handleRoleChange}
+                          disabled={user.id === currentUserId}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
