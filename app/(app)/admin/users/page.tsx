@@ -29,7 +29,9 @@ export default async function AdminUsersPage() {
 
   const { data: users, error: usersError } = await supabase
     .from('profiles')
-    .select('id, email, full_name, role, created_at, updated_at')
+    .select(
+      'id, email, full_name, role, created_at, updated_at, last_password_change'
+    )
     .order('created_at', { ascending: false });
 
   if (usersError) {
