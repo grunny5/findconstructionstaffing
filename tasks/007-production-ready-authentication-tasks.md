@@ -1390,22 +1390,22 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Protected route (admin only)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page at `/admin/users/[id]` (admin only)
-  - [ ] Shows user profile info: name, email, role, created date
-  - [ ] Includes RoleHistoryTimeline component
-  - [ ] Back button to users list
-  - [ ] Loading state
-  - [ ] 404 if user not found
-  - [ ] Mobile responsive
-  - [ ] Accessible: page title, headings
+  - [x] Page at `/admin/users/[id]` (admin only)
+  - [x] Shows user profile info: name, email, role, created date
+  - [x] Includes RoleHistoryTimeline component
+  - [x] Back button to users list
+  - [x] Loading state
+  - [x] 404 if user not found
+  - [x] Mobile responsive
+  - [x] Accessible: page title, headings
 - **Definition of Done:**
-  - [ ] Page implemented
-  - [ ] Timeline integration works
-  - [ ] Protected route tested
-  - [ ] Component tests written
+  - [x] Page implemented
+  - [x] Timeline integration works
+  - [x] Protected route tested
+  - [x] Component tests written
   - [ ] Visual QA
   - [ ] PR approved
-  - [ ] **Final Check:** Complete user view
+  - [x] **Final Check:** Complete user view
 
 **Estimated Effort:** 2-3 hours
 

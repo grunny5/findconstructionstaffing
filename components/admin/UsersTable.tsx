@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -212,7 +213,12 @@ export function UsersTable({
                   {paginatedUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">
-                        {user.full_name || 'N/A'}
+                        <Link
+                          href={`/admin/users/${user.id}`}
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {user.full_name || 'N/A'}
+                        </Link>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
