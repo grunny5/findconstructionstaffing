@@ -173,6 +173,47 @@ SELECT change_user_role(
 - Transaction rolls back automatically on any failure
 - No partial updates possible (atomic operation)
 
+---
+
+### 20251219_001_add_admin_rls_policies.sql
+
+**Purpose:** Add RLS policies to allow admins to view all user profiles
+
+**Changes:**
+- Creates policy "Admins can view all profiles" for SELECT operations
+- Policy uses subquery to check if caller has 'admin' role
+- Existing user policies remain unchanged
+- Does NOT add UPDATE policy (role changes use SECURITY DEFINER RPC)
+
+**Rollback:** `support/20251219_001_add_admin_rls_policies_rollback.sql`
+
+**Testing:** `support/20251219_001_add_admin_rls_policies_test.sql`
+
+**Related Tasks:** Task 4.2.2 - Add RLS Policies for Admin Access to All Profiles
+
+**Policy logic:**
+```sql
+-- Admin can SELECT if they have role='admin'
+EXISTS (
+  SELECT 1 FROM public.profiles AS caller_profile
+  WHERE caller_profile.id = auth.uid()
+    AND caller_profile.role = 'admin'
+)
+```
+
+**Security design:**
+- Admins can view all profiles (needed for user management page)
+- Regular users can only view their own profile (via existing policy)
+- Role changes MUST use `change_user_role()` RPC (not direct UPDATE)
+- This ensures all role changes are audited properly
+- No admin UPDATE policy prevents bypassing audit logging
+
+**Use cases:**
+- Admin user management interface: View list of all users
+- User search and filtering: Find users by email or name
+- Role verification: See current roles of all users
+- Security monitoring: Identify users with elevated permissions
+
 ## Testing Migrations
 
 ### Automated Testing
