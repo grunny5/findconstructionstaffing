@@ -1,10 +1,10 @@
 # FSD: Production-Ready Authentication System
 
 - **ID:** 007
-- **Status:** Draft
+- **Status:** In Progress (Phase 4 Complete ✅)
 - **Related Epic:** User Authentication & Authorization
 - **Author:** System Analysis (Claude Code)
-- **Last Updated:** 2025-12-12
+- **Last Updated:** 2025-12-16
 - **Designs:** TBD
 - **Reference:** `docs/auth/AUTHENTICATION_STATE.md`
 
@@ -182,41 +182,47 @@ This feature encompasses 4 major sub-features:
 
 ### Sub-Feature 4: Role Management (Admin Features)
 
-#### Story 4.1: Admin User Management Dashboard
+#### Story 4.1: Admin User Management Dashboard ✅
 
 > As a **Site Administrator**, I want **to view all users and their roles**, so that **I can manage user permissions**.
 
 **Acceptance Criteria:**
 
-- [ ] **Given** I am logged in as an admin, **When** I navigate to `/admin/users`, **Then** I see a list of all users with columns: Name, Email, Role, Created At, Actions
-- [ ] **Given** I am on the users page, **When** I view the list, **Then** users are paginated (50 per page) with search and filter options
-- [ ] **Given** I want to find a user, **When** I use the search box, **Then** I can search by name or email
-- [ ] **Given** I want to filter users, **When** I use the role filter dropdown, **Then** I can filter by: All, User, Agency Owner, Admin
-- [ ] **Given** I am not an admin, **When** I try to access `/admin/users`, **Then** I am redirected to the home page
+- [x] **Given** I am logged in as an admin, **When** I navigate to `/admin/users`, **Then** I see a list of all users with columns: Name, Email, Role, Created At, Actions
+- [x] **Given** I am on the users page, **When** I view the list, **Then** users are paginated (50 per page) with search and filter options
+- [x] **Given** I want to find a user, **When** I use the search box, **Then** I can search by name or email
+- [x] **Given** I want to filter users, **When** I use the role filter dropdown, **Then** I can filter by: All, User, Agency Owner, Admin
+- [x] **Given** I am not an admin, **When** I try to access `/admin/users`, **Then** I am redirected to the home page
 
-#### Story 4.2: Change User Role
+**Implementation:** Tasks 4.1.1-4.1.3 (PR #129, merged 2025-12-16)
+
+#### Story 4.2: Change User Role ✅
 
 > As a **Site Administrator**, I want **to change a user's role**, so that **I can grant agency owner or admin permissions**.
 
 **Acceptance Criteria:**
 
-- [ ] **Given** I am viewing a user in the admin dashboard, **When** I click "Change Role", **Then** I see a dropdown with options: user, agency_owner, admin
-- [ ] **Given** I select a new role, **When** I confirm the change, **Then** I see a confirmation modal "Change [User Name]'s role from [old] to [new]?"
-- [ ] **Given** I confirm the role change, **When** it processes, **Then** the user's role is updated immediately and I see "Role updated successfully"
-- [ ] **Given** I changed a user's role, **When** that user refreshes their page, **Then** they see updated navigation/permissions based on their new role
-- [ ] **Given** I try to change my own role to 'user', **When** I attempt this, **Then** I see error "You cannot demote your own admin account"
-- [ ] **Given** a role change occurs, **When** the operation completes, **Then** an audit log entry is created with: admin_id, user_id, old_role, new_role, timestamp
+- [x] **Given** I am viewing a user in the admin dashboard, **When** I click "Change Role", **Then** I see a dropdown with options: user, agency_owner, admin
+- [x] **Given** I select a new role, **When** I confirm the change, **Then** I see a confirmation modal "Change [User Name]'s role from [old] to [new]?"
+- [x] **Given** I confirm the role change, **When** it processes, **Then** the user's role is updated immediately and I see "Role updated successfully"
+- [x] **Given** I changed a user's role, **When** that user refreshes their page, **Then** they see updated navigation/permissions based on their new role
+- [x] **Given** I try to change my own role to 'user', **When** I attempt this, **Then** I see error "You cannot demote your own admin account"
+- [x] **Given** a role change occurs, **When** the operation completes, **Then** an audit log entry is created with: admin_id, user_id, old_role, new_role, timestamp
 
-#### Story 4.3: View Role Change History
+**Implementation:** Tasks 4.2.1-4.2.3 (PR #129, merged 2025-12-16)
+
+#### Story 4.3: View Role Change History ✅
 
 > As a **Site Administrator**, I want **to view the history of role changes**, so that **I can audit permission modifications**.
 
 **Acceptance Criteria:**
 
-- [ ] **Given** I am on the user detail page, **When** I click "Role History", **Then** I see a timeline of all role changes for that user
-- [ ] **Given** I view the role history, **When** I see each entry, **Then** it shows: timestamp, old role, new role, changed by (admin name)
-- [ ] **Given** role history exists, **When** I view it, **Then** entries are sorted by most recent first
-- [ ] **Given** no role changes have occurred, **When** I view history, **Then** I see "No role changes recorded"
+- [x] **Given** I am on the user detail page, **When** I click "Role History", **Then** I see a timeline of all role changes for that user
+- [x] **Given** I view the role history, **When** I see each entry, **Then** it shows: timestamp, old role, new role, changed by (admin name)
+- [x] **Given** role history exists, **When** I view it, **Then** entries are sorted by most recent first
+- [x] **Given** no role changes have occurred, **When** I view history, **Then** I see "No role changes recorded"
+
+**Implementation:** Tasks 4.3.1-4.3.3 (PR #129, merged 2025-12-16)
 
 ---
 

@@ -1,8 +1,8 @@
 # FindConstructionStaffing - Authentication System Documentation
 
-**Last Updated:** December 13, 2025
-**Branch:** feat/011-auth-cleanup
-**Status:** 🟡 Partially Implemented - Email Verification Routes Complete
+**Last Updated:** December 16, 2025
+**Branch:** main
+**Status:** 🟢 Core Features Implemented - Role Management Complete
 
 ---
 
@@ -34,7 +34,12 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 - Automatic profile creation
 - Role-based access control (user, agency_owner, admin)
 - Server-side route protection
-- Comprehensive test coverage
+- **Admin role management UI** (Phase 4 complete)
+  - User management dashboard at `/admin/users`
+  - Role change functionality with audit logging
+  - Role history timeline view
+  - Admin-only RLS policies
+- Comprehensive test coverage (1145 tests passing)
 
 **🚧 Partially Implemented:**
 
@@ -43,7 +48,6 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 **❌ Not Implemented:**
 
 - Password reset flow
-- Role assignment UI
 - Account settings/profile management
 - OAuth/social authentication
 - Route middleware protection
@@ -89,14 +93,24 @@ FindConstructionStaffing uses Supabase for authentication with a custom React Co
 
 ### Key Components
 
-| Component              | Location                                                         | Purpose                           |
-| ---------------------- | ---------------------------------------------------------------- | --------------------------------- |
-| `AuthProvider`         | `lib/auth/auth-context.tsx`                                      | Client-side auth state management |
-| `useAuth()`            | `lib/auth/auth-context.tsx`                                      | React hook for auth access        |
-| Supabase Server Client | `lib/supabase/server.ts`                                         | Server-side auth for SSR          |
-| Signup Page            | `app/signup/page.tsx`                                            | User registration form            |
-| Login Page             | `app/login/page.tsx`                                             | User login form                   |
-| Profile Migration      | `supabase/migrations/20251211_001_create_profiles_and_roles.sql` | Database schema                   |
+| Component                  | Location                                                           | Purpose                                     |
+| -------------------------- | ------------------------------------------------------------------ | ------------------------------------------- |
+| `AuthProvider`             | `lib/auth/auth-context.tsx`                                        | Client-side auth state management           |
+| `useAuth()`                | `lib/auth/auth-context.tsx`                                        | React hook for auth access                  |
+| Supabase Server Client     | `lib/supabase/server.ts`                                           | Server-side auth for SSR                    |
+| Signup Page                | `app/signup/page.tsx`                                              | User registration form                      |
+| Login Page                 | `app/login/page.tsx`                                               | User login form                             |
+| **Admin Users Page**       | `app/(app)/admin/users/page.tsx`                                   | Admin dashboard - list all users            |
+| **User Detail Page**       | `app/(app)/admin/users/[id]/page.tsx`                              | User profile with role history timeline     |
+| **UsersTable**             | `components/admin/UsersTable.tsx`                                  | Searchable user list with role management   |
+| **RoleChangeDropdown**     | `components/admin/RoleChangeDropdown.tsx`                          | Role selection dropdown with confirmation   |
+| **RoleChangeConfirmModal** | `components/admin/RoleChangeConfirmModal.tsx`                      | Confirmation dialog for role changes        |
+| **RoleHistoryTimeline**    | `components/admin/RoleHistoryTimeline.tsx`                         | Timeline view of user's role change history |
+| Role Utilities             | `lib/utils/role.ts`                                                | Shared role display and badge utilities     |
+| Profile Migration          | `supabase/migrations/20251211_001_create_profiles_and_roles.sql`   | Database schema                             |
+| **Role Audit Migration**   | `supabase/migrations/20251216_001_create_role_audit_table.sql`     | Audit log table for role changes            |
+| **Change Role RPC**        | `supabase/migrations/20251218_001_create_change_role_function.sql` | Secure role change function with validation |
+| **Admin RLS Policies**     | `supabase/migrations/20251219_001_add_admin_rls_policies.sql`      | Admin-only database access policies         |
 
 ---
 
@@ -178,6 +192,57 @@ App Mount → AuthProvider initialization
    Cleanup on unmount:
    - unsubscribe()
 ```
+
+### 4. Role Management Flow (Admin Feature)
+
+```text
+Admin navigates to /admin/users
+        ↓
+Server Component: Check auth + admin role
+        ↓
+    ┌───────┴────────┐
+    │                │
+IS ADMIN       NOT ADMIN
+    │                │
+Fetch all users  Redirect to /
+    ↓
+Render UsersTable (client component)
+    ↓
+Admin selects new role from dropdown
+    ↓
+RoleChangeConfirmModal opens
+    ↓
+Admin adds optional notes → Confirms
+    ↓
+Call RPC: change_user_role(user_id, new_role, notes)
+    ↓
+PostgreSQL Function validates:
+  ✓ Caller is admin
+  ✓ Target user exists
+  ✓ Not self-modification
+  ✓ Valid role value
+    ↓
+Atomic transaction:
+  1. UPDATE profiles SET role = new_role
+  2. INSERT INTO role_change_audit (...)
+    ↓
+Return success/error to client
+    ↓
+    ┌───────┴────────┐
+    │                │
+SUCCESS          ERROR
+    │                │
+Update UI        Show error
+Display toast    Revert dropdown
+Refresh table
+    ↓
+View role history timeline:
+  - Navigate to /admin/users/[id]
+  - RoleHistoryTimeline component
+  - Displays all role changes with admin names, timestamps, notes
+```
+
+**Status:** ✅ Fully implemented (Phase 4 - Tasks 4.1-4.3)
 
 ---
 
@@ -268,6 +333,133 @@ CREATE POLICY "Users can update own profile"
 ```
 
 **Note:** No INSERT policy - profiles created only via trigger.
+
+### Role Change Audit Table
+
+**Migration:** `supabase/migrations/20251216_001_create_role_audit_table.sql`
+
+```sql
+CREATE TABLE public.role_change_audit (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  admin_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  old_role TEXT NOT NULL CHECK (old_role IN ('user', 'agency_owner', 'admin')),
+  new_role TEXT NOT NULL CHECK (new_role IN ('user', 'agency_owner', 'admin')),
+  changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_role_audit_user_id ON public.role_change_audit(user_id);
+CREATE INDEX idx_role_audit_admin_id ON public.role_change_audit(admin_id);
+CREATE INDEX idx_role_audit_changed_at ON public.role_change_audit(changed_at DESC);
+
+-- RLS Policies
+ALTER TABLE public.role_change_audit ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view all audit records"
+  ON public.role_change_audit FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+```
+
+**Purpose:** Immutable audit trail of all role changes for security and compliance.
+
+### Change User Role RPC Function
+
+**Migration:** `supabase/migrations/20251218_001_create_change_role_function.sql`
+
+```sql
+CREATE OR REPLACE FUNCTION change_user_role(
+  target_user_id UUID,
+  new_role TEXT,
+  admin_notes TEXT DEFAULT NULL
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  caller_id UUID;
+  caller_role TEXT;
+  current_role TEXT;
+BEGIN
+  -- Validation: Must be authenticated
+  caller_id := auth.uid();
+  IF caller_id IS NULL THEN
+    RAISE EXCEPTION 'Authentication required';
+  END IF;
+
+  -- Validation: Caller must be admin
+  SELECT role INTO caller_role FROM public.profiles WHERE id = caller_id;
+  IF caller_role != 'admin' THEN
+    RAISE EXCEPTION 'Only admins can change user roles';
+  END IF;
+
+  -- Validation: Target user must exist
+  SELECT role INTO current_role FROM public.profiles WHERE id = target_user_id;
+  IF current_role IS NULL THEN
+    RAISE EXCEPTION 'User not found';
+  END IF;
+
+  -- Validation: Cannot modify own role
+  IF caller_id = target_user_id THEN
+    RAISE EXCEPTION 'Cannot modify your own role';
+  END IF;
+
+  -- Validation: New role must be valid
+  IF new_role NOT IN ('user', 'agency_owner', 'admin') THEN
+    RAISE EXCEPTION 'Invalid role value';
+  END IF;
+
+  -- Validation: Role must actually be changing
+  IF current_role = new_role THEN
+    RAISE EXCEPTION 'User already has role: %', new_role;
+  END IF;
+
+  -- Atomic transaction: Update role + Insert audit record
+  UPDATE public.profiles
+  SET role = new_role, updated_at = NOW()
+  WHERE id = target_user_id;
+
+  INSERT INTO public.role_change_audit (user_id, admin_id, old_role, new_role, notes)
+  VALUES (target_user_id, caller_id, current_role, new_role, admin_notes);
+
+  RETURN TRUE;
+END;
+$$;
+```
+
+**Security Features:**
+
+- `SECURITY DEFINER`: Runs with elevated privileges to bypass RLS
+- 6 validation checks prevent unauthorized or invalid changes
+- Atomic transaction ensures data consistency
+- Cannot self-modify to prevent privilege escalation
+- Audit log insertion is mandatory (cannot be skipped)
+
+### Admin RLS Policies
+
+**Migration:** `supabase/migrations/20251219_001_add_admin_rls_policies.sql`
+
+```sql
+-- Allow admins to view all profiles
+CREATE POLICY "Admins can view all profiles"
+  ON public.profiles FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+```
+
+**Note:** Role updates go through `change_user_role()` RPC function which uses `SECURITY DEFINER`.
 
 ### Automatic Profile Creation
 
