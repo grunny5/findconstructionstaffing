@@ -897,8 +897,8 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - [x] Test: Correct current password + valid new password → success
   - [x] Test: User remains logged in after change
   - [x] Test: Show/hide password toggles work
-  - [ ] Integration test: change password → logout → login with new password succeeds
-  - [x] Coverage >85% (98.11% achieved)
+  - [ ] Integration test: change password → logout → login with new password succeeds (pending - requires database access)
+  - [x] Coverage >85% (98.11% achieved on unit tests)
 - **Definition of Done:**
   - [x] All tests written and passing (20 tests in PasswordChangeForm.test.tsx)
   - [x] Security scenarios covered (password verification, error handling)
@@ -947,10 +947,12 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - [x] Component implemented (DeleteAccountModal.tsx, AccountSection.tsx)
   - [x] Account deletion works via API route (CASCADE deletes profile per existing migration)
   - [x] Component tests written (14 tests, 100% statement coverage, 77.5% branch coverage)
-  - [ ] Integration test: delete account → verify user cannot login
+  - [ ] Integration test: delete account → verify user cannot login (pending - requires database access)
   - [x] Accessibility tested (ARIA labels, validation messages, focus management)
   - [ ] PR approved
   - [x] **Final Check:** Safe and clear process (two-step confirmation, password verification)
+
+**Note on Integration Tests**: Unit tests provide 100% statement coverage. Integration tests requiring database access (actual user deletion/password change verification) are deferred to a separate testing task.
 
 **Estimated Effort:** 4-5 hours
 
@@ -1011,8 +1013,8 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - [x] Test: Password field enabled after "DELETE" typed (2 tests)
   - [x] Test: Incorrect password shows error (1 test)
   - [x] Test: Correct password → account deleted → logged out → redirected (1 test)
-  - [ ] Integration test: delete account → verify user in database is gone (pending)
-  - [ ] Integration test: verify profile is also deleted (CASCADE) (pending)
+  - [ ] Integration test: delete account → verify user in database is gone (pending - requires database access)
+  - [ ] Integration test: verify profile is also deleted (CASCADE) (pending - requires database access)
   - [x] Test: Cancel button at each step works (2 tests)
   - [x] Coverage >85% (100% statements, 77.5% branches achieved)
 - **Definition of Done:**
