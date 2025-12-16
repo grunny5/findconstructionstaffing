@@ -18,11 +18,10 @@ DO $$
 DECLARE
   param_count INT;
 BEGIN
-  SELECT COUNT(*) INTO param_count
-  FROM information_schema.parameters
-  WHERE specific_schema = 'public'
-  AND specific_name = 'change_user_role'
-  AND parameter_mode = 'IN';
+  SELECT pronargs INTO param_count
+  FROM pg_proc
+  WHERE proname = 'change_user_role'
+  AND pronamespace = 'public'::regnamespace;
 
   ASSERT param_count = 3, 'Function should have 3 input parameters';
   RAISE NOTICE '✓ Function has correct number of parameters';
@@ -64,7 +63,7 @@ BEGIN
   SELECT EXISTS (
     SELECT FROM information_schema.routine_privileges
     WHERE routine_schema = 'public'
-    AND routine_name = 'change_user_role'
+    AND specific_name LIKE 'change_user_role%'
     AND grantee = 'authenticated'
     AND privilege_type = 'EXECUTE'
   ) INTO has_permission;
