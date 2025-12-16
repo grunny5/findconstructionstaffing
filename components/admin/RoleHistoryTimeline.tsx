@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/lib/supabase';
 import { Clock, User, AlertCircle } from 'lucide-react';
-import type { UserRole, RoleChangeAudit } from '@/types/database';
+import { roleDisplayName, roleBadgeVariant } from '@/lib/utils/role';
+import type { RoleChangeAudit } from '@/types/database';
 
 interface RoleHistoryTimelineProps {
   userId: string;
@@ -19,33 +20,9 @@ interface AuditLogWithAdmin extends RoleChangeAudit {
   } | null;
 }
 
-const roleDisplayName = (role: UserRole): string => {
-  switch (role) {
-    case 'admin':
-      return 'Admin';
-    case 'agency_owner':
-      return 'Agency Owner';
-    default:
-      return 'User';
-  }
-};
-
-const roleBadgeVariant = (
-  role: UserRole
-): 'default' | 'secondary' | 'destructive' => {
-  switch (role) {
-    case 'admin':
-      return 'destructive'; // red
-    case 'agency_owner':
-      return 'default'; // blue
-    default:
-      return 'secondary'; // gray
-  }
-};
-
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

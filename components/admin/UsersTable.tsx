@@ -24,6 +24,7 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { RoleChangeDropdown } from './RoleChangeDropdown';
+import { roleDisplayName, roleBadgeVariant } from '@/lib/utils/role';
 import type { Profile, UserRole } from '@/types/database';
 
 interface UsersTableProps {
@@ -32,28 +33,6 @@ interface UsersTableProps {
 }
 
 const USERS_PER_PAGE = 50;
-
-const roleBadgeVariant = (role: UserRole) => {
-  switch (role) {
-    case 'admin':
-      return 'destructive';
-    case 'agency_owner':
-      return 'default';
-    default:
-      return 'secondary';
-  }
-};
-
-const roleDisplayName = (role: UserRole) => {
-  switch (role) {
-    case 'admin':
-      return 'Admin';
-    case 'agency_owner':
-      return 'Agency Owner';
-    default:
-      return 'User';
-  }
-};
 
 export function UsersTable({
   users: initialUsers,
@@ -133,7 +112,7 @@ export function UsersTable({
     );
 
     try {
-      const { data, error } = await supabase.rpc('change_user_role', {
+      const { error } = await supabase.rpc('change_user_role', {
         target_user_id: userId,
         new_role: newRole,
         admin_notes: notes || null,

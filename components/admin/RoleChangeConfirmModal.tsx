@@ -14,6 +14,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
+import { roleDisplayName } from '@/lib/utils/role';
 import type { UserRole } from '@/types/database';
 
 interface RoleChangeConfirmModalProps {
@@ -24,17 +25,6 @@ interface RoleChangeConfirmModalProps {
   onConfirm: (notes?: string) => Promise<void>;
   onCancel: () => void;
 }
-
-const roleDisplayName = (role: UserRole): string => {
-  switch (role) {
-    case 'admin':
-      return 'Admin';
-    case 'agency_owner':
-      return 'Agency Owner';
-    default:
-      return 'User';
-  }
-};
 
 export function RoleChangeConfirmModal({
   isOpen,

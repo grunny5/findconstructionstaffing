@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import type { Profile, UserRole } from '@/types/database';
+import { roleDisplayName, roleBadgeVariant } from '@/lib/utils/role';
+import type { Profile } from '@/types/database';
 
 interface UserDetailPageProps {
   params: {
@@ -14,33 +15,9 @@ interface UserDetailPageProps {
   };
 }
 
-const roleDisplayName = (role: UserRole): string => {
-  switch (role) {
-    case 'admin':
-      return 'Admin';
-    case 'agency_owner':
-      return 'Agency Owner';
-    default:
-      return 'User';
-  }
-};
-
-const roleBadgeVariant = (
-  role: UserRole
-): 'default' | 'secondary' | 'destructive' => {
-  switch (role) {
-    case 'admin':
-      return 'destructive';
-    case 'agency_owner':
-      return 'default';
-    default:
-      return 'secondary';
-  }
-};
-
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
