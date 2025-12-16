@@ -1,0 +1,30 @@
+FindConstructionStaffing - Confirm Your Email Change
+========================================================
+
+Hi there,
+
+We received a request to change the email address for your FindConstructionStaffing account.
+
+To complete this change and confirm your new email address, please click the link below:
+
+{{ .ConfirmationURL }}
+
+IMPORTANT: This confirmation link will expire in 24 hours.
+If you don't confirm your email within this time, you'll need to request a new email change.
+
+---
+
+SECURITY NOTICE: If you didn't request this email change, please contact our support team immediately at support@findconstructionstaffing.com
+
+Someone may be trying to access your account. We recommend changing your password as a precaution.
+
+---
+
+If you didn't request to change your email address, you can safely ignore this email. Your account email will remain unchanged.
+
+Need help? Contact us at support@findconstructionstaffing.com
+
+---
+© 2025 FindConstructionStaffing. All rights reserved.
+Privacy Policy: {{ .SiteURL }}/privacy
+Help: {{ .SiteURL }}/help

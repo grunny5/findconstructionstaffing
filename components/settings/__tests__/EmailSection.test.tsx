@@ -27,6 +27,7 @@ const createMockAuthContext = (overrides = {}) => ({
     role: 'user' as const,
     created_at: '2023-01-15T10:00:00Z',
     updated_at: '2023-01-15T10:00:00Z',
+    last_password_change: '2023-01-15T10:00:00Z',
   },
   loading: false,
   signIn: jest.fn(),

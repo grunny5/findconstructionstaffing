@@ -22,6 +22,44 @@ This directory contains email templates for Supabase authentication flows.
 - Plain text fallback for email clients without HTML support
 - Brand-consistent styling
 
+### recovery.html / recovery.txt
+
+**Purpose:** Password reset template sent when users request to reset their password
+
+**Variables:**
+
+- `{{ .ConfirmationURL }}` - Password reset link with token
+- `{{ .SiteURL }}` - Base URL of the application
+- `{{ .Email }}` - User's email address
+
+**Features:**
+
+- Responsive design (mobile and desktop)
+- Prominent reset password button
+- Security warning if request wasn't made by user
+- 1-hour expiration notice
+- Plain text fallback
+- Brand-consistent styling
+
+### email_change.html / email_change.txt
+
+**Purpose:** Email change confirmation template sent to both old and new email addresses
+
+**Variables:**
+
+- `{{ .ConfirmationURL }}` - Email change confirmation link with token
+- `{{ .SiteURL }}` - Base URL of the application
+- `{{ .Email }}` - User's email address
+
+**Features:**
+
+- Responsive design (mobile and desktop)
+- Clear confirmation button
+- 24-hour expiration notice
+- Security warning with immediate action instructions
+- Plain text fallback
+- Brand-consistent styling
+
 ## Testing Locally
 
 ### Using Supabase Local Development (Inbucket)
@@ -119,6 +157,5 @@ To modify the email template:
 
 Additional templates to be added:
 
-- `recovery.html` / `recovery.txt` - Password reset (Task 2.1.2)
-- `email_change.html` / `email_change.txt` - Email change confirmation (Task 3.3)
 - `magic_link.html` / `magic_link.txt` - Magic link login (future)
+- `invite.html` / `invite.txt` - User invitation (future)

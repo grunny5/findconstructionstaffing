@@ -1,23 +1,29 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EmailChangeForm } from '../EmailChangeForm';
-import { supabase } from '@/lib/supabase';
 
-// Mock Supabase
+// Mock Supabase before importing
 const mockSignInWithPassword = jest.fn();
 const mockUpdateUser = jest.fn();
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      signInWithPassword: mockSignInWithPassword,
-      updateUser: mockUpdateUser,
+      signInWithPassword: jest.fn(),
+      updateUser: jest.fn(),
     },
   },
 }));
+
+// Import after mocking
+import { supabase } from '@/lib/supabase';
+
+// Replace the mocked functions with our test mocks
+(supabase.auth.signInWithPassword as jest.Mock) = mockSignInWithPassword;
+(supabase.auth.updateUser as jest.Mock) = mockUpdateUser;
 
 // Mock toast
 jest.mock('@/hooks/use-toast', () => ({
@@ -157,8 +163,7 @@ describe('EmailChangeForm', () => {
   });
 
   describe('Email Change Success', () => {
-    // TODO: Fix Supabase mock for full integration test
-    it.skip('should successfully change email with valid credentials', async () => {
+    it('should successfully change email with valid credentials', async () => {
       const user = userEvent.setup();
       mockSignInWithPassword.mockResolvedValue({
         data: { user: { id: '123' } as any, session: {} as any },
@@ -183,7 +188,10 @@ describe('EmailChangeForm', () => {
 
       await user.type(emailInput, 'new@example.com');
       await user.type(passwordInput, 'password123');
-      await user.click(screen.getByRole('button', { name: /Change Email/i }));
+
+      // Submit form directly by finding it in the document
+      const form = emailInput.closest('form')!;
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(mockSignInWithPassword).toHaveBeenCalledWith({
@@ -203,7 +211,7 @@ describe('EmailChangeForm', () => {
       });
     });
 
-    it.skip('should show success message after email change', async () => {
+    it('should show success message after email change', async () => {
       const user = userEvent.setup();
       mockSignInWithPassword.mockResolvedValue({
         data: { user: { id: '123' } as any, session: {} as any },
@@ -227,7 +235,10 @@ describe('EmailChangeForm', () => {
 
       await user.type(emailInput, 'new@example.com');
       await user.type(passwordInput, 'password123');
-      await user.click(screen.getByRole('button', { name: /Change Email/i }));
+
+      // Submit form directly by finding it in the document
+      const form = emailInput.closest('form')!;
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(
@@ -245,7 +256,7 @@ describe('EmailChangeForm', () => {
 
   describe('Error Handling', () => {
     // TODO: Fix Supabase mock error handling
-    it.skip('should show error for incorrect password', async () => {
+    it('should show error for incorrect password', async () => {
       const user = userEvent.setup();
       mockSignInWithPassword.mockResolvedValue({
         data: { user: null, session: null },
@@ -265,7 +276,10 @@ describe('EmailChangeForm', () => {
 
       await user.type(emailInput, 'new@example.com');
       await user.type(passwordInput, 'wrongpassword');
-      await user.click(screen.getByRole('button', { name: /Change Email/i }));
+
+      // Submit form directly by finding it in the document
+      const form = emailInput.closest('form')!;
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(mockSignInWithPassword).toHaveBeenCalled();
@@ -274,7 +288,7 @@ describe('EmailChangeForm', () => {
       expect(mockUpdateUser).not.toHaveBeenCalled();
     });
 
-    it.skip('should show error for email already in use', async () => {
+    it('should show error for email already in use', async () => {
       const user = userEvent.setup();
       mockSignInWithPassword.mockResolvedValue({
         data: { user: { id: '123' } as any, session: {} as any },
@@ -298,7 +312,10 @@ describe('EmailChangeForm', () => {
 
       await user.type(emailInput, 'taken@example.com');
       await user.type(passwordInput, 'password123');
-      await user.click(screen.getByRole('button', { name: /Change Email/i }));
+
+      // Submit form directly by finding it in the document
+      const form = emailInput.closest('form')!;
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(mockUpdateUser).toHaveBeenCalled();
@@ -380,7 +397,7 @@ describe('EmailChangeForm', () => {
       expect(mockOnOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it.skip('should close dialog after viewing success message', async () => {
+    it('should close dialog after viewing success message', async () => {
       const user = userEvent.setup();
       mockSignInWithPassword.mockResolvedValue({
         data: { user: { id: '123' } as any, session: {} as any },
@@ -404,7 +421,10 @@ describe('EmailChangeForm', () => {
 
       await user.type(emailInput, 'new@example.com');
       await user.type(passwordInput, 'password123');
-      await user.click(screen.getByRole('button', { name: /Change Email/i }));
+
+      // Submit form directly by finding it in the document
+      const form = emailInput.closest('form')!;
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(
