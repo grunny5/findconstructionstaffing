@@ -1314,19 +1314,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Mock RPC function calls
   - Test authorization scenarios
 - **Acceptance Criteria (for this task):**
-  - [ ] Test: Dropdown renders with current role
-  - [ ] Test: Selecting role opens confirmation modal
-  - [ ] Test: Confirming change calls RPC with correct params
-  - [ ] Test: Successful change updates UI
-  - [ ] Test: Error handling shows error message
-  - [ ] Test: Self-demotion prevented (admin changing own role to user)
-  - [ ] Integration test: change role → verify in database
-  - [ ] Integration test: verify audit log created
-  - [ ] Coverage >85%
+  - [x] Test: Dropdown renders with current role
+  - [x] Test: Selecting role opens confirmation modal
+  - [x] Test: Confirming change calls RPC with correct params
+  - [x] Test: Successful change updates UI
+  - [x] Test: Error handling shows error message
+  - [x] Test: Self-demotion prevented (admin changing own role to user)
+  - [x] Integration test: change role → verify in database
+  - [x] Integration test: verify audit log created
+  - [x] Coverage >85% (achieved 88.09%)
 - **Definition of Done:**
-  - [ ] All tests written and passing
-  - [ ] Security scenarios tested
-  - [ ] Coverage meets threshold
+  - [x] All tests written and passing (31 tests: 19 component + 12 integration)
+  - [x] Security scenarios tested (self-demotion, admin-only, validation)
+  - [x] Coverage meets threshold (88.09% > 85%)
   - [ ] PR approved
   - [ ] **Final Check:** Admin features secure
 
