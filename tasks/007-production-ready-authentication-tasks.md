@@ -1167,36 +1167,62 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 - **Objective:** Build admin dashboard page showing all users with search/filter
 - **Context:** Admin-only page at `/admin/users` to manage user roles
 - **Key Files to Create:**
-  - `app/admin/users/page.tsx`
+  - `app/(app)/admin/users/page.tsx`
   - `components/admin/UsersTable.tsx`
+  - `components/ui/table.tsx` (Shadcn/ui table component)
 - **Key Patterns to Follow:**
   - Protected route (admin only)
   - Use Shadcn/ui Table, Input, Select components
   - Server component for data fetching
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Page at `/admin/users` (admin access only, else redirect to home)
-  - [ ] Server component fetches all users + profiles
-  - [ ] Table columns: Name, Email, Role, Created At, Actions
-  - [ ] Search box filters by name or email (client-side initially)
-  - [ ] Role filter dropdown: All, User, Agency Owner, Admin
-  - [ ] Pagination: 50 users per page
-  - [ ] Loading state while fetching
-  - [ ] Empty state if no users
-  - [ ] Error state if fetch fails
-  - [ ] Mobile responsive (table scrolls or cards on mobile)
-  - [ ] Accessible: table headers, keyboard navigation
+  - [x] Page at `/admin/users` (admin access only, else redirect to home)
+  - [x] Server component fetches all users + profiles
+  - [x] Table columns: Name, Email, Role, Created At, Actions
+  - [x] Search box filters by name or email (client-side)
+  - [x] Role filter dropdown: All, User, Agency Owner, Admin
+  - [x] Pagination: 50 users per page
+  - [x] Loading state while fetching (N/A - server component)
+  - [x] Empty state if no users
+  - [x] Error state if fetch fails
+  - [x] Mobile responsive (table scrolls horizontally)
+  - [x] Accessible: table headers, keyboard navigation
 - **Definition of Done:**
-  - [ ] Page implemented
-  - [ ] Data fetching works
-  - [ ] Search and filter functional
-  - [ ] Protected route tested
-  - [ ] Component tests written
-  - [ ] Visual QA
-  - [ ] PR approved
-  - [ ] **Final Check:** Performant and usable
+  - [x] Page implemented at `app/(app)/admin/users/page.tsx`
+  - [x] Data fetching works (server component with Supabase)
+  - [x] Search and filter functional (client-side in UsersTable)
+  - [x] Protected route tested (7 test cases)
+  - [x] Component tests written (21 tests total: 14 UsersTable + 7 page)
+  - [ ] Visual QA (pending manual testing)
+  - [ ] PR approved (pending)
+  - [x] **Final Check:** Performant and usable
 
 **Estimated Effort:** 5-6 hours
+**Actual Effort:** ~4 hours
+
+**Implementation Details:**
+- Added Shadcn/ui table component via CLI
+- Server component at `app/(app)/admin/users/page.tsx`:
+  - Auth check with `supabase.auth.getUser()`
+  - Admin role verification via profiles table
+  - Redirects to `/login` if not authenticated
+  - Redirects to `/` if not admin
+  - Fetches all profiles ordered by `created_at DESC`
+  - Error state with red alert box
+- Client component at `components/admin/UsersTable.tsx`:
+  - Search input filters by name/email (case-insensitive)
+  - Role dropdown filter: All, User, Agency Owner, Admin
+  - Pagination with 50 users per page
+  - Empty state with helpful message
+  - Mobile responsive with horizontal scroll
+  - Badge styling based on role (admin=destructive, agency_owner=default, user=secondary)
+  - "Change Role" button placeholder (implemented in Task 4.2.1)
+- Test coverage:
+  - `components/admin/__tests__/UsersTable.test.tsx` - 14 tests
+  - `app/(app)/admin/users/__tests__/page.test.tsx` - 7 tests
+  - All auth redirects tested
+  - Search/filter/pagination logic tested
+  - Empty and error states tested
 
 ---
 
