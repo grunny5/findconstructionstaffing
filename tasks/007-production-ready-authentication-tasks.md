@@ -1248,23 +1248,23 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Optimistic UI updates
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Dropdown in Actions column shows current role
-  - [ ] Dropdown options: user, agency_owner, admin
-  - [ ] Selecting new role opens confirmation modal
-  - [ ] Modal shows: "Change [User Name]'s role from [old] to [new]?"
-  - [ ] Optional notes field for admin to explain change
-  - [ ] Confirm button calls RPC `change_user_role()`
-  - [ ] Loading state during API call
-  - [ ] Success: show toast "Role updated", update table row optimistically
-  - [ ] Error: show toast with error message, revert dropdown
-  - [ ] Self-demotion prevented: show error if admin tries to demote themselves
-  - [ ] Cancel button closes modal without changes
-  - [ ] Accessible: dropdown and modal keyboard navigable
+  - [x] Dropdown in Actions column shows current role
+  - [x] Dropdown options: user, agency_owner, admin
+  - [x] Selecting new role opens confirmation modal
+  - [x] Modal shows: "Change [User Name]'s role from [old] to [new]?"
+  - [x] Optional notes field for admin to explain change
+  - [x] Confirm button calls RPC `change_user_role()`
+  - [x] Loading state during API call
+  - [x] Success: show toast "Role updated", update table row optimistically
+  - [x] Error: show toast with error message, revert dropdown
+  - [x] Self-demotion prevented: show error if admin tries to demote themselves
+  - [x] Cancel button closes modal without changes
+  - [x] Accessible: dropdown and modal keyboard navigable
 - **Definition of Done:**
-  - [ ] Component implemented
-  - [ ] Role change API integration working
-  - [ ] Optimistic updates working
-  - [ ] Component tests written
+  - [x] Component implemented
+  - [x] Role change API integration working
+  - [x] Optimistic updates working
+  - [x] Component tests written (19 tests: 8 RoleChangeDropdown + 11 RoleChangeConfirmModal)
   - [ ] Visual QA
   - [ ] PR approved
   - [ ] **Final Check:** Smooth UX
@@ -1284,16 +1284,16 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - RLS policy best practices
   - Admin role check
 - **Acceptance Criteria (for this task):**
-  - [ ] Create policy "Admins can view all profiles" for SELECT
-  - [ ] Policy checks: caller's profile.role = 'admin'
-  - [ ] Create policy "Admins can update roles via RPC" (or rely on RPC SECURITY DEFINER)
-  - [ ] Existing user policies unchanged (users can still view/update own profile)
-  - [ ] Policies tested: admin can view all, non-admin cannot
-  - [ ] Migration tested locally
+  - [x] Create policy "Admins can view all profiles" for SELECT
+  - [x] Policy checks: caller's profile.role = 'admin'
+  - [x] Create policy "Admins can update roles via RPC" (or rely on RPC SECURITY DEFINER)
+  - [x] Existing user policies unchanged (users can still view/update own profile)
+  - [ ] Policies tested: admin can view all, non-admin cannot (pending Docker)
+  - [ ] Migration tested locally (pending Docker)
 - **Definition of Done:**
-  - [ ] Policies created
-  - [ ] Tested with admin and non-admin users
-  - [ ] Documentation updated
+  - [x] Policies created
+  - [ ] Tested with admin and non-admin users (pending Docker)
+  - [x] Documentation updated (README.md with comprehensive policy docs)
   - [ ] PR approved
   - [ ] **Final Check:** Secure and correct
 
