@@ -94,10 +94,18 @@ app/api/webhooks/resend/route.ts
 
 This endpoint:
 
-- ✅ Verifies webhook signatures
-- ✅ Handles all event types
-- ✅ Logs events to console
+- ✅ Verifies webhook signatures using Svix library
+- ✅ Validates timestamp to prevent replay attacks (5-minute window)
+- ✅ Handles all event types (sent, delivered, bounced, complained)
+- ✅ Logs events to console (PII-redacted for GDPR/CCPA compliance)
+- ✅ Uses hashed email addresses for correlation in logs
 - 🔲 (Optional) Stores events in database
+
+**Security Features:**
+- Svix signature verification with `svix-id`, `svix-timestamp`, `svix-signature` headers
+- Automatic replay attack protection (5-minute timestamp window)
+- GDPR/CCPA compliant logging (no email addresses or subjects in logs)
+- Runtime payload validation with Zod schema
 
 ### 3.2 Verify Environment Variable
 
