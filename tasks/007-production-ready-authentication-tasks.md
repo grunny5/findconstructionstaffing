@@ -1532,28 +1532,88 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 ### ✅ Task X.2: Set Up Email Service for Production
 
 - **Role:** DevOps / Backend Developer
-- **Objective:** Configure production email service (SendGrid, AWS SES, or Supabase built-in)
+- **Objective:** Configure production email service (Resend selected)
 - **Context:** Local development uses Inbucket, production needs real email delivery
 - **Key Files to Configure:**
   - Supabase Dashboard email settings
   - Environment variables
+  - DNS records (SPF, DKIM, DMARC)
 - **Acceptance Criteria:**
-  - [ ] Choose email service provider (TBD: SendGrid, AWS SES, or Supabase)
+  - [x] Choose email service provider (✅ Resend selected)
+  - [x] Create comprehensive setup guide and checklist
   - [ ] Configure SMTP settings in Supabase Dashboard
   - [ ] Set up domain authentication (SPF, DKIM records)
+  - [ ] Verify domain in Resend
   - [ ] Configure email templates in production
   - [ ] Test email delivery in staging environment
   - [ ] Monitor email delivery rates
-  - [ ] Set up bounce/complaint handling
+  - [ ] Set up bounce/complaint handling (via Resend webhooks)
   - [ ] Document configuration in runbook
 - **Definition of Done:**
+  - [x] Documentation complete (setup guide + checklist)
   - [ ] Production email service configured
   - [ ] Tested with real email addresses
   - [ ] Monitoring/alerting set up
-  - [ ] Documentation complete
   - [ ] **Final Check:** Reliable email delivery
 
 **Estimated Effort:** 4-6 hours
+**Actual Effort (Documentation):** 1 hour
+**Status:** In Progress - Documentation Complete, Awaiting Manual Configuration
+
+**Documentation Created:**
+
+- **`docs/email/RESEND_SETUP_GUIDE.md`** (600+ lines)
+  - Comprehensive step-by-step guide for Resend setup
+  - DNS configuration instructions (SPF, DKIM, DMARC)
+  - Supabase SMTP integration guide
+  - Testing procedures and checklist
+  - Troubleshooting guide with common issues
+  - Monitoring and maintenance instructions
+  - Security best practices
+  - Cost planning and volume estimation
+
+- **`docs/email/RESEND_SETUP_CHECKLIST.md`** (200+ lines)
+  - Quick-reference checklist format
+  - Step-by-step tasks with checkboxes
+  - Pre-setup requirements
+  - Configuration steps
+  - Testing checklist
+  - Success metrics
+  - Troubleshooting quick links
+
+**Next Steps (Manual Configuration Required):**
+
+1. **Create Resend Account**
+   - Sign up at https://resend.com
+   - Verify email address
+
+2. **Add and Verify Domain**
+   - Add `findconstructionstaffing.com` in Resend dashboard
+   - Add DNS records (SPF, DKIM, DMARC) to domain provider
+   - Wait 24-48 hours for DNS propagation
+   - Verify domain in Resend (green checkmark required)
+
+3. **Generate API Key**
+   - Create API key in Resend dashboard
+   - Store securely (DO NOT commit to git)
+
+4. **Configure Supabase**
+   - Add SMTP settings in Supabase dashboard:
+     - Host: `smtp.resend.com`
+     - Port: `465`
+     - Username: `resend`
+     - Password: `<Resend API Key>`
+     - Sender: `noreply@findconstructionstaffing.com`
+
+5. **Test and Monitor**
+   - Send test emails via Resend dashboard
+   - Test signup verification flow
+   - Test password reset flow
+   - Monitor delivery rates in Resend dashboard
+
+**Blocking Issues:** None - awaiting manual DNS and Supabase dashboard configuration
+
+**Note:** This task requires access to DNS settings and Supabase production dashboard. Documentation provides complete instructions for DevOps team or manual configuration.
 
 ---
 
