@@ -1690,8 +1690,8 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Future enhancements (percentage-based rollout, A/B testing)
 
 - **Test Compatibility:** Updated tests to mock feature flags
-  - app/login/__tests__/page.test.tsx (22 tests passing)
-  - __tests__/integration/email-verification.test.tsx (14 tests passing)
+  - app/login/**tests**/page.test.tsx (22 tests passing)
+  - **tests**/integration/email-verification.test.tsx (14 tests passing)
   - All 1170 tests passing (no regressions)
 
 ---

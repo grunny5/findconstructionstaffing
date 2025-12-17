@@ -236,7 +236,7 @@ describe('Feature Flags', () => {
       isFeatureEnabled('resendVerification');
 
       // TypeScript will prevent invalid keys at compile time
-      // @ts-expect-error - invalid feature flag key
+      // Example of compile-time type safety (would fail if uncommented):
       // isFeatureEnabled('invalidFeature');
     });
   });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+import { z } from 'zod';
 
 /**
  * Resend Webhook Handler
@@ -29,6 +30,28 @@ interface ResendWebhookEvent {
 }
 
 /**
+ * Runtime validation schema for Resend webhook events
+ */
+const ResendWebhookEventSchema = z.object({
+  type: z.enum([
+    'email.sent',
+    'email.delivered',
+    'email.bounced',
+    'email.complained',
+  ]),
+  created_at: z.string(),
+  data: z.object({
+    email_id: z.string(),
+    from: z.string(),
+    to: z.array(z.string()),
+    subject: z.string(),
+    created_at: z.string(),
+    bounce_type: z.enum(['hard', 'soft']).optional(),
+    complaint_feedback_type: z.string().optional(),
+  }),
+});
+
+/**
  * Verify webhook signature using HMAC
  */
 function verifySignature(
@@ -54,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (!webhookSecret) {
       console.error('[Resend Webhook] RESEND_WEBHOOK_SECRET not configured');
       return NextResponse.json(
-        { error: 'Webhook secret not configured' },
+        { error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -75,8 +98,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    // Parse the verified payload
-    const event: ResendWebhookEvent = JSON.parse(payload);
+    // Parse and validate the verified payload
+    const parsedPayload = JSON.parse(payload);
+    const validationResult = ResendWebhookEventSchema.safeParse(parsedPayload);
+
+    if (!validationResult.success) {
+      console.error('[Resend Webhook] Invalid payload structure:', {
+        error: validationResult.error,
+        payload: parsedPayload,
+      });
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+    }
+
+    const event: ResendWebhookEvent = validationResult.data;
 
     // Log the event for monitoring
     console.log('[Resend Webhook] Event received:', {

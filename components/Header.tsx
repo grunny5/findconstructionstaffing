@@ -112,7 +112,9 @@ export default function Header() {
                     {profile?.role === 'admin' &&
                       isFeatureEnabled('adminDashboard') && (
                         <DropdownMenuItem asChild>
-                          <Link href="/admin/integrations">Admin Dashboard</Link>
+                          <Link href="/admin/integrations">
+                            Admin Dashboard
+                          </Link>
                         </DropdownMenuItem>
                       )}
                     {profile?.role === 'agency_owner' && (
