@@ -661,7 +661,13 @@ describe('AuthMetricsTracker', () => {
 
     it('logs events in JSON format in production', () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
+
+      // Use Object.defineProperty to override the read-only NODE_ENV
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true,
+      });
 
       tracker.recordEvent('email_verification_sent', {
         emailDomain: 'example.com',
@@ -674,7 +680,12 @@ describe('AuthMetricsTracker', () => {
         expect.stringContaining('"event":"email_verification_sent"')
       );
 
-      process.env.NODE_ENV = originalEnv;
+      // Restore original NODE_ENV
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalEnv,
+        writable: true,
+        configurable: true,
+      });
     });
   });
 });
