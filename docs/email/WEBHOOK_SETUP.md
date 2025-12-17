@@ -102,6 +102,7 @@ This endpoint:
 - 🔲 (Optional) Stores events in database
 
 **Security Features:**
+
 - Svix signature verification with `svix-id`, `svix-timestamp`, `svix-signature` headers
 - Automatic replay attack protection (5-minute timestamp window)
 - GDPR/CCPA compliant logging (no email addresses or subjects in logs)

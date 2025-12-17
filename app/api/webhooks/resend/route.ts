@@ -98,10 +98,7 @@ export async function POST(request: NextRequest) {
 
     if (!svixId || !svixTimestamp || !svixSignature) {
       console.error('[Resend Webhook] Missing required Svix headers');
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     // Verify webhook signature using Svix
@@ -123,7 +120,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the verified payload structure
-    const validationResult = ResendWebhookEventSchema.safeParse(verifiedPayload);
+    const validationResult =
+      ResendWebhookEventSchema.safeParse(verifiedPayload);
 
     if (!validationResult.success) {
       console.error('[Resend Webhook] Invalid payload structure:', {
