@@ -3,6 +3,11 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { Webhook } from 'svix';
 import crypto from 'crypto';
+import {
+  trackEmailDelivered,
+  trackEmailBounced,
+  trackEmailComplained,
+} from '@/lib/monitoring/auth-metrics';
 
 /**
  * Resend Webhook Handler
@@ -213,11 +218,16 @@ async function handleEmailSent(event: ResendWebhookEvent) {
  * Email was successfully delivered to recipient's mail server
  */
 async function handleEmailDelivered(event: ResendWebhookEvent) {
+  const emailDomain = getEmailDomain(event.data.to[0]);
+
   // Log without PII
   console.log('[Resend Webhook] Email delivered:', {
     email_id: event.data.email_id,
     recipient_count: event.data.to.length,
   });
+
+  // Track delivery metric
+  trackEmailDelivered(emailDomain);
 
   // TODO: Optional - Update email status in database
   // Example:
@@ -233,15 +243,19 @@ async function handleEmailDelivered(event: ResendWebhookEvent) {
  */
 async function handleEmailBounced(event: ResendWebhookEvent) {
   const { email_id, to, bounce_type } = event.data;
+  const emailDomain = getEmailDomain(to[0]);
 
   // Log without PII - use hash for correlation
   console.error('[Resend Webhook] Email bounced:', {
     email_id,
     recipient_count: to.length,
     recipient_hash: hashEmail(to[0]),
-    recipient_domain: getEmailDomain(to[0]),
+    recipient_domain: emailDomain,
     bounce_type,
   });
+
+  // Track bounce metric
+  trackEmailBounced(bounce_type || 'hard', emailDomain);
 
   // Hard bounce = permanent failure (email doesn't exist, domain invalid)
   if (bounce_type === 'hard') {
@@ -292,6 +306,7 @@ async function handleEmailBounced(event: ResendWebhookEvent) {
  */
 async function handleEmailComplained(event: ResendWebhookEvent) {
   const { email_id, to, complaint_feedback_type } = event.data;
+  const emailDomain = getEmailDomain(to[0]);
 
   // Log without PII - use hash for correlation
   console.error('[Resend Webhook] Spam complaint received:', {
@@ -300,6 +315,9 @@ async function handleEmailComplained(event: ResendWebhookEvent) {
     recipient_hash: hashEmail(to[0]),
     complaint_feedback_type,
   });
+
+  // Track spam complaint metric
+  trackEmailComplained(emailDomain);
 
   // TODO: IMPORTANT - Unsubscribe user to maintain sender reputation
   // Use the actual email address from to[0] for database update

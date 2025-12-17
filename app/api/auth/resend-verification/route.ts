@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from './rate-limiter';
+import { trackEmailVerificationSent } from '@/lib/monitoring/auth-metrics';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,6 +93,10 @@ export async function POST(
     // Log errors for debugging but don't expose to user
     if (error) {
       console.error('Resend verification error:', error);
+    } else {
+      // Track verification email sent (only if no error)
+      const emailDomain = email.split('@')[1];
+      trackEmailVerificationSent(emailDomain);
     }
 
     // Always return success message to prevent email enumeration

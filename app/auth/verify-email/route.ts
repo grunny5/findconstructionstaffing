@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  trackEmailVerificationCompleted,
+  trackEmailVerificationFailed,
+} from '@/lib/monitoring/auth-metrics';
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
@@ -39,6 +43,9 @@ export async function GET(request: NextRequest) {
         errorMessage = 'Email already verified';
       }
 
+      // Track verification failure
+      trackEmailVerificationFailed(errorMessage);
+
       return NextResponse.redirect(
         new URL(
           `/auth/verify-email/error?message=${encodeURIComponent(errorMessage)}`,
@@ -47,11 +54,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Track successful verification
+    trackEmailVerificationCompleted();
+
     return NextResponse.redirect(
       new URL('/auth/verify-email/success?verified=true', request.url)
     );
   } catch (error) {
     console.error('Unexpected error during email verification:', error);
+
+    // Track unexpected verification failure
+    trackEmailVerificationFailed('Unexpected error occurred');
+
     return NextResponse.redirect(
       new URL(
         '/auth/verify-email/error?message=An unexpected error occurred',
