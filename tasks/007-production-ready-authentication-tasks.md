@@ -1708,19 +1708,19 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
   - Email delivery failures
   - Role change frequency
 - **Acceptance Criteria:**
-  - [ ] Choose monitoring service (Sentry, CloudWatch, DataDog, etc.)
-  - [ ] Instrument auth-related events
-  - [ ] Track: email sent, email verified, password reset, role changed
-  - [ ] Set up alerts: auth error spike, email delivery failures
-  - [ ] Create dashboard for auth metrics
-  - [ ] Document monitoring setup
+  - [x] Choose monitoring service (Sentry, CloudWatch, DataDog, etc.)
+  - [x] Instrument auth-related events
+  - [x] Track: email sent, email verified, password reset, role changed
+  - [x] Set up alerts: auth error spike, email delivery failures
+  - [x] Create dashboard for auth metrics
+  - [x] Document monitoring setup
 - **Definition of Done:**
-  - [ ] Monitoring configured
-  - [ ] Alerts set up
-  - [ ] Dashboard created
-  - [ ] Tested: alerts fire correctly
-  - [ ] Documentation complete
-  - [ ] **Final Check:** Observability in place
+  - [x] Monitoring configured
+  - [x] Alerts set up
+  - [x] Dashboard created
+  - [x] Tested: alerts fire correctly
+  - [x] Documentation complete
+  - [x] **Final Check:** Observability in place
 
 **Estimated Effort:** 4-6 hours
 
