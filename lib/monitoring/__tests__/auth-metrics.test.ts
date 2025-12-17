@@ -662,30 +662,32 @@ describe('AuthMetricsTracker', () => {
     it('logs events in JSON format in production', () => {
       const originalEnv = process.env.NODE_ENV;
 
-      // Use Object.defineProperty to override the read-only NODE_ENV
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: 'production',
-        writable: true,
-        configurable: true,
-      });
+      try {
+        // Use Object.defineProperty to override the read-only NODE_ENV
+        Object.defineProperty(process.env, 'NODE_ENV', {
+          value: 'production',
+          writable: true,
+          configurable: true,
+        });
 
-      tracker.recordEvent('email_verification_sent', {
-        emailDomain: 'example.com',
-      });
+        tracker.recordEvent('email_verification_sent', {
+          emailDomain: 'example.com',
+        });
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"auth_event"')
-      );
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"event":"email_verification_sent"')
-      );
-
-      // Restore original NODE_ENV
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: originalEnv,
-        writable: true,
-        configurable: true,
-      });
+        expect(consoleLogSpy).toHaveBeenCalledWith(
+          expect.stringContaining('"type":"auth_event"')
+        );
+        expect(consoleLogSpy).toHaveBeenCalledWith(
+          expect.stringContaining('"event":"email_verification_sent"')
+        );
+      } finally {
+        // Restore original NODE_ENV
+        Object.defineProperty(process.env, 'NODE_ENV', {
+          value: originalEnv,
+          writable: true,
+          configurable: true,
+        });
+      }
     });
   });
 });

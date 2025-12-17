@@ -556,7 +556,7 @@ Use metrics API to create a custom dashboard:
 ```bash
 # Verify tracking is working
 curl -X POST http://localhost:3000/api/monitoring/auth-metrics \
-  -H "Content-Type": application/json" \
+  -H "Content-Type: application/json" \
   -d '{"eventType": "login_success", "count": 10}'
 
 # Check metrics immediately
