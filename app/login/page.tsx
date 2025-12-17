@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { ResendVerificationForm } from '@/components/auth/ResendVerificationForm';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -136,21 +137,25 @@ function LoginForm() {
             </button>
           </div>
 
-          <div className="text-center">
-            <Link
-              href="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
-            >
-              Forgot password?
-            </Link>
-          </div>
+          {isFeatureEnabled('passwordReset') && (
+            <div className="text-center">
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
         </form>
 
-        {isEmailNotVerified && unverifiedEmail && (
-          <div className="mt-6">
-            <ResendVerificationForm initialEmail={unverifiedEmail} />
-          </div>
-        )}
+        {isEmailNotVerified &&
+          unverifiedEmail &&
+          isFeatureEnabled('resendVerification') && (
+            <div className="mt-6">
+              <ResendVerificationForm initialEmail={unverifiedEmail} />
+            </div>
+          )}
       </div>
     </div>
   );

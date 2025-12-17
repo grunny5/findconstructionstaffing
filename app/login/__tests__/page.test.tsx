@@ -39,6 +39,21 @@ jest.mock('@/components/auth/ResendVerificationForm', () => ({
   ),
 }));
 
+// Mock feature flags - enable all features for tests
+jest.mock('@/lib/feature-flags', () => ({
+  isFeatureEnabled: jest.fn((feature: string) => {
+    // Enable resendVerification and passwordReset for login page tests
+    return ['resendVerification', 'passwordReset'].includes(feature);
+  }),
+  getFeatureFlags: jest.fn(() => ({
+    emailVerification: false,
+    passwordReset: true,
+    accountSettings: false,
+    adminDashboard: false,
+    resendVerification: true,
+  })),
+}));
+
 describe('LoginPage', () => {
   const mockSignIn = jest.fn();
 

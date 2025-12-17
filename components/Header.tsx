@@ -22,6 +22,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -108,19 +109,22 @@ export default function Header() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {profile?.role === 'admin' && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin/integrations">Admin Dashboard</Link>
-                      </DropdownMenuItem>
-                    )}
+                    {profile?.role === 'admin' &&
+                      isFeatureEnabled('adminDashboard') && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/integrations">Admin Dashboard</Link>
+                        </DropdownMenuItem>
+                      )}
                     {profile?.role === 'agency_owner' && (
                       <DropdownMenuItem asChild>
                         <Link href="/dashboard">Dashboard</Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem asChild>
-                      <Link href="/account">Account Settings</Link>
-                    </DropdownMenuItem>
+                    {isFeatureEnabled('accountSettings') && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/account">Account Settings</Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="h-4 w-4 mr-2" />
@@ -202,19 +206,20 @@ export default function Header() {
                           Claim Listing
                         </Link>
                       </Button>
-                      {profile?.role === 'admin' && (
-                        <Button
-                          className="w-full modern-button-primary"
-                          asChild
-                        >
-                          <Link
-                            href="/admin/integrations"
-                            onClick={() => setIsOpen(false)}
+                      {profile?.role === 'admin' &&
+                        isFeatureEnabled('adminDashboard') && (
+                          <Button
+                            className="w-full modern-button-primary"
+                            asChild
                           >
-                            Admin Dashboard
-                          </Link>
-                        </Button>
-                      )}
+                            <Link
+                              href="/admin/integrations"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              Admin Dashboard
+                            </Link>
+                          </Button>
+                        )}
                       {profile?.role === 'agency_owner' && (
                         <Button
                           className="w-full modern-button-primary"
@@ -228,12 +233,17 @@ export default function Header() {
                           </Link>
                         </Button>
                       )}
-                      <Button variant="outline" className="w-full" asChild>
-                        <Link href="/account" onClick={() => setIsOpen(false)}>
-                          <User className="h-4 w-4 mr-2" />
-                          Account Settings
-                        </Link>
-                      </Button>
+                      {isFeatureEnabled('accountSettings') && (
+                        <Button variant="outline" className="w-full" asChild>
+                          <Link
+                            href="/account"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <User className="h-4 w-4 mr-2" />
+                            Account Settings
+                          </Link>
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         className="w-full"
