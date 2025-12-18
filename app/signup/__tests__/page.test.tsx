@@ -288,7 +288,10 @@ describe('SignupPage', () => {
         access_token: 'mock-token',
         user: { id: '123', email: 'test@example.com' },
       };
-      mockSignUp.mockResolvedValue({ session: mockSession, user: mockSession.user });
+      mockSignUp.mockResolvedValue({
+        session: mockSession,
+        user: mockSession.user,
+      });
 
       render(<SignupPage />);
 
