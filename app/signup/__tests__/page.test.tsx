@@ -349,7 +349,10 @@ describe('SignupPage', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup({ delay: null });
       mockSignUp.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ session: null, user: null }), 100)
+          )
       );
 
       render(<SignupPage />);
@@ -445,7 +448,7 @@ describe('SignupPage', () => {
       const errorMessage = 'Email already exists';
       mockSignUp
         .mockRejectedValueOnce({ message: errorMessage })
-        .mockResolvedValueOnce(undefined);
+        .mockResolvedValueOnce({ session: null, user: null });
 
       render(<SignupPage />);
 
