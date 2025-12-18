@@ -2,20 +2,33 @@
  * @jest-environment node
  */
 import { POST } from '../route';
-import { clearRateLimits } from '../rate-limiter';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import * as rateLimit from '@/lib/rate-limit';
 
 jest.mock('@supabase/supabase-js');
+jest.mock('@/lib/rate-limit');
 
 const mockedCreateClient = createClient as jest.MockedFunction<
   typeof createClient
 >;
 
+const mockedCheckRateLimit =
+  rateLimit.checkResendVerificationRateLimit as jest.MockedFunction<
+    typeof rateLimit.checkResendVerificationRateLimit
+  >;
+
+const mockedGetClientIp = rateLimit.getClientIp as jest.MockedFunction<
+  typeof rateLimit.getClientIp
+>;
+
 function createMockRequest(body: any): NextRequest {
   return {
     json: async () => body,
-  } as NextRequest;
+    headers: {
+      get: jest.fn().mockReturnValue(null),
+    },
+  } as any as NextRequest;
 }
 
 describe('POST /api/auth/resend-verification', () => {
@@ -24,12 +37,20 @@ describe('POST /api/auth/resend-verification', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Clear rate limit store between tests
-    clearRateLimits();
-
     // Mock environment variables
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+
+    // Mock rate limit - default to allowing requests
+    mockedCheckRateLimit.mockResolvedValue({
+      allowed: true,
+      limit: 2,
+      remaining: 1,
+      reset: Date.now() + 600000,
+    });
+
+    // Mock IP extraction
+    mockedGetClientIp.mockReturnValue('127.0.0.1');
 
     // Mock Supabase admin client
     mockedCreateClient.mockReturnValue({
@@ -100,6 +121,10 @@ describe('POST /api/auth/resend-verification', () => {
 
       expect(response.status).toBe(200);
       expect(mockResend).toHaveBeenCalledTimes(1);
+      expect(mockedCheckRateLimit).toHaveBeenCalledWith(
+        'ratelimit@example.com',
+        '127.0.0.1'
+      );
     });
 
     it('should allow second request within window', async () => {
@@ -120,50 +145,77 @@ describe('POST /api/auth/resend-verification', () => {
       expect(mockResend).toHaveBeenCalledTimes(2);
     });
 
-    it('should block third request within window (rate limit)', async () => {
+    it('should block request when email rate limit exceeded', async () => {
       mockResend.mockResolvedValue({ data: {}, error: null });
 
       const email = 'ratelimit3@example.com';
 
-      // First request
-      const request1 = createMockRequest({ email });
-      await POST(request1);
+      // Mock rate limit exceeded
+      mockedCheckRateLimit.mockResolvedValueOnce({
+        allowed: false,
+        limit: 2,
+        remaining: 0,
+        reset: Date.now() + 600000,
+        retryAfter: 600,
+        reason: 'email',
+      });
 
-      // Second request
-      const request2 = createMockRequest({ email });
-      await POST(request2);
+      const request = createMockRequest({ email });
+      const response = await POST(request);
+      const data = await response.json();
 
-      // Third request - should be blocked
-      const request3 = createMockRequest({ email });
-      const response3 = await POST(request3);
-      const data3 = await response3.json();
-
-      expect(response3.status).toBe(429);
-      expect(data3.message).toBe(
+      expect(response.status).toBe(429);
+      expect(data.message).toBe(
         'Please wait before requesting another verification email.'
       );
-      expect(data3.retryAfter).toBeGreaterThan(0);
-      expect(mockResend).toHaveBeenCalledTimes(2); // Only first 2 requests
+      expect(data.retryAfter).toBe(600);
+      expect(mockResend).not.toHaveBeenCalled();
     });
 
-    it('should include Retry-After header on rate limit', async () => {
-      mockResend.mockResolvedValue({ data: {}, error: null });
-
+    it('should include Retry-After header and rate limit headers on rate limit', async () => {
       const email = 'retryafter@example.com';
 
-      // Make 2 successful requests
-      await POST(createMockRequest({ email }));
-      await POST(createMockRequest({ email }));
+      // Mock rate limit exceeded
+      mockedCheckRateLimit.mockResolvedValueOnce({
+        allowed: false,
+        limit: 2,
+        remaining: 0,
+        reset: Date.now() + 600000,
+        retryAfter: 600,
+        reason: 'email',
+      });
 
-      // Third request should be rate limited
-      const request3 = createMockRequest({ email });
-      const response3 = await POST(request3);
+      const request = createMockRequest({ email });
+      const response = await POST(request);
 
-      expect(response3.status).toBe(429);
-      expect(response3.headers.get('Retry-After')).toBeTruthy();
-      const retryAfter = Number(response3.headers.get('Retry-After'));
-      expect(retryAfter).toBeGreaterThan(0);
-      expect(retryAfter).toBeLessThanOrEqual(600); // 10 minutes in seconds
+      expect(response.status).toBe(429);
+      expect(response.headers.get('Retry-After')).toBe('600');
+      expect(response.headers.get('X-RateLimit-Limit')).toBe('2');
+      expect(response.headers.get('X-RateLimit-Remaining')).toBe('0');
+      expect(response.headers.get('X-RateLimit-Reset')).toBeTruthy();
+    });
+
+    it('should block request when IP rate limit exceeded', async () => {
+      mockResend.mockResolvedValue({ data: {}, error: null });
+
+      // Mock IP rate limit exceeded
+      mockedCheckRateLimit.mockResolvedValueOnce({
+        allowed: false,
+        limit: 10,
+        remaining: 0,
+        reset: Date.now() + 600000,
+        retryAfter: 600,
+        reason: 'ip',
+      });
+
+      const request = createMockRequest({ email: 'test@example.com' });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(429);
+      expect(data.message).toBe('Too many requests from your network.');
+      expect(data.retryAfter).toBe(600);
+      expect(mockResend).not.toHaveBeenCalled();
     });
 
     it('should track rate limits separately for different emails', async () => {
@@ -172,16 +224,16 @@ describe('POST /api/auth/resend-verification', () => {
       const email1 = 'user1@example.com';
       const email2 = 'user2@example.com';
 
-      // Make 2 requests for email1
-      await POST(createMockRequest({ email: email1 }));
-      await POST(createMockRequest({ email: email1 }));
+      // Requests for different emails should be tracked separately
+      const request1 = createMockRequest({ email: email1 });
+      await POST(request1);
 
-      // Request for email2 should still succeed
-      const request = createMockRequest({ email: email2 });
-      const response = await POST(request);
+      const request2 = createMockRequest({ email: email2 });
+      const response2 = await POST(request2);
 
-      expect(response.status).toBe(200);
-      expect(mockResend).toHaveBeenCalledTimes(3);
+      expect(response2.status).toBe(200);
+      expect(mockedCheckRateLimit).toHaveBeenCalledWith(email1, '127.0.0.1');
+      expect(mockedCheckRateLimit).toHaveBeenCalledWith(email2, '127.0.0.1');
     });
   });
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { checkRateLimit } from './rate-limiter';
+import {
+  checkResendVerificationRateLimit,
+  getClientIp,
+} from '@/lib/rate-limit';
+import { trackEmailVerificationSent } from '@/lib/monitoring/auth-metrics';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,11 +19,7 @@ interface ResendVerificationRequest {
 
 interface ResendVerificationResponse {
   message: string;
-}
-
-interface RateLimitError {
-  message: string;
-  retryAfter: number;
+  retryAfter?: number;
 }
 
 function createAdminClient() {
@@ -42,7 +42,7 @@ function createAdminClient() {
 
 export async function POST(
   request: NextRequest
-): Promise<NextResponse<ResendVerificationResponse | RateLimitError>> {
+): Promise<NextResponse<ResendVerificationResponse>> {
   try {
     // Parse and validate request body
     const body = (await request.json()) as unknown as ResendVerificationRequest;
@@ -62,19 +62,31 @@ export async function POST(
 
     const { email } = validationResult.data;
 
-    // Check rate limit
-    const rateLimitCheck = checkRateLimit(email);
+    // Check rate limit (both email-based and IP-based)
+    const clientIp = getClientIp(request);
+    const rateLimitCheck = await checkResendVerificationRateLimit(
+      email,
+      clientIp
+    );
 
     if (!rateLimitCheck.allowed) {
+      const reason =
+        rateLimitCheck.reason === 'ip'
+          ? 'Too many requests from your network.'
+          : 'Please wait before requesting another verification email.';
+
       return NextResponse.json(
         {
-          message: 'Please wait before requesting another verification email.',
+          message: reason,
           retryAfter: rateLimitCheck.retryAfter!,
         },
         {
           status: 429,
           headers: {
             'Retry-After': String(rateLimitCheck.retryAfter),
+            'X-RateLimit-Limit': String(rateLimitCheck.limit),
+            'X-RateLimit-Remaining': String(rateLimitCheck.remaining),
+            'X-RateLimit-Reset': String(rateLimitCheck.reset),
           },
         }
       );
@@ -92,6 +104,10 @@ export async function POST(
     // Log errors for debugging but don't expose to user
     if (error) {
       console.error('Resend verification error:', error);
+    } else {
+      // Track verification email sent (only if no error)
+      const emailDomain = email.split('@')[1];
+      trackEmailVerificationSent(emailDomain);
     }
 
     // Always return success message to prevent email enumeration
