@@ -17,19 +17,23 @@ This document provides a comprehensive security review of the authentication sys
 **Total Issues Identified:** 6 (0 Critical, 0 High, 4 Medium/Low)
 
 **Critical Issues Fixed:** ✅
+
 - **RL-003**: ✅ FIXED - Migrated to Upstash Redis for persistent rate limiting
 - **RL-004**: ✅ FIXED - Added IP-based rate limiting (10 req/10min per IP)
 
 **High Priority:**
+
 - None identified
 
 **Medium/Low Priority (Recommendations):**
+
 - **RE-008**: No email notification when user role is changed (future enhancement)
 - **CSRF-005**: No explicit custom CSRF middleware (framework defaults sufficient)
 - **XSS-005**: No Content Security Policy headers configured (recommended)
 - **EE-004**: Signup flow may reveal "email already exists" (needs verification)
 
 **Secure Areas (No Issues Found):**
+
 - ✅ Email verification token security
 - ✅ Email verification bypass prevention
 - ✅ Role escalation prevention (excellent implementation with 6 security checks)
@@ -41,16 +45,16 @@ This document provides a comprehensive security review of the authentication sys
 ### Recommended Actions
 
 **✅ Completed:**
+
 1. **[CRITICAL]** ✅ Migrated rate limiter to Upstash Redis - handles serverless cold starts
 2. **[CRITICAL]** ✅ Implemented IP-based rate limiting - prevents distributed attacks
 
-**Optional Enhancements:**
-3. **[OPTIONAL]** Configure Content Security Policy headers (defense-in-depth)
-4. **[OPTIONAL]** Add email notifications for role changes (user awareness)
+**Optional Enhancements:** 3. **[OPTIONAL]** Configure Content Security Policy headers (defense-in-depth) 4. **[OPTIONAL]** Add email notifications for role changes (user awareness)
 
 **Production Readiness:** ✅ **READY** - All critical security issues resolved
 
 **Risk Level Legend:**
+
 - 🔴 **Critical**: Immediate security risk, must fix before production
 - 🟠 **High**: Significant security concern, should fix soon
 - 🟡 **Medium**: Moderate risk, fix in near term
@@ -65,6 +69,7 @@ This document provides a comprehensive security review of the authentication sys
 
 **Area:** Email verification token security
 **Files Reviewed:**
+
 - `supabase/config.toml` (token configuration)
 - `app/auth/verify-email/route.ts` (token exchange)
 - `app/api/auth/resend-verification/route.ts` (token generation)
@@ -80,6 +85,7 @@ This document provides a comprehensive security review of the authentication sys
 #### Test Cases
 
 **TC-1.1.1: Token Reuse Prevention**
+
 ```
 GIVEN a user has verified their email with a token
 WHEN they attempt to use the same token again
@@ -87,6 +93,7 @@ THEN the system rejects it with "Email already verified" or "Invalid token"
 ```
 
 **TC-1.1.2: Token Expiration**
+
 ```
 GIVEN a verification token is >24 hours old
 WHEN user clicks the link
@@ -94,6 +101,7 @@ THEN system shows "This link has expired"
 ```
 
 **TC-1.1.3: Token Format Analysis**
+
 ```
 GIVEN a verification token
 WHEN analyzed for entropy
@@ -102,11 +110,11 @@ THEN token should be cryptographically secure (min 128-bit entropy)
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| EV-001 | ✅ | Token generation, expiration (1hr), and one-time use properly implemented via Supabase | N/A | Verified |
-| EV-002 | ✅ | Error handling with generic messages prevents information disclosure | N/A | Verified |
-| EV-003 | ✅ | Comprehensive test coverage for token expiry, reuse, and error cases | N/A | Verified |
+| ID     | Severity | Finding                                                                                | Remediation | Status   |
+| ------ | -------- | -------------------------------------------------------------------------------------- | ----------- | -------- |
+| EV-001 | ✅       | Token generation, expiration (1hr), and one-time use properly implemented via Supabase | N/A         | Verified |
+| EV-002 | ✅       | Error handling with generic messages prevents information disclosure                   | N/A         | Verified |
+| EV-003 | ✅       | Comprehensive test coverage for token expiry, reuse, and error cases                   | N/A         | Verified |
 
 ---
 
@@ -114,6 +122,7 @@ THEN token should be cryptographically secure (min 128-bit entropy)
 
 **Area:** Attempting to bypass email verification requirement
 **Files Reviewed:**
+
 - Supabase RLS policies
 - API endpoints that require verified emails
 
@@ -128,6 +137,7 @@ THEN token should be cryptographically secure (min 128-bit entropy)
 #### Test Cases
 
 **TC-1.2.1: Login Attempt Without Verification**
+
 ```
 GIVEN a user has signed up but not verified email
 WHEN they attempt to login
@@ -135,6 +145,7 @@ THEN authentication fails with appropriate error
 ```
 
 **TC-1.2.2: API Access Without Verification**
+
 ```
 GIVEN an unverified user obtains a session token
 WHEN they attempt to access protected APIs
@@ -142,6 +153,7 @@ THEN requests are rejected
 ```
 
 **TC-1.2.3: Manual Verification Bypass**
+
 ```
 GIVEN attacker attempts to set email_verified=true directly
 WHEN they try to bypass verification
@@ -150,11 +162,11 @@ THEN RLS policies prevent unauthorized updates
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| EV-004 | ✅ | Email confirmation required before login (`enable_confirmations = true`) | N/A | Verified |
-| EV-005 | ✅ | RLS policies rely on `auth.uid()` which requires verified + authenticated session | N/A | Verified |
-| EV-006 | ✅ | auth.users table protected from direct modification | N/A | Verified |
+| ID     | Severity | Finding                                                                           | Remediation | Status   |
+| ------ | -------- | --------------------------------------------------------------------------------- | ----------- | -------- |
+| EV-004 | ✅       | Email confirmation required before login (`enable_confirmations = true`)          | N/A         | Verified |
+| EV-005 | ✅       | RLS policies rely on `auth.uid()` which requires verified + authenticated session | N/A         | Verified |
+| EV-006 | ✅       | auth.users table protected from direct modification                               | N/A         | Verified |
 
 ---
 
@@ -203,6 +215,7 @@ THEN RLS policies prevent unauthorized updates
 
 **Area:** Preventing unauthorized role escalation
 **Files Reviewed:**
+
 - `supabase/migrations/20251218_001_create_change_role_function.sql`
 - `supabase/migrations/20251219_001_add_admin_rls_policies.sql`
 - `app/(app)/admin/users/page.tsx`
@@ -219,6 +232,7 @@ THEN RLS policies prevent unauthorized updates
 #### Test Cases
 
 **TC-3.1.1: Non-Admin Role Change Attempt**
+
 ```
 GIVEN a job_seeker user
 WHEN they attempt to call change_user_role RPC
@@ -226,6 +240,7 @@ THEN the function rejects with permission error
 ```
 
 **TC-3.1.2: Self-Escalation Prevention**
+
 ```
 GIVEN a user with agency_owner role
 WHEN they attempt to change their own role to admin
@@ -233,6 +248,7 @@ THEN the attempt is blocked (even if they were admin)
 ```
 
 **TC-3.1.3: Direct Database Update**
+
 ```
 GIVEN a non-admin user
 WHEN they attempt UPDATE profiles SET role = 'admin'
@@ -240,6 +256,7 @@ THEN RLS policies prevent the update
 ```
 
 **TC-3.1.4: Admin UI Access**
+
 ```
 GIVEN a non-admin user navigates to /admin/users
 WHEN the page loads
@@ -248,13 +265,13 @@ THEN they see 403/404 or are redirected
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| RE-001 | ✅ | RPC function has 6 security validations (auth, admin check, target exists, no self-modification, valid role, role changed) | N/A | Verified |
-| RE-002 | ✅ | Prevents self-demotion - admins cannot change their own role | N/A | Verified |
-| RE-003 | ✅ | Atomic transaction ensures role update and audit log both succeed or both fail | N/A | Verified |
-| RE-004 | ✅ | Admin UI properly checks authentication and role='admin' before rendering | N/A | Verified |
-| RE-005 | ✅ | Audit table preserves history even when user/admin deleted (ON DELETE SET NULL) | N/A | Verified |
+| ID     | Severity | Finding                                                                                                                    | Remediation | Status   |
+| ------ | -------- | -------------------------------------------------------------------------------------------------------------------------- | ----------- | -------- |
+| RE-001 | ✅       | RPC function has 6 security validations (auth, admin check, target exists, no self-modification, valid role, role changed) | N/A         | Verified |
+| RE-002 | ✅       | Prevents self-demotion - admins cannot change their own role                                                               | N/A         | Verified |
+| RE-003 | ✅       | Atomic transaction ensures role update and audit log both succeed or both fail                                             | N/A         | Verified |
+| RE-004 | ✅       | Admin UI properly checks authentication and role='admin' before rendering                                                  | N/A         | Verified |
+| RE-005 | ✅       | Audit table preserves history even when user/admin deleted (ON DELETE SET NULL)                                            | N/A         | Verified |
 
 ---
 
@@ -262,6 +279,7 @@ THEN they see 403/404 or are redirected
 
 **Area:** Role assignment business logic security
 **Files Reviewed:**
+
 - RPC function implementation
 - Feature flags for admin dashboard
 
@@ -275,11 +293,11 @@ THEN they see 403/404 or are redirected
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| RE-006 | ✅ | Valid role enum enforced via CHECK constraint (user, agency_owner, admin) | N/A | Verified |
-| RE-007 | ✅ | Audit logging supports reversibility and compliance | N/A | Verified |
-| RE-008 | 🟡 | No email notification when user role is changed | Consider adding email notification in future | Noted |
+| ID     | Severity | Finding                                                                   | Remediation                                  | Status   |
+| ------ | -------- | ------------------------------------------------------------------------- | -------------------------------------------- | -------- |
+| RE-006 | ✅       | Valid role enum enforced via CHECK constraint (user, agency_owner, admin) | N/A                                          | Verified |
+| RE-007 | ✅       | Audit logging supports reversibility and compliance                       | N/A                                          | Verified |
+| RE-008 | 🟡       | No email notification when user role is changed                           | Consider adding email notification in future | Noted    |
 
 ---
 
@@ -289,6 +307,7 @@ THEN they see 403/404 or are redirected
 
 **Area:** CSRF protection for state-changing operations
 **Files Reviewed:**
+
 - Next.js API routes
 - Supabase authentication flow
 
@@ -303,6 +322,7 @@ THEN they see 403/404 or are redirected
 #### Test Cases
 
 **TC-4.1.1: Cross-Origin Form Submission**
+
 ```
 GIVEN an authenticated user
 WHEN attacker submits form from malicious site
@@ -310,6 +330,7 @@ THEN request is rejected due to Origin mismatch
 ```
 
 **TC-4.1.2: Cookie SameSite Configuration**
+
 ```
 GIVEN authentication cookies
 WHEN inspected
@@ -318,13 +339,13 @@ THEN they have SameSite=Lax or Strict
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| CSRF-001 | ✅ | Supabase Auth uses PKCE flow for built-in CSRF protection | N/A | Verified |
-| CSRF-002 | ✅ | @supabase/ssr handles cookie security with secure defaults (SameSite) | N/A | Verified |
-| CSRF-003 | ✅ | Webhook endpoints use Svix signature verification | N/A | Verified |
-| CSRF-004 | ✅ | Next.js API routes are same-origin by default | N/A | Verified |
-| CSRF-005 | 🟡 | No explicit custom CSRF middleware for additional protection | Consider explicit SameSite configuration in production | Noted |
+| ID       | Severity | Finding                                                               | Remediation                                            | Status   |
+| -------- | -------- | --------------------------------------------------------------------- | ------------------------------------------------------ | -------- |
+| CSRF-001 | ✅       | Supabase Auth uses PKCE flow for built-in CSRF protection             | N/A                                                    | Verified |
+| CSRF-002 | ✅       | @supabase/ssr handles cookie security with secure defaults (SameSite) | N/A                                                    | Verified |
+| CSRF-003 | ✅       | Webhook endpoints use Svix signature verification                     | N/A                                                    | Verified |
+| CSRF-004 | ✅       | Next.js API routes are same-origin by default                         | N/A                                                    | Verified |
+| CSRF-005 | 🟡       | No explicit custom CSRF middleware for additional protection          | Consider explicit SameSite configuration in production | Noted    |
 
 ---
 
@@ -334,6 +355,7 @@ THEN they have SameSite=Lax or Strict
 
 **Area:** XSS prevention in user-generated content
 **Files Reviewed:**
+
 - `app/(app)/admin/users/page.tsx`
 - `components/auth/ResendVerificationForm.tsx`
 - Email templates
@@ -350,6 +372,7 @@ THEN they have SameSite=Lax or Strict
 #### Test Cases
 
 **TC-5.1.1: Script Injection in Email**
+
 ```
 GIVEN user signs up with email: <script>alert('XSS')</script>@test.com
 WHEN email is displayed in admin dashboard
@@ -357,6 +380,7 @@ THEN script is rendered as text, not executed
 ```
 
 **TC-5.1.2: HTML Injection in Profile**
+
 ```
 GIVEN user updates full_name to: <img src=x onerror=alert(1)>
 WHEN name is displayed
@@ -364,6 +388,7 @@ THEN HTML is escaped
 ```
 
 **TC-5.1.3: URL Parameter Injection**
+
 ```
 GIVEN URL: /auth/verify-email?message=<script>alert(1)</script>
 WHEN page renders message
@@ -372,13 +397,13 @@ THEN script is escaped
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| XSS-001 | ✅ | React JSX automatically escapes all user data (email, full_name) | N/A | Verified |
-| XSS-002 | ✅ | No dangerouslySetInnerHTML usage found in codebase | N/A | Verified |
-| XSS-003 | ✅ | All user inputs validated with Zod schemas before processing | N/A | Verified |
-| XSS-004 | ✅ | Next.js routing handles URL parameters safely | N/A | Verified |
-| XSS-005 | 🟡 | No Content Security Policy headers configured | Consider adding CSP headers in next.config.js | Noted |
+| ID      | Severity | Finding                                                          | Remediation                                   | Status   |
+| ------- | -------- | ---------------------------------------------------------------- | --------------------------------------------- | -------- |
+| XSS-001 | ✅       | React JSX automatically escapes all user data (email, full_name) | N/A                                           | Verified |
+| XSS-002 | ✅       | No dangerouslySetInnerHTML usage found in codebase               | N/A                                           | Verified |
+| XSS-003 | ✅       | All user inputs validated with Zod schemas before processing     | N/A                                           | Verified |
+| XSS-004 | ✅       | Next.js routing handles URL parameters safely                    | N/A                                           | Verified |
+| XSS-005 | 🟡       | No Content Security Policy headers configured                    | Consider adding CSP headers in next.config.js | Noted    |
 
 ---
 
@@ -386,6 +411,7 @@ THEN script is escaped
 
 **Area:** XSS in email templates
 **Files Reviewed:**
+
 - `supabase/templates/confirmation.html`
 - `supabase/templates/recovery.html`
 - `supabase/templates/email_change.html`
@@ -399,11 +425,11 @@ THEN script is escaped
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| XSS-006 | ✅ | Email templates use {{ .Variable }} syntax which auto-escapes | N/A | Verified |
-| XSS-007 | ✅ | No user-provided content in email bodies (only system-generated URLs) | N/A | Verified |
-| XSS-008 | ✅ | All template variables (SiteURL, ConfirmationURL) generated by Supabase securely | N/A | Verified |
+| ID      | Severity | Finding                                                                          | Remediation | Status   |
+| ------- | -------- | -------------------------------------------------------------------------------- | ----------- | -------- |
+| XSS-006 | ✅       | Email templates use {{ .Variable }} syntax which auto-escapes                    | N/A         | Verified |
+| XSS-007 | ✅       | No user-provided content in email bodies (only system-generated URLs)            | N/A         | Verified |
+| XSS-008 | ✅       | All template variables (SiteURL, ConfirmationURL) generated by Supabase securely | N/A         | Verified |
 
 ---
 
@@ -413,6 +439,7 @@ THEN script is escaped
 
 **Area:** SQL injection in database functions
 **Files Reviewed:**
+
 - `supabase/migrations/20251218_001_create_change_role_function.sql`
 - All RPC functions
 
@@ -427,6 +454,7 @@ THEN script is escaped
 #### Test Cases
 
 **TC-6.1.1: SQL Injection in change_user_role**
+
 ```
 GIVEN admin calls change_user_role
 WITH user_id: "123' OR '1'='1"
@@ -434,6 +462,7 @@ THEN injection attempt fails due to parameter typing
 ```
 
 **TC-6.1.2: Malicious Role Value**
+
 ```
 GIVEN admin calls change_user_role
 WITH new_role: "admin'; DROP TABLE profiles; --"
@@ -442,13 +471,13 @@ THEN type checking prevents malicious SQL
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| SQL-001 | ✅ | change_user_role uses parameterized queries with strong typing (UUID, TEXT) | N/A | Verified |
-| SQL-002 | ✅ | No string concatenation in SQL functions | N/A | Verified |
-| SQL-003 | ✅ | All TypeScript queries use Supabase query builder (parameterized by default) | N/A | Verified |
-| SQL-004 | ✅ | CHECK constraints validate role enum values | N/A | Verified |
-| SQL-005 | ✅ | RLS policies enabled on profiles and role_change_audit tables | N/A | Verified |
+| ID      | Severity | Finding                                                                      | Remediation | Status   |
+| ------- | -------- | ---------------------------------------------------------------------------- | ----------- | -------- |
+| SQL-001 | ✅       | change_user_role uses parameterized queries with strong typing (UUID, TEXT)  | N/A         | Verified |
+| SQL-002 | ✅       | No string concatenation in SQL functions                                     | N/A         | Verified |
+| SQL-003 | ✅       | All TypeScript queries use Supabase query builder (parameterized by default) | N/A         | Verified |
+| SQL-004 | ✅       | CHECK constraints validate role enum values                                  | N/A         | Verified |
+| SQL-005 | ✅       | RLS policies enabled on profiles and role_change_audit tables                | N/A         | Verified |
 
 ---
 
@@ -458,6 +487,7 @@ THEN type checking prevents malicious SQL
 
 **Area:** Preventing abuse of verification email sending
 **Files Reviewed:**
+
 - `app/api/auth/resend-verification/rate-limiter.ts`
 - `app/api/auth/resend-verification/route.ts`
 
@@ -472,6 +502,7 @@ THEN type checking prevents malicious SQL
 #### Test Cases
 
 **TC-7.1.1: Email Rate Limit Enforcement**
+
 ```
 GIVEN user requests verification email 3 times in 5 minutes
 WHEN they request again
@@ -479,6 +510,7 @@ THEN receive 429 Too Many Requests
 ```
 
 **TC-7.1.2: Rate Limit Window Reset**
+
 ```
 GIVEN user hit rate limit 11 minutes ago
 WHEN they request again
@@ -486,6 +518,7 @@ THEN request succeeds (window has reset)
 ```
 
 **TC-7.1.3: IP-Based Limiting**
+
 ```
 GIVEN attacker tries 100 requests from same IP
 WHEN using different email addresses
@@ -494,15 +527,15 @@ THEN IP-based limit triggers (if implemented)
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| RL-001 | ✅ | Per-email rate limiting implemented (2 requests / 10 minutes) | N/A | Verified |
-| RL-002 | ✅ | Clear 429 error messages with retryAfter header and rate limit headers | N/A | Verified |
-| RL-003 | ✅ | **FIXED** - Migrated to Upstash Redis for persistent rate limiting | Implemented in lib/rate-limit.ts | **Fixed** |
-| RL-004 | ✅ | **FIXED** - IP-based rate limiting added (10 requests / 10 minutes per IP) | Implemented in lib/rate-limit.ts | **Fixed** |
-| RL-005 | 🟡 | Supabase has built-in rate limiting (2 emails/hour) as fallback | N/A | Noted |
-| RL-006 | ✅ | Email normalization prevents + alias abuse | N/A | Verified |
-| RL-007 | ✅ | Graceful degradation in development (Redis optional) | N/A | Verified |
+| ID     | Severity | Finding                                                                    | Remediation                      | Status    |
+| ------ | -------- | -------------------------------------------------------------------------- | -------------------------------- | --------- |
+| RL-001 | ✅       | Per-email rate limiting implemented (2 requests / 10 minutes)              | N/A                              | Verified  |
+| RL-002 | ✅       | Clear 429 error messages with retryAfter header and rate limit headers     | N/A                              | Verified  |
+| RL-003 | ✅       | **FIXED** - Migrated to Upstash Redis for persistent rate limiting         | Implemented in lib/rate-limit.ts | **Fixed** |
+| RL-004 | ✅       | **FIXED** - IP-based rate limiting added (10 requests / 10 minutes per IP) | Implemented in lib/rate-limit.ts | **Fixed** |
+| RL-005 | 🟡       | Supabase has built-in rate limiting (2 emails/hour) as fallback            | N/A                              | Noted     |
+| RL-006 | ✅       | Email normalization prevents + alias abuse                                 | N/A                              | Verified  |
+| RL-007 | ✅       | Graceful degradation in development (Redis optional)                       | N/A                              | Verified  |
 
 ---
 
@@ -529,6 +562,7 @@ THEN IP-based limit triggers (if implemented)
 
 **Area:** Preventing attackers from determining if email exists
 **Files Reviewed:**
+
 - `app/api/auth/resend-verification/route.ts`
 - Password reset endpoints (when implemented)
 
@@ -543,6 +577,7 @@ THEN IP-based limit triggers (if implemented)
 #### Test Cases
 
 **TC-8.1.1: Resend Verification - Non-Existent Email**
+
 ```
 GIVEN user requests verification for nonexistent@example.com
 WHEN request completes
@@ -550,6 +585,7 @@ THEN response is: "If this email exists, we sent a verification link"
 ```
 
 **TC-8.1.2: Timing Attack Prevention**
+
 ```
 GIVEN two requests: one valid email, one invalid
 WHEN measuring response times
@@ -557,6 +593,7 @@ THEN times are within reasonable variance (no timing oracle)
 ```
 
 **TC-8.1.3: Password Reset Enumeration**
+
 ```
 GIVEN attacker tries password reset for test@example.com
 WHEN email doesn't exist
@@ -565,12 +602,12 @@ THEN response doesn't reveal this fact
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| EE-001 | ✅ | Resend verification always returns generic success message regardless of email existence | N/A | Verified |
-| EE-002 | ✅ | Error logging happens server-side only (console.error), never exposed to client | N/A | Verified |
-| EE-003 | ✅ | Response timing consistent - always calls supabase.resend() even if email doesn't exist | N/A | Verified |
-| EE-004 | 🟡 | Signup flow uses Supabase default - may reveal "email already exists" | Review Supabase signup error messages | Noted |
+| ID     | Severity | Finding                                                                                  | Remediation                           | Status   |
+| ------ | -------- | ---------------------------------------------------------------------------------------- | ------------------------------------- | -------- |
+| EE-001 | ✅       | Resend verification always returns generic success message regardless of email existence | N/A                                   | Verified |
+| EE-002 | ✅       | Error logging happens server-side only (console.error), never exposed to client          | N/A                                   | Verified |
+| EE-003 | ✅       | Response timing consistent - always calls supabase.resend() even if email doesn't exist  | N/A                                   | Verified |
+| EE-004 | 🟡       | Signup flow uses Supabase default - may reveal "email already exists"                    | Review Supabase signup error messages | Noted    |
 
 ---
 
@@ -580,6 +617,7 @@ THEN response doesn't reveal this fact
 
 **Area:** JWT and session token security
 **Files Reviewed:**
+
 - Supabase configuration
 - `lib/supabase/server.ts`
 - Authentication context
@@ -594,9 +632,9 @@ THEN response doesn't reveal this fact
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| | | | | |
+| ID  | Severity | Finding | Remediation | Status |
+| --- | -------- | ------- | ----------- | ------ |
+|     |          |         |             |        |
 
 ---
 
@@ -606,6 +644,7 @@ THEN response doesn't reveal this fact
 
 **Area:** Database-level authorization
 **Files Reviewed:**
+
 - `supabase/migrations/20251219_001_add_admin_rls_policies.sql`
 - All RLS policies
 
@@ -620,6 +659,7 @@ THEN response doesn't reveal this fact
 #### Test Cases
 
 **TC-10.1.1: User Cannot Modify Other Profiles**
+
 ```
 GIVEN user A is authenticated
 WHEN they attempt to UPDATE user B's profile
@@ -627,6 +667,7 @@ THEN RLS policy rejects the update
 ```
 
 **TC-10.1.2: Admin Can View All Users**
+
 ```
 GIVEN admin user
 WHEN they SELECT from profiles table
@@ -635,9 +676,9 @@ THEN they can see all users
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| | | | | |
+| ID  | Severity | Finding | Remediation | Status |
+| --- | -------- | ------- | ----------- | ------ |
+|     |          |         |             |        |
 
 ---
 
@@ -647,6 +688,7 @@ THEN they can see all users
 
 **Area:** Detection of suspicious activity
 **Files Reviewed:**
+
 - `lib/monitoring/auth-metrics.ts`
 - Webhook handlers
 
@@ -660,9 +702,9 @@ THEN they can see all users
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| | | | | |
+| ID  | Severity | Finding | Remediation | Status |
+| --- | -------- | ------- | ----------- | ------ |
+|     |          |         |             |        |
 
 ---
 
@@ -672,6 +714,7 @@ THEN they can see all users
 
 **Area:** Security of dependencies
 **Files Reviewed:**
+
 - `package.json`
 - `package-lock.json`
 
@@ -685,9 +728,9 @@ THEN they can see all users
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| | | | | |
+| ID  | Severity | Finding | Remediation | Status |
+| --- | -------- | ------- | ----------- | ------ |
+|     |          |         |             |        |
 
 ---
 
@@ -697,6 +740,7 @@ THEN they can see all users
 
 **Area:** Preventing information leakage through errors
 **Files Reviewed:**
+
 - All API routes
 - Error handling code
 
@@ -710,9 +754,9 @@ THEN they can see all users
 
 #### Findings
 
-| ID | Severity | Finding | Remediation | Status |
-|----|----------|---------|-------------|--------|
-| | | | | |
+| ID  | Severity | Finding | Remediation | Status |
+| --- | -------- | ------- | ----------- | ------ |
+|     |          |         |             |        |
 
 ---
 
@@ -720,23 +764,23 @@ THEN they can see all users
 
 ### Critical Issues (🔴)
 
-*None found yet - review in progress*
+_None found yet - review in progress_
 
 ### High Issues (🟠)
 
-*None found yet - review in progress*
+_None found yet - review in progress_
 
 ### Medium Issues (🟡)
 
-*None found yet - review in progress*
+_None found yet - review in progress_
 
 ### Low Issues (🟢)
 
-*None found yet - review in progress*
+_None found yet - review in progress_
 
 ### Secure Areas (✅)
 
-*Review in progress*
+_Review in progress_
 
 ---
 
@@ -765,14 +809,14 @@ THEN they can see all users
 ### Automated Tests
 
 | Test ID | Description | Status | Notes |
-|---------|-------------|--------|-------|
-| | | | |
+| ------- | ----------- | ------ | ----- |
+|         |             |        |       |
 
 ### Manual Tests
 
 | Test ID | Description | Status | Notes |
-|---------|-------------|--------|-------|
-| | | | |
+| ------- | ----------- | ------ | ----- |
+|         |             |        |       |
 
 ---
 
@@ -810,6 +854,6 @@ THEN they can see all users
 
 ### C. Revision History
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-17 | 1.0 | Initial security review document | Security Review |
+| Date       | Version | Changes                          | Author          |
+| ---------- | ------- | -------------------------------- | --------------- |
+| 2025-12-17 | 1.0     | Initial security review document | Security Review |

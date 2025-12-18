@@ -5,6 +5,7 @@ This document explains how to set up production-ready rate limiting for the auth
 ## Overview
 
 The authentication system uses **Upstash Redis** for rate limiting to:
+
 - ✅ Persist rate limit state across serverless function cold starts
 - ✅ Prevent distributed attacks with IP-based rate limiting
 - ✅ Scale automatically without connection pooling
@@ -12,11 +13,13 @@ The authentication system uses **Upstash Redis** for rate limiting to:
 ## Why Upstash Redis?
 
 Traditional rate limiting using in-memory storage (Maps/Objects) doesn't work in serverless environments because:
+
 - **Cold starts** reset the rate limit state
 - **Multiple instances** don't share rate limit data
 - **No persistence** means attackers can bypass limits by waiting for cold starts
 
 Upstash Redis solves these problems with:
+
 - HTTP-based REST API (no connection pooling needed)
 - Edge-compatible and fast (~50ms latency)
 - Free tier available (10,000 requests/day)
@@ -47,6 +50,7 @@ Upstash Redis solves these problems with:
 ### 3. Add Environment Variables
 
 #### Local Development (.env.local)
+
 ```bash
 # Upstash Redis Configuration
 UPSTASH_REDIS_REST_URL=https://your-redis-name.upstash.io
@@ -54,6 +58,7 @@ UPSTASH_REDIS_REST_TOKEN=AYtaA...your-token-here
 ```
 
 #### Production (Vercel)
+
 1. Go to your Vercel project
 2. Settings → Environment Variables
 3. Add both variables:
@@ -66,11 +71,13 @@ UPSTASH_REDIS_REST_TOKEN=AYtaA...your-token-here
 ### Current Limits
 
 #### Email-Based Rate Limiting
+
 - **Limit**: 2 requests per 10 minutes per email address
 - **Purpose**: Prevents spam to specific users
 - **Bypass Prevention**: Email normalization (removes `+` aliases)
 
 #### IP-Based Rate Limiting
+
 - **Limit**: 10 requests per 10 minutes per IP address
 - **Purpose**: Prevents distributed attacks using different emails
 - **IP Detection**: Uses `x-forwarded-for` header (Vercel proxy)
@@ -106,6 +113,7 @@ export const ipRateLimiter = redis
 ### Local Testing (Without Redis)
 
 When Redis is not configured, rate limiting gracefully degrades:
+
 - ⚠️ Warning logged: `Redis not configured - rate limiting disabled`
 - ✅ All requests allowed (development mode)
 - ✅ Tests pass with mocked rate limiter
@@ -127,6 +135,7 @@ done
 ```
 
 Expected response on rate limit:
+
 ```json
 {
   "message": "Please wait before requesting another verification email.",
@@ -135,6 +144,7 @@ Expected response on rate limit:
 ```
 
 Headers:
+
 ```
 HTTP/1.1 429 Too Many Requests
 Retry-After: 600
@@ -157,6 +167,7 @@ X-RateLimit-Reset: 1703001234567
 ### Application Logs
 
 Rate limit events are logged:
+
 ```
 [Rate Limit] Redis not configured - rate limiting disabled (development only)
 ```
@@ -166,15 +177,18 @@ No logs in production (Redis configured).
 ## Costs
 
 ### Free Tier
+
 - **10,000 requests/day**
 - **256 MB storage**
 - Perfect for development and small apps
 
 ### Paid Tier
+
 - **$0.20 per 100,000 requests**
 - **$0.25 per GB storage/month**
 
 **Example**: 1 million verification emails/month
+
 - Rate limit checks: 2 million (email + IP)
 - Cost: ~$4/month
 
@@ -183,11 +197,13 @@ No logs in production (Redis configured).
 ### Issue: Rate limiting not working
 
 **Check**:
+
 1. Environment variables set correctly
 2. Upstash database active
 3. No firewall blocking `*.upstash.io`
 
 **Debug**:
+
 ```typescript
 // Add to lib/rate-limit.ts temporarily
 console.log('Redis configured:', !!redis);
@@ -199,6 +215,7 @@ console.log('URL:', process.env.UPSTASH_REDIS_REST_URL);
 **Cause**: Invalid token
 
 **Fix**:
+
 1. Regenerate token in Upstash Console
 2. Update `UPSTASH_REDIS_REST_TOKEN`
 3. Redeploy
@@ -208,6 +225,7 @@ console.log('URL:', process.env.UPSTASH_REDIS_REST_URL);
 **Cause**: Redis database region far from serverless functions
 
 **Fix**:
+
 1. Create new database in closer region
 2. Update environment variables
 3. Consider Global Redis for worldwide apps
@@ -215,16 +233,19 @@ console.log('URL:', process.env.UPSTASH_REDIS_REST_URL);
 ## Security Considerations
 
 ✅ **Token Security**
+
 - Never commit `UPSTASH_REDIS_REST_TOKEN` to git
 - Use environment variables only
 - Rotate tokens if exposed
 
 ✅ **Data Privacy**
+
 - Rate limiter stores: email (hashed), IP (hashed), timestamps
 - No PII in plain text
 - Data expires automatically after window
 
 ✅ **DDoS Protection**
+
 - IP-based limits prevent distributed attacks
 - Email normalization prevents `+` alias abuse
 - Sliding window prevents burst attacks
@@ -234,6 +255,7 @@ console.log('URL:', process.env.UPSTASH_REDIS_REST_URL);
 If you prefer not to use Upstash:
 
 ### Vercel KV (Alternative)
+
 ```bash
 npm install @vercel/kv
 
@@ -245,6 +267,7 @@ KV_REST_API_TOKEN=your-vercel-kv-token
 Modify `lib/rate-limit.ts` to use Vercel KV instead.
 
 ### Upstash Edge Config (Simpler, but less flexible)
+
 - Good for: Simple global counters
 - Limited: No per-key expiration
 

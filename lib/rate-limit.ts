@@ -90,9 +90,7 @@ export async function checkResendVerificationRateLimit(
   const emailResult = await emailRateLimiter.limit(emailKey);
 
   if (!emailResult.success) {
-    const retryAfter = Math.ceil(
-      (emailResult.reset - Date.now()) / 1000
-    );
+    const retryAfter = Math.ceil((emailResult.reset - Date.now()) / 1000);
     return {
       allowed: false,
       limit: emailResult.limit,

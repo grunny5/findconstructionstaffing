@@ -13,9 +13,10 @@ const mockedCreateClient = createClient as jest.MockedFunction<
   typeof createClient
 >;
 
-const mockedCheckRateLimit = rateLimit.checkResendVerificationRateLimit as jest.MockedFunction<
-  typeof rateLimit.checkResendVerificationRateLimit
->;
+const mockedCheckRateLimit =
+  rateLimit.checkResendVerificationRateLimit as jest.MockedFunction<
+    typeof rateLimit.checkResendVerificationRateLimit
+  >;
 
 const mockedGetClientIp = rateLimit.getClientIp as jest.MockedFunction<
   typeof rateLimit.getClientIp
