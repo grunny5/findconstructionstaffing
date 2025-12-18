@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,6 +34,7 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const { signUp } = useAuth();
+  const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -50,8 +52,16 @@ export default function SignupPage() {
     try {
       setLoading(true);
       setError('');
-      await signUp(data.email, data.password, data.fullName);
+      const result = await signUp(data.email, data.password, data.fullName);
 
+      // If session exists, user is auto-logged in (email confirmations disabled)
+      // Redirect to home page
+      if (result?.session) {
+        router.push('/');
+        return;
+      }
+
+      // No session means email confirmation is required
       setSubmittedEmail(data.email);
       setSuccess(true);
     } catch (err: any) {
