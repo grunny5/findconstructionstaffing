@@ -189,7 +189,7 @@ describe('SignupPage', () => {
 
     it('should not show errors for valid input', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
       render(<SignupPage />);
 
       const nameInput = screen.getByPlaceholderText(/full name/i);
@@ -222,7 +222,7 @@ describe('SignupPage', () => {
   describe('Form Submission', () => {
     it('should call signUp with correct data on valid submission', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -250,7 +250,7 @@ describe('SignupPage', () => {
 
     it('should show email verification message after signup', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -282,9 +282,43 @@ describe('SignupPage', () => {
       );
     });
 
-    it('should not auto-redirect after successful signup', async () => {
+    it('should redirect to home when email confirmations are disabled', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      const mockSession = {
+        access_token: 'mock-token',
+        user: { id: '123', email: 'test@example.com' },
+      };
+      mockSignUp.mockResolvedValue({ session: mockSession, user: mockSession.user });
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'Test User');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/');
+      });
+
+      expect(mockSignUp).toHaveBeenCalledWith(
+        'test@example.com',
+        'password123',
+        'Test User'
+      );
+    });
+
+    it('should not auto-redirect when email confirmations are enabled', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -477,7 +511,7 @@ describe('SignupPage', () => {
   describe('Email Verification Success UI', () => {
     it('should display submitted email address in success message', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -501,7 +535,7 @@ describe('SignupPage', () => {
 
     it('should show 1-hour expiration notice', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -527,7 +561,7 @@ describe('SignupPage', () => {
 
     it('should display "Resend verification email" button', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -555,7 +589,7 @@ describe('SignupPage', () => {
 
     it('should display "Return to home" link', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
@@ -583,7 +617,7 @@ describe('SignupPage', () => {
 
     it('should display "Check your email" success message', async () => {
       const user = userEvent.setup({ delay: null });
-      mockSignUp.mockResolvedValue(undefined);
+      mockSignUp.mockResolvedValue({ session: null, user: null });
 
       render(<SignupPage />);
 
