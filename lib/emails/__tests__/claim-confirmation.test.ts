@@ -43,9 +43,7 @@ describe('Claim Confirmation Email Templates', () => {
       const html = generateClaimConfirmationHTML(mockParams);
 
       expect(html).toContain('Test Construction Staffing');
-      expect(html).toContain(
-        '<strong>Test Construction Staffing</strong>'
-      );
+      expect(html).toContain('<strong>Test Construction Staffing</strong>');
     });
 
     it('should include claim ID in monospace code block', () => {
@@ -77,10 +75,10 @@ describe('Claim Confirmation Email Templates', () => {
       expect(html).toContain('<ul');
       expect(html).toContain('<li>Our team will verify your information</li>');
       expect(html).toContain(
-        '<li>You\'ll receive an email with our decision</li>'
+        "<li>You'll receive an email with our decision</li>"
       );
       expect(html).toContain(
-        '<li>If approved, you\'ll be able to manage the agency profile</li>'
+        "<li>If approved, you'll be able to manage the agency profile</li>"
       );
     });
 
@@ -88,16 +86,16 @@ describe('Claim Confirmation Email Templates', () => {
       const html = generateClaimConfirmationHTML(mockParams);
 
       expect(html).toContain('View Claim Status');
-      expect(html).toContain(
-        `href="${mockParams.siteUrl}/settings/claims"`
-      );
+      expect(html).toContain(`href="${mockParams.siteUrl}/settings/claims"`);
     });
 
     it('should include support contact email', () => {
       const html = generateClaimConfirmationHTML(mockParams);
 
       expect(html).toContain('support@findconstructionstaffing.com');
-      expect(html).toContain('href="mailto:support@findconstructionstaffing.com"');
+      expect(html).toContain(
+        'href="mailto:support@findconstructionstaffing.com"'
+      );
     });
 
     it('should include footer with copyright', () => {
@@ -192,9 +190,9 @@ describe('Claim Confirmation Email Templates', () => {
 
       expect(text).toContain('WHAT HAPPENS NEXT?');
       expect(text).toContain('* Our team will verify your information');
-      expect(text).toContain('* You\'ll receive an email with our decision');
+      expect(text).toContain("* You'll receive an email with our decision");
       expect(text).toContain(
-        '* If approved, you\'ll be able to manage the agency profile'
+        "* If approved, you'll be able to manage the agency profile"
       );
     });
 
@@ -202,9 +200,7 @@ describe('Claim Confirmation Email Templates', () => {
       const text = generateClaimConfirmationText(mockParams);
 
       expect(text).toContain('View your claim status:');
-      expect(text).toContain(
-        `${mockParams.siteUrl}/settings/claims`
-      );
+      expect(text).toContain(`${mockParams.siteUrl}/settings/claims`);
     });
 
     it('should include support contact email', () => {

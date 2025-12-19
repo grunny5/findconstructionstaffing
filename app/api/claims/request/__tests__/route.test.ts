@@ -92,9 +92,7 @@ describe('POST /api/claims/request', () => {
     (generateClaimConfirmationHTML as jest.Mock).mockReturnValue(
       '<html>Email HTML</html>'
     );
-    (generateClaimConfirmationText as jest.Mock).mockReturnValue(
-      'Email Text'
-    );
+    (generateClaimConfirmationText as jest.Mock).mockReturnValue('Email Text');
 
     // Mock Resend constructor
     (Resend as jest.Mock).mockImplementation(() => ({
