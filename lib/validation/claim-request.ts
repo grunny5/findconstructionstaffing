@@ -9,8 +9,7 @@ import { z } from 'zod';
  */
 export const VerificationMethodEnum = z.enum(['email', 'phone', 'manual'], {
   errorMap: () => ({
-    message:
-      'Verification method must be one of: email, phone, or manual',
+    message: 'Verification method must be one of: email, phone, or manual',
   }),
 });
 

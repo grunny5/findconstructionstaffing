@@ -146,6 +146,7 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 **Actual Effort:** 4 hours
 
 **Implementation Notes:**
+
 - Created migration `supabase/migrations/20251222_001_create_agency_claim_tables.sql`
 - 3 new tables created: `agency_claim_requests`, `agency_claim_audit_log`, `agency_profile_edits`
 - Extended `agencies` table with 3 new columns (claimed_by and claimed_at already existed)
@@ -195,6 +196,7 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 **Actual Effort:** 3 hours
 
 **Implementation Notes:**
+
 - Created migration `supabase/migrations/20251222_002_create_claim_rls_policies.sql`
 - Enabled RLS on 3 tables: `agency_claim_requests`, `agency_claim_audit_log`, `agency_profile_edits`
 - Created 13 RLS policies across 4 tables:
@@ -254,6 +256,7 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 **Actual Effort:** 5 hours
 
 **Implementation Notes:**
+
 - Created `lib/utils/email-domain-verification.ts` with utilities:
   - extractEmailDomain(): Extract domain from email address
   - extractWebsiteDomain(): Extract domain from URL (handles protocol, www, paths)
