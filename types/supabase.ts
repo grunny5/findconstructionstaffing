@@ -18,6 +18,9 @@ export type Agency = {
   updated_at: string;
   claimed_at?: string;
   claimed_by?: string;
+  profile_completion_percentage?: number;
+  last_edited_at?: string;
+  last_edited_by?: string;
   trades?: Trade[];
   regions?: Region[];
 };

@@ -56,3 +56,12 @@ if (typeof global.Request === 'undefined') {
     global.fetch = jest.fn();
   }
 }
+
+// Add ResizeObserver polyfill for Radix UI components
+if (typeof global.ResizeObserver === 'undefined') {
+  global.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}

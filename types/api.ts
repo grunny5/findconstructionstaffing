@@ -74,6 +74,12 @@ export interface Agency {
   verified: boolean;
   /** Whether the agency is featured */
   featured: boolean;
+  /** Profile completion percentage (0-100%) */
+  profile_completion_percentage: number;
+  /** Timestamp of last profile edit */
+  last_edited_at: string | null;
+  /** User ID who last edited the profile */
+  last_edited_by: string | null;
   /** Associated trade specialties */
   trades: Trade[];
   /** Associated service regions */
@@ -181,8 +187,11 @@ export const API_CONSTANTS = {
  */
 export const HTTP_STATUS = {
   OK: 200,
+  CREATED: 201,
   BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
   NOT_FOUND: 404,
+  CONFLICT: 409,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
@@ -191,7 +200,12 @@ export const HTTP_STATUS = {
  */
 export const ERROR_CODES = {
   INVALID_PARAMS: 'INVALID_PARAMS',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  NOT_FOUND: 'NOT_FOUND',
+  AGENCY_NOT_FOUND: 'AGENCY_NOT_FOUND',
+  AGENCY_ALREADY_CLAIMED: 'AGENCY_ALREADY_CLAIMED',
+  PENDING_CLAIM_EXISTS: 'PENDING_CLAIM_EXISTS',
   DATABASE_ERROR: 'DATABASE_ERROR',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
-  NOT_FOUND: 'NOT_FOUND',
 } as const;
