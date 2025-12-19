@@ -112,6 +112,7 @@ export function ClaimStatusList() {
   useEffect(() => {
     async function fetchClaims() {
       if (!user) {
+        setClaims([]);
         setLoading(false);
         return;
       }
