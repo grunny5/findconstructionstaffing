@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Building2, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { ClaimRequestForm } from '@/components/ClaimRequestForm';
 import type { Agency, AgencyResponse } from '@/types/api';
 
 interface PageProps {
@@ -132,33 +133,12 @@ export default async function ClaimAgencyPage({ params }: PageProps) {
             </div>
           </Alert>
         ) : (
-          /* Claim Form Placeholder */
-          <Card>
-            <CardHeader>
-              <CardTitle>Claim Request Form</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert className="mb-6">
-                <AlertTitle>Coming Soon</AlertTitle>
-                <AlertDescription>
-                  The claim request form will be available in the next update.
-                  This will include fields for business email, phone number, and
-                  verification method.
-                </AlertDescription>
-              </Alert>
-
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
-                  <Link href={`/recruiters/${params.slug}`}>
-                    View Agency Profile
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/">Back to Directory</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          /* Claim Request Form */
+          <ClaimRequestForm
+            agencyId={agency.id}
+            agencyName={agency.name}
+            agencyWebsite={agency.website}
+          />
         )}
       </main>
 

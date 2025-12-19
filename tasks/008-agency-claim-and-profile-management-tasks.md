@@ -287,43 +287,67 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 
 ---
 
-### Task 1.2.4: Build Claim Request Form Component
+### Task 1.2.4: Build Claim Request Form Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Create the claim request form UI with validation and submission
 - **Context:** Form is displayed on `/claim/[slug]` page and must collect all required information per FSD Story 1.2
 - **Key Files to Create:**
   - `components/ClaimRequestForm.tsx`
-  - `lib/validations/claim-request.ts` (Zod schema)
+  - `lib/validations/claim-request.ts` (Zod schema - already created in Task 1.2.3)
 - **Key Patterns to Follow:**
   - React Hook Form for form state management
   - Zod for client-side validation (matches API validation)
   - Shadcn/ui Form components
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Form displays agency name (read-only)
-  - [ ] Required fields: Business Email, Phone Number, Position/Title, Verification Method
-  - [ ] Optional field: Additional Notes (textarea)
-  - [ ] Email validation: must be valid email format
-  - [ ] Phone validation: must match E.164 format (show format hint)
-  - [ ] Verification Method: radio buttons (Email Domain, Phone Verification, Manual Review)
-  - [ ] Email domain warning shows if domain doesn't match agency website
-  - [ ] Submit button disabled while submitting (loading state)
-  - [ ] Success message displays after submission with claim ID
-  - [ ] Error messages display for validation and API errors
-  - [ ] Form resets after successful submission
+  - [x] Form displays agency name (read-only)
+  - [x] Required fields: Business Email, Phone Number, Position/Title, Verification Method
+  - [x] Optional field: Additional Notes (textarea)
+  - [x] Email validation: must be valid email format
+  - [x] Phone validation: must match E.164 format (show format hint)
+  - [x] Verification Method: radio buttons (Email Domain, Phone Verification, Manual Review)
+  - [x] Email domain warning shows if domain doesn't match agency website
+  - [x] Submit button disabled while submitting (loading state)
+  - [x] Success message displays after submission with claim ID
+  - [x] Error messages display for validation and API errors
+  - [x] Form resets after successful submission
 - **Definition of Done:**
-  - [ ] Component complete with all fields
-  - [ ] Client-side validation working
-  - [ ] Form submission calls API endpoint
-  - [ ] Success and error states handled
-  - [ ] Component tests verify all validation rules
-  - [ ] Component tests verify submission flow
-  - [ ] Accessibility: proper labels, ARIA attributes, error announcements
-  - [ ] PR submitted with component tests
-  - [ ] **Final Check:** Uses Shadcn/ui patterns
+  - [x] Component complete with all fields
+  - [x] Client-side validation working
+  - [x] Form submission calls API endpoint
+  - [x] Success and error states handled
+  - [x] Component tests verify all validation rules
+  - [x] Component tests verify submission flow
+  - [x] Accessibility: proper labels, ARIA attributes, error announcements
+  - [x] PR submitted with component tests
+  - [x] **Final Check:** Uses Shadcn/ui patterns
 
 **Estimated Effort:** 6 hours
+**Actual Effort:** 6 hours
+
+**Implementation Notes:**
+
+- Created `components/ClaimRequestForm.tsx` (414 lines) with full client-side form
+- Reused existing validation schema `lib/validation/claim-request.ts` from Task 1.2.3
+- Used React Hook Form with Controller for RadioGroup integration
+- Implemented real-time email domain verification using `verifyEmailDomain` utility
+- Form features:
+  - All required fields with proper validation (email, phone E.164, position, verification method)
+  - Optional additional notes field (max 1000 characters)
+  - Hidden agency_id field registered with React Hook Form
+  - Live email domain warning (non-blocking)
+  - Success state showing claim ID and next steps
+  - Comprehensive error handling for all API error codes
+  - Loading states disable all inputs during submission
+  - Form reset after successful submission
+- Added RadioGroup component via `npx shadcn@latest add radio-group`
+- Fixed ResizeObserver polyfill in `jest.setup.js` for Radix UI components
+- Created comprehensive test suite: `components/__tests__/ClaimRequestForm.test.tsx`
+  - 26 passing tests covering: rendering (5 tests), validation (4 tests), email domain warning (3 tests), form submission (5 tests), error handling (6 tests), accessibility (3 tests)
+  - All tests verify React Hook Form integration, validation, API calls, and accessibility
+- Modified `app/claim/[slug]/page.tsx` to integrate ClaimRequestForm component
+- All fields have proper ARIA labels, error linking via aria-describedby, and aria-invalid attributes
 
 ---
 
