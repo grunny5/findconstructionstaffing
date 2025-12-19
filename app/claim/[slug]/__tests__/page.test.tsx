@@ -120,6 +120,27 @@ describe('Claim Agency Page', () => {
     expect(notFound).toHaveBeenCalled();
   });
 
+  it('should throw error for non-404 API failures', async () => {
+    mockCreateClient.mockReturnValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: 'user-1' } },
+          error: null,
+        }),
+      },
+    });
+
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(
+      ClaimAgencyPage({ params: { slug: 'test-agency' } })
+    ).rejects.toThrow('Failed to fetch agency data');
+  });
+
   it('should display "Already Claimed" alert for claimed agencies', async () => {
     const claimedAgency = {
       id: '1',
