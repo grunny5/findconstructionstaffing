@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { ClaimStatus } from '@/types/database';
 import {
   Card,
   CardHeader,
@@ -15,11 +16,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, FileText, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-
-/**
- * Claim request status type
- */
-type ClaimStatus = 'pending' | 'under_review' | 'approved' | 'rejected';
 
 /**
  * Claim request with agency data from GET /api/claims/my-requests
