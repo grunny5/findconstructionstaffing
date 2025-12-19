@@ -186,12 +186,7 @@ describe('ClaimRequestSchema', () => {
     });
 
     it('should reject invalid phone number formats', () => {
-      const invalidPhones = [
-        'not-a-phone',
-        '123abc456',
-        '',
-        'phone number',
-      ];
+      const invalidPhones = ['not-a-phone', '123abc456', '', 'phone number'];
 
       invalidPhones.forEach((phone) => {
         expect(() =>
@@ -352,7 +347,8 @@ describe('ClaimRequestSchema', () => {
       ];
 
       requiredFields.forEach((field) => {
-        const { [field]: omitted, ...incompleteRequest } = validClaimRequest;
+        const { [field]: omitted, ...incompleteRequest } =
+          validClaimRequest as any;
         expect(() => ClaimRequestSchema.parse(incompleteRequest)).toThrow();
       });
     });

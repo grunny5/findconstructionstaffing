@@ -551,6 +551,9 @@ export async function GET(
       project_count: 0,
       verified: false,
       featured: false,
+      profile_completion_percentage: agencyData.profile_completion_percentage || 0,
+      last_edited_at: agencyData.last_edited_at || null,
+      last_edited_by: agencyData.last_edited_by || null,
       trades:
         agencyData.agency_trades?.map((at) => ({
           id: at.trade.id,

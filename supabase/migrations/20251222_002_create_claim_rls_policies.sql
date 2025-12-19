@@ -202,9 +202,11 @@ COMMENT ON POLICY "Admins can create edits for any agency" ON public.agency_prof
 -- Policy: Agency owners can update their claimed agency
 -- Allows users who have claimed an agency to UPDATE the agency profile
 -- Note: Public SELECT policy already exists from earlier migration
+-- WITH CHECK ensures ownership cannot be transferred
 CREATE POLICY "Owners can update their agency"
   ON public.agencies FOR UPDATE
-  USING (claimed_by = auth.uid());
+  USING (claimed_by = auth.uid())
+  WITH CHECK (claimed_by = auth.uid());
 
 -- Policy: Admins can update any agency
 -- Allows admins to UPDATE any agency profile
@@ -235,10 +237,11 @@ DECLARE
     total_tables INTEGER := 3;
 BEGIN
     SELECT COUNT(*) INTO rls_count
-    FROM pg_tables
-    WHERE schemaname = 'public'
-      AND tablename IN ('agency_claim_requests', 'agency_claim_audit_log', 'agency_profile_edits')
-      AND rowsecurity = true;
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname IN ('agency_claim_requests', 'agency_claim_audit_log', 'agency_profile_edits')
+      AND c.relrowsecurity = true;
 
     IF rls_count = total_tables THEN
         RAISE NOTICE 'Success: RLS enabled on all % claim management tables', total_tables;

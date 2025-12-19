@@ -30,6 +30,9 @@ describe('API Types', () => {
       project_count: 100,
       verified: true,
       featured: false,
+      profile_completion_percentage: 100,
+      last_edited_at: '2024-01-01T00:00:00Z',
+      last_edited_by: '123e4567-e89b-12d3-a456-426614174000',
       trades: [],
       regions: [],
     };
@@ -62,6 +65,9 @@ describe('API Types', () => {
         project_count: 0,
         verified: false,
         featured: false,
+        profile_completion_percentage: 0,
+        last_edited_at: null,
+        last_edited_by: null,
         trades: [],
         regions: [],
       };
@@ -133,6 +139,9 @@ describe('API Types', () => {
           project_count: 100,
           verified: true,
           featured: false,
+          profile_completion_percentage: 100,
+          last_edited_at: '2024-01-01T00:00:00Z',
+          last_edited_by: '123e4567-e89b-12d3-a456-426614174000',
         },
         trades: [
           { id: '1', name: 'Electrician', slug: 'electrician' },

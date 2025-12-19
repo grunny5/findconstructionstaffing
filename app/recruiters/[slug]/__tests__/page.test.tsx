@@ -44,6 +44,9 @@ const mockAgency: Agency = {
   project_count: 150,
   verified: true,
   featured: true,
+  profile_completion_percentage: 95,
+  last_edited_at: '2024-01-01T00:00:00Z',
+  last_edited_by: '123e4567-e89b-12d3-a456-426614174000',
   trades: [{ id: 't1', name: 'Electricians', slug: 'electricians' }],
   regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
 };

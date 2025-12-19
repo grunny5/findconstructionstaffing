@@ -66,6 +66,9 @@ describe('AgencyCard', () => {
     project_count: 100,
     verified: true,
     featured: false,
+    profile_completion_percentage: 90,
+    last_edited_at: '2024-01-01T00:00:00Z',
+    last_edited_by: '123e4567-e89b-12d3-a456-426614174000',
     trades: [
       { id: '1', name: 'Electrician', slug: 'electrician' },
       { id: '2', name: 'Plumber', slug: 'plumber' },

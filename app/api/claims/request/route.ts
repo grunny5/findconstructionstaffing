@@ -203,10 +203,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (existingClaimError) {
-      console.error(
-        'Error checking existing claims:',
-        existingClaimError
-      );
+      console.error('Error checking existing claims:', existingClaimError);
       return NextResponse.json(
         {
           error: {
@@ -223,8 +220,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: ERROR_CODES.PENDING_CLAIM_EXISTS,
-            message:
-              'You already have a pending claim request for this agency',
+            message: 'You already have a pending claim request for this agency',
             details: {
               existing_claim_id: existingClaim.id,
               status: existingClaim.status,
@@ -259,7 +255,9 @@ export async function POST(request: NextRequest) {
         email_domain_verified: emailDomainVerified,
         status: 'pending',
       })
-      .select('id, agency_id, user_id, status, email_domain_verified, created_at')
+      .select(
+        'id, agency_id, user_id, status, email_domain_verified, created_at'
+      )
       .single();
 
     if (insertError || !claimRequest) {

@@ -21,13 +21,13 @@ describe('extractEmailDomain', () => {
 
   it('should handle emails with special characters', () => {
     expect(extractEmailDomain('user+tag@example.com')).toBe('example.com');
-    expect(extractEmailDomain('user.name@example.co.uk')).toBe(
-      'example.co.uk'
-    );
+    expect(extractEmailDomain('user.name@example.co.uk')).toBe('example.co.uk');
   });
 
   it('should throw error for invalid email format', () => {
-    expect(() => extractEmailDomain('notanemail')).toThrow('Invalid email format');
+    expect(() => extractEmailDomain('notanemail')).toThrow(
+      'Invalid email format'
+    );
     expect(() => extractEmailDomain('user@')).toThrow('Invalid email format');
     expect(() => extractEmailDomain('@example.com')).toThrow(
       'Invalid email format'
@@ -46,9 +46,7 @@ describe('extractEmailDomain', () => {
 
 describe('extractWebsiteDomain', () => {
   it('should extract domain from URL with protocol', () => {
-    expect(extractWebsiteDomain('https://www.example.com')).toBe(
-      'example.com'
-    );
+    expect(extractWebsiteDomain('https://www.example.com')).toBe('example.com');
     expect(extractWebsiteDomain('http://example.com')).toBe('example.com');
     expect(extractWebsiteDomain('https://acmestaffing.com')).toBe(
       'acmestaffing.com'
@@ -85,9 +83,7 @@ describe('extractWebsiteDomain', () => {
   });
 
   it('should convert domain to lowercase', () => {
-    expect(extractWebsiteDomain('HTTPS://WWW.EXAMPLE.COM')).toBe(
-      'example.com'
-    );
+    expect(extractWebsiteDomain('HTTPS://WWW.EXAMPLE.COM')).toBe('example.com');
     expect(extractWebsiteDomain('Example.Com')).toBe('example.com');
   });
 
@@ -102,9 +98,7 @@ describe('extractWebsiteDomain', () => {
   });
 
   it('should handle whitespace in URLs', () => {
-    expect(extractWebsiteDomain('  https://example.com  ')).toBe(
-      'example.com'
-    );
+    expect(extractWebsiteDomain('  https://example.com  ')).toBe('example.com');
   });
 });
 
@@ -113,9 +107,9 @@ describe('verifyEmailDomain', () => {
     expect(
       verifyEmailDomain('john@acmestaffing.com', 'https://www.acmestaffing.com')
     ).toBe(true);
-    expect(
-      verifyEmailDomain('admin@example.com', 'http://example.com')
-    ).toBe(true);
+    expect(verifyEmailDomain('admin@example.com', 'http://example.com')).toBe(
+      true
+    );
     expect(verifyEmailDomain('user@test.com', 'www.test.com')).toBe(true);
   });
 
@@ -123,9 +117,9 @@ describe('verifyEmailDomain', () => {
     expect(
       verifyEmailDomain('john@gmail.com', 'https://acmestaffing.com')
     ).toBe(false);
-    expect(
-      verifyEmailDomain('user@example.com', 'https://different.com')
-    ).toBe(false);
+    expect(verifyEmailDomain('user@example.com', 'https://different.com')).toBe(
+      false
+    );
   });
 
   it('should return false when website is null', () => {
@@ -136,18 +130,18 @@ describe('verifyEmailDomain', () => {
     expect(
       verifyEmailDomain('JOHN@EXAMPLE.COM', 'https://WWW.EXAMPLE.COM')
     ).toBe(true);
-    expect(
-      verifyEmailDomain('User@Example.Com', 'HTTP://EXAMPLE.COM')
-    ).toBe(true);
+    expect(verifyEmailDomain('User@Example.Com', 'HTTP://EXAMPLE.COM')).toBe(
+      true
+    );
   });
 
   it('should handle www prefix correctly', () => {
     expect(
       verifyEmailDomain('john@example.com', 'https://www.example.com')
     ).toBe(true);
-    expect(
-      verifyEmailDomain('john@example.com', 'https://example.com')
-    ).toBe(true);
+    expect(verifyEmailDomain('john@example.com', 'https://example.com')).toBe(
+      true
+    );
   });
 
   it('should handle websites with paths', () => {
@@ -160,15 +154,11 @@ describe('verifyEmailDomain', () => {
   });
 
   it('should return false for invalid email format', () => {
-    expect(verifyEmailDomain('notanemail', 'https://example.com')).toBe(
-      false
-    );
+    expect(verifyEmailDomain('notanemail', 'https://example.com')).toBe(false);
   });
 
   it('should return false for invalid website format', () => {
-    expect(verifyEmailDomain('john@example.com', 'not a website')).toBe(
-      false
-    );
+    expect(verifyEmailDomain('john@example.com', 'not a website')).toBe(false);
   });
 
   it('should handle subdomains correctly', () => {

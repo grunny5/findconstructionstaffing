@@ -33,6 +33,9 @@ const mockAgenciesResponse: AgenciesApiResponse = {
       project_count: 25,
       verified: true,
       featured: false,
+      profile_completion_percentage: 85,
+      last_edited_at: '2024-01-01T00:00:00Z',
+      last_edited_by: '123e4567-e89b-12d3-a456-426614174000',
       trades: [
         {
           id: '1',
@@ -63,6 +66,9 @@ const mockAgenciesResponse: AgenciesApiResponse = {
       project_count: 15,
       verified: false,
       featured: true,
+      profile_completion_percentage: 70,
+      last_edited_at: null,
+      last_edited_by: null,
       trades: [
         { id: '2', name: 'Plumbers', slug: 'plumbers', description: null },
       ],
