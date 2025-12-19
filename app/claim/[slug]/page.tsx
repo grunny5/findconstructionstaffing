@@ -68,7 +68,9 @@ export default async function ClaimAgencyPage({ params }: PageProps) {
         {/* Agency Reference Card */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-lg">Agency You're Claiming</CardTitle>
+            <CardTitle className="text-lg">
+              Agency You&apos;re Claiming
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
@@ -93,9 +95,7 @@ export default async function ClaimAgencyPage({ params }: PageProps) {
                   {agency.name}
                 </h2>
                 {agency.headquarters && (
-                  <p className="text-gray-600 text-sm">
-                    {agency.headquarters}
-                  </p>
+                  <p className="text-gray-600 text-sm">{agency.headquarters}</p>
                 )}
               </div>
 

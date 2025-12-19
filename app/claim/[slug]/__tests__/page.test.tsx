@@ -71,7 +71,9 @@ describe('Claim Agency Page', () => {
 
     await ClaimAgencyPage({ params: { slug: 'test-agency' } });
 
-    expect(redirect).toHaveBeenCalledWith('/login?redirectTo=/claim/test-agency');
+    expect(redirect).toHaveBeenCalledWith(
+      '/login?redirectTo=/claim/test-agency'
+    );
   });
 
   it('should redirect to login if auth error occurs', async () => {
@@ -86,7 +88,9 @@ describe('Claim Agency Page', () => {
 
     await ClaimAgencyPage({ params: { slug: 'test-agency' } });
 
-    expect(redirect).toHaveBeenCalledWith('/login?redirectTo=/claim/test-agency');
+    expect(redirect).toHaveBeenCalledWith(
+      '/login?redirectTo=/claim/test-agency'
+    );
   });
 
   it('should call notFound if agency does not exist', async () => {
@@ -150,7 +154,9 @@ describe('Claim Agency Page', () => {
       json: async () => ({ data: claimedAgency }),
     });
 
-    const component = await ClaimAgencyPage({ params: { slug: 'claimed-agency' } });
+    const component = await ClaimAgencyPage({
+      params: { slug: 'claimed-agency' },
+    });
     render(component as React.ReactElement);
 
     expect(screen.getByText('Agency Already Claimed')).toBeInTheDocument();
@@ -302,12 +308,16 @@ describe('Claim Agency Page', () => {
       json: async () => ({ data: agency }),
     });
 
-    const component = await ClaimAgencyPage({ params: { slug: 'test-agency' } });
+    const component = await ClaimAgencyPage({
+      params: { slug: 'test-agency' },
+    });
     render(component as React.ReactElement);
 
     expect(screen.getByText('Claim Agency Profile')).toBeInTheDocument();
     expect(
-      screen.getByText(/Submit a request to claim and manage this agency profile/)
+      screen.getByText(
+        /Submit a request to claim and manage this agency profile/
+      )
     ).toBeInTheDocument();
   });
 });
