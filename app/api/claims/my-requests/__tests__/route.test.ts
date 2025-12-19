@@ -2,17 +2,14 @@
  * @jest-environment node
  */
 import { GET } from '../route';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 
-jest.mock('@supabase/ssr');
-jest.mock('next/headers');
+jest.mock('@/lib/supabase/server');
 
-const mockedCreateServerClient = createServerClient as jest.MockedFunction<
-  typeof createServerClient
+const mockedCreateClient = createClient as jest.MockedFunction<
+  typeof createClient
 >;
-const mockedCookies = cookies as jest.MockedFunction<typeof cookies>;
 
 describe('GET /api/claims/my-requests', () => {
   const mockUser = {
@@ -66,21 +63,9 @@ describe('GET /api/claims/my-requests', () => {
   ];
 
   let mockSupabaseClient: any;
-  let mockCookieStore: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Mock environment variables
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-
-    // Mock cookie store
-    mockCookieStore = {
-      getAll: jest.fn().mockReturnValue([]),
-      set: jest.fn(),
-    };
-    mockedCookies.mockReturnValue(mockCookieStore as any);
 
     // Mock Supabase client
     mockSupabaseClient = {
@@ -89,12 +74,7 @@ describe('GET /api/claims/my-requests', () => {
       },
       from: jest.fn(),
     };
-    mockedCreateServerClient.mockReturnValue(mockSupabaseClient);
-  });
-
-  afterEach(() => {
-    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    mockedCreateClient.mockReturnValue(mockSupabaseClient);
   });
 
   describe('Authentication', () => {
@@ -125,26 +105,6 @@ describe('GET /api/claims/my-requests', () => {
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
-    });
-
-    it('should create Supabase client with cookie handler', async () => {
-      mockSupabaseClient.auth.getUser.mockResolvedValue({
-        data: { user: null },
-        error: new Error('Not authenticated'),
-      });
-
-      await GET();
-
-      expect(mockedCreateServerClient).toHaveBeenCalledWith(
-        'https://test.supabase.co',
-        'test-anon-key',
-        expect.objectContaining({
-          cookies: expect.objectContaining({
-            getAll: expect.any(Function),
-            setAll: expect.any(Function),
-          }),
-        })
-      );
     });
   });
 

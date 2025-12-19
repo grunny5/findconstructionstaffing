@@ -454,6 +454,7 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 **Actual Effort:** 1.5 hours
 
 **Implementation Notes:**
+
 - Created GET endpoint at `app/api/claims/my-requests/route.ts`
 - Endpoint uses Supabase Auth session to verify authentication
 - Query uses inner join with agencies table to include related agency data

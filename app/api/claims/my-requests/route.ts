@@ -9,8 +9,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 
 // Force dynamic rendering for authenticated routes
@@ -65,23 +64,8 @@ export async function GET() {
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
-    const cookieStore = cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    // Create Supabase client with cookie handling for auth
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    });
+    // Create Supabase client using shared utility
+    const supabase = createClient();
 
     // Get authenticated user
     const {
