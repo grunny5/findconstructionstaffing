@@ -74,6 +74,12 @@ export interface Agency {
   verified: boolean;
   /** Whether the agency is featured */
   featured: boolean;
+  /** Profile completion percentage (0-100%) */
+  profile_completion_percentage: number;
+  /** Timestamp of last profile edit */
+  last_edited_at: string | null;
+  /** User ID who last edited the profile */
+  last_edited_by: string | null;
   /** Associated trade specialties */
   trades: Trade[];
   /** Associated service regions */
