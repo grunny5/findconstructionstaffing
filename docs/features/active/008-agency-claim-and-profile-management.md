@@ -296,6 +296,7 @@ This feature encompasses 5 major sub-features:
 ### UX/UI Requirements
 
 **Wireframes & Mockups:**
+
 - [ ] Claim request form design (TBD - Figma)
 - [ ] Agency dashboard layout (TBD - Figma)
 - [ ] Profile edit form with rich text editor (TBD - Figma)
@@ -485,12 +486,14 @@ CREATE POLICY "Anyone can view agencies"
 #### Non-Functional Requirements
 
 **Performance:**
+
 - Profile edit save operations must complete in <500ms
 - Image upload and processing must complete in <3 seconds
 - Dashboard load time must be <2 seconds
 - Claim request submission must be <1 second
 
 **Security:**
+
 - All profile updates require authentication (session-based)
 - Email domain verification must be case-insensitive
 - File uploads must be scanned for malware (Supabase Storage)
@@ -498,12 +501,14 @@ CREATE POLICY "Anyone can view agencies"
 - Rate limiting: 5 claim requests per user per day
 
 **Accessibility:**
+
 - Forms must be keyboard navigable (WCAG 2.1 AA)
 - Rich text editor must support screen readers
 - All images must have alt text
 - Color contrast minimum 4.5:1
 
 **Data Validation:**
+
 - Email addresses must be RFC 5322 compliant
 - Phone numbers must be E.164 format (international)
 - URLs must be valid HTTP/HTTPS
@@ -513,11 +518,13 @@ CREATE POLICY "Anyone can view agencies"
 #### Third-Party Integrations
 
 **Required:**
+
 - **Supabase Storage** - Logo and document uploads
 - **Resend** - Email notifications (claim approved/rejected, profile updates)
 - **TipTap** or **Draft.js** - Rich text editor for descriptions
 
 **Optional (Future):**
+
 - **Cloudinary** - Advanced image optimization and transformations
 - **Google Places API** - Headquarters location autocomplete
 - **Twilio** - SMS verification for phone-based claims
@@ -525,14 +532,15 @@ CREATE POLICY "Anyone can view agencies"
 #### State Management
 
 **Frontend State:**
+
 ```typescript
 // Profile Edit State
 interface ProfileEditState {
-  isDirty: boolean;              // Has unsaved changes
-  isSubmitting: boolean;         // Form submission in progress
+  isDirty: boolean; // Has unsaved changes
+  isSubmitting: boolean; // Form submission in progress
   errors: Record<string, string>; // Field validation errors
-  preview: boolean;              // Preview mode active
-  completion: number;            // Profile completion percentage
+  preview: boolean; // Preview mode active
+  completion: number; // Profile completion percentage
 }
 
 // Dashboard State
@@ -553,6 +561,7 @@ interface DashboardState {
 ### In Scope (MVP)
 
 **Phase 1 - Core Claim Workflow (Weeks 1-2):**
+
 - ✅ Agency claim request form
 - ✅ Email domain verification (automated)
 - ✅ Admin claim review dashboard
@@ -561,6 +570,7 @@ interface DashboardState {
 - ✅ Update user role to `agency_owner` on approval
 
 **Phase 2 - Profile Editing (Weeks 2-3):**
+
 - ✅ Agency dashboard (overview, stats)
 - ✅ Basic profile editing (name, description, contact)
 - ✅ Rich text editor for description
@@ -569,12 +579,14 @@ interface DashboardState {
 - ✅ Profile edit audit trail
 
 **Phase 3 - Services Management (Week 3-4):**
+
 - ✅ Trade specialization multi-select (from standardized list)
 - ✅ Service region selection (US states)
 - ✅ Update agency-trade and agency-region relationships
 - ✅ Display selected services on public profile
 
 **Phase 4 - Profile Completion (Week 4):**
+
 - ✅ Calculate profile completion percentage
 - ✅ Display completion progress on dashboard
 - ✅ Show checklist of missing items
@@ -583,6 +595,7 @@ interface DashboardState {
 ### Out of Scope (Future Phases)
 
 **Not in MVP:**
+
 - ❌ Multiple users per agency (multi-user accounts)
 - ❌ Agency team member management (roles within agency)
 - ❌ Real-time analytics dashboard (traffic, leads, conversions)
@@ -598,6 +611,7 @@ interface DashboardState {
 - ❌ Multi-language profile support
 
 **Deferred to Phase 2B:**
+
 - ❌ Lead request tracking and management
 - ❌ In-platform messaging between agencies and companies
 - ❌ Review and rating system for agencies
@@ -606,6 +620,7 @@ interface DashboardState {
 ### Open Questions
 
 **Technical Questions:**
+
 - [ ] Which rich text editor library should we use? (TipTap vs Draft.js vs Slate)
 - [ ] Should we use Cloudinary or stick with Supabase Storage for images?
 - [ ] Do we need image cropping/resizing on the frontend or backend?
@@ -613,6 +628,7 @@ interface DashboardState {
 - [ ] How do we handle concurrent edits from multiple tabs/devices?
 
 **Business Questions:**
+
 - [ ] What is the exact email template copy for claim approval/rejection?
 - [ ] Who are the initial admins who will review claims?
 - [ ] What is the SLA for claim review? (Currently targeting 2 business days)
@@ -620,6 +636,7 @@ interface DashboardState {
 - [ ] Do we need a paid tier for premium profile features immediately?
 
 **Design Questions:**
+
 - [ ] Do we have brand guidelines for the agency dashboard design?
 - [ ] Should the dashboard be single-page or multi-page navigation?
 - [ ] How should we display the US map for region selection? (Interactive SVG, image with checkboxes, simple list?)
@@ -627,6 +644,7 @@ interface DashboardState {
 - [ ] Should profile preview be a modal or side-by-side split view?
 
 **Legal/Compliance Questions:**
+
 - [ ] Do we need agencies to agree to terms of service when claiming?
 - [ ] What happens to profile data if agency deletes their account?
 - [ ] Do we need GDPR compliance for agency data? (If operating in EU)
@@ -639,17 +657,20 @@ interface DashboardState {
 ### Primary Metrics (Must Track)
 
 **Engagement Metrics:**
+
 - Agency claim request rate (target: >20% of total agencies)
 - Claim-to-approval conversion rate (target: >80%)
 - Profile completion rate among claimed agencies (target: >80%)
 - Time to complete profile after claim approval (target: <7 days)
 
 **Usage Metrics:**
+
 - Daily active agency owners (target: 30% weekly active rate)
 - Profile edit frequency (target: 2+ edits per agency in first 30 days)
 - Dashboard session duration (target: >3 minutes per session)
 
 **Business Metrics:**
+
 - Time-to-value: Claim submission to first profile edit (target: <48 hours)
 - Admin efficiency: Claims reviewed per admin per day (target: >10)
 - Profile accuracy: Self-reported vs manual update ratio (target: 90% self-serve)
@@ -668,6 +689,7 @@ interface DashboardState {
 ### Dependencies
 
 **Internal Dependencies:**
+
 - ✅ Authentication system must be complete (Feature 007 - Complete)
 - ✅ Role-based access control (admin, agency_owner roles) (Feature 007 - Complete)
 - ✅ Email service integration for notifications (Feature 007 - Complete)
@@ -675,6 +697,7 @@ interface DashboardState {
 - ❌ Brand guidelines and design system (TBD)
 
 **External Dependencies:**
+
 - Supabase Storage setup and configuration
 - Rich text editor library selection and integration
 - Image upload/cropping library selection
@@ -682,6 +705,7 @@ interface DashboardState {
 ### Risks & Mitigation
 
 **Risk 1: Low Agency Claim Rate**
+
 - **Impact:** Platform remains static, no agency engagement
 - **Probability:** Medium
 - **Mitigation:**
@@ -690,6 +714,7 @@ interface DashboardState {
   - Personal outreach from sales team
 
 **Risk 2: Fraudulent Claim Requests**
+
 - **Impact:** Agencies claimed by competitors or bad actors
 - **Probability:** Low-Medium
 - **Mitigation:**
@@ -699,6 +724,7 @@ interface DashboardState {
   - Audit trail for all claim actions
 
 **Risk 3: Slow Admin Review Process**
+
 - **Impact:** Agencies wait days/weeks, lose interest
 - **Probability:** Medium
 - **Mitigation:**
@@ -708,6 +734,7 @@ interface DashboardState {
   - Implement claim review dashboard with queue visibility
 
 **Risk 4: Profile Data Quality Issues**
+
 - **Impact:** Agencies enter incomplete/inaccurate data
 - **Probability:** Medium-High
 - **Mitigation:**
@@ -717,6 +744,7 @@ interface DashboardState {
   - Periodic email reminders to complete profile
 
 **Risk 5: Image Upload Performance**
+
 - **Impact:** Slow uploads, poor UX, high server costs
 - **Probability:** Low-Medium
 - **Mitigation:**
@@ -730,30 +758,35 @@ interface DashboardState {
 ## 7. Implementation Plan
 
 ### Phase 1: Foundation (Week 1)
+
 - Database schema updates (tables, indexes, RLS policies)
 - Claim request form UI
 - Claim submission API endpoint
 - Email notifications setup
 
 ### Phase 2: Admin Tools (Week 1-2)
+
 - Admin claims dashboard
 - Claim review interface
 - Approve/reject workflow
 - Audit logging
 
 ### Phase 3: Agency Dashboard (Week 2-3)
+
 - Dashboard layout and navigation
 - Profile editing forms
 - Rich text editor integration
 - Logo upload functionality
 
 ### Phase 4: Services & Completion (Week 3-4)
+
 - Trade multi-select interface
 - Region selection UI
 - Profile completion calculation
 - Dashboard stats and progress tracking
 
 ### Phase 5: Testing & Polish (Week 4)
+
 - Integration tests for claim workflow
 - E2E tests for profile editing
 - Performance optimization

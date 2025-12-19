@@ -53,6 +53,7 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 
 **Actual Effort:** 1.5 hours
 **Implementation Notes:**
+
 - Added claim button to `app/recruiters/[slug]/page.tsx` (lines 133-145)
 - Created comprehensive test suite: `app/recruiters/[slug]/__tests__/claim-button.test.tsx`
 - Button uses Shield icon and links to `/claim/${params.slug}`
@@ -1621,22 +1622,27 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
 ### Total Effort Estimates by Phase
 
 **Phase 1: Agency Claim Request**
+
 - 10 tasks
 - Estimated: 31 hours (~4 days)
 
 **Phase 2: Claim Verification & Approval**
+
 - 11 tasks
 - Estimated: 36 hours (~4.5 days)
 
 **Phase 3: Profile Editing Dashboard**
+
 - 9 tasks
 - Estimated: 41 hours (~5 days)
 
 **Phase 4: Trade & Region Management**
+
 - 6 tasks
 - Estimated: 27 hours (~3.5 days)
 
 **Phase 5: Profile Completion Tracking**
+
 - 6 tasks
 - Estimated: 22 hours (~3 days)
 
