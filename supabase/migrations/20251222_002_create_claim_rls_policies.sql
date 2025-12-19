@@ -47,9 +47,17 @@ CREATE POLICY "Admins can view all claims"
 -- Policy: Admins can update claim requests
 -- Allows admins to UPDATE claim status (approve/reject)
 -- Used for reviewing and processing claims
+-- WITH CHECK ensures admin role persists through transaction
 CREATE POLICY "Admins can update claims"
   ON public.agency_claim_requests FOR UPDATE
   USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+        AND profiles.role = 'admin'
+    )
+  )
+  WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.profiles
       WHERE profiles.id = auth.uid()
@@ -227,6 +235,46 @@ COMMENT ON POLICY "Admins can update any agency" ON public.agencies IS
   'Allows admins to update any agency profile for moderation and management';
 
 -- =============================================================================
+-- AGENCY IMMUTABLE FIELDS PROTECTION
+-- =============================================================================
+
+-- Trigger function: Prevent modification of sensitive agency fields
+-- Protects critical fields that should only be modified through proper processes
+CREATE OR REPLACE FUNCTION prevent_sensitive_agency_fields_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Prevent modification of primary key
+  IF OLD.id IS DISTINCT FROM NEW.id THEN
+    RAISE EXCEPTION 'Cannot modify agency id';
+  END IF;
+
+  -- Prevent modification of ownership - must use claim process
+  IF OLD.claimed_by IS DISTINCT FROM NEW.claimed_by THEN
+    RAISE EXCEPTION 'Cannot modify claimed_by via UPDATE - use claim process';
+  END IF;
+
+  -- Prevent modification of claim timestamp
+  IF OLD.claimed_at IS DISTINCT FROM NEW.claimed_at THEN
+    RAISE EXCEPTION 'Cannot modify claimed_at timestamp';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply trigger to agencies table
+CREATE TRIGGER prevent_agency_sensitive_fields
+  BEFORE UPDATE ON public.agencies
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_sensitive_agency_fields_update();
+
+-- Add comments for documentation
+COMMENT ON FUNCTION prevent_sensitive_agency_fields_update() IS
+  'Trigger function to prevent modification of immutable agency fields (id, claimed_by, claimed_at)';
+COMMENT ON TRIGGER prevent_agency_sensitive_fields ON public.agencies IS
+  'Ensures sensitive fields cannot be modified directly - claim process required for ownership changes';
+
+-- =============================================================================
 -- VERIFICATION AND TESTING
 -- =============================================================================
 
@@ -255,6 +303,8 @@ END $$;
 -- =============================================================================
 -- To rollback this migration, run:
 --
+-- DROP TRIGGER IF EXISTS prevent_agency_sensitive_fields ON public.agencies;
+-- DROP FUNCTION IF EXISTS prevent_sensitive_agency_fields_update();
 -- DROP POLICY IF EXISTS "Admins can update any agency" ON public.agencies;
 -- DROP POLICY IF EXISTS "Owners can update their agency" ON public.agencies;
 -- DROP POLICY IF EXISTS "Admins can create edits for any agency" ON public.agency_profile_edits;
