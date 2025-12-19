@@ -19,7 +19,8 @@ interface ClaimConfirmationEmailParams {
 export function generateClaimConfirmationHTML(
   params: ClaimConfirmationEmailParams
 ): string {
-  const { recipientEmail, recipientName, agencyName, claimId, siteUrl } = params;
+  const { recipientEmail, recipientName, agencyName, claimId, siteUrl } =
+    params;
 
   return `
 <!DOCTYPE html>
@@ -139,7 +140,8 @@ export function generateClaimConfirmationHTML(
 export function generateClaimConfirmationText(
   params: ClaimConfirmationEmailParams
 ): string {
-  const { recipientEmail, recipientName, agencyName, claimId, siteUrl } = params;
+  const { recipientEmail, recipientName, agencyName, claimId, siteUrl } =
+    params;
 
   return `
 FINDCONSTRUCTIONSTAFFING
