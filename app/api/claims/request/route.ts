@@ -11,10 +11,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { Resend } from 'resend';
 import { ClaimRequestSchema } from '@/lib/validation/claim-request';
 import { verifyEmailDomain } from '@/lib/utils/email-domain-verification';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { ZodError } from 'zod';
+import {
+  generateClaimConfirmationHTML,
+  generateClaimConfirmationText,
+} from '@/lib/emails/claim-confirmation';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
@@ -271,7 +276,54 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================================
-    // 9. RETURN SUCCESS RESPONSE
+    // 9. SEND CONFIRMATION EMAIL (NON-BLOCKING)
+    // ========================================================================
+    // Send email in background - don't fail request if email fails
+    try {
+      const resendApiKey = process.env.RESEND_API_KEY;
+
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+        const emailHtml = generateClaimConfirmationHTML({
+          recipientEmail: user.email || business_email,
+          agencyName: agency.name,
+          claimId: claimRequest.id,
+          siteUrl,
+        });
+
+        const emailText = generateClaimConfirmationText({
+          recipientEmail: user.email || business_email,
+          agencyName: agency.name,
+          claimId: claimRequest.id,
+          siteUrl,
+        });
+
+        await resend.emails.send({
+          from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+          to: user.email || business_email,
+          subject: `Claim Request Submitted for ${agency.name}`,
+          html: emailHtml,
+          text: emailText,
+        });
+
+        console.log(
+          `Confirmation email sent to ${user.email || business_email} for claim ${claimRequest.id}`
+        );
+      } else {
+        console.warn(
+          'RESEND_API_KEY not configured - skipping confirmation email'
+        );
+      }
+    } catch (emailError) {
+      // Log error but don't fail the request - claim was created successfully
+      console.error('Error sending confirmation email:', emailError);
+    }
+
+    // ========================================================================
+    // 10. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {

@@ -5,12 +5,19 @@ import { POST } from '../route';
 import { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { Resend } from 'resend';
 import { verifyEmailDomain } from '@/lib/utils/email-domain-verification';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import {
+  generateClaimConfirmationHTML,
+  generateClaimConfirmationText,
+} from '@/lib/emails/claim-confirmation';
 
 jest.mock('@supabase/ssr');
 jest.mock('next/headers');
 jest.mock('@/lib/utils/email-domain-verification');
+jest.mock('resend');
+jest.mock('@/lib/emails/claim-confirmation');
 
 const mockedCreateServerClient = createServerClient as jest.MockedFunction<
   typeof createServerClient
@@ -80,6 +87,21 @@ describe('POST /api/claims/request', () => {
 
     // Mock email domain verification - default to true
     mockedVerifyEmailDomain.mockReturnValue(true);
+
+    // Mock Resend email template functions
+    (generateClaimConfirmationHTML as jest.Mock).mockReturnValue(
+      '<html>Email HTML</html>'
+    );
+    (generateClaimConfirmationText as jest.Mock).mockReturnValue(
+      'Email Text'
+    );
+
+    // Mock Resend constructor
+    (Resend as jest.Mock).mockImplementation(() => ({
+      emails: {
+        send: jest.fn().mockResolvedValue({ id: 'email-123' }),
+      },
+    }));
   });
 
   afterEach(() => {
@@ -1335,6 +1357,330 @@ describe('POST /api/claims/request', () => {
       expect(data.error.message).toBe('An unexpected error occurred');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Unexpected error in claim request handler:',
+        expect.any(Error)
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('Email Notification', () => {
+    let mockResendInstance: any;
+
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      // Create mock Resend instance
+      mockResendInstance = {
+        emails: {
+          send: jest.fn().mockResolvedValue({ id: 'email-123' }),
+        },
+      };
+      (Resend as jest.Mock).mockImplementation(() => mockResendInstance);
+
+      // Set environment variable for RESEND_API_KEY
+      process.env.RESEND_API_KEY = 'test-api-key';
+      process.env.NEXT_PUBLIC_SITE_URL = 'https://findconstructionstaffing.com';
+    });
+
+    afterEach(() => {
+      delete process.env.RESEND_API_KEY;
+      delete process.env.NEXT_PUBLIC_SITE_URL;
+    });
+
+    it('should send confirmation email after successful claim creation', async () => {
+      const mockFrom = jest.fn();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockInsert = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn();
+      const mockMaybeSingle = jest.fn();
+
+      mockSupabaseClient.from = mockFrom;
+
+      // Agency fetch
+      mockFrom.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        single: mockSingle,
+      });
+      mockSingle.mockResolvedValueOnce({
+        data: mockAgency,
+        error: null,
+      });
+
+      // Existing claim check
+      mockFrom.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        in: mockIn,
+      });
+      mockIn.mockReturnValueOnce({
+        maybeSingle: mockMaybeSingle,
+      });
+      mockMaybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      // Claim insert
+      mockFrom.mockReturnValueOnce({
+        insert: mockInsert,
+      });
+      mockInsert.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: 'claim-123',
+            agency_id: validClaimRequest.agency_id,
+            user_id: mockUser.id,
+            status: 'pending',
+            email_domain_verified: true,
+            created_at: '2024-01-01T00:00:00Z',
+          },
+          error: null,
+        }),
+      });
+
+      // Audit log insert
+      mockFrom.mockReturnValueOnce({
+        insert: jest.fn().mockResolvedValue({
+          data: {},
+          error: null,
+        }),
+      });
+
+      const request = createMockRequest(validClaimRequest);
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+
+      // Verify email template generation was called
+      expect(generateClaimConfirmationHTML).toHaveBeenCalledWith({
+        recipientEmail: mockUser.email,
+        agencyName: mockAgency.name,
+        claimId: 'claim-123',
+        siteUrl: 'https://findconstructionstaffing.com',
+      });
+
+      expect(generateClaimConfirmationText).toHaveBeenCalledWith({
+        recipientEmail: mockUser.email,
+        agencyName: mockAgency.name,
+        claimId: 'claim-123',
+        siteUrl: 'https://findconstructionstaffing.com',
+      });
+
+      // Verify Resend was called with correct parameters
+      expect(mockResendInstance.emails.send).toHaveBeenCalledWith({
+        from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+        to: mockUser.email,
+        subject: `Claim Request Submitted for ${mockAgency.name}`,
+        html: '<html>Email HTML</html>',
+        text: 'Email Text',
+      });
+    });
+
+    it('should not fail request if RESEND_API_KEY is not configured', async () => {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
+      delete process.env.RESEND_API_KEY;
+
+      const mockFrom = jest.fn();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockInsert = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn();
+      const mockMaybeSingle = jest.fn();
+
+      mockSupabaseClient.from = mockFrom;
+
+      // Agency fetch
+      mockFrom.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        single: mockSingle,
+      });
+      mockSingle.mockResolvedValueOnce({
+        data: mockAgency,
+        error: null,
+      });
+
+      // Existing claim check
+      mockFrom.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        in: mockIn,
+      });
+      mockIn.mockReturnValueOnce({
+        maybeSingle: mockMaybeSingle,
+      });
+      mockMaybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      // Claim insert
+      mockFrom.mockReturnValueOnce({
+        insert: mockInsert,
+      });
+      mockInsert.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: 'claim-123',
+            agency_id: validClaimRequest.agency_id,
+            user_id: mockUser.id,
+            status: 'pending',
+            email_domain_verified: true,
+            created_at: '2024-01-01T00:00:00Z',
+          },
+          error: null,
+        }),
+      });
+
+      // Audit log insert
+      mockFrom.mockReturnValueOnce({
+        insert: jest.fn().mockResolvedValue({
+          data: {},
+          error: null,
+        }),
+      });
+
+      const request = createMockRequest(validClaimRequest);
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'RESEND_API_KEY not configured - skipping confirmation email'
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('should not fail request if email sending fails', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      // Mock email sending to fail
+      mockResendInstance.emails.send.mockRejectedValueOnce(
+        new Error('Email service error')
+      );
+
+      const mockFrom = jest.fn();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockInsert = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn();
+      const mockMaybeSingle = jest.fn();
+
+      mockSupabaseClient.from = mockFrom;
+
+      // Agency fetch
+      mockFrom.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        single: mockSingle,
+      });
+      mockSingle.mockResolvedValueOnce({
+        data: mockAgency,
+        error: null,
+      });
+
+      // Existing claim check
+      mockFrom.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        in: mockIn,
+      });
+      mockIn.mockReturnValueOnce({
+        maybeSingle: mockMaybeSingle,
+      });
+      mockMaybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      // Claim insert
+      mockFrom.mockReturnValueOnce({
+        insert: mockInsert,
+      });
+      mockInsert.mockReturnValueOnce({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValueOnce({
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: 'claim-123',
+            agency_id: validClaimRequest.agency_id,
+            user_id: mockUser.id,
+            status: 'pending',
+            email_domain_verified: true,
+            created_at: '2024-01-01T00:00:00Z',
+          },
+          error: null,
+        }),
+      });
+
+      // Audit log insert
+      mockFrom.mockReturnValueOnce({
+        insert: jest.fn().mockResolvedValue({
+          data: {},
+          error: null,
+        }),
+      });
+
+      const request = createMockRequest(validClaimRequest);
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error sending confirmation email:',
         expect.any(Error)
       );
 
