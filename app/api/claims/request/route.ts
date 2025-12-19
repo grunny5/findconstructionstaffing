@@ -13,36 +13,11 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { ClaimRequestSchema } from '@/lib/validation/claim-request';
 import { verifyEmailDomain } from '@/lib/utils/email-domain-verification';
+import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { ZodError } from 'zod';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
-
-/**
- * Error codes for claim request failures
- */
-const ERROR_CODES = {
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  AGENCY_NOT_FOUND: 'AGENCY_NOT_FOUND',
-  AGENCY_ALREADY_CLAIMED: 'AGENCY_ALREADY_CLAIMED',
-  PENDING_CLAIM_EXISTS: 'PENDING_CLAIM_EXISTS',
-  DATABASE_ERROR: 'DATABASE_ERROR',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-} as const;
-
-/**
- * HTTP status codes
- */
-const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  INTERNAL_SERVER_ERROR: 500,
-} as const;
 
 /**
  * POST handler for agency claim request submissions
@@ -272,7 +247,6 @@ export async function POST(request: NextRequest) {
           error: {
             code: ERROR_CODES.DATABASE_ERROR,
             message: 'Failed to create claim request',
-            details: insertError?.message,
           },
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
