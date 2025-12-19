@@ -130,6 +130,19 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       </a>
                     </Button>
                   )}
+                  {!agency.is_claimed && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      asChild
+                      className="min-w-[200px]"
+                    >
+                      <Link href={`/claim/${params.slug}`}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Claim This Agency
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
 
