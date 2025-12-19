@@ -396,7 +396,7 @@ This document breaks down Feature #008 into sprint-ready engineering tasks. All 
   - 2 business days review time emphasized
   - "What Happens Next?" section with 3 bullet points
   - CTA button linking to `/settings/claims`
-  - Support email contact (support@findconstructionstaffing.com)
+  - Support email contact (<support@findconstructionstaffing.com>)
   - Professional FindConstructionStaffing branding with footer
 - Modified `app/api/claims/request/route.ts` to integrate email sending:
   - Added Section 9 "SEND CONFIRMATION EMAIL (NON-BLOCKING)" after audit log creation
