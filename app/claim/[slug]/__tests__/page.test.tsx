@@ -143,7 +143,7 @@ describe('Claim Agency Page', () => {
 
   it('should display "Already Claimed" alert for claimed agencies', async () => {
     const claimedAgency = {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440002',
       name: 'Claimed Agency',
       slug: 'claimed-agency',
       description: 'Test description',
@@ -193,9 +193,9 @@ describe('Claim Agency Page', () => {
     expect(screen.getByText('View Agency Profile')).toBeInTheDocument();
   });
 
-  it('should display claim form placeholder for unclaimed agencies', async () => {
+  it('should display claim form for unclaimed agencies', async () => {
     const unclaimedAgency = {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       name: 'Unclaimed Agency',
       slug: 'unclaimed-agency',
       description: 'Test description',
@@ -238,16 +238,19 @@ describe('Claim Agency Page', () => {
     });
     render(component as React.ReactElement);
 
+    // Verify form is displayed with required fields
     expect(screen.getByText('Claim Request Form')).toBeInTheDocument();
-    expect(screen.getByText('Coming Soon')).toBeInTheDocument();
+    expect(screen.getByLabelText(/business email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/position.*title/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/The claim request form will be available/)
+      screen.getByRole('button', { name: /submit claim request/i })
     ).toBeInTheDocument();
   });
 
   it('should display agency information correctly', async () => {
     const agency = {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440001',
       name: 'Test Agency Inc.',
       slug: 'test-agency-inc',
       description: 'Professional staffing',
@@ -290,14 +293,14 @@ describe('Claim Agency Page', () => {
     });
     render(component as React.ReactElement);
 
-    expect(screen.getByText('Test Agency Inc.')).toBeInTheDocument();
+    expect(screen.getAllByText('Test Agency Inc.').length).toBeGreaterThan(0);
     expect(screen.getByText('Dallas, TX')).toBeInTheDocument();
     expect(screen.getByText("Agency You're Claiming")).toBeInTheDocument();
   });
 
   it('should display page title and description', async () => {
     const agency = {
-      id: '4',
+      id: '550e8400-e29b-41d4-a716-446655440003',
       name: 'Test Agency',
       slug: 'test-agency',
       description: 'Test',

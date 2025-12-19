@@ -36,7 +36,9 @@ describe('ClaimRequestForm', () => {
       render(<ClaimRequestForm {...mockProps} />);
 
       expect(screen.getByText('Claim Request Form')).toBeInTheDocument();
-      expect(screen.getAllByText('Test Staffing Agency').length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText('Test Staffing Agency').length
+      ).toBeGreaterThan(0);
       expect(screen.getByLabelText(/business email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/position.*title/i)).toBeInTheDocument();
@@ -53,7 +55,7 @@ describe('ClaimRequestForm', () => {
       const agencyNameElements = screen.getAllByText('Test Staffing Agency');
       expect(agencyNameElements.length).toBeGreaterThan(0);
       // Check that none of the agency name elements are inputs
-      agencyNameElements.forEach(element => {
+      agencyNameElements.forEach((element) => {
         expect(element.tagName).not.toBe('INPUT');
       });
     });
@@ -602,9 +604,7 @@ describe('ClaimRequestForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/something went wrong/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
       });
     });
 
