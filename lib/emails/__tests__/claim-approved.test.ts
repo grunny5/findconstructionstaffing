@@ -323,10 +323,8 @@ describe('Claim Approved Email Templates', () => {
       expect(html).toContain(
         'Test &amp; Construction &lt;Special&gt; Staffing'
       );
-      // Plain text should also include escaped entities for safety
-      expect(text).toContain(
-        'Test &amp; Construction &lt;Special&gt; Staffing'
-      );
+      // Plain text should NOT escape - display as-is
+      expect(text).toContain('Test & Construction <Special> Staffing');
     });
 
     it('should handle different site URLs correctly', () => {

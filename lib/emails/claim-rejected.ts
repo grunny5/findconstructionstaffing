@@ -185,24 +185,19 @@ export function generateClaimRejectedText(
     siteUrl,
   } = params;
 
-  const safeAgencyName = escapeHtml(agencyName);
-  const safeRecipientName = recipientName
-    ? escapeHtml(recipientName)
-    : undefined;
-  const safeRejectionReason = escapeHtml(rejectionReason);
   const resubmitUrl = `${siteUrl}/claim/${agencySlug}`;
 
   return `
 FINDCONSTRUCTIONSTAFFING
 Claim Request Update
 
-${safeRecipientName ? `Hi ${safeRecipientName},` : 'Hello,'}
+${recipientName ? `Hi ${recipientName},` : 'Hello,'}
 
-Thank you for your interest in claiming ${safeAgencyName} on FindConstructionStaffing. After reviewing your request, we are unable to approve it at this time.
+Thank you for your interest in claiming ${agencyName} on FindConstructionStaffing. After reviewing your request, we are unable to approve it at this time.
 
 REASON FOR DENIAL
 ------------------
-${safeRejectionReason}
+${rejectionReason}
 
 WHAT YOU CAN DO
 ----------------

@@ -199,23 +199,19 @@ export function generateClaimApprovedText(
   const { recipientEmail, recipientName, agencyName, agencySlug, siteUrl } =
     params;
 
-  const safeAgencyName = escapeHtml(agencyName);
-  const safeRecipientName = recipientName
-    ? escapeHtml(recipientName)
-    : undefined;
   const dashboardUrl = `${siteUrl}/dashboard/agency/${agencySlug}`;
 
   return `
 FINDCONSTRUCTIONSTAFFING
 Congratulations! Your Claim Has Been Approved
 
-${safeRecipientName ? `Hi ${safeRecipientName},` : 'Hello,'}
+${recipientName ? `Hi ${recipientName},` : 'Hello,'}
 
-Great news! Your claim request for ${safeAgencyName} has been approved. You now have full management access to this agency profile.
+Great news! Your claim request for ${agencyName} has been approved. You now have full management access to this agency profile.
 
 AGENCY DETAILS
 ---------------
-Agency: ${safeAgencyName}
+Agency: ${agencyName}
 Your Role: Agency Owner
 
 WHAT YOU CAN DO NOW
