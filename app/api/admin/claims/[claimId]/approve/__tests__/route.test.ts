@@ -333,7 +333,7 @@ describe('POST /api/admin/claims/[claimId]/approve', () => {
                 id: 'claim-123',
                 status: 'approved',
                 reviewed_by: 'admin-123',
-                reviewed_at: expect.any(String),
+                reviewed_at: new Date().toISOString(),
               },
               error: null,
             }),
