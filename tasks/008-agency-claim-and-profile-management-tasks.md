@@ -1559,7 +1559,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 
 **Implementation Notes:**
 
-- Created GET endpoint at `app/api/agencies/[agencyId]/dashboard/route.ts` (372 lines)
+- Created GET endpoint at `app/api/agencies/[slug]/dashboard/route.ts` (372 lines)
   - Authentication check using `createClient()` from `@/lib/supabase/server`
   - Ownership verification: checks `agencies.claimed_by = user.id`
   - Returns 401 if not authenticated
