@@ -24,6 +24,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provides authentication state and actions to descendant components.
+ *
+ * Exposes the current `user`, `profile`, `agencySlug`, `loading` state, role flags (`isAdmin`, `isAgencyOwner`),
+ * and authentication actions (`signIn`, `signUp`, `signOut`, `refreshProfile`) via React context.
+ *
+ * @param children - React nodes to render inside the provider
+ * @returns The AuthContext provider element that supplies authentication state and actions to its children
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);

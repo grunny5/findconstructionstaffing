@@ -33,6 +33,13 @@ interface NavItem {
   disabled?: boolean;
 }
 
+/**
+ * Renders a responsive dashboard sidebar with navigation for a specific agency.
+ *
+ * @param agencySlug - The slug used to construct agency-specific navigation routes.
+ * @param agencyName - The display name shown in the sidebar header and mobile sheet title.
+ * @returns A React element containing the responsive sidebar and mobile navigation sheet for the given agency.
+ */
 export function DashboardSidebar({
   agencySlug,
   agencyName,

@@ -7,6 +7,17 @@ interface ProfileCompletionWidgetProps {
   missingFields?: string[];
 }
 
+/**
+ * Render a profile completion widget with circular and linear progress indicators.
+ *
+ * Displays a centered circular progress visualization, a linear progress bar, a contextual
+ * status label and message, an optional list of missing profile fields (shows up to three
+ * with a "+N more" indicator), and a completion badge when the percentage is 100.
+ *
+ * @param percentage - Completion percentage from 0 to 100 that drives visuals and status text.
+ * @param missingFields - Optional list of missing profile field names; defaults to an empty array.
+ * @returns The rendered ProfileCompletionWidget element.
+ */
 export function ProfileCompletionWidget({
   percentage,
   missingFields = [],

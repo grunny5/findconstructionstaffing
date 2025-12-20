@@ -8,6 +8,14 @@ interface DashboardPageProps {
   params: { slug: string };
 }
 
+/**
+ * Render the agency dashboard page for an authenticated agency owner.
+ *
+ * Redirects to `/login` if the user is not authenticated, redirects to `/` if the user does not have the `agency_owner` role or does not own the requested agency, and calls `notFound()` if no agency matches the provided slug.
+ *
+ * @param params - Route parameters containing `slug`, the agency's slug used to load the agency record
+ * @returns The page's JSX tree for the agency dashboard, or `null` when a redirect is performed
+ */
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const supabase = createClient();
 

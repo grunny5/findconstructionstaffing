@@ -7,6 +7,14 @@ interface DashboardLayoutProps {
   params: { slug: string };
 }
 
+/**
+ * Renders the agency dashboard layout: loads the agency by slug and displays a sidebar plus the main content area.
+ *
+ * @param children - Content to render inside the dashboard's main area.
+ * @param params - Route parameters.
+ * @param params.slug - The agency slug used to load the agency record for the sidebar.
+ * @returns The dashboard layout element containing the agency sidebar and the provided children.
+ */
 export default async function DashboardLayout({
   children,
   params,

@@ -25,6 +25,17 @@ import {
 import { useAuth } from '@/lib/auth/auth-context';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
+/**
+ * Renders the application's responsive top navigation header with logo, navigation links, user actions, and a mobile sheet menu.
+ *
+ * The header adapts between desktop and mobile:
+ * - Shows navigation links and user actions on medium+ screens.
+ * - Provides a sheet-based menu on small screens.
+ * - Conditionally renders account actions based on authentication state, `profile.role`, `agencySlug`, and feature flags (e.g., admin dashboard, account settings).
+ * - Handles sign-out via the auth context.
+ *
+ * @returns The header element containing branding, navigation links, and user/account controls.
+ */
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, profile, agencySlug, signOut } = useAuth();

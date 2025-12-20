@@ -13,6 +13,18 @@ interface StatsCardProps {
   };
 }
 
+/**
+ * Renders a statistics card with a title, main value, and optional icon, description, and trend.
+ *
+ * The optional `trend` displays a percentage prefixed with '+' when `trend.isPositive` is true and is colored green for positive trends or red for negative trends.
+ *
+ * @param title - The card title shown in the header
+ * @param value - The primary statistic displayed prominently
+ * @param description - Optional secondary text shown beneath the value
+ * @param icon - Optional icon component rendered in the header
+ * @param trend - Optional trend meta shown as a percentage and label; shape: `{ value: number, label: string, isPositive: boolean }`
+ * @returns A React element representing the statistics card
+ */
 export function StatsCard({
   title,
   value,
