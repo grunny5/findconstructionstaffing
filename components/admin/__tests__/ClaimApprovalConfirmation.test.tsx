@@ -77,7 +77,7 @@ describe('ClaimApprovalConfirmation', () => {
         screen.getByText(/edit agency information, services, and settings/)
       ).toBeInTheDocument();
       expect(
-        screen.getByText(/approval notification will be sent to their email/)
+        screen.getByText(/approval will be recorded in their account/)
       ).toBeInTheDocument();
     });
 
