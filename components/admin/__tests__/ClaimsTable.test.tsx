@@ -11,6 +11,33 @@ import { useToast } from '@/hooks/use-toast';
 // Mock hooks
 jest.mock('@/hooks/use-toast');
 
+// Mock ClaimDetailModal component
+jest.mock('../ClaimDetailModal', () => ({
+  ClaimDetailModal: ({
+    isOpen,
+    claim,
+    onClose,
+    onApprove,
+    onReject,
+  }: {
+    isOpen: boolean;
+    claim: any;
+    onClose: () => void;
+    onApprove?: (id: string) => void;
+    onReject?: (id: string) => void;
+  }) => {
+    if (!isOpen || !claim) return null;
+    return (
+      <div data-testid="claim-detail-modal">
+        <div>Modal for {claim.agency.name}</div>
+        <button onClick={onClose}>Close Modal</button>
+        <button onClick={() => onApprove?.(claim.id)}>Approve Modal</button>
+        <button onClick={() => onReject?.(claim.id)}>Reject Modal</button>
+      </div>
+    );
+  },
+}));
+
 const mockedUseToast = jest.mocked(useToast);
 
 // Mock fetch globally
@@ -677,7 +704,7 @@ describe('ClaimsTable', () => {
     });
   });
 
-  describe('Review Button', () => {
+  describe('Claim Detail Modal Interactions', () => {
     it('should display Review button for each claim', async () => {
       render(<ClaimsTable />);
 
@@ -689,7 +716,19 @@ describe('ClaimsTable', () => {
       });
     });
 
-    it('should show toast when Review button is clicked', async () => {
+    it('should not show modal initially', async () => {
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Elite Staffing')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('claim-detail-modal')
+      ).not.toBeInTheDocument();
+    });
+
+    it('should open modal when Review button is clicked', async () => {
       render(<ClaimsTable />);
 
       await waitFor(() => {
@@ -697,9 +736,159 @@ describe('ClaimsTable', () => {
         fireEvent.click(reviewButton);
       });
 
+      await waitFor(() => {
+        expect(screen.getByTestId('claim-detail-modal')).toBeInTheDocument();
+        expect(
+          screen.getByText('Modal for Elite Staffing')
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should close modal when Close button is clicked', async () => {
+      render(<ClaimsTable />);
+
+      // Open modal
+      await waitFor(() => {
+        const reviewButton = screen.getByRole('button', { name: /review/i });
+        fireEvent.click(reviewButton);
+      });
+
+      // Verify modal is open
+      await waitFor(() => {
+        expect(screen.getByTestId('claim-detail-modal')).toBeInTheDocument();
+      });
+
+      // Close modal
+      const closeButton = screen.getByText('Close Modal');
+      fireEvent.click(closeButton);
+
+      // Verify modal is closed
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('claim-detail-modal')
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should display toast and close modal when Approve is clicked', async () => {
+      render(<ClaimsTable />);
+
+      // Open modal
+      await waitFor(() => {
+        const reviewButton = screen.getByRole('button', { name: /review/i });
+        fireEvent.click(reviewButton);
+      });
+
+      // Click Approve in modal
+      await waitFor(() => {
+        const approveButton = screen.getByText('Approve Modal');
+        fireEvent.click(approveButton);
+      });
+
+      // Verify toast was shown
       expect(mockToast).toHaveBeenCalledWith({
-        title: 'Review Claim',
-        description: expect.stringContaining('claim-1'),
+        title: 'Approval Pending',
+        description: 'Approval functionality will be implemented in Task 2.2.1',
+      });
+
+      // Verify modal is closed
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('claim-detail-modal')
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should display toast and close modal when Reject is clicked', async () => {
+      render(<ClaimsTable />);
+
+      // Open modal
+      await waitFor(() => {
+        const reviewButton = screen.getByRole('button', { name: /review/i });
+        fireEvent.click(reviewButton);
+      });
+
+      // Click Reject in modal
+      await waitFor(() => {
+        const rejectButton = screen.getByText('Reject Modal');
+        fireEvent.click(rejectButton);
+      });
+
+      // Verify toast was shown
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Rejection Pending',
+        description:
+          'Rejection functionality will be implemented in Task 2.2.2',
+      });
+
+      // Verify modal is closed
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('claim-detail-modal')
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should pass correct claim data to modal', async () => {
+      render(<ClaimsTable />);
+
+      // Open modal for first claim
+      await waitFor(() => {
+        const reviewButton = screen.getByRole('button', { name: /review/i });
+        fireEvent.click(reviewButton);
+      });
+
+      // Verify correct claim data is passed
+      await waitFor(() => {
+        expect(
+          screen.getByText('Modal for Elite Staffing')
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should open modal for correct claim when multiple claims exist', async () => {
+      const multipleClaims = [
+        {
+          ...mockClaim,
+          id: 'claim-1',
+          agency: { ...mockClaim.agency, name: 'Agency One' },
+        },
+        {
+          ...mockClaim,
+          id: 'claim-2',
+          agency: { ...mockClaim.agency, name: 'Agency Two' },
+        },
+      ];
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: multipleClaims,
+          pagination: {
+            total: 2,
+            limit: 25,
+            offset: 0,
+            hasMore: false,
+            page: 1,
+            totalPages: 1,
+          },
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Agency One')).toBeInTheDocument();
+        expect(screen.getByText('Agency Two')).toBeInTheDocument();
+      });
+
+      // Click review on second claim
+      const reviewButtons = screen.getAllByRole('button', { name: /review/i });
+      fireEvent.click(reviewButtons[1]);
+
+      // Verify correct modal opens
+      await waitFor(() => {
+        expect(screen.getByText('Modal for Agency Two')).toBeInTheDocument();
       });
     });
   });

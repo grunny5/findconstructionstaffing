@@ -23,42 +23,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ChevronLeft, ChevronRight, Eye, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ClaimStatus } from '@/types/database';
+import { ClaimDetailModal, type ClaimRequest } from './ClaimDetailModal';
 
 // Type definitions based on API response
-interface Agency {
-  id: string;
-  name: string;
-  slug: string;
-  logo_url: string | null;
-  website: string | null;
-}
-
-interface User {
-  id: string;
-  full_name: string | null;
-  email: string;
-}
-
-interface ClaimRequest {
-  id: string;
-  agency_id: string;
-  user_id: string;
-  status: ClaimStatus;
-  business_email: string;
-  phone_number: string | null;
-  position_title: string;
-  verification_method: 'email' | 'phone' | 'manual';
-  email_domain_verified: boolean;
-  additional_notes: string | null;
-  rejection_reason: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-  updated_at: string;
-  agency: Agency;
-  user: User;
-}
-
 interface PaginationMetadata {
   total: number;
   limit: number;
@@ -124,6 +91,8 @@ export function ClaimsTable() {
     page: 1,
     totalPages: 0,
   });
+  const [selectedClaim, setSelectedClaim] = useState<ClaimRequest | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
   // Fetch claims from API
@@ -192,11 +161,34 @@ export function ClaimsTable() {
   };
 
   const handleReviewClick = (claimId: string) => {
-    // TODO: Open detail modal (Task 2.1.3)
+    const claim = claims.find((c) => c.id === claimId);
+    if (claim) {
+      setSelectedClaim(claim);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedClaim(null);
+  };
+
+  const handleApprove = (claimId: string) => {
+    // TODO: Implement approval in Task 2.2.1
     toast({
-      title: 'Review Claim',
-      description: `Opening review for claim ${claimId}`,
+      title: 'Approval Pending',
+      description: 'Approval functionality will be implemented in Task 2.2.1',
     });
+    handleCloseModal();
+  };
+
+  const handleReject = (claimId: string) => {
+    // TODO: Implement rejection in Task 2.2.2
+    toast({
+      title: 'Rejection Pending',
+      description: 'Rejection functionality will be implemented in Task 2.2.2',
+    });
+    handleCloseModal();
   };
 
   const formatDate = (dateString: string): string => {
@@ -408,6 +400,15 @@ export function ClaimsTable() {
           </div>
         </div>
       )}
+
+      {/* Claim Detail Modal */}
+      <ClaimDetailModal
+        isOpen={isModalOpen}
+        claim={selectedClaim}
+        onClose={handleCloseModal}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
     </div>
   );
 }
