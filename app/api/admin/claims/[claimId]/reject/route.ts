@@ -14,6 +14,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import { Resend } from 'resend';
+import {
+  generateClaimRejectedHTML,
+  generateClaimRejectedText,
+} from '@/lib/emails/claim-rejected';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
@@ -184,7 +189,11 @@ export async function POST(
     // ========================================================================
     const { data: claim, error: claimError } = await supabase
       .from('agency_claim_requests')
-      .select('*')
+      .select(`
+        *,
+        agency:agencies(name, slug),
+        user:profiles(email, full_name)
+      `)
       .eq('id', claimId)
       .single();
 
@@ -263,7 +272,74 @@ export async function POST(
     }
 
     // ========================================================================
-    // 9. RETURN SUCCESS RESPONSE
+    // 9. SEND REJECTION EMAIL
+    // ========================================================================
+    try {
+      const resendApiKey = process.env.RESEND_API_KEY;
+
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+        // Type assertions for joined data from Supabase
+        const agency = claim.agency as unknown as {
+          name: string;
+          slug: string;
+        } | null;
+
+        const userProfile = claim.user as unknown as {
+          email: string;
+          full_name: string | null;
+        } | null;
+
+        if (agency && userProfile) {
+          const emailHtml = generateClaimRejectedHTML({
+            recipientEmail: userProfile.email,
+            recipientName: userProfile.full_name || undefined,
+            agencyName: agency.name,
+            agencySlug: agency.slug,
+            rejectionReason: rejection_reason.trim(),
+            siteUrl,
+          });
+
+          const emailText = generateClaimRejectedText({
+            recipientEmail: userProfile.email,
+            recipientName: userProfile.full_name || undefined,
+            agencyName: agency.name,
+            agencySlug: agency.slug,
+            rejectionReason: rejection_reason.trim(),
+            siteUrl,
+          });
+
+          await resend.emails.send({
+            from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+            to: userProfile.email,
+            subject: `Claim Request Update - ${agency.name}`,
+            html: emailHtml,
+            text: emailText,
+          });
+
+          console.log(
+            `Rejection email sent to ${userProfile.email} for claim ${claimId}`
+          );
+        } else {
+          console.warn(
+            `Unable to send rejection email for claim ${claimId}: missing agency or user data`
+          );
+        }
+      } else {
+        console.warn(
+          'RESEND_API_KEY not configured - skipping rejection email'
+        );
+      }
+    } catch (emailError) {
+      // Log error but don't fail the request - email is not critical
+      console.error('Error sending rejection email:', emailError);
+    }
+
+    // ========================================================================
+    // 10. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {
