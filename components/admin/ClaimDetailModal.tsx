@@ -22,42 +22,8 @@ import {
   Hash,
 } from 'lucide-react';
 import type { ClaimStatus } from '@/types/database';
+import type { ClaimRequest } from '@/types/api';
 import { ClaimVerificationChecklist } from './ClaimVerificationChecklist';
-
-// Type definitions matching the API response
-interface Agency {
-  id: string;
-  name: string;
-  slug: string;
-  logo_url: string | null;
-  website: string | null;
-}
-
-interface User {
-  id: string;
-  full_name: string | null;
-  email: string;
-}
-
-export interface ClaimRequest {
-  id: string;
-  agency_id: string;
-  user_id: string;
-  status: ClaimStatus;
-  business_email: string;
-  phone_number: string | null;
-  position_title: string;
-  verification_method: 'email' | 'phone' | 'manual';
-  email_domain_verified: boolean;
-  additional_notes: string | null;
-  rejection_reason: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-  updated_at: string;
-  agency: Agency;
-  user: User;
-}
 
 interface ClaimDetailModalProps {
   isOpen: boolean;

@@ -98,6 +98,10 @@ export interface PaginationMetadata {
   offset: number;
   /** Whether more records exist beyond this page */
   hasMore: boolean;
+  /** Current page number (1-indexed) */
+  page: number;
+  /** Total number of pages */
+  totalPages: number;
 }
 
 /**
@@ -190,6 +194,7 @@ export const HTTP_STATUS = {
   CREATED: 201,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
   INTERNAL_SERVER_ERROR: 500,
@@ -209,3 +214,81 @@ export const ERROR_CODES = {
   DATABASE_ERROR: 'DATABASE_ERROR',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
+
+/**
+ * User profile information for claim requests
+ */
+export interface ClaimUser {
+  /** User's unique identifier */
+  id: string;
+  /** User's full name */
+  full_name: string | null;
+  /** User's email address */
+  email: string;
+}
+
+/**
+ * Agency information for claim requests
+ */
+export interface ClaimAgency {
+  /** Agency's unique identifier */
+  id: string;
+  /** Agency name */
+  name: string;
+  /** URL-friendly slug */
+  slug: string;
+  /** Agency logo URL */
+  logo_url: string | null;
+  /** Agency website URL */
+  website: string | null;
+}
+
+/**
+ * Agency claim request with complete related data
+ */
+export interface ClaimRequest {
+  /** Claim request unique identifier */
+  id: string;
+  /** Agency being claimed */
+  agency_id: string;
+  /** User requesting the claim */
+  user_id: string;
+  /** Current status of the claim */
+  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  /** Business email of the requester */
+  business_email: string;
+  /** Phone number (optional) */
+  phone_number: string | null;
+  /** Job title or position */
+  position_title: string;
+  /** Verification method used */
+  verification_method: 'email' | 'phone' | 'manual';
+  /** Whether email domain matches agency website */
+  email_domain_verified: boolean;
+  /** Additional notes from requester */
+  additional_notes: string | null;
+  /** Rejection reason (if rejected) */
+  rejection_reason: string | null;
+  /** Admin who reviewed (if reviewed) */
+  reviewed_by: string | null;
+  /** Review timestamp (if reviewed) */
+  reviewed_at: string | null;
+  /** Creation timestamp */
+  created_at: string;
+  /** Last update timestamp */
+  updated_at: string;
+  /** Related agency data */
+  agency: ClaimAgency;
+  /** Related user data */
+  user: ClaimUser;
+}
+
+/**
+ * API response for claims list
+ */
+export interface ClaimsApiResponse {
+  /** Array of claim requests */
+  data: ClaimRequest[];
+  /** Pagination metadata */
+  pagination: PaginationMetadata;
+}

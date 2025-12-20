@@ -102,7 +102,7 @@ describe('GET /api/admin/claims', () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
       expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
       expect(data.error.message).toBe('Forbidden: Admin access required');
     });
@@ -123,7 +123,7 @@ describe('GET /api/admin/claims', () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
       expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
     });
 
@@ -143,7 +143,7 @@ describe('GET /api/admin/claims', () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
       expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
     });
 
@@ -464,8 +464,9 @@ describe('GET /api/admin/claims', () => {
       );
       await GET(request);
 
+      // Note: @ is encoded to %40 by encodeURIComponent to prevent PostgREST filter syntax errors
       expect(mockQuery.or).toHaveBeenCalledWith(
-        'business_email.ilike.%john@example.com%,agency.name.ilike.%john@example.com%'
+        'business_email.ilike.%john%40example.com%,agency.name.ilike.%john%40example.com%'
       );
     });
 

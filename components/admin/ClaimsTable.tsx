@@ -23,22 +23,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ChevronLeft, ChevronRight, Eye, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ClaimStatus } from '@/types/database';
-import { ClaimDetailModal, type ClaimRequest } from './ClaimDetailModal';
-
-// Type definitions based on API response
-interface PaginationMetadata {
-  total: number;
-  limit: number;
-  offset: number;
-  hasMore: boolean;
-  page: number;
-  totalPages: number;
-}
-
-interface ClaimsResponse {
-  data: ClaimRequest[];
-  pagination: PaginationMetadata;
-}
+import type {
+  ClaimRequest,
+  ClaimsApiResponse,
+  PaginationMetadata,
+} from '@/types/api';
+import { ClaimDetailModal } from './ClaimDetailModal';
 
 const CLAIMS_PER_PAGE = 25;
 
@@ -122,7 +112,7 @@ export function ClaimsTable() {
           throw new Error(errorData.error?.message || 'Failed to fetch claims');
         }
 
-        const data: ClaimsResponse = await response.json();
+        const data: ClaimsApiResponse = await response.json();
         setClaims(data.data);
         setPagination(data.pagination);
       } catch (err: any) {

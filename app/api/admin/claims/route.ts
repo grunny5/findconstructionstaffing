@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
             message: 'Forbidden: Admin access required',
           },
         },
-        { status: HTTP_STATUS.UNAUTHORIZED }
+        { status: HTTP_STATUS.FORBIDDEN }
       );
     }
 
@@ -186,9 +186,11 @@ export async function GET(request: NextRequest) {
 
     // Apply search filter (agency name or user email)
     if (searchQuery) {
+      // Encode search query to prevent PostgREST filter syntax errors
+      const encodedSearch = encodeURIComponent(searchQuery);
       // Use 'or' filter for searching multiple fields
       query = query.or(
-        `business_email.ilike.%${searchQuery}%,agency.name.ilike.%${searchQuery}%`
+        `business_email.ilike.%${encodedSearch}%,agency.name.ilike.%${encodedSearch}%`
       );
     }
 
