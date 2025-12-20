@@ -931,6 +931,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 **Actual Effort:** 2.5 hours
 
 **Implementation Notes:**
+
 - Created POST endpoint at `app/api/admin/claims/[claimId]/reject/route.ts` (287 lines)
 - Admin-only access enforced via profiles.role === 'admin' check (returns 403 if not admin)
 - Request body validation: rejection_reason required, min 20 characters, trimmed before saving
