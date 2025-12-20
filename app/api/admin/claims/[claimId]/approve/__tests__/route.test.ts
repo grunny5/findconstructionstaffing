@@ -1,6 +1,8 @@
 /**
  * Tests for Admin Claim Approval API Endpoint
  * POST /api/admin/claims/[claimId]/approve
+ *
+ * @jest-environment node
  */
 
 import { POST } from '../route';
