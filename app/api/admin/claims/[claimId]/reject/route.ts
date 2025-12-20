@@ -27,6 +27,7 @@ export const dynamic = 'force-dynamic';
  * Rejects an agency claim request identified by `claimId`, records the admin review and rejection reason, creates an audit log entry, and optionally sends a rejection email to the requester.
  *
  * @returns The updated claim record under `data` and a confirmation `message`. On failure the response contains an `error` object with `code` and `message`.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: { claimId: string } }

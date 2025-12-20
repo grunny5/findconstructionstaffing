@@ -23,6 +23,7 @@ interface ClaimApprovedEmailParams {
  *   - agencySlug: agency identifier used to construct the dashboard URL
  *   - siteUrl: base site URL used to construct links
  * @returns The full HTML email as a string ready for sending.
+ */
 export function generateClaimApprovedHTML(
   params: ClaimApprovedEmailParams
 ): string {

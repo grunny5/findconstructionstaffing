@@ -24,7 +24,8 @@ interface ClaimRejectedEmailParams {
  *   - agencySlug: agency path segment used to build the resubmission URL
  *   - rejectionReason: reason shown in the denial section
  *   - siteUrl: base site URL used for links
- * @returns The complete HTML string for the claim rejection email, including a reason block, guidance for resubmission, a "Resubmit Claim Request" link (siteUrl/claim/{agencySlug}), support contact, and footer. */
+ * @returns The complete HTML string for the claim rejection email, including a reason block, guidance for resubmission, a "Resubmit Claim Request" link (siteUrl/claim/{agencySlug}), support contact, and footer.
+ */
 export function generateClaimRejectedHTML(
   params: ClaimRejectedEmailParams
 ): string {
