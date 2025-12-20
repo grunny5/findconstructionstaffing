@@ -82,6 +82,20 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+/**
+ * Displays a modal with detailed information about a claim request and actions to approve or reject it.
+ *
+ * Renders a read-only review UI for the provided `claim`, shows confirmation dialogs for approve/reject flows,
+ * performs optional server requests when confirming actions, and triggers callback props as appropriate.
+ *
+ * @param isOpen - Controls whether the modal is visible.
+ * @param claim - The claim data to display; if `null` the component renders nothing.
+ * @param onClose - Called when the modal should be closed.
+ * @param onRefresh - Optional callback invoked after a successful approve or reject to refresh parent data.
+ * @param onApprove - Optional callback invoked with the claim id when the Approve action is triggered; if omitted the component runs its internal approval flow.
+ * @param onReject - Optional callback invoked with the claim id when the Reject action is triggered; if omitted the component runs its internal rejection flow.
+ * @returns The claim detail modal UI when `claim` is provided, or `null` when `claim` is `null`.
+ */
 export function ClaimDetailModal({
   isOpen,
   claim,
