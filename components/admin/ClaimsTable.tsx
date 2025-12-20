@@ -99,6 +99,13 @@ const verificationTooltipText = (verified: boolean): string => {
     : 'Email domain does not match website - requires manual verification';
 };
 
+/**
+ * Render an admin claims table with search, status filtering, pagination, verification indicators, and a review modal.
+ *
+ * Fetches claim requests from the admin API and displays them in a paginated table; shows loading skeletons, an error state, and an empty state as appropriate. Provides controls to search by agency or email, filter by claim status, open a claim in a detail modal, and placeholder handlers for approve/reject actions.
+ *
+ * @returns The ClaimsTable React element containing filters, the claims list with verification badges and actions, pagination controls, and the claim detail modal.
+ */
 export function ClaimsTable() {
   const [claims, setClaims] = useState<ClaimRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
