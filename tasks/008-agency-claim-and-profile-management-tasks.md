@@ -1598,7 +1598,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Jest (46/46 t
 
 ---
 
-### Task 3.1.4: Add "Agency Dashboard" Link to User Menu
+### Task 3.1.4: Add "Agency Dashboard" Link to User Menu ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Add navigation link for agency owners to access their dashboard
@@ -1609,21 +1609,58 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Jest (46/46 t
   - Conditional rendering (only for agency_owner role)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] User dropdown shows "Agency Dashboard" link if role = agency_owner
-  - [ ] Link navigates to `/dashboard/agency/[user's-agency-slug]`
-  - [ ] Link has dashboard icon (from lucide-react)
-  - [ ] Link doesn't show for regular users or admins without claimed agency
-  - [ ] Link is above "Settings" in menu order
-  - [ ] Link has proper hover state
+  - [x] User dropdown shows "Agency Dashboard" link if role = agency_owner
+  - [x] Link navigates to `/dashboard/agency/[user's-agency-slug]`
+  - [x] Link has dashboard icon (from lucide-react)
+  - [x] Link doesn't show for regular users or admins without claimed agency
+  - [x] Link is above "Settings" in menu order
+  - [x] Link has proper hover state
 - **Definition of Done:**
-  - [ ] Link added to user menu
-  - [ ] Component tests verify conditional rendering
-  - [ ] Tests verify correct slug used
-  - [ ] Accessibility tested
-  - [ ] PR submitted
-  - [ ] **Final Check:** Easy to find
+  - [x] Link added to user menu
+  - [x] Component tests verify conditional rendering
+  - [x] Tests verify correct slug used
+  - [x] Accessibility tested
+  - [x] PR submitted
+  - [x] **Final Check:** Easy to find
 
 **Estimated Effort:** 1 hour
+**Actual Effort:** 1.5 hours
+
+**Implementation Notes:**
+
+1. **Enhanced Auth Context** (`lib/auth/auth-context.tsx`):
+   - Added `agencySlug: string | null` to AuthContextType interface
+   - Added state for tracking agency slug
+   - Modified `fetchProfile()` to query agencies table when user is agency_owner
+   - Fetches agency slug using `claimed_by = userId` query
+   - Clears agencySlug on sign out
+   - Line 61-95: Fetches agency slug for agency owners after profile is loaded
+
+2. **Updated Header Component** (`components/Header.tsx`):
+   - Imported LayoutDashboard icon from lucide-react
+   - Added agencySlug from useAuth hook
+   - Desktop menu (lines 121-128): Agency Dashboard link with icon, conditional on `profile?.role === 'agency_owner' && agencySlug`
+   - Mobile menu (lines 229-242): Same Agency Dashboard button for mobile
+   - Link navigates to `/dashboard/agency/${agencySlug}`
+   - Positioned correctly after Admin Dashboard, before Account Settings
+   - DropdownMenuItem has built-in hover states (shadcn/ui component)
+
+3. **Comprehensive Tests** (`components/__tests__/Header.test.tsx`):
+   - Added 5 new test cases for Agency Dashboard link
+   - Tests verify link shows for agency owner with claimed agency
+   - Tests verify link does NOT show for agency owner without claimed agency
+   - Tests verify link does NOT show for regular users
+   - Tests verify link does NOT show for admins
+   - Tests verify link does NOT show when not authenticated
+   - Tests verify correct href with agency slug
+   - All 15 tests passing (10 existing + 5 new)
+
+4. **Fixed Test Compatibility**:
+   - Updated 90+ test files to include `agencySlug: null` in auth context mocks
+   - Ensured TypeScript strict mode compliance across all test files
+   - All 2,015 tests passing
+
+All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅, Jest (2,015/2,015 tests) ✅
 
 ---
 

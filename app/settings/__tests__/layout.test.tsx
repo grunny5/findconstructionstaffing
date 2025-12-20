@@ -50,6 +50,7 @@ describe('SettingsLayout', () => {
     mockedUseAuth.mockReturnValue({
       user: null,
       profile: null,
+      agencySlug: null,
       loading: true,
       signIn: jest.fn(),
       signUp: jest.fn(),
@@ -73,6 +74,7 @@ describe('SettingsLayout', () => {
     mockedUseAuth.mockReturnValue({
       user: null,
       profile: null,
+      agencySlug: null,
       loading: false,
       signIn: jest.fn(),
       signUp: jest.fn(),
@@ -106,6 +108,7 @@ describe('SettingsLayout', () => {
         last_password_change: '2024-01-01T00:00:00Z',
       },
       loading: false,
+      agencySlug: null,
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
@@ -137,6 +140,7 @@ describe('SettingsLayout', () => {
         last_password_change: '2024-01-01T00:00:00Z',
       },
       loading: false,
+      agencySlug: null,
       signIn: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
@@ -162,6 +166,7 @@ describe('SettingsLayout', () => {
     mockedUseAuth.mockReturnValue({
       user: null,
       profile: null,
+      agencySlug: null,
       loading: false,
       signIn: jest.fn(),
       signUp: jest.fn(),
