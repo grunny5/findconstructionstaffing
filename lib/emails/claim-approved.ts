@@ -5,20 +5,7 @@
  * Includes congratulations message, agency details, and link to dashboard.
  */
 
-/**
- * Escapes HTML special characters to prevent HTML injection.
- *
- * @param unsafe - The string to escape
- * @returns The escaped string safe for HTML insertion
- */
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+import { escapeHtml } from './utils';
 
 interface ClaimApprovedEmailParams {
   recipientEmail: string;
@@ -42,8 +29,7 @@ interface ClaimApprovedEmailParams {
 export function generateClaimApprovedHTML(
   params: ClaimApprovedEmailParams
 ): string {
-  const { recipientEmail, recipientName, agencyName, agencySlug, siteUrl } =
-    params;
+  const { recipientName, agencyName, agencySlug, siteUrl } = params;
 
   const safeAgencyName = escapeHtml(agencyName);
   const safeRecipientName = recipientName
@@ -196,8 +182,7 @@ export function generateClaimApprovedHTML(
 export function generateClaimApprovedText(
   params: ClaimApprovedEmailParams
 ): string {
-  const { recipientEmail, recipientName, agencyName, agencySlug, siteUrl } =
-    params;
+  const { recipientName, agencyName, agencySlug, siteUrl } = params;
 
   const dashboardUrl = `${siteUrl}/dashboard/agency/${agencySlug}`;
 

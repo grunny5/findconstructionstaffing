@@ -5,20 +5,7 @@
  * Includes rejection reason, resubmit instructions, and support contact.
  */
 
-/**
- * Escapes HTML special characters to prevent HTML injection.
- *
- * @param unsafe - The string to escape
- * @returns The escaped string safe for HTML insertion
- */
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+import { escapeHtml } from './utils';
 
 interface ClaimRejectedEmailParams {
   recipientEmail: string;
@@ -44,14 +31,8 @@ interface ClaimRejectedEmailParams {
 export function generateClaimRejectedHTML(
   params: ClaimRejectedEmailParams
 ): string {
-  const {
-    recipientEmail,
-    recipientName,
-    agencyName,
-    agencySlug,
-    rejectionReason,
-    siteUrl,
-  } = params;
+  const { recipientName, agencyName, agencySlug, rejectionReason, siteUrl } =
+    params;
 
   const safeAgencyName = escapeHtml(agencyName);
   const safeRecipientName = recipientName
@@ -176,14 +157,8 @@ export function generateClaimRejectedHTML(
 export function generateClaimRejectedText(
   params: ClaimRejectedEmailParams
 ): string {
-  const {
-    recipientEmail,
-    recipientName,
-    agencyName,
-    agencySlug,
-    rejectionReason,
-    siteUrl,
-  } = params;
+  const { recipientName, agencyName, agencySlug, rejectionReason, siteUrl } =
+    params;
 
   const resubmitUrl = `${siteUrl}/claim/${agencySlug}`;
 
