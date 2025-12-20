@@ -27,6 +27,10 @@ jest.mock('@/components/Footer', () => ({
   default: () => <div data-testid="footer">Footer</div>,
 }));
 
+jest.mock('@/components/ClaimStatusBanner', () => ({
+  ClaimStatusBanner: () => null,
+}));
+
 jest.mock('@/components/AgencyCard', () => ({
   __esModule: true,
   default: ({ agency }: { agency: any }) => (
