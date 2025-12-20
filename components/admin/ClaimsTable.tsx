@@ -301,89 +301,89 @@ export function ClaimsTable() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search by agency name or email..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
+    <TooltipProvider>
+      <div className="space-y-4">
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search by agency name or email..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Claims</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="under_review">Under Review</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Claims</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="under_review">Under Review</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Agency Name</TableHead>
-              <TableHead>Requester Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Verification</TableHead>
-              <TableHead>Submitted Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {claims.length === 0 ? (
+        {/* Table */}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
-                    <FileText className="h-8 w-8" />
-                    <p className="font-medium">No claim requests found</p>
-                    <p className="text-sm">
-                      {searchQuery || statusFilter !== 'all'
-                        ? 'Try adjusting your filters'
-                        : 'Claims will appear here when submitted'}
-                    </p>
-                  </div>
-                </TableCell>
+                <TableHead>Agency Name</TableHead>
+                <TableHead>Requester Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Verification</TableHead>
+                <TableHead>Submitted Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : (
-              claims.map((claim) => (
-                <TableRow key={claim.id}>
-                  <TableCell className="font-medium">
-                    {claim.agency.name}
+            </TableHeader>
+            <TableBody>
+              {claims.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
+                      <FileText className="h-8 w-8" />
+                      <p className="font-medium">No claim requests found</p>
+                      <p className="text-sm">
+                        {searchQuery || statusFilter !== 'all'
+                          ? 'Try adjusting your filters'
+                          : 'Claims will appear here when submitted'}
+                      </p>
+                    </div>
                   </TableCell>
-                  <TableCell>
-                    {claim.user.full_name || (
-                      <span className="text-gray-500 italic">No name</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {claim.business_email}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {claim.phone_number || (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusBadgeVariant(claim.status)}>
-                      {statusDisplayName(claim.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <TooltipProvider>
+                </TableRow>
+              ) : (
+                claims.map((claim) => (
+                  <TableRow key={claim.id}>
+                    <TableCell className="font-medium">
+                      {claim.agency.name}
+                    </TableCell>
+                    <TableCell>
+                      {claim.user.full_name || (
+                        <span className="text-gray-500 italic">No name</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {claim.business_email}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {claim.phone_number || (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusBadgeVariant(claim.status)}>
+                        {statusDisplayName(claim.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex items-center gap-1.5">
@@ -416,70 +416,70 @@ export function ClaimsTable() {
                           </p>
                         </TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(claim.created_at)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleReviewClick(claim.id)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Review
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {pagination.totalPages && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-gray-600">
-            Showing {pagination.offset + 1} to{' '}
-            {Math.min(pagination.offset + pagination.limit, pagination.total)}{' '}
-            of {pagination.total} claims
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {pagination.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={!pagination.hasMore}
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatDate(claim.created_at)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReviewClick(claim.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Review
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
-      )}
 
-      {/* Claim Detail Modal */}
-      <ClaimDetailModal
-        isOpen={isModalOpen}
-        claim={selectedClaim}
-        onClose={handleCloseModal}
-        onApprove={handleApprove}
-        onReject={handleReject}
-      />
-    </div>
+        {/* Pagination */}
+        {pagination.totalPages && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between px-2">
+            <p className="text-sm text-gray-600">
+              Showing {pagination.offset + 1} to{' '}
+              {Math.min(pagination.offset + pagination.limit, pagination.total)}{' '}
+              of {pagination.total} claims
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={!pagination.hasMore}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Claim Detail Modal */}
+        <ClaimDetailModal
+          isOpen={isModalOpen}
+          claim={selectedClaim}
+          onClose={handleCloseModal}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
