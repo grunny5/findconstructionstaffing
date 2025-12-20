@@ -76,6 +76,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: null,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -98,6 +99,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -123,6 +125,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -148,6 +151,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -173,6 +177,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -198,6 +203,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -226,6 +232,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -253,6 +260,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -282,6 +290,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -308,6 +317,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -338,6 +348,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -365,6 +376,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -395,6 +407,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -421,6 +434,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -453,6 +467,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -489,6 +504,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -516,6 +532,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -548,6 +565,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -581,6 +599,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -612,6 +631,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -640,6 +660,7 @@ describe('ClaimStatusBanner', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),

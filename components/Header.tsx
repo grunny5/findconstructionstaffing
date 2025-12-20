@@ -20,13 +20,14 @@ import {
   Search,
   User,
   LogOut,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, agencySlug, signOut } = useAuth();
 
   const navItems = [
     { label: 'Browse Directory', href: '/', icon: Building2 },
@@ -117,9 +118,12 @@ export default function Header() {
                           </Link>
                         </DropdownMenuItem>
                       )}
-                    {profile?.role === 'agency_owner' && (
+                    {profile?.role === 'agency_owner' && agencySlug && (
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard">Dashboard</Link>
+                        <Link href={`/dashboard/agency/${agencySlug}`}>
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          Agency Dashboard
+                        </Link>
                       </DropdownMenuItem>
                     )}
                     {isFeatureEnabled('accountSettings') && (
@@ -222,16 +226,17 @@ export default function Header() {
                             </Link>
                           </Button>
                         )}
-                      {profile?.role === 'agency_owner' && (
+                      {profile?.role === 'agency_owner' && agencySlug && (
                         <Button
                           className="w-full modern-button-primary"
                           asChild
                         >
                           <Link
-                            href="/dashboard"
+                            href={`/dashboard/agency/${agencySlug}`}
                             onClick={() => setIsOpen(false)}
                           >
-                            Dashboard
+                            <LayoutDashboard className="h-4 w-4 mr-2" />
+                            Agency Dashboard
                           </Link>
                         </Button>
                       )}

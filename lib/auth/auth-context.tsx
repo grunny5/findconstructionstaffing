@@ -8,6 +8,7 @@ import type { Profile } from '@/types/database';
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
+  agencySlug: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [agencySlug, setAgencySlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
+        setAgencySlug(null);
         setLoading(false);
       }
     });
@@ -65,9 +68,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       setProfile(data);
+
+      // If user is agency owner, fetch their claimed agency slug
+      if (data?.role === 'agency_owner') {
+        const { data: agency, error: agencyError } = await supabase
+          .from('agencies')
+          .select('slug')
+          .eq('claimed_by', userId)
+          .single();
+
+        if (!agencyError && agency) {
+          setAgencySlug(agency.slug);
+        } else {
+          setAgencySlug(null);
+        }
+      } else {
+        setAgencySlug(null);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       setProfile(null);
+      setAgencySlug(null);
     } finally {
       setLoading(false);
     }
@@ -126,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     profile,
+    agencySlug,
     loading,
     signIn,
     signUp,
