@@ -65,3 +65,99 @@ if (typeof global.ResizeObserver === 'undefined') {
     disconnect() {}
   };
 }
+
+// Add document.elementFromPoint polyfill for TipTap and Radix UI interactions
+if (typeof document !== 'undefined' && !document.elementFromPoint) {
+  document.elementFromPoint = () => null;
+}
+
+// Add hasPointerCapture and setPointerCapture polyfills for Radix UI Select
+if (typeof global.HTMLElement !== 'undefined') {
+  if (!global.HTMLElement.prototype.hasPointerCapture) {
+    global.HTMLElement.prototype.hasPointerCapture = function () {
+      return false;
+    };
+  }
+  if (!global.HTMLElement.prototype.setPointerCapture) {
+    global.HTMLElement.prototype.setPointerCapture = function () {};
+  }
+  if (!global.HTMLElement.prototype.releasePointerCapture) {
+    global.HTMLElement.prototype.releasePointerCapture = function () {};
+  }
+}
+
+// Add DOM rect polyfills for ProseMirror/TipTap
+if (
+  typeof global.Range !== 'undefined' &&
+  !global.Range.prototype.getBoundingClientRect
+) {
+  global.Range.prototype.getBoundingClientRect = function () {
+    return {
+      x: 0,
+      y: 0,
+      bottom: 0,
+      height: 0,
+      left: 0,
+      right: 0,
+      top: 0,
+      width: 0,
+      toJSON: () => {},
+    };
+  };
+  global.Range.prototype.getClientRects = function () {
+    return {
+      length: 0,
+      item: () => null,
+      [Symbol.iterator]: function* () {},
+    };
+  };
+}
+
+if (typeof global.HTMLElement !== 'undefined') {
+  if (!global.HTMLElement.prototype.getClientRects) {
+    global.HTMLElement.prototype.getClientRects = function () {
+      return {
+        length: 1,
+        item: () => ({
+          x: 0,
+          y: 0,
+          bottom: 0,
+          height: 0,
+          left: 0,
+          right: 0,
+          top: 0,
+          width: 0,
+          toJSON: () => {},
+        }),
+        [Symbol.iterator]: function* () {
+          yield {
+            x: 0,
+            y: 0,
+            bottom: 0,
+            height: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+            width: 0,
+            toJSON: () => {},
+          };
+        },
+      };
+    };
+  }
+  if (!global.HTMLElement.prototype.getBoundingClientRect) {
+    global.HTMLElement.prototype.getBoundingClientRect = function () {
+      return {
+        x: 0,
+        y: 0,
+        bottom: 0,
+        height: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        width: 0,
+        toJSON: () => {},
+      };
+    };
+  }
+}
