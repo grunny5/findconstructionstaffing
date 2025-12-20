@@ -3,7 +3,7 @@ import {
   Eye,
   Mail,
   CheckCircle,
-  Image,
+  Image as ImageIcon,
   MapPin,
   HelpCircle,
   ExternalLink,
@@ -120,7 +120,7 @@ export function DashboardOverview({
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <Image className="h-4 w-4 text-primary" />
+                      <ImageIcon className="h-4 w-4 text-primary" />
                     </div>
                     <div className="text-left">
                       <div className="font-medium">
