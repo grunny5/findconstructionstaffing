@@ -999,7 +999,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 - Rejection validation includes real-time character counting with color-coded feedback
 - Auto-reset dialog state on close for clean UX
 - Components fully typed with TypeScript strict mode
-- Commit: [pending]
+- Commit: d1d6523
 
 ---
 
