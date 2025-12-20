@@ -117,11 +117,16 @@ export function ClaimsTable() {
         setPagination(data.pagination);
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'An error occurred while fetching claims';
+          err instanceof Error
+            ? err.message
+            : 'An error occurred while fetching claims';
         setError(errorMessage);
         toast({
           title: 'Error',
-          description: err instanceof Error ? err.message : 'Failed to load claim requests',
+          description:
+            err instanceof Error
+              ? err.message
+              : 'Failed to load claim requests',
           variant: 'destructive',
         });
       } finally {
