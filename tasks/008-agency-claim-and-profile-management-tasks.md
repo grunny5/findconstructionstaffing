@@ -1101,6 +1101,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 **Actual Effort:** 1.5 hours
 
 **Implementation Notes:**
+
 - Created `lib/emails/claim-rejected.ts` with HTML and text versions
 - Email features: "Claim Request Update" heading, Rejection reason box (red theme), "What You Can Do" section, "Resubmit Claim Request" CTA, "Need Help?" section with support contact
 - Color scheme: Red/light-red for rejection reason (#fef2f2, #fecaca, #991b1b, #7f1d1d), Blue for help section (#eff6ff, #1e40af, #1e3a8a)

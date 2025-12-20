@@ -189,11 +189,13 @@ export async function POST(
     // ========================================================================
     const { data: claim, error: claimError } = await supabase
       .from('agency_claim_requests')
-      .select(`
+      .select(
+        `
         *,
         agency:agencies(name, slug),
         user:profiles(email, full_name)
-      `)
+      `
+      )
       .eq('id', claimId)
       .single();
 

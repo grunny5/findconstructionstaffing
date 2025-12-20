@@ -78,7 +78,9 @@ describe('Claim Rejected Email Templates', () => {
       expect(html).toContain('What You Can Do');
       expect(html).toContain('Review the reason for denial above');
       expect(html).toContain('Gather any additional verification documents');
-      expect(html).toContain('Submit a new claim request with updated information');
+      expect(html).toContain(
+        'Submit a new claim request with updated information'
+      );
     });
 
     it('should include "Resubmit Claim Request" CTA button with claim link', () => {
