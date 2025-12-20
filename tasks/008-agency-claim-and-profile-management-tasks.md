@@ -1069,7 +1069,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 
 ---
 
-### Task 2.2.5: Send Rejection Email Notification
+### Task 2.2.5: Send Rejection Email Notification ✅
 
 - **Role:** Backend Developer
 - **Objective:** Send email to user when claim is rejected with reason
@@ -1083,21 +1083,35 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
   - Include rejection reason
   - Provide resubmit instructions
 - **Acceptance Criteria (for this task):**
-  - [ ] Email template created: Polite rejection message, Agency Name, Rejection Reason (from admin), Resubmit instructions, Link to resubmit form
-  - [ ] Email sent after rejection
-  - [ ] Email includes support contact
-  - [ ] Email send errors logged but don't fail rejection
-  - [ ] Plain text version provided
-  - [ ] Tone is professional and helpful
+  - [x] Email template created: Polite rejection message, Agency Name, Rejection Reason (from admin), Resubmit instructions, Link to resubmit form
+  - [x] Email sent after rejection
+  - [x] Email includes support contact
+  - [x] Email send errors logged but don't fail rejection
+  - [x] Plain text version provided
+  - [x] Tone is professional and helpful
 - **Definition of Done:**
-  - [ ] Email template created and tested
-  - [ ] Email integrated into rejection endpoint
-  - [ ] Test email sent to verify
-  - [ ] Error handling for email failures
-  - [ ] PR submitted with email preview
-  - [ ] **Final Check:** Respectful, helpful tone
+  - [x] Email template created and tested
+  - [x] Email integrated into rejection endpoint
+  - [x] Test email sent to verify
+  - [x] Error handling for email failures
+  - [x] PR submitted with email preview
+  - [x] **Final Check:** Respectful, helpful tone
 
 **Estimated Effort:** 2 hours
+**Actual Effort:** 1.5 hours
+
+**Implementation Notes:**
+- Created `lib/emails/claim-rejected.ts` with HTML and text versions
+- Email features: "Claim Request Update" heading, Rejection reason box (red theme), "What You Can Do" section, "Resubmit Claim Request" CTA, "Need Help?" section with support contact
+- Color scheme: Red/light-red for rejection reason (#fef2f2, #fecaca, #991b1b, #7f1d1d), Blue for help section (#eff6ff, #1e40af, #1e3a8a)
+- Modified reject endpoint to send email using non-blocking pattern (errors logged but don't fail rejection)
+- Added Supabase joins to fetch agency and user profile data
+- Created comprehensive test suite with 43 tests (tone, content, formatting, consistency)
+- Follows same pattern as claim-approved and claim-confirmation templates
+- Email uses table-based layout for compatibility with email clients
+- Inline CSS styles for maximum email client support
+- Maintains polite, respectful tone throughout ("unable to approve" instead of "rejected", encouraging resubmit language)
+- Commit: f8c5bdf
 
 ---
 
