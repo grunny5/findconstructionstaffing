@@ -217,7 +217,10 @@ export async function POST(
         .eq('id', claimId);
 
       if (rollbackError) {
-        console.error('Failed to rollback claim update after agency update failure:', rollbackError);
+        console.error(
+          'Failed to rollback claim update after agency update failure:',
+          rollbackError
+        );
       }
 
       return NextResponse.json(
@@ -252,7 +255,10 @@ export async function POST(
         .eq('id', claimId);
 
       if (rollbackClaimError) {
-        console.error('Failed to rollback claim update after role update failure:', rollbackClaimError);
+        console.error(
+          'Failed to rollback claim update after role update failure:',
+          rollbackClaimError
+        );
       }
 
       const { error: rollbackAgencyError } = await supabase
@@ -265,7 +271,10 @@ export async function POST(
         .eq('id', claim.agency_id);
 
       if (rollbackAgencyError) {
-        console.error('Failed to rollback agency update after role update failure:', rollbackAgencyError);
+        console.error(
+          'Failed to rollback agency update after role update failure:',
+          rollbackAgencyError
+        );
       }
 
       return NextResponse.json(
