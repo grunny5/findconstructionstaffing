@@ -4,10 +4,22 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ClaimDetailModal } from '../ClaimDetailModal';
 import type { ClaimRequest } from '@/types/api';
 import type { ClaimStatus } from '@/types/database';
+import { toast } from 'sonner';
+
+// Mock global fetch
+global.fetch = jest.fn();
+
+// Mock sonner toast
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}));
 
 // Mock the ClaimVerificationChecklist component
 jest.mock('../ClaimVerificationChecklist', () => ({
@@ -29,6 +41,64 @@ jest.mock('../ClaimVerificationChecklist', () => ({
       <div>Method: {verificationMethod}</div>
     </div>
   ),
+}));
+
+// Mock the new confirmation dialog components
+jest.mock('../ClaimApprovalConfirmation', () => ({
+  ClaimApprovalConfirmation: ({
+    isOpen,
+    agencyName,
+    onConfirm,
+    onCancel,
+    isLoading,
+  }: {
+    isOpen: boolean;
+    agencyName: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+    isLoading?: boolean;
+  }) =>
+    isOpen ? (
+      <div data-testid="approval-confirmation">
+        <div>Agency: {agencyName}</div>
+        <button onClick={onConfirm} disabled={isLoading}>
+          {isLoading ? 'Approving...' : 'Confirm Approval'}
+        </button>
+        <button onClick={onCancel} disabled={isLoading}>
+          Cancel Approval
+        </button>
+      </div>
+    ) : null,
+}));
+
+jest.mock('../ClaimRejectionDialog', () => ({
+  ClaimRejectionDialog: ({
+    isOpen,
+    agencyName,
+    onConfirm,
+    onCancel,
+    isLoading,
+  }: {
+    isOpen: boolean;
+    agencyName: string;
+    onConfirm: (reason: string) => void;
+    onCancel: () => void;
+    isLoading?: boolean;
+  }) =>
+    isOpen ? (
+      <div data-testid="rejection-dialog">
+        <div>Agency: {agencyName}</div>
+        <button
+          onClick={() => onConfirm('Test rejection reason')}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Rejecting...' : 'Confirm Rejection'}
+        </button>
+        <button onClick={onCancel} disabled={isLoading}>
+          Cancel Rejection
+        </button>
+      </div>
+    ) : null,
 }));
 
 const mockClaim: ClaimRequest = {
@@ -65,9 +135,11 @@ describe('ClaimDetailModal', () => {
   const mockOnClose = jest.fn();
   const mockOnApprove = jest.fn();
   const mockOnReject = jest.fn();
+  const mockOnRefresh = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockClear();
   });
 
   describe('Modal Visibility', () => {
@@ -628,7 +700,7 @@ describe('ClaimDetailModal', () => {
       expect(mockOnReject).toHaveBeenCalledTimes(1);
     });
 
-    it('should disable Approve button when onApprove is not provided', () => {
+    it('should not disable Approve button when onApprove is not provided', () => {
       render(
         <ClaimDetailModal
           isOpen={true}
@@ -639,10 +711,10 @@ describe('ClaimDetailModal', () => {
       );
 
       const approveButton = screen.getByText('Approve');
-      expect(approveButton).toBeDisabled();
+      expect(approveButton).not.toBeDisabled();
     });
 
-    it('should disable Reject button when onReject is not provided', () => {
+    it('should not disable Reject button when onReject is not provided', () => {
       render(
         <ClaimDetailModal
           isOpen={true}
@@ -653,7 +725,308 @@ describe('ClaimDetailModal', () => {
       );
 
       const rejectButton = screen.getByText('Reject');
-      expect(rejectButton).toBeDisabled();
+      expect(rejectButton).not.toBeDisabled();
+    });
+  });
+
+  describe('Approval Confirmation Dialog', () => {
+    it('should open approval confirmation when Approve is clicked without onApprove callback', () => {
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Approve'));
+
+      expect(screen.getByTestId('approval-confirmation')).toBeInTheDocument();
+      expect(
+        screen.getByText('Agency: ACME Staffing Solutions')
+      ).toBeInTheDocument();
+    });
+
+    it('should not open approval confirmation when onApprove callback is provided', () => {
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+          onApprove={mockOnApprove}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Approve'));
+
+      expect(mockOnApprove).toHaveBeenCalledWith('claim-123');
+      expect(
+        screen.queryByTestId('approval-confirmation')
+      ).not.toBeInTheDocument();
+    });
+
+    it('should close approval confirmation when Cancel Approval is clicked', () => {
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Approve'));
+      expect(screen.getByTestId('approval-confirmation')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Cancel Approval'));
+      expect(
+        screen.queryByTestId('approval-confirmation')
+      ).not.toBeInTheDocument();
+    });
+
+    it('should call approve API and show success toast on confirmation', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+          onRefresh={mockOnRefresh}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Approve'));
+      fireEvent.click(screen.getByText('Confirm Approval'));
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/admin/claims/claim-123/approve',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      });
+
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Claim Approved', {
+          description:
+            'ACME Staffing Solutions claim has been approved. User role updated to agency_owner.',
+        });
+      });
+
+      expect(mockOnClose).toHaveBeenCalled();
+      expect(mockOnRefresh).toHaveBeenCalled();
+    });
+
+    it('should show error toast when approve API fails', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: { message: 'Failed to approve claim' } }),
+      });
+
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Approve'));
+      fireEvent.click(screen.getByText('Confirm Approval'));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Approval Failed', {
+          description: 'Failed to approve claim',
+        });
+      });
+
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+
+    it('should disable buttons during approval processing', async () => {
+      let resolveApproval: (value: any) => void;
+      const approvalPromise = new Promise((resolve) => {
+        resolveApproval = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockReturnValueOnce(approvalPromise);
+
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Approve'));
+      fireEvent.click(screen.getByText('Confirm Approval'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Approving...')).toBeInTheDocument();
+        expect(screen.getByText('Approving...')).toBeDisabled();
+      });
+
+      resolveApproval!({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+    });
+  });
+
+  describe('Rejection Dialog', () => {
+    it('should open rejection dialog when Reject is clicked without onReject callback', () => {
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Reject'));
+
+      expect(screen.getByTestId('rejection-dialog')).toBeInTheDocument();
+      expect(
+        screen.getByText('Agency: ACME Staffing Solutions')
+      ).toBeInTheDocument();
+    });
+
+    it('should not open rejection dialog when onReject callback is provided', () => {
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+          onReject={mockOnReject}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Reject'));
+
+      expect(mockOnReject).toHaveBeenCalledWith('claim-123');
+      expect(screen.queryByTestId('rejection-dialog')).not.toBeInTheDocument();
+    });
+
+    it('should close rejection dialog when Cancel Rejection is clicked', () => {
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Reject'));
+      expect(screen.getByTestId('rejection-dialog')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Cancel Rejection'));
+      expect(screen.queryByTestId('rejection-dialog')).not.toBeInTheDocument();
+    });
+
+    it('should call reject API with reason and show success toast on confirmation', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+          onRefresh={mockOnRefresh}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Reject'));
+      fireEvent.click(screen.getByText('Confirm Rejection'));
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/admin/claims/claim-123/reject',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ rejection_reason: 'Test rejection reason' }),
+          }
+        );
+      });
+
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Claim Rejected', {
+          description:
+            'ACME Staffing Solutions claim has been rejected. Requester will be notified.',
+        });
+      });
+
+      expect(mockOnClose).toHaveBeenCalled();
+      expect(mockOnRefresh).toHaveBeenCalled();
+    });
+
+    it('should show error toast when reject API fails', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: { message: 'Failed to reject claim' } }),
+      });
+
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Reject'));
+      fireEvent.click(screen.getByText('Confirm Rejection'));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Rejection Failed', {
+          description: 'Failed to reject claim',
+        });
+      });
+
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+
+    it('should disable buttons during rejection processing', async () => {
+      let resolveRejection: (value: any) => void;
+      const rejectionPromise = new Promise((resolve) => {
+        resolveRejection = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockReturnValueOnce(rejectionPromise);
+
+      render(
+        <ClaimDetailModal
+          isOpen={true}
+          claim={mockClaim}
+          onClose={mockOnClose}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Reject'));
+      fireEvent.click(screen.getByText('Confirm Rejection'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Rejecting...')).toBeInTheDocument();
+        expect(screen.getByText('Rejecting...')).toBeDisabled();
+      });
+
+      resolveRejection!({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
     });
   });
 });
