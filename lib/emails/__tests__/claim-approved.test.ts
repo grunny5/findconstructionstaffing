@@ -319,9 +319,14 @@ describe('Claim Approved Email Templates', () => {
       const html = generateClaimApprovedHTML(paramsWithSpecialChars);
       const text = generateClaimApprovedText(paramsWithSpecialChars);
 
-      // Both should include the content
-      expect(html).toContain('Test & Construction <Special> Staffing');
-      expect(text).toContain('Test & Construction <Special> Staffing');
+      // HTML should include escaped entities
+      expect(html).toContain(
+        'Test &amp; Construction &lt;Special&gt; Staffing'
+      );
+      // Plain text should also include escaped entities for safety
+      expect(text).toContain(
+        'Test &amp; Construction &lt;Special&gt; Staffing'
+      );
     });
 
     it('should handle different site URLs correctly', () => {

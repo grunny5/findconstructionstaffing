@@ -5,6 +5,21 @@
  * Includes congratulations message, agency details, and link to dashboard.
  */
 
+/**
+ * Escapes HTML special characters to prevent HTML injection.
+ *
+ * @param unsafe - The string to escape
+ * @returns The escaped string safe for HTML insertion
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 interface ClaimApprovedEmailParams {
   recipientEmail: string;
   recipientName?: string;
@@ -30,6 +45,10 @@ export function generateClaimApprovedHTML(
   const { recipientEmail, recipientName, agencyName, agencySlug, siteUrl } =
     params;
 
+  const safeAgencyName = escapeHtml(agencyName);
+  const safeRecipientName = recipientName
+    ? escapeHtml(recipientName)
+    : undefined;
   const dashboardUrl = `${siteUrl}/dashboard/agency/${agencySlug}`;
 
   return `
@@ -38,7 +57,7 @@ export function generateClaimApprovedHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claim Approved - ${agencyName}</title>
+  <title>Claim Approved - ${safeAgencyName}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb; color: #111827;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f9fafb;">
@@ -70,11 +89,11 @@ export function generateClaimApprovedHTML(
               <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827; text-align: center;">Congratulations! Your Claim Has Been Approved</h2>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #374151;">
-                ${recipientName ? `Hi ${recipientName},` : 'Hello,'}
+                ${safeRecipientName ? `Hi ${safeRecipientName},` : 'Hello,'}
               </p>
 
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 24px; color: #374151;">
-                Great news! Your claim request for <strong>${agencyName}</strong> has been approved. You now have full management access to this agency profile.
+                Great news! Your claim request for <strong>${safeAgencyName}</strong> has been approved. You now have full management access to this agency profile.
               </p>
 
               <!-- Agency Details Box -->
@@ -89,7 +108,7 @@ export function generateClaimApprovedHTML(
                       </tr>
                       <tr>
                         <td style="padding-bottom: 16px;">
-                          <span style="font-size: 16px; color: #111827; font-weight: 600;">${agencyName}</span>
+                          <span style="font-size: 16px; color: #111827; font-weight: 600;">${safeAgencyName}</span>
                         </td>
                       </tr>
                       <tr>
@@ -180,19 +199,23 @@ export function generateClaimApprovedText(
   const { recipientEmail, recipientName, agencyName, agencySlug, siteUrl } =
     params;
 
+  const safeAgencyName = escapeHtml(agencyName);
+  const safeRecipientName = recipientName
+    ? escapeHtml(recipientName)
+    : undefined;
   const dashboardUrl = `${siteUrl}/dashboard/agency/${agencySlug}`;
 
   return `
 FINDCONSTRUCTIONSTAFFING
 Congratulations! Your Claim Has Been Approved
 
-${recipientName ? `Hi ${recipientName},` : 'Hello,'}
+${safeRecipientName ? `Hi ${safeRecipientName},` : 'Hello,'}
 
-Great news! Your claim request for ${agencyName} has been approved. You now have full management access to this agency profile.
+Great news! Your claim request for ${safeAgencyName} has been approved. You now have full management access to this agency profile.
 
 AGENCY DETAILS
 ---------------
-Agency: ${agencyName}
+Agency: ${safeAgencyName}
 Your Role: Agency Owner
 
 WHAT YOU CAN DO NOW

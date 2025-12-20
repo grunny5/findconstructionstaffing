@@ -5,6 +5,21 @@
  * Includes rejection reason, resubmit instructions, and support contact.
  */
 
+/**
+ * Escapes HTML special characters to prevent HTML injection.
+ *
+ * @param unsafe - The string to escape
+ * @returns The escaped string safe for HTML insertion
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 interface ClaimRejectedEmailParams {
   recipientEmail: string;
   recipientName?: string;
@@ -38,6 +53,11 @@ export function generateClaimRejectedHTML(
     siteUrl,
   } = params;
 
+  const safeAgencyName = escapeHtml(agencyName);
+  const safeRecipientName = recipientName
+    ? escapeHtml(recipientName)
+    : undefined;
+  const safeRejectionReason = escapeHtml(rejectionReason);
   const resubmitUrl = `${siteUrl}/claim/${agencySlug}`;
 
   return `
@@ -46,7 +66,7 @@ export function generateClaimRejectedHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claim Request Update - ${agencyName}</title>
+  <title>Claim Request Update - ${safeAgencyName}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb; color: #111827;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f9fafb;">
@@ -66,11 +86,11 @@ export function generateClaimRejectedHTML(
               <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">Claim Request Update</h2>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #374151;">
-                ${recipientName ? `Hi ${recipientName},` : 'Hello,'}
+                ${safeRecipientName ? `Hi ${safeRecipientName},` : 'Hello,'}
               </p>
 
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 24px; color: #374151;">
-                Thank you for your interest in claiming <strong>${agencyName}</strong> on FindConstructionStaffing. After reviewing your request, we are unable to approve it at this time.
+                Thank you for your interest in claiming <strong>${safeAgencyName}</strong> on FindConstructionStaffing. After reviewing your request, we are unable to approve it at this time.
               </p>
 
               <!-- Rejection Reason Box -->
@@ -78,7 +98,7 @@ export function generateClaimRejectedHTML(
                 <tr>
                   <td style="padding: 24px;">
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #991b1b;">Reason for Denial</h3>
-                    <p style="margin: 0; font-size: 14px; line-height: 22px; color: #7f1d1d; white-space: pre-wrap;">${rejectionReason}</p>
+                    <p style="margin: 0; font-size: 14px; line-height: 22px; color: #7f1d1d; white-space: pre-wrap;">${safeRejectionReason}</p>
                   </td>
                 </tr>
               </table>
@@ -165,19 +185,24 @@ export function generateClaimRejectedText(
     siteUrl,
   } = params;
 
+  const safeAgencyName = escapeHtml(agencyName);
+  const safeRecipientName = recipientName
+    ? escapeHtml(recipientName)
+    : undefined;
+  const safeRejectionReason = escapeHtml(rejectionReason);
   const resubmitUrl = `${siteUrl}/claim/${agencySlug}`;
 
   return `
 FINDCONSTRUCTIONSTAFFING
 Claim Request Update
 
-${recipientName ? `Hi ${recipientName},` : 'Hello,'}
+${safeRecipientName ? `Hi ${safeRecipientName},` : 'Hello,'}
 
-Thank you for your interest in claiming ${agencyName} on FindConstructionStaffing. After reviewing your request, we are unable to approve it at this time.
+Thank you for your interest in claiming ${safeAgencyName} on FindConstructionStaffing. After reviewing your request, we are unable to approve it at this time.
 
 REASON FOR DENIAL
 ------------------
-${rejectionReason}
+${safeRejectionReason}
 
 WHAT YOU CAN DO
 ----------------

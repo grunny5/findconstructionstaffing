@@ -334,9 +334,14 @@ describe('Claim Rejected Email Templates', () => {
       const html = generateClaimRejectedHTML(paramsWithSpecialChars);
       const text = generateClaimRejectedText(paramsWithSpecialChars);
 
-      // Both should include the content
-      expect(html).toContain('Test & Construction <Special> Staffing');
-      expect(text).toContain('Test & Construction <Special> Staffing');
+      // HTML should include escaped entities
+      expect(html).toContain(
+        'Test &amp; Construction &lt;Special&gt; Staffing'
+      );
+      // Plain text should also include escaped entities for safety
+      expect(text).toContain(
+        'Test &amp; Construction &lt;Special&gt; Staffing'
+      );
     });
 
     it('should handle special characters in rejection reason', () => {
@@ -349,9 +354,11 @@ describe('Claim Rejected Email Templates', () => {
       const html = generateClaimRejectedHTML(paramsWithSpecialChars);
       const text = generateClaimRejectedText(paramsWithSpecialChars);
 
-      // Both should include the content
-      expect(html).toContain(paramsWithSpecialChars.rejectionReason);
-      expect(text).toContain(paramsWithSpecialChars.rejectionReason);
+      // Should include escaped entities
+      const escapedReason =
+        'Your email domain &quot;example.com&quot; doesn&#039;t match agency website &amp; documentation shows &lt;different&gt; ownership';
+      expect(html).toContain(escapedReason);
+      expect(text).toContain(escapedReason);
     });
 
     it('should handle different site URLs correctly', () => {
