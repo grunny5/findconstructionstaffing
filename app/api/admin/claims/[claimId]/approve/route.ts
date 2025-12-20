@@ -14,6 +14,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import { Resend } from 'resend';
+import {
+  generateClaimApprovedHTML,
+  generateClaimApprovedText,
+} from '@/lib/emails/claim-approved';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
@@ -126,11 +131,17 @@ export async function POST(
     }
 
     // ========================================================================
-    // 4. FETCH CLAIM REQUEST
+    // 4. FETCH CLAIM REQUEST WITH AGENCY AND USER DATA
     // ========================================================================
     const { data: claim, error: claimError } = await supabase
       .from('agency_claim_requests')
-      .select('*')
+      .select(
+        `
+        *,
+        agency:agencies(name, slug),
+        user:profiles(email, full_name)
+      `
+      )
       .eq('id', claimId)
       .single();
 
@@ -305,7 +316,70 @@ export async function POST(
     }
 
     // ========================================================================
-    // 7. RETURN SUCCESS RESPONSE
+    // 7. SEND APPROVAL EMAIL (NON-BLOCKING)
+    // ========================================================================
+    // Send email in background - don't fail request if email fails
+    try {
+      const resendApiKey = process.env.RESEND_API_KEY;
+
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+        // Type assertion for joined data
+        const agency = claim.agency as unknown as {
+          name: string;
+          slug: string;
+        } | null;
+        const userProfile = claim.user as unknown as {
+          email: string;
+          full_name: string | null;
+        } | null;
+
+        if (agency && userProfile) {
+          const emailHtml = generateClaimApprovedHTML({
+            recipientEmail: userProfile.email,
+            recipientName: userProfile.full_name || undefined,
+            agencyName: agency.name,
+            agencySlug: agency.slug,
+            siteUrl,
+          });
+
+          const emailText = generateClaimApprovedText({
+            recipientEmail: userProfile.email,
+            recipientName: userProfile.full_name || undefined,
+            agencyName: agency.name,
+            agencySlug: agency.slug,
+            siteUrl,
+          });
+
+          await resend.emails.send({
+            from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+            to: userProfile.email,
+            subject: `Claim Approved - ${agency.name}`,
+            html: emailHtml,
+            text: emailText,
+          });
+
+          console.log(
+            `Approval email sent to ${userProfile.email} for claim ${claimId}`
+          );
+        } else {
+          console.warn(
+            'Missing agency or user data for approval email - skipping email send'
+          );
+        }
+      } else {
+        console.warn('RESEND_API_KEY not configured - skipping approval email');
+      }
+    } catch (emailError) {
+      // Log error but don't fail the request - claim was approved successfully
+      console.error('Error sending approval email:', emailError);
+    }
+
+    // ========================================================================
+    // 8. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {
