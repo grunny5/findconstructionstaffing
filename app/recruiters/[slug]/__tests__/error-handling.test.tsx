@@ -7,7 +7,7 @@ jest.mock('@/lib/auth/auth-context', () => ({
   useAuth: jest.fn(() => ({
     user: null,
     profile: null,
-      agencySlug: null,
+    agencySlug: null,
     signOut: jest.fn(),
     loading: false,
     isAdmin: false,

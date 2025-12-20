@@ -138,7 +138,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -165,7 +165,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -191,7 +191,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -224,7 +224,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -254,7 +254,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: null,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -275,7 +275,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -307,7 +307,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -335,7 +335,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -362,7 +362,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -388,7 +388,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -417,7 +417,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -448,7 +448,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -486,7 +486,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -512,7 +512,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -539,7 +539,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -568,7 +568,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
@@ -597,7 +597,7 @@ describe('ClaimStatusList', () => {
       mockedUseAuth.mockReturnValue({
         user: mockUser as any,
         profile: null,
-      agencySlug: null,
+        agencySlug: null,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),

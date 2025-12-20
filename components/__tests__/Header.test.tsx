@@ -21,7 +21,7 @@ jest.mock('@/lib/auth/auth-context', () => ({
   useAuth: jest.fn(() => ({
     user: null,
     profile: null,
-      agencySlug: null,
+    agencySlug: null,
     signOut: jest.fn(),
     loading: false,
   })),
@@ -285,7 +285,7 @@ describe('Header', () => {
       mockUseAuth.mockReturnValue({
         user: { id: '123', email: 'user@example.com' } as any,
         profile: { id: '123', role: 'user', email: 'user@example.com' } as any,
-      agencySlug: null,
+        agencySlug: null,
         signOut: jest.fn(),
         loading: false,
         signIn: jest.fn(),

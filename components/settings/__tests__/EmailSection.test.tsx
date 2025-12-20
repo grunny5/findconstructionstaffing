@@ -30,7 +30,7 @@ const createMockAuthContext = (overrides = {}) => ({
     last_password_change: '2023-01-15T10:00:00Z',
   },
   loading: false,
-      agencySlug: null,
+  agencySlug: null,
   signIn: jest.fn(),
   signUp: jest.fn(),
   signOut: jest.fn(),
