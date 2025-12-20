@@ -895,7 +895,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 
 ---
 
-### Task 2.2.2: Create API Endpoint for Rejecting Claim
+### Task 2.2.2: Create API Endpoint for Rejecting Claim ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to reject claim with reason
@@ -907,27 +907,37 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
   - Require rejection reason
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] POST endpoint at `/api/admin/claims/[claimId]/reject`
-  - [ ] Requires admin role (403 if not)
-  - [ ] Request body: `rejection_reason` (required, min 20 characters)
-  - [ ] Updates `agency_claim_requests.status` to 'rejected'
-  - [ ] Sets `rejection_reason` field
-  - [ ] Sets `reviewed_by` to admin's user ID
-  - [ ] Sets `reviewed_at` to current timestamp
-  - [ ] Creates audit log entry (action: 'rejected', admin_id, notes: reason)
-  - [ ] Returns 200 with updated claim data
-  - [ ] Returns 400 if reason missing or too short
-  - [ ] Returns 404 if claim doesn't exist
-  - [ ] Returns 409 if claim already processed
+  - [x] POST endpoint at `/api/admin/claims/[claimId]/reject`
+  - [x] Requires admin role (403 if not)
+  - [x] Request body: `rejection_reason` (required, min 20 characters)
+  - [x] Updates `agency_claim_requests.status` to 'rejected'
+  - [x] Sets `rejection_reason` field
+  - [x] Sets `reviewed_by` to admin's user ID
+  - [x] Sets `reviewed_at` to current timestamp
+  - [x] Creates audit log entry (action: 'rejected', admin_id, notes: reason)
+  - [x] Returns 200 with updated claim data
+  - [x] Returns 400 if reason missing or too short
+  - [x] Returns 404 if claim doesn't exist
+  - [x] Returns 409 if claim already processed
 - **Definition of Done:**
-  - [ ] Endpoint implementation complete
-  - [ ] Unit tests verify validation (reason required)
-  - [ ] Unit tests verify database updates
-  - [ ] Integration test: full rejection flow
-  - [ ] PR submitted
-  - [ ] **Final Check:** Rejection reason required
+  - [x] Endpoint implementation complete
+  - [x] Unit tests verify validation (reason required)
+  - [x] Unit tests verify database updates
+  - [x] Integration test: full rejection flow
+  - [x] PR submitted
+  - [x] **Final Check:** Rejection reason required
 
 **Estimated Effort:** 3 hours
+**Actual Effort:** 2.5 hours
+
+**Implementation Notes:**
+- Created POST endpoint at `app/api/admin/claims/[claimId]/reject/route.ts` (287 lines)
+- Admin-only access enforced via profiles.role === 'admin' check (returns 403 if not admin)
+- Request body validation: rejection_reason required, min 20 characters, trimmed before saving
+- Updates only claim status to 'rejected' (no multi-table updates like approve endpoint)
+- Creates audit log entry with reason in notes field
+- 14 comprehensive tests covering all scenarios (authentication, validation, success, errors)
+- All tests passing, TypeScript/ESLint/Prettier compliant
 
 ---
 
