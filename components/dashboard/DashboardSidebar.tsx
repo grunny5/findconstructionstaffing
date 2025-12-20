@@ -33,6 +33,18 @@ interface NavItem {
   disabled?: boolean;
 }
 
+/**
+ * Render a responsive dashboard sidebar for an agency.
+ *
+ * Displays a mobile slide-in menu and a fixed desktop aside containing navigation
+ * links (Overview, Profile, Services, Analytics). Active link highlighting and
+ * disabled-item handling ("Coming Soon") are applied automatically based on the
+ * current route and the `agencySlug`.
+ *
+ * @param agencySlug - Slug used to construct each navigation item's href
+ * @param agencyName - Display name shown in the sidebar header and mobile sheet title
+ * @returns A React element containing the agency dashboard navigation UI
+ */
 export function DashboardSidebar({
   agencySlug,
   agencyName,

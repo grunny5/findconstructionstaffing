@@ -8,6 +8,17 @@ interface DashboardPageProps {
   params: { slug: string };
 }
 
+/**
+ * Render the dashboard page for an agency identified by the route slug.
+ *
+ * Checks authentication and user role, loads the agency by `params.slug`, verifies ownership,
+ * and returns the agency dashboard UI. If the user is unauthenticated, not an agency owner,
+ * not the owner of the agency, or the agency is missing, the function triggers navigation (redirect or 404)
+ * and returns `null`.
+ *
+ * @param params.slug - The agency slug from the route
+ * @returns A React element representing the agency dashboard, or `null` when navigation is redirected or a 404 is triggered
+ */
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const supabase = createClient();
 

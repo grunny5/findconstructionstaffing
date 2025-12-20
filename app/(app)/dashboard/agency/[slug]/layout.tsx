@@ -7,6 +7,14 @@ interface DashboardLayoutProps {
   params: { slug: string };
 }
 
+/**
+ * Render the agency dashboard layout including a populated sidebar and main content.
+ *
+ * Fetches the agency by `params.slug`; if no agency is found, calls `notFound()` to render a 404.
+ *
+ * @param params - Route parameters; must contain `slug`, the agency's slug.
+ * @returns The React element for the agency dashboard layout with a sidebar showing the agency name and the provided `children` rendered in the main content area.
+ */
 export default async function DashboardLayout({
   children,
   params,

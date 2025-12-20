@@ -57,15 +57,13 @@ interface DashboardResponse {
 }
 
 /**
- * GET /api/agencies/[slug]/dashboard
- * Fetch dashboard data for agency owners
+ * Retrieves the dashboard payload for the owner of the specified agency.
  *
- * @requires Authentication - User must be logged in
- * @requires Ownership - User must own the agency (claimed_by = user.id)
- * @returns Complete agency data, stats, and recent edit history
- * @returns 401 if not authenticated
- * @returns 403 if user doesn't own the agency
- * @returns 404 if agency doesn't exist
+ * Fetches agency details (including trades and regions), basic dashboard stats, and up to five recent profile edits.
+ *
+ * @param request - The incoming NextRequest
+ * @param params.slug - The agency slug identifying which agency to load
+ * @returns A NextResponse containing a DashboardResponse with `agency`, `stats`, and `recent_edits` on success, or an ErrorResponse on failure
  */
 export async function GET(
   request: NextRequest,

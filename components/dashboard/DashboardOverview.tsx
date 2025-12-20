@@ -30,6 +30,13 @@ interface DashboardOverviewProps {
   isLoading?: boolean;
 }
 
+/**
+ * Render the dashboard overview for an agency, including stats, profile completion, quick actions, recent activity, and help.
+ *
+ * @param agency - The agency whose data populates the dashboard (profile, completion, and activity).
+ * @param isLoading - If true, render the loading skeleton instead of the dashboard content.
+ * @returns The dashboard UI element for the provided agency; when `isLoading` is true, the loading skeleton is returned.
+ */
 export function DashboardOverview({
   agency,
   isLoading = false,
@@ -247,6 +254,11 @@ export function DashboardOverview({
   );
 }
 
+/**
+ * Skeleton UI displayed while the dashboard overview is loading.
+ *
+ * @returns A JSX element containing placeholder stat cards, profile-completion and quick-action blocks, and recent activity/help cards arranged to match the DashboardOverview layout.
+ */
 function DashboardOverviewSkeleton() {
   return (
     <div className="space-y-6">
