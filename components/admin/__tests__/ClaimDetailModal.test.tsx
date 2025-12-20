@@ -5,7 +5,8 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ClaimDetailModal, type ClaimRequest } from '../ClaimDetailModal';
+import { ClaimDetailModal } from '../ClaimDetailModal';
+import type { ClaimRequest } from '@/types/api';
 import type { ClaimStatus } from '@/types/database';
 
 // Mock the ClaimVerificationChecklist component

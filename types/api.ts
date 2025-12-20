@@ -98,10 +98,10 @@ export interface PaginationMetadata {
   offset: number;
   /** Whether more records exist beyond this page */
   hasMore: boolean;
-  /** Current page number (1-indexed) */
-  page: number;
-  /** Total number of pages */
-  totalPages: number;
+  /** Current page number (1-indexed) - optional for APIs that don't use page-based pagination */
+  page?: number;
+  /** Total number of pages - optional for APIs that don't use page-based pagination */
+  totalPages?: number;
 }
 
 /**

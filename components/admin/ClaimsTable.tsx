@@ -358,7 +358,7 @@ export function ClaimsTable() {
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
+      {pagination.totalPages && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-2">
           <p className="text-sm text-gray-600">
             Showing {pagination.offset + 1} to{' '}
