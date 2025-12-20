@@ -1,49 +1,73 @@
 'use client';
 
-import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, AlertTriangle } from 'lucide-react';
+import {
+  extractEmailDomain,
+  extractWebsiteDomain,
+} from '@/lib/utils/email-domain-verification';
 
 interface ClaimVerificationChecklistProps {
   emailDomainVerified: boolean;
   phoneProvided: boolean;
   positionProvided: boolean;
   verificationMethod: 'email' | 'phone' | 'manual';
+  businessEmail: string;
+  agencyWebsite: string | null;
 }
 
 interface ChecklistItemProps {
   label: string;
   passed: boolean;
   description?: string;
+  variant?: 'success' | 'warning' | 'error';
 }
 
-function ChecklistItem({ label, passed, description }: ChecklistItemProps) {
+function ChecklistItem({
+  label,
+  passed,
+  description,
+  variant,
+}: ChecklistItemProps) {
+  // Determine styling based on variant or passed state
+  const getStyles = () => {
+    if (variant === 'warning') {
+      return {
+        icon: <AlertTriangle className="h-5 w-5 text-orange-600" />,
+        textColor: 'text-orange-900',
+        badgeColor: 'text-orange-700',
+        badge: 'REVIEW',
+      };
+    } else if (passed) {
+      return {
+        icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+        textColor: 'text-green-900',
+        badgeColor: 'text-green-700',
+        badge: 'PASS',
+      };
+    } else {
+      return {
+        icon: <XCircle className="h-5 w-5 text-red-600" />,
+        textColor: 'text-red-900',
+        badgeColor: 'text-red-700',
+        badge: 'FAIL',
+      };
+    }
+  };
+
+  const styles = getStyles();
+
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg border bg-white">
-      <div className="flex-shrink-0 mt-0.5">
-        {passed ? (
-          <CheckCircle className="h-5 w-5 text-green-600" />
-        ) : (
-          <XCircle className="h-5 w-5 text-red-600" />
-        )}
-      </div>
+      <div className="flex-shrink-0 mt-0.5">{styles.icon}</div>
       <div className="flex-1">
-        <p
-          className={`text-sm font-medium ${
-            passed ? 'text-green-900' : 'text-red-900'
-          }`}
-        >
-          {label}
-        </p>
+        <p className={`text-sm font-medium ${styles.textColor}`}>{label}</p>
         {description && (
           <p className="text-xs text-gray-600 mt-0.5">{description}</p>
         )}
       </div>
       <div className="flex-shrink-0">
-        <span
-          className={`text-xs font-semibold ${
-            passed ? 'text-green-700' : 'text-red-700'
-          }`}
-        >
-          {passed ? 'PASS' : 'FAIL'}
+        <span className={`text-xs font-semibold ${styles.badgeColor}`}>
+          {styles.badge}
         </span>
       </div>
     </div>
@@ -55,7 +79,40 @@ export function ClaimVerificationChecklist({
   phoneProvided,
   positionProvided,
   verificationMethod,
+  businessEmail,
+  agencyWebsite,
 }: ClaimVerificationChecklistProps) {
+  // Extract domains for detailed display
+  let emailDomain = '';
+  let websiteDomain = '';
+
+  try {
+    emailDomain = extractEmailDomain(businessEmail);
+  } catch (error) {
+    emailDomain = 'invalid';
+  }
+
+  if (agencyWebsite) {
+    try {
+      websiteDomain = extractWebsiteDomain(agencyWebsite);
+    } catch (error) {
+      websiteDomain = 'invalid';
+    }
+  }
+
+  // Build detailed domain verification description
+  const getDomainVerificationDescription = () => {
+    if (!agencyWebsite) {
+      return 'No agency website available for domain verification. Manual review required.';
+    }
+
+    if (emailDomainVerified) {
+      return `✓ Email domain (${emailDomain}) matches agency website (${websiteDomain})`;
+    } else {
+      return `Email domain (${emailDomain}) does not match website domain (${websiteDomain}). Verify ownership through other means.`;
+    }
+  };
+
   // Calculate verification score
   const checks = [emailDomainVerified, phoneProvided, positionProvided];
   const passedChecks = checks.filter(Boolean).length;
@@ -116,13 +173,12 @@ export function ClaimVerificationChecklist({
       {/* Checklist Items */}
       <div className="space-y-2">
         <ChecklistItem
-          label="Email Domain Match"
+          label="Email Domain Verification"
           passed={emailDomainVerified}
-          description={
-            emailDomainVerified
-              ? 'Business email domain matches agency website'
-              : 'Business email domain does not match agency website'
+          variant={
+            !emailDomainVerified && agencyWebsite ? 'warning' : undefined
           }
+          description={getDomainVerificationDescription()}
         />
         <ChecklistItem
           label="Phone Number Provided"

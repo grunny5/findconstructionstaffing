@@ -355,6 +355,8 @@ export function ClaimDetailModal({
                 phoneProvided={!!claim.phone_number}
                 positionProvided={!!claim.position_title}
                 verificationMethod={claim.verification_method}
+                businessEmail={claim.business_email}
+                agencyWebsite={claim.agency.website}
               />
             </div>
 
