@@ -115,11 +115,13 @@ export function ClaimsTable() {
         const data: ClaimsApiResponse = await response.json();
         setClaims(data.data);
         setPagination(data.pagination);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching claims');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching claims';
+        setError(errorMessage);
         toast({
           title: 'Error',
-          description: err.message || 'Failed to load claim requests',
+          description: err instanceof Error ? err.message : 'Failed to load claim requests',
           variant: 'destructive',
         });
       } finally {

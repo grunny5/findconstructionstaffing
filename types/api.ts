@@ -6,6 +6,8 @@
  * type safety for API consumers.
  */
 
+import type { ClaimStatus } from './database';
+
 /**
  * Represents a trade specialty that agencies can offer
  */
@@ -254,7 +256,7 @@ export interface ClaimRequest {
   /** User requesting the claim */
   user_id: string;
   /** Current status of the claim */
-  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  status: ClaimStatus;
   /** Business email of the requester */
   business_email: string;
   /** Phone number (optional) */
