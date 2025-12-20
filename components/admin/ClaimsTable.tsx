@@ -20,7 +20,21 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ChevronLeft, ChevronRight, Eye, FileText } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ClaimStatus } from '@/types/database';
 import type {
@@ -64,6 +78,25 @@ const statusDisplayName = (status: ClaimStatus): string => {
     default:
       return status;
   }
+};
+
+// Verification badge variant mapping
+const verificationBadgeVariant = (
+  verified: boolean
+): 'default' | 'secondary' => {
+  return verified ? 'default' : 'secondary'; // Green for verified, gray for manual review
+};
+
+// Verification display text
+const verificationDisplayText = (verified: boolean): string => {
+  return verified ? 'Domain Verified' : 'Manual Review';
+};
+
+// Verification tooltip text
+const verificationTooltipText = (verified: boolean): string => {
+  return verified
+    ? 'Email domain matches agency website - automatically verified'
+    : 'Email domain does not match website - requires manual verification';
 };
 
 export function ClaimsTable() {
@@ -214,6 +247,7 @@ export function ClaimsTable() {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Verification</TableHead>
                 <TableHead>Submitted Date</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -235,6 +269,9 @@ export function ClaimsTable() {
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-6 w-[80px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-[120px]" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-4 w-[100px]" />
@@ -301,6 +338,7 @@ export function ClaimsTable() {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Verification</TableHead>
               <TableHead>Submitted Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -308,7 +346,7 @@ export function ClaimsTable() {
           <TableBody>
             {claims.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
                     <FileText className="h-8 w-8" />
                     <p className="font-medium">No claim requests found</p>
@@ -343,6 +381,42 @@ export function ClaimsTable() {
                     <Badge variant={statusBadgeVariant(claim.status)}>
                       {statusDisplayName(claim.status)}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1.5">
+                            {claim.email_domain_verified ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <AlertCircle className="h-4 w-4 text-gray-400" />
+                            )}
+                            <Badge
+                              variant={verificationBadgeVariant(
+                                claim.email_domain_verified
+                              )}
+                              aria-label={
+                                claim.email_domain_verified
+                                  ? 'Email domain verified'
+                                  : 'Manual review required'
+                              }
+                            >
+                              {verificationDisplayText(
+                                claim.email_domain_verified
+                              )}
+                            </Badge>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            {verificationTooltipText(
+                              claim.email_domain_verified
+                            )}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell className="text-sm">
                     {formatDate(claim.created_at)}

@@ -1171,7 +1171,7 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
 
 ---
 
-### Task 2.3.2: Add Domain Verification Badge to Claims Table
+### Task 2.3.2: Add Domain Verification Badge to Claims Table ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Show visual indicator for domain-verified claims in admin table
@@ -1183,20 +1183,48 @@ All tests passing, TypeScript strict mode compliant, Prettier formatted
   - Conditional rendering
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] New column "Verification" added to table
-  - [ ] Shows green checkmark badge "Domain Verified" if `email_domain_verified = true`
-  - [ ] Shows gray badge "Manual Review" if `email_domain_verified = false`
-  - [ ] Tooltip on hover explains what verification means
-  - [ ] Badge colors match status colors (green = verified)
-  - [ ] Mobile responsive (badge stacks on small screens)
+  - [x] New column "Verification" added to table
+  - [x] Shows green checkmark badge "Domain Verified" if `email_domain_verified = true`
+  - [x] Shows gray badge "Manual Review" if `email_domain_verified = false`
+  - [x] Tooltip on hover explains what verification means
+  - [x] Badge colors match status colors (green = verified)
+  - [x] Mobile responsive (badge stacks on small screens)
 - **Definition of Done:**
-  - [ ] Badge displays correctly in table
-  - [ ] Component tests verify badge logic
-  - [ ] Accessibility: badge has proper ARIA label
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Visually clear indicator
+  - [x] Badge displays correctly in table
+  - [x] Component tests verify badge logic
+  - [x] Accessibility: badge has proper ARIA label
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Visually clear indicator
 
 **Estimated Effort:** 2 hours
+**Actual Effort:** 1.5 hours
+
+**Implementation Notes:**
+
+- Added shadcn/ui Tooltip component (new installation)
+- Created 3 helper functions for verification badge logic:
+  - `verificationBadgeVariant()` - Returns 'default' (green) or 'secondary' (gray)
+  - `verificationDisplayText()` - Returns "Domain Verified" or "Manual Review"
+  - `verificationTooltipText()` - Returns explanatory text for tooltip
+- Added "Verification" column between "Status" and "Submitted Date" columns
+- Badge displays with icon (CheckCircle2 for verified, AlertCircle for manual review)
+- Tooltip shows on hover: "Email domain matches agency website - automatically verified" or "Email domain does not match website - requires manual verification"
+- ARIA labels added: "Email domain verified" or "Manual review required"
+- Updated skeleton loading state to include verification column skeleton
+- Updated empty state colSpan from 7 to 8 for new column
+- Created 8 comprehensive component tests in ClaimsTable.test.tsx:
+  - Display "Domain Verified" badge when true
+  - Display "Manual Review" badge when false
+  - Display verification column header
+  - Include CheckCircle2 icon for verified claims
+  - Include AlertCircle icon for unverified claims
+  - Proper ARIA label for verified badge
+  - Proper ARIA label for manual review badge
+  - Display correct verification status for multiple claims
+- All 45 tests passing (37 existing + 8 new)
+- Mobile responsive: badge stacks properly on small screens due to flex layout
+- Green badge uses 'default' variant (matches approved status color)
+- Gray badge uses 'secondary' variant (neutral color for manual review)
 
 ---
 
