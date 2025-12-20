@@ -20,6 +20,16 @@ interface ClaimApprovalConfirmationProps {
   isLoading?: boolean;
 }
 
+/**
+ * Render a confirmation dialog to approve an agency claim for the specified agency.
+ *
+ * @param isOpen - Whether the dialog is visible.
+ * @param agencyName - Agency name displayed in the dialog title.
+ * @param onConfirm - Callback invoked when the user confirms the approval.
+ * @param onCancel - Callback invoked when the user cancels or the dialog is closed.
+ * @param isLoading - When true, disables actions and shows a loading label on the confirm button.
+ * @returns The confirmation dialog UI for approving an agency claim.
+ */
 export function ClaimApprovalConfirmation({
   isOpen,
   agencyName,

@@ -15,8 +15,16 @@ interface ClaimRejectedEmailParams {
 }
 
 /**
- * Generates HTML version of claim rejection email
- */
+ * Create an HTML email body notifying a recipient that their claim request was denied.
+ *
+ * @param params - Parameters for the email:
+ *   - recipientEmail: recipient's email address
+ *   - recipientName: optional recipient name used in the greeting
+ *   - agencyName: name of the agency being claimed
+ *   - agencySlug: agency path segment used to build the resubmission URL
+ *   - rejectionReason: reason shown in the denial section
+ *   - siteUrl: base site URL used for links
+ * @returns The complete HTML string for the claim rejection email, including a reason block, guidance for resubmission, a "Resubmit Claim Request" link (siteUrl/claim/{agencySlug}), support contact, and footer. */
 export function generateClaimRejectedHTML(
   params: ClaimRejectedEmailParams
 ): string {
@@ -140,7 +148,9 @@ export function generateClaimRejectedHTML(
 }
 
 /**
- * Generates plain text version of claim rejection email
+ * Generate a plain-text email notifying a user that their claim request was rejected.
+ *
+ * @returns A plain-text email body containing a greeting, the reason for denial, guidance on how to resubmit (including a resubmit URL), support contact information, and a footer with the current year and site URL.
  */
 export function generateClaimRejectedText(
   params: ClaimRejectedEmailParams

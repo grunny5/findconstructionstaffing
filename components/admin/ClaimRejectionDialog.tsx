@@ -25,6 +25,16 @@ interface ClaimRejectionDialogProps {
 
 const MIN_REASON_LENGTH = 20;
 
+/**
+ * Modal dialog that collects and validates a rejection reason and invokes callbacks on confirm or cancel.
+ *
+ * @param isOpen - Whether the dialog is visible.
+ * @param agencyName - Agency name shown in the dialog title.
+ * @param onConfirm - Called with the trimmed rejection reason when the input meets the minimum length requirement.
+ * @param onCancel - Called when the dialog is dismissed or the Cancel action is triggered.
+ * @param isLoading - When true, disables inputs and shows a loading state for the confirm action.
+ * @returns The dialog element to render.
+ */
 export function ClaimRejectionDialog({
   isOpen,
   agencyName,

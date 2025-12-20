@@ -24,53 +24,9 @@ import {
 export const dynamic = 'force-dynamic';
 
 /**
- * POST handler for rejecting a claim request (admin-only)
+ * Rejects an agency claim request identified by `claimId`, records the admin review and rejection reason, creates an audit log entry, and optionally sends a rejection email to the requester.
  *
- * @param request - Next.js request object with rejection_reason in body
- * @param params - Route parameters containing claimId
- * @returns JSON response with updated claim data or error
- *
- * Request Body:
- * ```json
- * {
- *   "rejection_reason": "string (min 20 characters)"
- * }
- * ```
- *
- * Success Response (200):
- * ```json
- * {
- *   "data": {
- *     "id": "uuid",
- *     "status": "rejected",
- *     "rejection_reason": "string",
- *     "reviewed_by": "admin-uuid",
- *     "reviewed_at": "2024-01-01T00:00:00Z",
- *     "agency_id": "uuid",
- *     "user_id": "uuid",
- *     "business_email": "user@agency.com",
- *     "phone_number": "+1234567890",
- *     "position_title": "CEO",
- *     "verification_method": "email",
- *     "email_domain_verified": true,
- *     "additional_notes": "string | null",
- *     "created_at": "2024-01-01T00:00:00Z",
- *     "updated_at": "2024-01-01T00:00:00Z"
- *   },
- *   "message": "Claim rejected successfully. Requester will be notified."
- * }
- * ```
- *
- * Error Response (4xx/5xx):
- * ```json
- * {
- *   "error": {
- *     "code": "ERROR_CODE",
- *     "message": "Human-readable error message"
- *   }
- * }
- * ```
- */
+ * @returns The updated claim record under `data` and a confirmation `message`. On failure the response contains an `error` object with `code` and `message`.
 export async function POST(
   request: NextRequest,
   { params }: { params: { claimId: string } }

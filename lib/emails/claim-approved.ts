@@ -14,8 +14,15 @@ interface ClaimApprovedEmailParams {
 }
 
 /**
- * Generates HTML version of claim approval email
- */
+ * Builds a complete HTML document for a claim-approved email notifying a recipient that they have management access to an agency.
+ *
+ * @param params - Input values used to populate the template:
+ *   - recipientEmail: recipient's email address (included for context)
+ *   - recipientName: optional recipient name used in the greeting
+ *   - agencyName: display name of the approved agency
+ *   - agencySlug: agency identifier used to construct the dashboard URL
+ *   - siteUrl: base site URL used to construct links
+ * @returns The full HTML email as a string ready for sending.
 export function generateClaimApprovedHTML(
   params: ClaimApprovedEmailParams
 ): string {
@@ -161,7 +168,10 @@ export function generateClaimApprovedHTML(
 }
 
 /**
- * Generates plain text version of claim approval email
+ * Generate the plain-text body for a claim approval email.
+ *
+ * @param params - Parameters including `recipientEmail`, optional `recipientName`, `agencyName`, `agencySlug`, and `siteUrl`.
+ * @returns The formatted plain-text email content.
  */
 export function generateClaimApprovedText(
   params: ClaimApprovedEmailParams
