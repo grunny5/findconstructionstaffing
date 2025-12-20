@@ -960,4 +960,186 @@ describe('ClaimsTable', () => {
       });
     });
   });
+
+  describe('Verification Badge', () => {
+    it('should display "Domain Verified" badge when email_domain_verified is true', async () => {
+      const verifiedClaim = {
+        ...mockClaim,
+        email_domain_verified: true,
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: [verifiedClaim],
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Domain Verified')).toBeInTheDocument();
+      });
+    });
+
+    it('should display "Manual Review" badge when email_domain_verified is false', async () => {
+      const unverifiedClaim = {
+        ...mockClaim,
+        email_domain_verified: false,
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: [unverifiedClaim],
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Manual Review')).toBeInTheDocument();
+      });
+    });
+
+    it('should display verification column header', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => mockApiResponse,
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        const headers = screen.getAllByRole('columnheader');
+        const verificationHeader = headers.find(
+          (header) => header.textContent === 'Verification'
+        );
+        expect(verificationHeader).toBeInTheDocument();
+      });
+    });
+
+    it('should include CheckCircle2 icon for verified claims', async () => {
+      const verifiedClaim = {
+        ...mockClaim,
+        email_domain_verified: true,
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: [verifiedClaim],
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        // Check for the badge which indicates the icon is rendered
+        const badge = screen.getByText('Domain Verified');
+        expect(badge).toBeInTheDocument();
+        // Icon should be in the same cell
+        const cell = badge.closest('td');
+        expect(cell).toBeInTheDocument();
+      });
+    });
+
+    it('should include AlertCircle icon for unverified claims', async () => {
+      const unverifiedClaim = {
+        ...mockClaim,
+        email_domain_verified: false,
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: [unverifiedClaim],
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        // Check for the badge which indicates the icon is rendered
+        const badge = screen.getByText('Manual Review');
+        expect(badge).toBeInTheDocument();
+        // Icon should be in the same cell
+        const cell = badge.closest('td');
+        expect(cell).toBeInTheDocument();
+      });
+    });
+
+    it('should have proper ARIA label for verified badge', async () => {
+      const verifiedClaim = {
+        ...mockClaim,
+        email_domain_verified: true,
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: [verifiedClaim],
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        const badge = screen.getByLabelText('Email domain verified');
+        expect(badge).toBeInTheDocument();
+      });
+    });
+
+    it('should have proper ARIA label for manual review badge', async () => {
+      const unverifiedClaim = {
+        ...mockClaim,
+        email_domain_verified: false,
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: [unverifiedClaim],
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        const badge = screen.getByLabelText('Manual review required');
+        expect(badge).toBeInTheDocument();
+      });
+    });
+
+    it('should display correct verification status for multiple claims', async () => {
+      const multipleClaims = [
+        { ...mockClaim, id: 'claim-1', email_domain_verified: true },
+        { ...mockClaim, id: 'claim-2', email_domain_verified: false },
+        { ...mockClaim, id: 'claim-3', email_domain_verified: true },
+      ];
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...mockApiResponse,
+          data: multipleClaims,
+        }),
+      });
+
+      render(<ClaimsTable />);
+
+      await waitFor(() => {
+        const verifiedBadges = screen.getAllByText('Domain Verified');
+        const manualReviewBadges = screen.getAllByText('Manual Review');
+        expect(verifiedBadges).toHaveLength(2);
+        expect(manualReviewBadges).toHaveLength(1);
+      });
+    });
+  });
 });
