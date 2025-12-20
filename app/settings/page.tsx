@@ -2,10 +2,11 @@
 
 import { ProfileSection } from '@/components/settings/ProfileSection';
 import { EmailSection } from '@/components/settings/EmailSection';
+import { ClaimStatusList } from '@/components/ClaimStatusList';
 
 /**
  * Settings profile page.
- * Displays user profile information and email management with inline editing capability.
+ * Displays user profile information, email management, and claim requests.
  */
 export default function SettingsProfilePage() {
   return (
@@ -20,6 +21,8 @@ export default function SettingsProfilePage() {
       <ProfileSection />
 
       <EmailSection />
+
+      <ClaimStatusList />
     </div>
   );
 }

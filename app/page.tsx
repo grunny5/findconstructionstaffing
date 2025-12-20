@@ -39,6 +39,7 @@ import { useAgencies } from '@/hooks/use-agencies';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Agency } from '@/types/api';
 import Link from 'next/link';
+import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
 
 function HomePageContent() {
   const router = useRouter();
@@ -240,6 +241,11 @@ function HomePageContent() {
   return (
     <div className="min-h-screen modern-gradient-bg">
       <Header />
+
+      {/* Claim Status Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <ClaimStatusBanner />
+      </div>
 
       {/* Modern Hero Section */}
       <section className="relative py-24 overflow-hidden">
