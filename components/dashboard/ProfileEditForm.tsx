@@ -197,9 +197,7 @@ export function ProfileEditForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Company Description
-              </label>
+              <FormLabel>Company Description</FormLabel>
               <div className="space-y-2" data-testid="description-editor">
                 <RichTextEditor
                   initialContent={field.value}

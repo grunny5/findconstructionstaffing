@@ -132,7 +132,7 @@ export function requiresAdminApproval(
 export function getPlainTextLength(html: string): number {
   if (!html) return 0;
 
-  // Use DOMParser for safer HTML parsing (doesn't execute scripts)
+  // Parse HTML safely using DOMParser (doesn't execute scripts)
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
