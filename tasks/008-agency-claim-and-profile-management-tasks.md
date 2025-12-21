@@ -2034,7 +2034,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
 
 ---
 
-### Task 4.1.1: Create Trade Selection Component
+### Task 4.1.1: Create Trade Selection Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Build multi-select interface for selecting trades from standardized list
@@ -2047,29 +2047,56 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Drag-and-drop for reordering (dnd-kit library)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Component displays currently selected trades as chips/badges
-  - [ ] "Add Trades" button opens selection modal
-  - [ ] Modal shows searchable list of all 48 trades
-  - [ ] Search filters trades in real-time
-  - [ ] Clicking trade checkbox adds to "Selected Trades" list
-  - [ ] Selected trades list shows drag handles for reordering
-  - [ ] Trades can be dragged to reorder (top 3 become "featured")
-  - [ ] Visual indicator for top 3 featured trades (star icon or badge)
-  - [ ] Remove button (X) on each selected trade chip
-  - [ ] Maximum 10 trades enforced with warning message
-  - [ ] Modal footer: "Save" and "Cancel" buttons
-  - [ ] Save closes modal and updates form state
-  - [ ] Loading state while fetching current selections
+  - [x] Component displays currently selected trades as chips/badges
+  - [x] "Add Trades" button opens selection modal
+  - [x] Modal shows searchable list of all 48 trades
+  - [x] Search filters trades in real-time
+  - [x] Clicking trade checkbox adds to "Selected Trades" list
+  - [x] Selected trades list shows drag handles for reordering
+  - [x] Trades can be dragged to reorder (top 3 become "featured")
+  - [x] Visual indicator for top 3 featured trades (star icon or badge)
+  - [x] Remove button (X) on each selected trade chip
+  - [x] Maximum 10 trades enforced with warning message
+  - [x] Modal footer: "Save" and "Cancel" buttons
+  - [x] Save closes modal and updates form state
+  - [x] Loading state while fetching current selections
 - **Definition of Done:**
-  - [ ] Component complete with all features
-  - [ ] Component tests verify add/remove/reorder
-  - [ ] Component tests verify 10-trade limit
-  - [ ] Drag-and-drop tested
-  - [ ] Accessibility tested (keyboard navigation for reordering)
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Intuitive UX for selection
+  - [x] Component complete with all features
+  - [x] Component tests verify add/remove/reorder
+  - [x] Component tests verify 10-trade limit
+  - [x] Drag-and-drop tested
+  - [x] Accessibility tested (keyboard navigation for reordering)
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Intuitive UX for selection
 
 **Estimated Effort:** 7 hours
+**Actual Effort:** 6 hours
+
+**Implementation Notes:**
+
+- Created `components/ui/command.tsx` - Shadcn/ui Command component for searchable trade selection
+- Created `components/dashboard/TradeSelectionModal.tsx` - Full-featured modal with:
+  - Real-time search filtering of trades
+  - Checkbox selection with max 10 trades enforcement
+  - Drag-and-drop reordering using @dnd-kit/core and @dnd-kit/sortable
+  - Featured trades indicator (top 3 get star icon and primary styling)
+  - Loading state with spinner while fetching trades from Supabase
+  - Error handling with alert display
+  - Save/Cancel actions with state reset on cancel
+- Created `components/dashboard/TradeSelector.tsx` - Container component with:
+  - Selected trades displayed as Badge components
+  - Featured trades (top 3) shown with star icon and primary variant
+  - Remove functionality per trade with accessible aria-labels
+  - Helper text for max trades reached and suggestions to add more
+  - Disabled state support
+- Created comprehensive test suites:
+  - `components/dashboard/__tests__/TradeSelector.test.tsx` - 20 tests covering rendering, featured trades, remove functionality, modal integration, helper messages, disabled state, and accessibility
+  - `components/dashboard/__tests__/TradeSelectionModal.test.tsx` - 17 tests covering modal rendering, loading states, search, selection, max limit enforcement, save/cancel actions, accessibility, and edge cases
+- Added dependencies: @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities, cmdk, @radix-ui/react-icons
+- All quality checks passed:
+  - TypeScript compilation: ✅
+  - ESLint: ✅
+  - Tests: 37/37 passing (20 TradeSelector + 17 TradeSelectionModal)
 
 ---
 
