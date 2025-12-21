@@ -13,7 +13,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { mockAgencies, allStates } from '../../lib/mock-data';
+import { mockAgencies, allStates, allTrades } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
 
 // Helper to check if we're in test environment
@@ -204,17 +204,9 @@ async function testConnection(
 }
 
 // Extract unique trades from mock data
+// Now uses the standardized allTrades list directly
 function extractUniqueTrades(): string[] {
-  const tradesSet = new Set<string>();
-
-  // Collect all trades from all agencies
-  mockAgencies.forEach((agency) => {
-    agency.trades.forEach((trade) => {
-      tradesSet.add(trade);
-    });
-  });
-
-  return Array.from(tradesSet).sort();
+  return [...allTrades].sort();
 }
 
 // Seed trades table
