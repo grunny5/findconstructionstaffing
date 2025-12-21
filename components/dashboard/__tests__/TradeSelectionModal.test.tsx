@@ -15,7 +15,9 @@ jest.mock('@/lib/supabase', () => ({
 
 // Mock @dnd-kit modules
 jest.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DndContext: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   closestCenter: jest.fn(),
   KeyboardSensor: jest.fn(),
   PointerSensor: jest.fn(),
@@ -54,10 +56,25 @@ jest.mock('@dnd-kit/utilities', () => ({
 
 describe('TradeSelectionModal', () => {
   const mockTrades: Trade[] = [
-    { id: '1', name: 'Electrician', slug: 'electrician', description: 'Electrical work' },
+    {
+      id: '1',
+      name: 'Electrician',
+      slug: 'electrician',
+      description: 'Electrical work',
+    },
     { id: '2', name: 'Plumber', slug: 'plumber', description: 'Plumbing work' },
-    { id: '3', name: 'Carpenter', slug: 'carpenter', description: 'Carpentry work' },
-    { id: '4', name: 'HVAC Technician', slug: 'hvac', description: 'HVAC work' },
+    {
+      id: '3',
+      name: 'Carpenter',
+      slug: 'carpenter',
+      description: 'Carpentry work',
+    },
+    {
+      id: '4',
+      name: 'HVAC Technician',
+      slug: 'hvac',
+      description: 'HVAC work',
+    },
     { id: '5', name: 'Mason', slug: 'mason', description: 'Masonry work' },
   ];
 
@@ -69,7 +86,9 @@ describe('TradeSelectionModal', () => {
     // Reset mockFrom to return mockTrades by default
     mockFrom.mockReturnValue({
       select: jest.fn(() => ({
-        order: jest.fn(() => Promise.resolve({ data: mockTrades, error: null })),
+        order: jest.fn(() =>
+          Promise.resolve({ data: mockTrades, error: null })
+        ),
       })),
     });
   });
@@ -85,7 +104,9 @@ describe('TradeSelectionModal', () => {
         />
       );
 
-      expect(screen.queryByText(/select trade specializations/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/select trade specializations/i)
+      ).not.toBeInTheDocument();
     });
 
     it('should render when open', async () => {
@@ -99,7 +120,9 @@ describe('TradeSelectionModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/select trade specializations/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/select trade specializations/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -133,10 +156,11 @@ describe('TradeSelectionModal', () => {
 
       // Modal should be visible
       await waitFor(() => {
-        expect(screen.getByText(/select trade specializations/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/select trade specializations/i)
+        ).toBeInTheDocument();
       });
     });
-
   });
 
   describe('Search Functionality', () => {
@@ -151,7 +175,9 @@ describe('TradeSelectionModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search trades/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/search trades/i)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -168,7 +194,9 @@ describe('TradeSelectionModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/selected trades \(2\/10\)/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/selected trades \(2\/10\)/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -184,7 +212,9 @@ describe('TradeSelectionModal', () => {
 
       await waitFor(() => {
         // Selected trades should appear in the "Selected Trades" section
-        const selectedSection = screen.getByText(/selected trades \(2\/10\)/i).closest('div');
+        const selectedSection = screen
+          .getByText(/selected trades \(2\/10\)/i)
+          .closest('div');
         expect(selectedSection).toBeInTheDocument();
       });
     });
@@ -224,7 +254,9 @@ describe('TradeSelectionModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/maximum 10 trades allowed/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/maximum 10 trades allowed/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -329,7 +361,9 @@ describe('TradeSelectionModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/select trade specializations/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/select trade specializations/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -359,8 +393,12 @@ describe('TradeSelectionModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /save changes/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /cancel/i })
+        ).toBeInTheDocument();
       });
     });
   });
@@ -376,7 +414,9 @@ describe('TradeSelectionModal', () => {
         />
       );
 
-      expect(screen.queryByText(/select trade specializations/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/select trade specializations/i)
+      ).not.toBeInTheDocument();
     });
   });
 });

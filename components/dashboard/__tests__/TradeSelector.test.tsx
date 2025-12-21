@@ -248,6 +248,7 @@ describe('TradeSelector', () => {
         id: `${i + 1}`,
         name: `Trade ${i + 1}`,
         slug: `trade-${i + 1}`,
+        description: `Description for Trade ${i + 1}`,
       }));
 
       render(

@@ -2,10 +2,14 @@
 -- Date: 2025-12-24
 -- Description: Replace existing trades with standardized list of 57 construction trades
 --
+-- WARNING: This migration is DESTRUCTIVE
+-- It will DELETE all existing trades and agency-trade relationships
+-- Only run this migration if you intend to standardize the trades list
+--
 -- This migration:
--- 1. Removes all existing trades
--- 2. Inserts the standardized list of trades
--- 3. Is idempotent (safe to run multiple times)
+-- 1. Deletes all existing trades and relationships
+-- 2. Inserts the standardized list of 57 trades
+-- 3. Uses ON CONFLICT to be safe for re-running (upsert pattern)
 
 -- Begin transaction
 BEGIN;

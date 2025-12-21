@@ -230,7 +230,9 @@ export function TradeSelectionModal({
 
   const handleSave = () => {
     // Remove isFeatured property before saving (not part of Trade type)
-    const tradesToSave = selectedTrades.map(({ isFeatured, ...trade }) => trade);
+    const tradesToSave = selectedTrades.map(
+      ({ isFeatured, ...trade }) => trade
+    );
     onSave(tradesToSave);
     onOpenChange(false);
   };
