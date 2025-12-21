@@ -212,7 +212,9 @@ describe('AgencyCard', () => {
 
   describe('Featured Trades Display', () => {
     it('should display star icon on featured trades', () => {
-      const { container } = render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(mockAgency)} />
+      );
 
       // Find the trade links and verify they contain SVG star icons
       const electricianLink = screen.getByText('Electrician').closest('a');
@@ -230,10 +232,7 @@ describe('AgencyCard', () => {
       const electricianLink = screen
         .getByText('Electrician')
         .closest('a') as HTMLAnchorElement;
-      expect(electricianLink).toHaveAttribute(
-        'href',
-        '/?trade=Electrician'
-      );
+      expect(electricianLink).toHaveAttribute('href', '/?trade=Electrician');
 
       const plumberLink = screen
         .getByText('Plumber')

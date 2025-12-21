@@ -2176,6 +2176,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
 **Actual Effort:** 2 hours
 
 **Implementation Notes:**
+
 - Updated profile page Trade Specialties tab to "Specializations" with two sections:
   - Featured Specialties: Top 3 trades with Star icon, primary color badges, larger size
   - Additional Specialties: Remaining trades as smaller secondary badges
