@@ -160,6 +160,19 @@ describe('AgencyCard Navigation Tests', () => {
     });
     expect(nameLink).toHaveFocus();
 
+    // Tab through featured trade links (3 trades)
+    await user.tab();
+    const electricianLink = screen.getByText('Electrician').closest('a');
+    expect(electricianLink).toHaveFocus();
+
+    await user.tab();
+    const plumberLink = screen.getByText('Plumber').closest('a');
+    expect(plumberLink).toHaveFocus();
+
+    await user.tab();
+    const carpenterLink = screen.getByText('Carpenter').closest('a');
+    expect(carpenterLink).toHaveFocus();
+
     // Tab to View Profile button
     await user.tab();
     const profileButton = screen.getByRole('link', {

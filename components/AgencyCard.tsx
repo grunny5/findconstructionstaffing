@@ -179,17 +179,23 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                   </div>
                 </div>
 
-                {/* Specialties - Clean Badge Layout */}
+                {/* Specialties - Featured Trades Display */}
                 {agency.trades && agency.trades.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {agency.trades.slice(0, 3).map((trade, index) => (
-                      <Badge
+                      <Link
                         key={index}
-                        variant="secondary"
-                        className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 rounded-lg font-medium"
+                        href={`/?trade=${encodeURIComponent(trade)}`}
+                        className="inline-block"
                       >
-                        {trade}
-                      </Badge>
+                        <Badge
+                          variant="default"
+                          className="bg-gradient-to-r from-slate-900 to-slate-700 text-white hover:from-slate-800 hover:to-slate-600 px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer"
+                        >
+                          <Star className="h-3 w-3 mr-1.5 fill-current inline-block" />
+                          {trade}
+                        </Badge>
+                      </Link>
                     ))}
                     {agency.trades.length > 3 && (
                       <Badge

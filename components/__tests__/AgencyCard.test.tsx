@@ -209,4 +209,82 @@ describe('AgencyCard', () => {
     // After error, should show initials instead
     expect(screen.getByText('TA')).toBeInTheDocument();
   });
+
+  describe('Featured Trades Display', () => {
+    it('should display star icon on featured trades', () => {
+      const { container } = render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+
+      // Find the trade links and verify they contain SVG star icons
+      const electricianLink = screen.getByText('Electrician').closest('a');
+      const plumberLink = screen.getByText('Plumber').closest('a');
+
+      // Each link should contain an SVG (the Star icon)
+      expect(electricianLink?.querySelector('svg')).toBeTruthy();
+      expect(plumberLink?.querySelector('svg')).toBeTruthy();
+    });
+
+    it('should link featured trades to search page with trade filter', () => {
+      render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+
+      // Check that trade badges are wrapped in links
+      const electricianLink = screen
+        .getByText('Electrician')
+        .closest('a') as HTMLAnchorElement;
+      expect(electricianLink).toHaveAttribute(
+        'href',
+        '/?trade=Electrician'
+      );
+
+      const plumberLink = screen
+        .getByText('Plumber')
+        .closest('a') as HTMLAnchorElement;
+      expect(plumberLink).toHaveAttribute('href', '/?trade=Plumber');
+    });
+
+    it('should display all trades as featured when less than 3', () => {
+      const agencyWithTwoTrades = {
+        ...mockAgency,
+        trades: [
+          { id: '1', name: 'Electrician', slug: 'electrician' },
+          { id: '2', name: 'Plumber', slug: 'plumber' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithTwoTrades)} />);
+
+      // Both trades should be displayed
+      expect(screen.getByText('Electrician')).toBeInTheDocument();
+      expect(screen.getByText('Plumber')).toBeInTheDocument();
+
+      // Should not show "+X more" since all trades are displayed
+      expect(screen.queryByText(/\+\d+ more/)).not.toBeInTheDocument();
+    });
+
+    it('should show "+X more" badge for trades beyond top 3', () => {
+      const agencyWithManyTrades = {
+        ...mockAgency,
+        trades: [
+          { id: '1', name: 'Electrician', slug: 'electrician' },
+          { id: '2', name: 'Plumber', slug: 'plumber' },
+          { id: '3', name: 'Carpenter', slug: 'carpenter' },
+          { id: '4', name: 'Welder', slug: 'welder' },
+          { id: '5', name: 'Mason', slug: 'mason' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithManyTrades)} />);
+
+      // Should show first 3 as featured
+      expect(screen.getByText('Electrician')).toBeInTheDocument();
+      expect(screen.getByText('Plumber')).toBeInTheDocument();
+      expect(screen.getByText('Carpenter')).toBeInTheDocument();
+
+      // Should show +2 more badge
+      expect(screen.getByText('+2 more')).toBeInTheDocument();
+
+      // Should NOT show the 4th and 5th trades
+      expect(screen.queryByText('Welder')).not.toBeInTheDocument();
+      expect(screen.queryByText('Mason')).not.toBeInTheDocument();
+    });
+  });
 });
