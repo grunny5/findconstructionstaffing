@@ -67,7 +67,7 @@ export const agencyProfileSchema = z.object({
     .trim()
     .regex(
       /^\+?[1-9]\d{1,14}$/,
-      'Phone must be in E.164 format (e.g., +1234567890)'
+      'Phone must be in E.164 format (e.g., +12345678900)'
     )
     .optional()
     .or(z.literal('')),

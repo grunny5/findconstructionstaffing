@@ -278,7 +278,7 @@ export function ProfileEditForm({
                 <Input {...field} type="tel" placeholder="+12345678900" />
               </FormControl>
               <FormDescription>
-                E.164 format (e.g., +1234567890)
+                E.164 format (e.g., +12345678900)
               </FormDescription>
               <FormMessage />
             </FormItem>
