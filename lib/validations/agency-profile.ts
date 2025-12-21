@@ -1,5 +1,8 @@
 import * as z from 'zod';
 
+// Maximum character length for company description
+export const DESCRIPTION_MAX_LENGTH = 2000;
+
 // Employee count ranges for agency size
 export const EMPLOYEE_COUNT_OPTIONS = [
   { value: '1-10', label: '1-10 employees' },
@@ -44,7 +47,10 @@ export const agencyProfileSchema = z.object({
   description: z
     .string()
     .trim()
-    .max(2000, 'Description must be less than 2000 characters')
+    .max(
+      DESCRIPTION_MAX_LENGTH,
+      `Description must be less than ${DESCRIPTION_MAX_LENGTH} characters`
+    )
     .optional()
     .or(z.literal('')),
 

@@ -29,6 +29,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   agencyProfileSchema,
   type AgencyProfileFormData,
+  DESCRIPTION_MAX_LENGTH,
   EMPLOYEE_COUNT_OPTIONS,
   FOUNDED_YEAR_OPTIONS,
   requiresAdminApproval,
@@ -46,7 +47,6 @@ import {
 import { cn } from '@/lib/utils';
 
 interface ProfileEditFormProps {
-  agencyId: string;
   initialData?: Partial<AgencyProfileFormData>;
   onSubmit: (data: AgencyProfileFormData) => Promise<void>;
   onCancel?: () => void;
@@ -64,7 +64,6 @@ interface ProfileEditFormProps {
  * - Admin approval warning for name changes
  */
 export function ProfileEditForm({
-  agencyId,
   initialData,
   onSubmit,
   onCancel,
@@ -161,8 +160,8 @@ export function ProfileEditForm({
       await onSubmit(data);
       form.reset(data); // Reset with new values to clear dirty state
     } catch (error) {
-      // Error handling is done by parent component
       console.error('Form submission error:', error);
+      throw error; // Re-throw for parent component to handle
     } finally {
       setIsSubmitting(false);
     }
@@ -297,10 +296,11 @@ export function ProfileEditForm({
                   <p
                     className={cn(
                       'text-sm text-muted-foreground',
-                      descriptionLength > 2000 && 'text-destructive'
+                      descriptionLength > DESCRIPTION_MAX_LENGTH &&
+                        'text-destructive'
                     )}
                   >
-                    {descriptionLength} / 2000 characters
+                    {descriptionLength} / {DESCRIPTION_MAX_LENGTH} characters
                   </p>
                 </div>
               </div>

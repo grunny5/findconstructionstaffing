@@ -19,7 +19,6 @@ describe('ProfileEditForm', () => {
   const mockOnCancel = jest.fn();
 
   const defaultProps = {
-    agencyId: 'test-agency-id',
     onSubmit: mockOnSubmit,
     onCancel: mockOnCancel,
   };
