@@ -123,6 +123,7 @@ export function RegionSelectionModal({
   }, [open, selectedRegions]);
 
   const handleToggleRegion = (region: Region) => {
+    setError(null); // Clear error when user makes a selection
     setWorkingSelection((prev) => {
       const exists = prev.some((r) => r.id === region.id);
       if (exists) {
@@ -134,6 +135,7 @@ export function RegionSelectionModal({
   };
 
   const handleQuickSelect = (stateCodes: string[]) => {
+    setError(null); // Clear error when user makes a selection
     const regionsToAdd = allRegions.filter((r) =>
       stateCodes.includes(r.state_code)
     );
@@ -147,6 +149,7 @@ export function RegionSelectionModal({
   };
 
   const handleSelectAllUSA = () => {
+    setError(null); // Clear error when user makes a selection
     setWorkingSelection([...allRegions]);
   };
 
@@ -200,7 +203,7 @@ export function RegionSelectionModal({
             </div>
           )}
 
-          {/* Error State */}
+          {/* Error State - shown above content if regions loaded, or alone if fetch failed */}
           {error && !isLoading && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -208,8 +211,8 @@ export function RegionSelectionModal({
             </Alert>
           )}
 
-          {/* Content */}
-          {!isLoading && !error && (
+          {/* Content - shown if not loading AND (no error OR regions are loaded) */}
+          {!isLoading && (!error || allRegions.length > 0) && (
             <>
               {/* Selection Summary */}
               <div className="flex items-center justify-between">

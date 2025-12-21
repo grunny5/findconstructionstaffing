@@ -212,6 +212,9 @@ describe('RegionSelectionModal', () => {
         screen.getByText(/Please select at least one service region/i)
       ).toBeInTheDocument();
     });
+
+    // Content should still be visible so user can fix the error
+    expect(screen.getByText('Alabama')).toBeInTheDocument();
   });
 
   it('should have accessible checkbox labels', async () => {
