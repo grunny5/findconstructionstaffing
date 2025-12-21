@@ -93,7 +93,7 @@ export function RegionSelectionModal({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch all regions from database
+  // Fetch all regions from database when modal opens
   useEffect(() => {
     if (!open) return;
 
@@ -110,7 +110,6 @@ export function RegionSelectionModal({
         if (fetchError) throw fetchError;
 
         setAllRegions(data || []);
-        setWorkingSelection(selectedRegions);
       } catch (err) {
         console.error('Error fetching regions:', err);
         setError('Failed to load regions. Please try again.');
@@ -120,7 +119,15 @@ export function RegionSelectionModal({
     }
 
     fetchRegions();
-  }, [open, selectedRegions]);
+  }, [open]);
+
+  // Initialize working selection only when modal opens (not when selectedRegions changes)
+  useEffect(() => {
+    if (open) {
+      setWorkingSelection(selectedRegions);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]); // Only depend on `open` to avoid resetting draft changes
 
   const handleToggleRegion = (region: Region) => {
     setError(null); // Clear error when user makes a selection
