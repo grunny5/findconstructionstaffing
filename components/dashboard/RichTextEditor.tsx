@@ -58,6 +58,13 @@ export function RichTextEditor({
     },
   });
 
+  // Cleanup: destroy editor instance on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      editor?.destroy();
+    };
+  }, [editor]);
+
   const toggleBold = () => editor?.chain().focus().toggleBold().run();
   const toggleItalic = () => editor?.chain().focus().toggleItalic().run();
   const toggleBulletList = () =>
