@@ -118,10 +118,7 @@ describe('TradeSelector', () => {
   describe('Featured Trades', () => {
     it('should mark first 3 trades as featured', () => {
       render(
-        <TradeSelector
-          selectedTrades={mockTrades}
-          onChange={mockOnChange}
-        />
+        <TradeSelector selectedTrades={mockTrades} onChange={mockOnChange} />
       );
 
       // Check for Featured labels (aria-label on star icon)
@@ -136,10 +133,7 @@ describe('TradeSelector', () => {
 
     it('should show featured indicator only for top 3 trades', () => {
       render(
-        <TradeSelector
-          selectedTrades={mockTrades}
-          onChange={mockOnChange}
-        />
+        <TradeSelector selectedTrades={mockTrades} onChange={mockOnChange} />
       );
 
       const featuredStars = screen.getAllByLabelText('Featured');
@@ -195,10 +189,7 @@ describe('TradeSelector', () => {
       });
       await user.click(removeButtons[1]);
 
-      expect(mockOnChange).toHaveBeenCalledWith([
-        mockTrades[0],
-        mockTrades[2],
-      ]);
+      expect(mockOnChange).toHaveBeenCalledWith([mockTrades[0], mockTrades[2]]);
     });
   });
 

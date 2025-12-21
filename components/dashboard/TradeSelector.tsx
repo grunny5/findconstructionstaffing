@@ -103,7 +103,10 @@ export function TradeSelector({
                 )}
               >
                 {isFeatured && (
-                  <Star className="h-3 w-3 fill-current" aria-label="Featured" />
+                  <Star
+                    className="h-3 w-3 fill-current"
+                    aria-label="Featured"
+                  />
                 )}
                 <span>{trade.name}</span>
                 {!disabled && (
@@ -134,7 +137,8 @@ export function TradeSelector({
       )}
       {selectedTrades.length > 0 && selectedTrades.length < FEATURED_COUNT && (
         <p className="text-xs text-muted-foreground">
-          Add {FEATURED_COUNT - selectedTrades.length} more trade(s) to maximize featured trades on your profile.
+          Add {FEATURED_COUNT - selectedTrades.length} more trade(s) to maximize
+          featured trades on your profile.
         </p>
       )}
 

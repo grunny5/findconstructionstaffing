@@ -70,13 +70,7 @@ export const mockAgencies = [
       'https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
     description:
       'High-quality skilled trades staffing for commercial and residential construction. We focus on long-term placements and career development for construction professionals across the Southeast region.',
-    trades: [
-      'Electrician',
-      'Plumber',
-      'HVAC',
-      'Carpenter',
-      'Painter',
-    ],
+    trades: ['Electrician', 'Plumber', 'HVAC', 'Carpenter', 'Painter'],
     regions: [
       'Florida',
       'Georgia',
@@ -118,13 +112,7 @@ export const mockAgencies = [
       'https://images.pexels.com/photos/1181359/pexels-photo-1181359.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
     description:
       'Specialized marine construction and offshore platform staffing. Our crews are certified for underwater welding, marine construction, and offshore oil & gas projects with extensive safety training and certifications.',
-    trades: [
-      'Welder',
-      'Rigger',
-      'Crane Operator',
-      'Safety',
-      'Shipfitter',
-    ],
+    trades: ['Welder', 'Rigger', 'Crane Operator', 'Safety', 'Shipfitter'],
     regions: ['Louisiana', 'Texas', 'Mississippi', 'Alabama', 'Florida'],
     offers_per_diem: true,
     is_union: false,
