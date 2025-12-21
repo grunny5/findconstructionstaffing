@@ -97,12 +97,15 @@ describe('ProfileEditForm', () => {
   });
 
   describe('Rich Text Editor', () => {
-    it('should render TipTap editor toolbar', () => {
+    it('should render TipTap editor toolbar', async () => {
       render(<ProfileEditForm {...defaultProps} />);
 
-      // Check for toolbar buttons (using aria-labels or visible icons)
-      const buttons = screen.getAllByRole('button');
-      expect(buttons.length).toBeGreaterThan(5); // Bold, Italic, Lists, Link, etc.
+      // Wait for editor to load
+      await waitFor(() => {
+        const buttons = screen.getAllByRole('button');
+        // Should have at least: Bold, Italic, Bullet List, Ordered List, Link, Undo, Redo, plus Save/Cancel
+        expect(buttons.length).toBeGreaterThanOrEqual(7);
+      });
     });
 
     it('should display character counter for description', () => {

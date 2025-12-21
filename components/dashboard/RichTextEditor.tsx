@@ -6,7 +6,15 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, List, ListOrdered, Link2 } from 'lucide-react';
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Link2,
+  Undo,
+  Redo,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -77,6 +85,8 @@ export function RichTextEditor({
       editor?.chain().focus().setLink({ href: url }).run();
     }
   };
+  const handleUndo = () => editor?.chain().focus().undo().run();
+  const handleRedo = () => editor?.chain().focus().redo().run();
 
   return (
     <div className="space-y-2">
@@ -126,6 +136,25 @@ export function RichTextEditor({
           className={cn(editor?.isActive('link') && 'bg-accent')}
         >
           <Link2 className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleUndo}
+          disabled={!editor?.can().undo()}
+        >
+          <Undo className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleRedo}
+          disabled={!editor?.can().redo()}
+        >
+          <Redo className="h-4 w-4" />
         </Button>
       </div>
 
