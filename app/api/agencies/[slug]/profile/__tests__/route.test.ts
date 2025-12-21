@@ -24,7 +24,7 @@ function createMockRequest(body: any): NextRequest {
   } as any as NextRequest;
 }
 
-describe('PUT /api/agencies/[agencyId]/profile', () => {
+describe('PUT /api/agencies/[slug]/profile', () => {
   const mockUser = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'owner@agency.com',
@@ -32,6 +32,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
   const mockAgency = {
     id: '987e6543-e21b-12d3-a456-426614174001',
+    slug: 'test-staffing-agency',
     claimed_by: '123e4567-e89b-12d3-a456-426614174000',
     name: 'Test Staffing Agency',
     description: '<p>Original description</p>',
@@ -95,7 +96,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -114,7 +115,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -144,7 +145,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: 'non-existent-id' },
+        params: { slug: 'non-existent-slug' },
       });
       const data = await response.json();
 
@@ -171,7 +172,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -207,7 +208,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(invalidData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -225,7 +226,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(invalidData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -241,7 +242,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(invalidData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -257,7 +258,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(invalidData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -273,7 +274,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(invalidData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -341,7 +342,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
     it('should successfully update agency profile with all fields', async () => {
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -356,7 +357,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
     it('should create audit trail entries for changed fields', async () => {
       const request = createMockRequest(validUpdateData);
-      await PUT(request, { params: { agencyId: mockAgency.id } });
+      await PUT(request, { params: { slug: mockAgency.slug } });
 
       // Verify audit trail insert was called
       expect(mockFromAudit.insert).toHaveBeenCalled();
@@ -435,7 +436,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
       };
 
       const request = createMockRequest(sameData);
-      await PUT(request, { params: { agencyId: mockAgency.id } });
+      await PUT(request, { params: { slug: mockAgency.slug } });
 
       // Verify audit trail insert was NOT called
       expect(mockFromAuditNoChanges.insert).not.toHaveBeenCalled();
@@ -492,7 +493,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
       });
 
       const request = createMockRequest(validUpdateData);
-      await PUT(request, { params: { agencyId: mockAgency.id } });
+      await PUT(request, { params: { slug: mockAgency.slug } });
 
       // Verify update was called with correct metadata
       expect(mockFromUpdate.update).toHaveBeenCalledWith(
@@ -563,7 +564,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
       };
 
       const request = createMockRequest(partialUpdate);
-      await PUT(request, { params: { agencyId: mockAgency.id } });
+      await PUT(request, { params: { slug: mockAgency.slug } });
 
       // Verify audit trail has only 1 entry for description
       expect(mockFromAuditPartial.insert).toHaveBeenCalled();
@@ -586,7 +587,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(updateWithEmptyFields);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -635,7 +636,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -682,7 +683,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 
@@ -698,7 +699,7 @@ describe('PUT /api/agencies/[agencyId]/profile', () => {
 
       const request = createMockRequest(validUpdateData);
       const response = await PUT(request, {
-        params: { agencyId: mockAgency.id },
+        params: { slug: mockAgency.slug },
       });
       const data = await response.json();
 

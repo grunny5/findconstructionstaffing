@@ -1,7 +1,7 @@
 /**
  * Agency Profile Update API Endpoint
  *
- * PUT /api/agencies/[agencyId]/profile
+ * PUT /api/agencies/[slug]/profile
  *
  * Updates agency profile information with audit trail and ownership verification.
  * Only the agency owner can update their profile. All field changes are logged
@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic';
  * PUT handler for updating agency profile (owner-only)
  *
  * @param request - Next.js request object with profile update data
- * @param params - Route params containing agencyId
+ * @param params - Route params containing slug
  * @returns JSON response with updated agency data or error
  *
  * Success Response (200):
@@ -58,7 +58,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { agencyId: string } }
+  { params }: { params: { slug: string } }
 ) {
   try {
     // ========================================================================
@@ -86,7 +86,7 @@ export async function PUT(
     // ========================================================================
     // 2. VERIFY OWNERSHIP
     // ========================================================================
-    const { agencyId } = params;
+    const { slug } = params;
 
     // Fetch agency to verify it exists and get current values
     const { data: agency, error: agencyError } = await supabase
@@ -94,7 +94,7 @@ export async function PUT(
       .select(
         'id, claimed_by, name, description, website, phone, email, founded_year, employee_count, headquarters'
       )
-      .eq('id', agencyId)
+      .eq('slug', slug)
       .single();
 
     if (agencyError || !agency) {
@@ -193,7 +193,7 @@ export async function PUT(
     // Insert audit trail entries for all changed fields
     if (changedFields.length > 0) {
       const auditEntries = changedFields.map((change) => ({
-        agency_id: agencyId,
+        agency_id: agency.id,
         edited_by: user.id,
         field_name: change.field_name,
         old_value: change.old_value,
@@ -233,7 +233,7 @@ export async function PUT(
         last_edited_at: new Date().toISOString(),
         last_edited_by: user.id,
       })
-      .eq('id', agencyId)
+      .eq('id', agency.id)
       .select(
         'id, name, description, website, phone, email, founded_year, employee_count, headquarters, last_edited_at, last_edited_by'
       )
