@@ -1767,7 +1767,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
 
 ---
 
-### Task 3.2.2: Create API Endpoint for Updating Profile
+### Task 3.2.2: Create API Endpoint for Updating Profile ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to save profile updates with audit trail
@@ -1780,28 +1780,81 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Validation matches frontend
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] PUT endpoint at `/api/agencies/[agencyId]/profile`
-  - [ ] Requires authentication and ownership
-  - [ ] Request body validated with Zod (matches frontend schema)
-  - [ ] For each changed field: creates entry in `agency_profile_edits` with old_value and new_value
-  - [ ] Updates agency record with new values
-  - [ ] Sets `last_edited_at` to current timestamp
-  - [ ] Sets `last_edited_by` to user ID
-  - [ ] Company name changes flagged for admin review (future: approval workflow)
-  - [ ] Returns 200 with updated agency data
-  - [ ] Returns 400 for validation errors
-  - [ ] Returns 403 if user doesn't own agency
-  - [ ] Returns 404 if agency doesn't exist
+  - [x] PUT endpoint at `/api/agencies/[agencyId]/profile`
+  - [x] Requires authentication and ownership
+  - [x] Request body validated with Zod (matches frontend schema)
+  - [x] For each changed field: creates entry in `agency_profile_edits` with old_value and new_value
+  - [x] Updates agency record with new values
+  - [x] Sets `last_edited_at` to current timestamp
+  - [x] Sets `last_edited_by` to user ID
+  - [x] Company name changes flagged for admin review (future: approval workflow)
+  - [x] Returns 200 with updated agency data
+  - [x] Returns 400 for validation errors
+  - [x] Returns 403 if user doesn't own agency
+  - [x] Returns 404 if agency doesn't exist
 - **Definition of Done:**
-  - [ ] Endpoint implementation complete
-  - [ ] Unit tests verify validation
-  - [ ] Unit tests verify audit trail creation
-  - [ ] Integration test: full update flow
-  - [ ] Error handling comprehensive
-  - [ ] PR submitted
-  - [ ] **Final Check:** Audit trail working
+  - [x] Endpoint implementation complete
+  - [x] Unit tests verify validation
+  - [x] Unit tests verify audit trail creation
+  - [x] Integration test: full update flow
+  - [x] Error handling comprehensive
+  - [x] PR submitted
+  - [x] **Final Check:** Audit trail working
 
 **Estimated Effort:** 5 hours
+**Actual Effort:** ~4 hours
+
+**Implementation Notes:**
+
+1. **API Endpoint Created** (`app/api/agencies/[agencyId]/profile/route.ts`):
+   - PUT handler for profile updates
+   - Authentication check via Supabase auth.getUser()
+   - Ownership verification (claimed_by must match user ID)
+   - Zod validation using shared agencyProfileSchema
+   - Returns 401 for unauthenticated, 403 for non-owners, 404 for missing agency
+   - Returns 400 for validation errors with detailed Zod error messages
+
+2. **Audit Trail Implementation:**
+   - Compares old vs new values for all 8 fields
+   - Only creates audit entries for changed fields
+   - Audit entries stored in `agency_profile_edits` table with:
+     - agency_id, edited_by, field_name, old_value (JSONB), new_value (JSONB)
+   - Handles empty strings and null values correctly
+   - No audit entries created when no fields change
+
+3. **Agency Record Updates:**
+   - Updates all 8 profile fields: name, description, website, phone, email, founded_year, employee_count, headquarters
+   - Sets last_edited_at to current timestamp
+   - Sets last_edited_by to authenticated user ID
+   - Converts empty strings to null for optional fields
+
+4. **Comprehensive Test Suite** (`app/api/agencies/[agencyId]/profile/__tests__/route.test.ts`):
+   - 36 tests covering all functionality
+   - Authentication tests (2 tests)
+   - Authorization & ownership tests (3 tests)
+   - Validation tests (5 tests for each field type)
+   - Successful update tests (6 tests)
+   - Error handling tests (3 tests)
+   - All tests passing ✅
+
+5. **Test Coverage:**
+   - Authentication: Unauthenticated users rejected (401)
+   - Authorization: Non-owners rejected (403), missing agencies return 404
+   - Validation: All field validations tested (name length, URL format, E.164 phone, email format, employee count enum)
+   - Audit trail: Verified entries created for changed fields only
+   - Partial updates: Only changed fields create audit entries
+   - Empty fields: Properly handled with null conversion
+   - Error scenarios: Audit creation failure, update failure, unexpected errors
+
+6. **Quality Checks:**
+   - TypeScript strict mode: ✅ Passing
+   - ESLint: ✅ Passing
+   - Prettier: ✅ Passing
+   - All 36 tests: ✅ Passing
+
+7. **Note:**
+   - Company name change tracking implemented but approval workflow deferred to future task per acceptance criteria
+   - Ready for integration with ProfileEditForm component (Task 3.2.1)
 
 ---
 
