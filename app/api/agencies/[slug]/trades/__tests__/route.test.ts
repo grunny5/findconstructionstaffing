@@ -24,16 +24,18 @@ function createMockRequest(body: any): NextRequest {
   } as any as NextRequest;
 }
 
-describe('PUT /api/agencies/[agencyId]/trades', () => {
+describe('PUT /api/agencies/[slug]/trades', () => {
   const mockUser = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'owner@agency.com',
   };
 
   const mockAgencyId = '987e6543-e21b-12d3-a456-426614174001';
+  const mockAgencySlug = 'test-staffing-agency';
 
   const mockAgency = {
     id: mockAgencyId,
+    slug: mockAgencySlug,
     claimed_by: mockUser.id,
     name: 'Test Staffing Agency',
   };
@@ -103,7 +105,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
 
       const request = createMockRequest({ trade_ids: validTradeIds });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -122,7 +124,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
 
       const request = createMockRequest({ trade_ids: validTradeIds });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -152,7 +154,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
 
       const request = createMockRequest({ trade_ids: validTradeIds });
       const response = await PUT(request, {
-        params: { agencyId: 'non-existent-id' },
+        params: { slug: 'non-existent-slug' },
       });
       const data = await response.json();
 
@@ -177,7 +179,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
 
       const request = createMockRequest({ trade_ids: validTradeIds });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -208,7 +210,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
     it('should return 400 when trade_ids is missing', async () => {
       const request = createMockRequest({});
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -220,7 +222,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
     it('should return 400 when trade_ids is empty array', async () => {
       const request = createMockRequest({ trade_ids: [] });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -233,7 +235,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
       const elevenTrades = Array.from({ length: 11 }, (_, i) => `trade-${i}`);
       const request = createMockRequest({ trade_ids: elevenTrades });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -247,7 +249,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
         trade_ids: ['invalid-uuid', 'also-invalid'],
       });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 
@@ -354,7 +356,7 @@ describe('PUT /api/agencies/[agencyId]/trades', () => {
 
       const request = createMockRequest({ trade_ids: validTradeIds });
       const response = await PUT(request, {
-        params: { agencyId: mockAgencyId },
+        params: { slug: mockAgencySlug },
       });
       const data = await response.json();
 

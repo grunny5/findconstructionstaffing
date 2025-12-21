@@ -1,7 +1,7 @@
 /**
  * Agency Trades Update API Endpoint
  *
- * PUT /api/agencies/[agencyId]/trades
+ * PUT /api/agencies/[slug]/trades
  *
  * Updates agency-trade relationships with audit trail and ownership verification.
  * Only the agency owner can update their trades. Changes are logged in the
@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
  * PUT handler for updating agency trades (owner-only)
  *
  * @param request - Next.js request object with trade update data
- * @param params - Route params containing agencyId
+ * @param params - Route params containing slug
  * @returns JSON response with updated trade list or error
  *
  * Success Response (200):
@@ -50,7 +50,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { agencyId: string } }
+  { params }: { params: { slug: string } }
 ) {
   try {
     // ========================================================================
@@ -78,12 +78,12 @@ export async function PUT(
     // ========================================================================
     // 2. VERIFY OWNERSHIP
     // ========================================================================
-    const { agencyId } = params;
+    const { slug } = params;
 
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
       .select('id, claimed_by, name')
-      .eq('id', agencyId)
+      .eq('slug', slug)
       .single();
 
     if (agencyError || !agency) {
@@ -174,6 +174,8 @@ export async function PUT(
     // ========================================================================
     // 5. GET CURRENT TRADES FOR AUDIT TRAIL
     // ========================================================================
+    const agencyId = agency.id;
+
     const { data: currentTrades } = await supabase
       .from('agency_trades')
       .select('trade_id, trades(id, name)')
