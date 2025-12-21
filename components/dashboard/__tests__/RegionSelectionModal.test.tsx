@@ -33,13 +33,13 @@ describe('RegionSelectionModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset mockFrom to return mockRegions by default
     mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        order: jest.fn().mockResolvedValue({
-          data: mockRegions,
-          error: null,
-        }),
-      }),
+      select: jest.fn(() => ({
+        order: jest.fn(() =>
+          Promise.resolve({ data: mockRegions, error: null })
+        ),
+      })),
     });
   });
 
@@ -181,12 +181,14 @@ describe('RegionSelectionModal', () => {
 
   it('should display error message when fetch fails', async () => {
     mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        order: jest.fn().mockResolvedValue({
-          data: null,
-          error: { message: 'Database error' },
-        }),
-      }),
+      select: jest.fn(() => ({
+        order: jest.fn(() =>
+          Promise.resolve({
+            data: null,
+            error: { message: 'Database error' },
+          })
+        ),
+      })),
     });
 
     render(<RegionSelectionModal {...defaultProps} />);
