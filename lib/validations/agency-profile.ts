@@ -6,12 +6,12 @@ export const DESCRIPTION_MAX_LENGTH = 2000;
 // Employee count ranges for agency size
 export const EMPLOYEE_COUNT_OPTIONS = [
   { value: '1-10', label: '1-10 employees' },
-  { value: '10-50', label: '10-50 employees' },
-  { value: '50-100', label: '50-100 employees' },
-  { value: '100-200', label: '100-200 employees' },
-  { value: '200-500', label: '200-500 employees' },
-  { value: '500-1000', label: '500-1000 employees' },
-  { value: '1000+', label: '1000+ employees' },
+  { value: '11-50', label: '11-50 employees' },
+  { value: '51-100', label: '51-100 employees' },
+  { value: '101-200', label: '101-200 employees' },
+  { value: '201-500', label: '201-500 employees' },
+  { value: '501-1000', label: '501-1000 employees' },
+  { value: '1001+', label: '1001+ employees' },
 ] as const;
 
 // Generate year options from 1900 to current year
@@ -95,12 +95,12 @@ export const agencyProfileSchema = z.object({
   employee_count: z
     .enum([
       '1-10',
-      '10-50',
-      '50-100',
-      '100-200',
-      '200-500',
-      '500-1000',
-      '1000+',
+      '11-50',
+      '51-100',
+      '101-200',
+      '201-500',
+      '501-1000',
+      '1001+',
     ])
     .optional()
     .or(z.literal('')),
@@ -132,10 +132,10 @@ export function requiresAdminApproval(
 export function getPlainTextLength(html: string): number {
   if (!html) return 0;
 
-  // Create a temporary div to parse HTML
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
+  // Use DOMParser for safer HTML parsing (doesn't execute scripts)
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
 
   // Get text content (strips HTML tags)
-  return (tmp.textContent || tmp.innerText || '').length;
+  return (doc.body.textContent || '').length;
 }

@@ -1,12 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Placeholder from '@tiptap/extension-placeholder';
+import dynamic from 'next/dynamic';
 import {
   Form,
   FormControl,
@@ -26,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   agencyProfileSchema,
   type AgencyProfileFormData,
@@ -35,16 +33,20 @@ import {
   requiresAdminApproval,
   getPlainTextLength,
 } from '@/lib/validations/agency-profile';
-import {
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Link2,
-  AlertTriangle,
-  Loader2,
-} from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Lazy load TipTap editor for better bundle size
+const RichTextEditor = dynamic(
+  () =>
+    import('@/components/dashboard/RichTextEditor').then(
+      (mod) => mod.RichTextEditor
+    ),
+  {
+    loading: () => <Skeleton className="h-[250px] w-full" />,
+    ssr: false,
+  }
+);
 
 interface ProfileEditFormProps {
   initialData?: Partial<AgencyProfileFormData>;
@@ -87,45 +89,26 @@ export function ProfileEditForm({
     },
   });
 
-  // TipTap editor for description
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        // Disable link from StarterKit as we're using our own Link extension
-        link: false,
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-primary underline',
-        },
-      }),
-      Placeholder.configure({
-        placeholder: 'Enter your company description...',
-      }),
-    ],
-    content: initialData?.description || '',
-    editorProps: {
-      attributes: {
-        class:
-          'prose prose-sm max-w-none min-h-[200px] focus:outline-none p-4 border rounded-md',
-      },
-    },
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      form.setValue('description', html, { shouldDirty: true });
-      const length = getPlainTextLength(html);
-      setDescriptionLength(length);
-    },
-  });
+  // Track isDirty state in a ref to avoid re-registering beforeunload handler
+  const isDirtyRef = useRef(form.formState.isDirty);
+  isDirtyRef.current = form.formState.isDirty;
 
   // Update description length on mount
   useEffect(() => {
-    if (editor && initialData?.description) {
+    if (initialData?.description) {
       const length = getPlainTextLength(initialData.description);
       setDescriptionLength(length);
     }
-  }, [editor, initialData?.description]);
+  }, [initialData?.description]);
+
+  // Handle rich text editor changes
+  const handleEditorChange = (html: string) => {
+    form.setValue('description', html, { shouldDirty: true });
+  };
+
+  const handleEditorUpdate = (plainTextLength: number) => {
+    setDescriptionLength(plainTextLength);
+  };
 
   // Check for name changes to show admin approval warning
   useEffect(() => {
@@ -144,7 +127,7 @@ export function ProfileEditForm({
   // Unsaved changes warning
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (form.formState.isDirty) {
+      if (isDirtyRef.current) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -152,7 +135,7 @@ export function ProfileEditForm({
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [form.formState.isDirty]);
+  }, []);
 
   const handleSubmit = async (data: AgencyProfileFormData) => {
     setIsSubmitting(true);
@@ -176,24 +159,7 @@ export function ProfileEditForm({
     }
 
     form.reset();
-    if (editor) {
-      editor.commands.setContent(initialData?.description || '');
-    }
     onCancel?.();
-  };
-
-  // TipTap toolbar buttons
-  const toggleBold = () => editor?.chain().focus().toggleBold().run();
-  const toggleItalic = () => editor?.chain().focus().toggleItalic().run();
-  const toggleBulletList = () =>
-    editor?.chain().focus().toggleBulletList().run();
-  const toggleOrderedList = () =>
-    editor?.chain().focus().toggleOrderedList().run();
-  const setLink = () => {
-    const url = window.prompt('Enter URL:');
-    if (url) {
-      editor?.chain().focus().setLink({ href: url }).run();
-    }
   };
 
   return (
@@ -235,61 +201,12 @@ export function ProfileEditForm({
                 Company Description
               </label>
               <div className="space-y-2" data-testid="description-editor">
-                {/* Toolbar */}
-                <div className="flex flex-wrap gap-1 p-2 border rounded-md bg-muted/50">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleBold}
-                    className={cn(editor?.isActive('bold') && 'bg-accent')}
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleItalic}
-                    className={cn(editor?.isActive('italic') && 'bg-accent')}
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleBulletList}
-                    className={cn(
-                      editor?.isActive('bulletList') && 'bg-accent'
-                    )}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleOrderedList}
-                    className={cn(
-                      editor?.isActive('orderedList') && 'bg-accent'
-                    )}
-                  >
-                    <ListOrdered className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={setLink}
-                    className={cn(editor?.isActive('link') && 'bg-accent')}
-                  >
-                    <Link2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Editor */}
-                <EditorContent editor={editor} />
+                <RichTextEditor
+                  initialContent={field.value}
+                  placeholder="Enter your company description..."
+                  onChange={handleEditorChange}
+                  onUpdate={handleEditorUpdate}
+                />
 
                 {/* Character Counter */}
                 <div className="flex justify-end">
@@ -456,7 +373,12 @@ export function ProfileEditForm({
             type="submit"
             disabled={!form.formState.isDirty || isSubmitting}
           >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && (
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                data-testid="loading-spinner"
+              />
+            )}
             Save Changes
           </Button>
           <Button

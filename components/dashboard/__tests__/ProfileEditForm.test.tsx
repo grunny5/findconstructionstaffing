@@ -30,7 +30,7 @@ describe('ProfileEditForm', () => {
     phone: '+12345678900',
     email: 'contact@example.com',
     founded_year: '2000',
-    employee_count: '50-100',
+    employee_count: '51-100',
     headquarters: 'Houston, TX',
   };
 
@@ -400,8 +400,8 @@ describe('ProfileEditForm', () => {
         expect(saveButton).toHaveTextContent(/save changes/i);
       });
 
-      // Check that loading spinner is visible (implicit in the button being disabled)
-      const loadingSpinner = saveButton.querySelector('.animate-spin');
+      // Check that loading spinner is visible
+      const loadingSpinner = screen.getByTestId('loading-spinner');
       expect(loadingSpinner).toBeInTheDocument();
 
       resolveSubmit!();
@@ -409,8 +409,9 @@ describe('ProfileEditForm', () => {
       // After submission, loading spinner should disappear
       await waitFor(
         () => {
-          const spinner = saveButton.querySelector('.animate-spin');
-          expect(spinner).not.toBeInTheDocument();
+          expect(
+            screen.queryByTestId('loading-spinner')
+          ).not.toBeInTheDocument();
         },
         { timeout: 3000 }
       );
@@ -445,7 +446,7 @@ describe('ProfileEditForm', () => {
           initialData={{
             ...mockInitialData,
             founded_year: '2000',
-            employee_count: '50-100',
+            employee_count: '51-100',
           }}
         />
       );
@@ -454,7 +455,7 @@ describe('ProfileEditForm', () => {
       const employeeSelect = screen.getByLabelText(/employee count/i);
 
       expect(yearSelect).toHaveTextContent('2000');
-      expect(employeeSelect).toHaveTextContent('50-100 employees');
+      expect(employeeSelect).toHaveTextContent('51-100 employees');
     });
   });
 
