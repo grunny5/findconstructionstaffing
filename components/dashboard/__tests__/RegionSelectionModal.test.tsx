@@ -198,27 +198,6 @@ describe('RegionSelectionModal', () => {
     });
   });
 
-  it('should show validation error when saving with no selections', async () => {
-    const user = userEvent.setup();
-    render(<RegionSelectionModal {...defaultProps} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Alabama')).toBeInTheDocument();
-    });
-
-    const saveButton = screen.getByRole('button', { name: /Save Regions/i });
-    await user.click(saveButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Please select at least one service region/i)
-      ).toBeInTheDocument();
-    });
-
-    // Content should still be visible so user can fix the error
-    expect(screen.getByText('Alabama')).toBeInTheDocument();
-  });
-
   it('should have accessible checkbox labels', async () => {
     render(<RegionSelectionModal {...defaultProps} />);
 

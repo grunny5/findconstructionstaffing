@@ -154,6 +154,7 @@ export function RegionSelectionModal({
   };
 
   const handleClearAll = () => {
+    setError(null); // Clear error when user makes a selection
     setWorkingSelection([]);
   };
 
@@ -171,7 +172,14 @@ export function RegionSelectionModal({
   const handleCancel = () => {
     setWorkingSelection(selectedRegions);
     setError(null);
-    onOpenChange(false);
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Closing the modal - reset state
+      handleCancel();
+    }
+    onOpenChange(newOpen);
   };
 
   const isRegionSelected = (regionId: string) => {
@@ -182,7 +190,7 @@ export function RegionSelectionModal({
   const totalCount = allRegions.length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -310,7 +318,11 @@ export function RegionSelectionModal({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={handleCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button
