@@ -144,7 +144,19 @@ describe('TradeSelectionModal', () => {
   });
 
   describe('Loading Trades', () => {
-    it('should render modal when open', async () => {
+    it('should display loading state while fetching trades', async () => {
+      // Mock a delayed response to capture loading state
+      let resolvePromise: (value: any) => void;
+      const delayedPromise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
+
+      mockFrom.mockReturnValue({
+        select: jest.fn(() => ({
+          order: jest.fn(() => delayedPromise),
+        })),
+      });
+
       render(
         <TradeSelectionModal
           open={true}
@@ -154,11 +166,15 @@ describe('TradeSelectionModal', () => {
         />
       );
 
-      // Modal should be visible
+      // Should show loading indicator initially
+      expect(screen.getByTestId('loader')).toBeInTheDocument();
+
+      // Resolve the promise
+      resolvePromise!({ data: mockTrades, error: null });
+
+      // Loading indicator should disappear
       await waitFor(() => {
-        expect(
-          screen.getByText(/select trade specializations/i)
-        ).toBeInTheDocument();
+        expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
       });
     });
   });
@@ -297,7 +313,15 @@ describe('TradeSelectionModal', () => {
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);
 
-      expect(mockOnSave).toHaveBeenCalledWith(selectedTrades);
+      expect(mockOnSave).toHaveBeenCalledTimes(1);
+      const savedTrades = mockOnSave.mock.calls[0][0];
+      expect(savedTrades).toHaveLength(2);
+      // Verify isFeatured was stripped from saved trades
+      savedTrades.forEach((trade: any) => {
+        expect(trade).not.toHaveProperty('isFeatured');
+        expect(trade).toHaveProperty('id');
+        expect(trade).toHaveProperty('name');
+      });
       expect(mockOnOpenChange).toHaveBeenCalledWith(false);
     });
 
@@ -404,19 +428,61 @@ describe('TradeSelectionModal', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should not render when modal is closed', () => {
+    it('should handle empty trade list gracefully', async () => {
+      mockFrom.mockReturnValue({
+        select: jest.fn(() => ({
+          order: jest.fn(() =>
+            Promise.resolve({
+              data: [],
+              error: null,
+            })
+          ),
+        })),
+      });
+
       render(
         <TradeSelectionModal
-          open={false}
+          open={true}
           onOpenChange={mockOnOpenChange}
           selectedTrades={[]}
           onSave={mockOnSave}
         />
       );
 
-      expect(
-        screen.queryByText(/select trade specializations/i)
-      ).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText(/search trades/i)
+        ).toBeInTheDocument();
+      });
+
+      // Should render without trades available to select
+      expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    });
+
+    it('should display "No trades found" when search returns no results', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TradeSelectionModal
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          selectedTrades={[]}
+          onSave={mockOnSave}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText(/search trades/i)
+        ).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText(/search trades/i);
+      await user.type(searchInput, 'nonexistenttrade');
+
+      await waitFor(() => {
+        expect(screen.getByText(/no trades found/i)).toBeInTheDocument();
+      });
     });
   });
 });

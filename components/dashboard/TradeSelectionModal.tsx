@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -124,6 +124,7 @@ export function TradeSelectionModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const prevOpenRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -162,13 +163,15 @@ export function TradeSelectionModal({
 
   // Initialize selected trades when modal opens
   useEffect(() => {
-    if (open) {
+    // Only initialize when modal transitions from closed to open
+    if (open && !prevOpenRef.current) {
       const tradesWithFeatured = initialSelectedTrades.map((trade, index) => ({
         ...trade,
         isFeatured: index < FEATURED_COUNT,
       }));
       setSelectedTrades(tradesWithFeatured);
     }
+    prevOpenRef.current = open;
   }, [open, initialSelectedTrades]);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -231,7 +234,7 @@ export function TradeSelectionModal({
   const handleSave = () => {
     // Remove isFeatured property before saving (not part of Trade type)
     const tradesToSave = selectedTrades.map(
-      ({ isFeatured, ...trade }) => trade
+      ({ isFeatured: _isFeatured, ...trade }) => trade
     );
     onSave(tradesToSave);
     onOpenChange(false);
@@ -292,7 +295,10 @@ export function TradeSelectionModal({
                 <CommandList className="max-h-[400px]">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-6">
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      <Loader2
+                        className="h-6 w-6 animate-spin text-muted-foreground"
+                        data-testid="loader"
+                      />
                     </div>
                   ) : (
                     <>

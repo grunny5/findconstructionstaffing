@@ -118,7 +118,6 @@ export function TradeSelector({
                       'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
                     )}
                     aria-label={`Remove ${trade.name}`}
-                    disabled={disabled}
                   >
                     <X className="h-3 w-3" />
                   </button>
