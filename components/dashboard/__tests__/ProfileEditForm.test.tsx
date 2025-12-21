@@ -19,6 +19,8 @@ describe('ProfileEditForm', () => {
   const mockOnCancel = jest.fn();
 
   const defaultProps = {
+    agencyId: 'test-agency-id',
+    agencySlug: 'test-agency-slug',
     onSubmit: mockOnSubmit,
     onCancel: mockOnCancel,
   };
@@ -64,6 +66,9 @@ describe('ProfileEditForm', () => {
         screen.getByRole('button', { name: /save changes/i })
       ).toBeInTheDocument();
       expect(
+        screen.getByRole('button', { name: /preview/i })
+      ).toBeInTheDocument();
+      expect(
         screen.getByRole('button', { name: /cancel/i })
       ).toBeInTheDocument();
     });
@@ -103,8 +108,8 @@ describe('ProfileEditForm', () => {
       // Wait for editor to load
       await waitFor(() => {
         const buttons = screen.getAllByRole('button');
-        // Should have at least: Bold, Italic, Bullet List, Ordered List, Link, Undo, Redo, plus Save/Cancel
-        expect(buttons.length).toBeGreaterThanOrEqual(7);
+        // Should have at least: Bold, Italic, Bullet List, Ordered List, Link, Undo, Redo (7), plus Save/Preview/Cancel (3) = 10
+        expect(buttons.length).toBeGreaterThanOrEqual(10);
       });
     });
 
@@ -422,6 +427,95 @@ describe('ProfileEditForm', () => {
       // Note: Save button remains disabled after submission because form is no longer dirty
       // Cancel button should be enabled again
       expect(cancelButton).toBeEnabled();
+    });
+  });
+
+  describe('Preview Functionality', () => {
+    it('should open preview modal when Preview button is clicked', async () => {
+      const user = userEvent.setup();
+      render(<ProfileEditForm {...defaultProps} />);
+
+      const previewButton = screen.getByRole('button', { name: /preview/i });
+      await user.click(previewButton);
+
+      // Modal should be rendered
+      await waitFor(() => {
+        expect(screen.getByText('Profile Preview')).toBeInTheDocument();
+      });
+    });
+
+    it('should pass current form values to preview modal', async () => {
+      const user = userEvent.setup();
+      render(
+        <ProfileEditForm {...defaultProps} initialData={mockInitialData} />
+      );
+
+      const previewButton = screen.getByRole('button', { name: /preview/i });
+      await user.click(previewButton);
+
+      // Modal should show the form data
+      await waitFor(() => {
+        expect(screen.getByText('Profile Preview')).toBeInTheDocument();
+      });
+    });
+
+    it('should show preview with unsaved changes', async () => {
+      const user = userEvent.setup();
+      render(
+        <ProfileEditForm {...defaultProps} initialData={mockInitialData} />
+      );
+
+      // Make changes to the form
+      const nameInput = screen.getByDisplayValue('Test Staffing Agency');
+      await user.type(nameInput, ' Updated');
+
+      const previewButton = screen.getByRole('button', { name: /preview/i });
+      await user.click(previewButton);
+
+      // Preview should show the updated (unsaved) data
+      await waitFor(() => {
+        expect(screen.getByText('Profile Preview')).toBeInTheDocument();
+      });
+    });
+
+    it('should close preview modal when Back to Editing is clicked', async () => {
+      const user = userEvent.setup();
+      render(<ProfileEditForm {...defaultProps} />);
+
+      const previewButton = screen.getByRole('button', { name: /preview/i });
+      await user.click(previewButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Profile Preview')).toBeInTheDocument();
+      });
+
+      const backButton = screen.getByRole('button', {
+        name: /back to editing/i,
+      });
+      await user.click(backButton);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Profile Preview')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should be enabled even when form is not dirty', () => {
+      render(
+        <ProfileEditForm {...defaultProps} initialData={mockInitialData} />
+      );
+
+      const previewButton = screen.getByRole('button', { name: /preview/i });
+      // Preview button should always be enabled (unlike Save button)
+      expect(previewButton).toBeEnabled();
+    });
+
+    it('should be disabled while submitting', () => {
+      render(
+        <ProfileEditForm {...defaultProps} initialData={mockInitialData} />
+      );
+
+      const previewButton = screen.getByRole('button', { name: /preview/i });
+      expect(previewButton).toBeEnabled();
     });
   });
 

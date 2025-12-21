@@ -33,8 +33,9 @@ import {
   requiresAdminApproval,
   getPlainTextLength,
 } from '@/lib/validations/agency-profile';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ProfilePreviewModal } from './ProfilePreviewModal';
 
 // Lazy load TipTap editor for better bundle size
 const RichTextEditor = dynamic(
@@ -49,6 +50,9 @@ const RichTextEditor = dynamic(
 );
 
 interface ProfileEditFormProps {
+  agencyId: string;
+  agencySlug: string;
+  agencyLogoUrl?: string;
   initialData?: Partial<AgencyProfileFormData>;
   onSubmit: (data: AgencyProfileFormData) => Promise<void>;
   onCancel?: () => void;
@@ -66,6 +70,9 @@ interface ProfileEditFormProps {
  * - Admin approval warning for name changes
  */
 export function ProfileEditForm({
+  agencyId,
+  agencySlug,
+  agencyLogoUrl,
   initialData,
   onSubmit,
   onCancel,
@@ -73,6 +80,7 @@ export function ProfileEditForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [descriptionLength, setDescriptionLength] = useState(0);
   const [showNameWarning, setShowNameWarning] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const form = useForm<AgencyProfileFormData>({
     resolver: zodResolver(agencyProfileSchema),
@@ -160,6 +168,16 @@ export function ProfileEditForm({
 
     form.reset();
     onCancel?.();
+  };
+
+  const handlePreview = () => {
+    setShowPreview(true);
+  };
+
+  const handlePublishFromPreview = async () => {
+    const formData = form.getValues();
+    await handleSubmit(formData);
+    setShowPreview(false);
   };
 
   return (
@@ -381,6 +399,16 @@ export function ProfileEditForm({
           </Button>
           <Button
             type="button"
+            variant="secondary"
+            onClick={handlePreview}
+            disabled={isSubmitting}
+            className="gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            Preview
+          </Button>
+          <Button
+            type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={isSubmitting}
@@ -389,6 +417,20 @@ export function ProfileEditForm({
           </Button>
         </div>
       </form>
+
+      {/* Preview Modal */}
+      <ProfilePreviewModal
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        previewData={{
+          ...form.getValues(),
+          id: agencyId,
+          slug: agencySlug,
+          logo_url: agencyLogoUrl,
+        }}
+        onPublish={handlePublishFromPreview}
+        isPublishing={isSubmitting}
+      />
     </Form>
   );
 }
