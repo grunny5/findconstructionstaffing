@@ -93,6 +93,8 @@ export function RegionSelectionModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const prevOpenRef = useRef(false);
+  // Capture initial selection when modal opens for proper cancel behavior
+  const initialSelectionRef = useRef<Region[]>([]);
 
   // Fetch all regions from database when modal opens
   useEffect(() => {
@@ -127,6 +129,8 @@ export function RegionSelectionModal({
     // Only initialize when modal transitions from closed to open
     if (open && !prevOpenRef.current) {
       setWorkingSelection(selectedRegions);
+      // Capture initial selection for cancel restoration
+      initialSelectionRef.current = selectedRegions;
     }
     prevOpenRef.current = open;
   }, [open, selectedRegions]);
@@ -179,7 +183,8 @@ export function RegionSelectionModal({
   };
 
   const handleCancel = () => {
-    setWorkingSelection(selectedRegions);
+    // Restore from captured initial state, not live prop
+    setWorkingSelection(initialSelectionRef.current);
     setError(null);
   };
 
