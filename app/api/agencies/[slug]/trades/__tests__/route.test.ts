@@ -184,7 +184,7 @@ describe('PUT /api/agencies/[slug]/trades', () => {
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
-      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
       expect(data.error.message).toBe('Forbidden: You do not own this agency');
     });
   });
