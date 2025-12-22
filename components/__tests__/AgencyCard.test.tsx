@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
 import { Agency } from '@/types/api';
+import { US_STATE_CODES } from '@/lib/utils';
 
 // Helper to convert Agency type to AgencyCard props
 function toAgencyCardProps(
@@ -319,10 +320,12 @@ describe('AgencyCard', () => {
     });
 
     it('should show "Nationwide" for agencies with 50 states', () => {
-      const fiftyStates = Array.from({ length: 50 }, (_, i) => ({
-        id: `${i}`,
-        name: `State ${i}`,
-        code: `S${i}`,
+      // Create 50 valid US states using actual state codes
+      const allStateCodesArray = Array.from(US_STATE_CODES);
+      const fiftyStates = allStateCodesArray.map((code, i) => ({
+        id: `${i + 1}`,
+        name: `State ${code}`,
+        code,
       }));
 
       const nationwideAgency = {
