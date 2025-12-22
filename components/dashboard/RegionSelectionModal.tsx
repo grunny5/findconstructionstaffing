@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
   Dialog,
@@ -90,8 +90,9 @@ export function RegionSelectionModal({
 }: RegionSelectionModalProps) {
   const [allRegions, setAllRegions] = useState<Region[]>([]);
   const [workingSelection, setWorkingSelection] = useState<Region[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const prevOpenRef = useRef(false);
 
   // Fetch all regions from database when modal opens
   useEffect(() => {
@@ -121,13 +122,14 @@ export function RegionSelectionModal({
     fetchRegions();
   }, [open]);
 
-  // Initialize working selection only when modal opens (not when selectedRegions changes)
+  // Initialize working selection when modal transitions from closed to open
   useEffect(() => {
-    if (open) {
+    // Only initialize when modal transitions from closed to open
+    if (open && !prevOpenRef.current) {
       setWorkingSelection(selectedRegions);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]); // Only depend on `open` to avoid resetting draft changes
+    prevOpenRef.current = open;
+  }, [open, selectedRegions]);
 
   const handleToggleRegion = (region: Region) => {
     setError(null); // Clear error when user makes a selection
