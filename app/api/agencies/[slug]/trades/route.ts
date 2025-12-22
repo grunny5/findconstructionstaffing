@@ -247,26 +247,34 @@ export async function PUT(
 
     // Then, delete relationships not in the new set (if any)
     // This is non-critical: new trades are already inserted, orphans won't break functionality
-    if (trade_ids.length > 0) {
-      const { error: deleteError } = await supabase
-        .from('agency_trades')
-        .delete()
-        .eq('agency_id', agencyId)
-        .not('trade_id', 'in', `(${trade_ids.join(',')})`);
+    // Fetch current agency_trades to determine which ones are orphaned
+    const { data: currentRelations } = await supabase
+      .from('agency_trades')
+      .select('trade_id')
+      .eq('agency_id', agencyId);
 
-      if (deleteError) {
-        console.error('Error deleting orphaned trades:', deleteError);
-        // Non-fatal: Log but continue - orphans won't break the application
-      }
-    } else {
-      // If trade_ids is empty, delete all trades for this agency
-      const { error: deleteError } = await supabase
-        .from('agency_trades')
-        .delete()
-        .eq('agency_id', agencyId);
+    if (currentRelations && currentRelations.length > 0) {
+      // Calculate orphaned trade IDs (those not in the new trade_ids list)
+      const currentTradeIds = currentRelations.map((r) => r.trade_id);
+      const orphanedIds = currentTradeIds.filter(
+        (id) => !trade_ids.includes(id)
+      );
 
-      if (deleteError) {
-        console.error('Error deleting all agency trades:', deleteError);
+      // Delete orphaned relationships using safe parameterized .in() method
+      if (orphanedIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('agency_trades')
+          .delete()
+          .eq('agency_id', agencyId)
+          .in('trade_id', orphanedIds);
+
+        if (deleteError) {
+          console.warn(
+            'Non-critical: Failed to delete orphaned trades:',
+            deleteError
+          );
+          // Non-fatal: Log but continue - orphans won't break the application
+        }
       }
     }
 

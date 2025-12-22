@@ -1,7 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RegionBadges } from '../RegionBadges';
+import { US_STATE_CODES } from '@/lib/utils';
 
-const mockRegions = [
+interface Region {
+  id: string;
+  name: string;
+  code: string;
+}
+
+const mockRegions: Region[] = [
   { id: '1', name: 'Texas', code: 'TX' },
   { id: '2', name: 'California', code: 'CA' },
   { id: '3', name: 'Florida', code: 'FL' },
@@ -10,10 +17,12 @@ const mockRegions = [
   { id: '6', name: 'Ohio', code: 'OH' },
 ];
 
-const fiftyStates = Array.from({ length: 50 }, (_, i) => ({
-  id: `${i}`,
-  name: `State ${i}`,
-  code: `S${i}`,
+// Create 50 valid US states using actual state codes
+const allStateCodesArray = Array.from(US_STATE_CODES);
+const fiftyStates: Region[] = allStateCodesArray.map((code, i) => ({
+  id: `${i + 1}`,
+  name: `State ${code}`,
+  code,
 }));
 
 describe('RegionBadges', () => {
@@ -32,7 +41,9 @@ describe('RegionBadges', () => {
   it('should show "Nationwide" badge for 50 states', () => {
     render(<RegionBadges regions={fiftyStates} />);
     expect(screen.getByText('Nationwide')).toBeInTheDocument();
-    expect(screen.queryByText('S0')).not.toBeInTheDocument();
+    // Individual state codes should not be shown when Nationwide badge is displayed
+    expect(screen.queryByText('AL')).not.toBeInTheDocument();
+    expect(screen.queryByText('TX')).not.toBeInTheDocument();
   });
 
   it('should expand to show all regions when "View All" clicked', () => {

@@ -57,3 +57,6 @@ junit.xml
 # Cache directories
 .jest-cache/
 .eslintcache
+
+# Claude IDE local settings
+.claude/settings.local.json

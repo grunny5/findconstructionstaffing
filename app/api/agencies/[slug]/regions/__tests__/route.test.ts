@@ -333,22 +333,34 @@ describe('PUT /api/agencies/[slug]/regions', () => {
             }),
           };
         } else if (callCount === 5) {
+          // Fetch current agency_regions to find orphans
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            not: jest.fn().mockResolvedValue({
-              data: null,
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockResolvedValue({
+              data: [{ region_id: 'orphan-region-id' }],
               error: null,
             }),
           };
         } else if (callCount === 6) {
+          // Delete orphaned regions using .in()
+          return {
+            delete: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockResolvedValue({
+              data: null,
+              error: null,
+            }),
+          };
+        } else if (callCount === 7) {
+          // Insert audit trail
           return {
             insert: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
           };
-        } else if (callCount === 7) {
+        } else if (callCount === 8) {
+          // Update agency last_edited
           return {
             update: jest.fn().mockReturnThis(),
             eq: jest.fn().mockResolvedValue({
@@ -356,7 +368,8 @@ describe('PUT /api/agencies/[slug]/regions', () => {
               error: null,
             }),
           };
-        } else if (callCount === 8) {
+        } else if (callCount === 9) {
+          // Fetch updated regions to return
           return {
             select: jest.fn().mockReturnThis(),
             in: jest.fn().mockReturnThis(),
@@ -483,15 +496,26 @@ describe('PUT /api/agencies/[slug]/regions', () => {
             }),
           };
         } else if (callCount === 5) {
+          // Fetch current agency_regions to find orphans
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            not: jest.fn().mockResolvedValue({
-              data: null,
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockResolvedValue({
+              data: [{ region_id: 'orphan-region-id' }],
               error: null,
             }),
           };
         } else if (callCount === 6) {
+          // Delete orphaned regions using .in()
+          return {
+            delete: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockResolvedValue({
+              data: null,
+              error: null,
+            }),
+          };
+        } else if (callCount === 7) {
+          // Insert audit trail
           return {
             insert: jest.fn().mockImplementation((data: any) => {
               auditInsertCalled = true;
@@ -502,7 +526,8 @@ describe('PUT /api/agencies/[slug]/regions', () => {
               });
             }),
           };
-        } else if (callCount === 7) {
+        } else if (callCount === 8) {
+          // Update agency last_edited
           return {
             update: jest.fn().mockReturnThis(),
             eq: jest.fn().mockResolvedValue({
@@ -510,7 +535,8 @@ describe('PUT /api/agencies/[slug]/regions', () => {
               error: null,
             }),
           };
-        } else if (callCount === 8) {
+        } else if (callCount === 9) {
+          // Fetch updated regions to return
           return {
             select: jest.fn().mockReturnThis(),
             in: jest.fn().mockReturnThis(),

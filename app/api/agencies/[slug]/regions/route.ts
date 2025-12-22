@@ -252,26 +252,34 @@ export async function PUT(
 
     // Then, delete relationships not in the new set (if any)
     // This is non-critical: new regions are already inserted, orphans won't break functionality
-    if (region_ids.length > 0) {
-      const { error: deleteError } = await supabase
-        .from('agency_regions')
-        .delete()
-        .eq('agency_id', agencyId)
-        .not('region_id', 'in', `(${region_ids.join(',')})`);
+    // Fetch current agency_regions to determine which ones are orphaned
+    const { data: currentRelations } = await supabase
+      .from('agency_regions')
+      .select('region_id')
+      .eq('agency_id', agencyId);
 
-      if (deleteError) {
-        console.error('Error deleting orphaned regions:', deleteError);
-        // Non-fatal: Log but continue - orphans won't break the application
-      }
-    } else {
-      // If region_ids is empty, delete all regions for this agency
-      const { error: deleteError } = await supabase
-        .from('agency_regions')
-        .delete()
-        .eq('agency_id', agencyId);
+    if (currentRelations && currentRelations.length > 0) {
+      // Calculate orphaned region IDs (those not in the new region_ids list)
+      const currentRegionIds = currentRelations.map((r) => r.region_id);
+      const orphanedIds = currentRegionIds.filter(
+        (id) => !region_ids.includes(id)
+      );
 
-      if (deleteError) {
-        console.error('Error deleting all agency regions:', deleteError);
+      // Delete orphaned relationships using safe parameterized .in() method
+      if (orphanedIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('agency_regions')
+          .delete()
+          .eq('agency_id', agencyId)
+          .in('region_id', orphanedIds);
+
+        if (deleteError) {
+          console.warn(
+            'Non-critical: Failed to delete orphaned regions:',
+            deleteError
+          );
+          // Non-fatal: Log but continue - orphans won't break the application
+        }
       }
     }
 

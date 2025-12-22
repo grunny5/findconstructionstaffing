@@ -312,17 +312,29 @@ describe('PUT /api/agencies/[slug]/trades', () => {
         }
 
         if (table === 'agency_trades' && callIndex === 5) {
+          // Fetch current agency_trades to find orphans
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockResolvedValue({
+              data: [{ trade_id: 'orphan-trade-id' }],
+              error: null,
+            }),
+          };
+        }
+
+        if (table === 'agency_trades' && callIndex === 6) {
+          // Delete orphaned trades using .in()
           return {
             delete: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
-            not: jest.fn().mockResolvedValue({
+            in: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
           };
         }
 
-        if (table === 'agency_profile_edits' && callIndex === 6) {
+        if (table === 'agency_profile_edits' && callIndex === 7) {
           return {
             insert: jest.fn().mockResolvedValue({
               data: null,
@@ -331,7 +343,7 @@ describe('PUT /api/agencies/[slug]/trades', () => {
           };
         }
 
-        if (table === 'agencies' && callIndex === 7) {
+        if (table === 'agencies' && callIndex === 8) {
           return {
             update: jest.fn().mockReturnThis(),
             eq: jest.fn().mockResolvedValue({
@@ -341,7 +353,7 @@ describe('PUT /api/agencies/[slug]/trades', () => {
           };
         }
 
-        if (table === 'trades' && callIndex === 8) {
+        if (table === 'trades' && callIndex === 9) {
           return {
             select: jest.fn().mockReturnThis(),
             in: jest.fn().mockReturnThis(),
