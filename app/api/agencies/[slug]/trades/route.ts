@@ -56,7 +56,7 @@ export async function PUT(
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },
@@ -176,10 +176,26 @@ export async function PUT(
     // ========================================================================
     const agencyId = agency.id;
 
-    const { data: currentTrades } = await supabase
+    const { data: currentTrades, error: currentTradesError } = await supabase
       .from('agency_trades')
       .select('trade_id, trades(id, name)')
       .eq('agency_id', agencyId);
+
+    if (currentTradesError) {
+      console.error(
+        'Error fetching current trades for audit trail:',
+        currentTradesError
+      );
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to fetch current trades for audit trail',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
 
     const oldTradeNames =
       currentTrades

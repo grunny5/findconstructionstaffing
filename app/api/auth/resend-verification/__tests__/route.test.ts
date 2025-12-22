@@ -53,7 +53,7 @@ describe('POST /api/auth/resend-verification', () => {
     mockedGetClientIp.mockReturnValue('127.0.0.1');
 
     // Mock Supabase admin client
-    mockedCreateClient.mockReturnValue({
+    (mockedCreateClient as jest.Mock).mockReturnValue({
       auth: {
         resend: mockResend,
       },

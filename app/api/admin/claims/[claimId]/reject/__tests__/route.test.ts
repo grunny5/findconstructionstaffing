@@ -33,7 +33,7 @@ describe('POST /api/admin/claims/[claimId]/reject', () => {
       from: jest.fn(),
     };
 
-    mockedCreateClient.mockReturnValue(mockSupabaseClient);
+    mockedCreateClient.mockResolvedValue(mockSupabaseClient);
   });
 
   // ============================================================================

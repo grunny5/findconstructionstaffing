@@ -97,7 +97,7 @@ export async function GET(
     }
 
     // Create authenticated Supabase client
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Check authentication
     const {

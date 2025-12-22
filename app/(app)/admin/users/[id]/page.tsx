@@ -27,7 +27,7 @@ const formatDate = (dateString: string): string => {
 };
 
 export default async function UserDetailPage({ params }: UserDetailPageProps) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Check authentication
   const {

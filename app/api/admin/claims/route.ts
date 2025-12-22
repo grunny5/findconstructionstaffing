@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {

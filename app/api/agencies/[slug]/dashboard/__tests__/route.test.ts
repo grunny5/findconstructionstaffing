@@ -114,7 +114,7 @@ describe('GET /api/agencies/[slug]/dashboard', () => {
       },
       from: jest.fn(),
     };
-    mockedCreateClient.mockReturnValue(mockSupabaseClient as any);
+    mockedCreateClient.mockResolvedValue(mockSupabaseClient as any);
   });
 
   describe('Authentication', () => {

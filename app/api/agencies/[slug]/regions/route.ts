@@ -56,7 +56,7 @@ export async function PUT(
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },
@@ -176,10 +176,26 @@ export async function PUT(
     // ========================================================================
     const agencyId = agency.id;
 
-    const { data: currentRegions } = await supabase
+    const { data: currentRegions, error: currentRegionsError } = await supabase
       .from('agency_regions')
       .select('region_id, regions(id, name, state_code)')
       .eq('agency_id', agencyId);
+
+    if (currentRegionsError) {
+      console.error(
+        'Error fetching current regions for audit trail:',
+        currentRegionsError
+      );
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to fetch current regions for audit trail',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
 
     const oldRegionNames =
       currentRegions
