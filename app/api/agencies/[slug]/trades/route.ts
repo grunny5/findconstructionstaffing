@@ -102,7 +102,7 @@ export async function PUT(
       return NextResponse.json(
         {
           error: {
-            code: ERROR_CODES.UNAUTHORIZED,
+            code: ERROR_CODES.FORBIDDEN,
             message: 'Forbidden: You do not own this agency',
           },
         },
@@ -181,7 +181,6 @@ export async function PUT(
       .select('trade_id, trades(id, name)')
       .eq('agency_id', agencyId);
 
-    const oldTradeIds = currentTrades?.map((at) => at.trade_id) || [];
     const oldTradeNames =
       currentTrades
         ?.map((at) => {
@@ -192,8 +191,15 @@ export async function PUT(
 
     const newTradeNames = validTrades?.map((t) => t.name).filter(Boolean) || [];
 
+    // Store old relationships for potential rollback
+    const oldRelationships =
+      currentTrades?.map((at) => ({
+        agency_id: agencyId,
+        trade_id: at.trade_id,
+      })) || [];
+
     // ========================================================================
-    // 6. DELETE EXISTING RELATIONSHIPS & INSERT NEW ONES (TRANSACTION)
+    // 6. DELETE EXISTING RELATIONSHIPS & INSERT NEW ONES (WITH ROLLBACK)
     // ========================================================================
     const { error: deleteError } = await supabase
       .from('agency_trades')
@@ -224,6 +230,18 @@ export async function PUT(
 
     if (insertError) {
       console.error('Error inserting agency trades:', insertError);
+
+      // Rollback: Restore old relationships
+      if (oldRelationships.length > 0) {
+        const { error: rollbackError } = await supabase
+          .from('agency_trades')
+          .insert(oldRelationships);
+
+        if (rollbackError) {
+          console.error('CRITICAL: Rollback failed:', rollbackError);
+        }
+      }
+
       return NextResponse.json(
         {
           error: {
