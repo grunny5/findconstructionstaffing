@@ -15,6 +15,7 @@ import {
   agencyTradesSchema,
   type AgencyTradesUpdateData,
 } from '@/lib/validations/agency-trades';
+import { ErrorRateTracker } from '@/lib/monitoring/performance';
 
 export const dynamic = 'force-dynamic';
 
@@ -215,58 +216,58 @@ export async function PUT(
       })) || [];
 
     // ========================================================================
-    // 6. DELETE EXISTING RELATIONSHIPS & INSERT NEW ONES (WITH ROLLBACK)
+    // 6. UPSERT NEW RELATIONSHIPS & DELETE ORPHANED ONES
     // ========================================================================
-    const { error: deleteError } = await supabase
-      .from('agency_trades')
-      .delete()
-      .eq('agency_id', agencyId);
+    // Use upsert to add/update relationships atomically without deleting first
+    // This avoids race conditions and eliminates the need for rollback logic
+    const newRelationships = trade_ids.map((trade_id) => ({
+      agency_id: agencyId,
+      trade_id,
+    }));
 
-    if (deleteError) {
-      console.error('Error deleting agency trades:', deleteError);
+    const { error: upsertError } = await supabase
+      .from('agency_trades')
+      .upsert(newRelationships, {
+        onConflict: 'agency_id,trade_id',
+        ignoreDuplicates: false,
+      });
+
+    if (upsertError) {
+      console.error('Error upserting agency trades:', upsertError);
       return NextResponse.json(
         {
           error: {
             code: ERROR_CODES.DATABASE_ERROR,
-            message: 'Failed to delete existing trades',
+            message: 'Failed to insert/update trades',
           },
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
       );
     }
 
-    const newRelationships = trade_ids.map((trade_id) => ({
-      agency_id: agencyId,
-      trade_id,
-    }));
+    // Then, delete relationships not in the new set (if any)
+    // This is non-critical: new trades are already inserted, orphans won't break functionality
+    if (trade_ids.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('agency_trades')
+        .delete()
+        .eq('agency_id', agencyId)
+        .not('trade_id', 'in', `(${trade_ids.join(',')})`);
 
-    const { error: insertError } = await supabase
-      .from('agency_trades')
-      .insert(newRelationships);
-
-    if (insertError) {
-      console.error('Error inserting agency trades:', insertError);
-
-      // Rollback: Restore old relationships
-      if (oldRelationships.length > 0) {
-        const { error: rollbackError } = await supabase
-          .from('agency_trades')
-          .insert(oldRelationships);
-
-        if (rollbackError) {
-          console.error('CRITICAL: Rollback failed:', rollbackError);
-        }
+      if (deleteError) {
+        console.error('Error deleting orphaned trades:', deleteError);
+        // Non-fatal: Log but continue - orphans won't break the application
       }
+    } else {
+      // If trade_ids is empty, delete all trades for this agency
+      const { error: deleteError } = await supabase
+        .from('agency_trades')
+        .delete()
+        .eq('agency_id', agencyId);
 
-      return NextResponse.json(
-        {
-          error: {
-            code: ERROR_CODES.DATABASE_ERROR,
-            message: 'Failed to update trades',
-          },
-        },
-        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-      );
+      if (deleteError) {
+        console.error('Error deleting all agency trades:', deleteError);
+      }
     }
 
     // ========================================================================
@@ -284,6 +285,17 @@ export async function PUT(
 
     if (auditError) {
       console.error('Error creating audit trail:', auditError);
+
+      // Track audit trail failures for monitoring and alerting
+      const errorTracker = ErrorRateTracker.getInstance();
+      errorTracker.recordRequest(
+        'PUT /api/agencies/[slug]/trades - audit trail',
+        true
+      );
+
+      // Note: We don't block the user request on audit failure since the
+      // primary operation (updating trades) succeeded. However, audit failures
+      // are tracked in our error monitoring system for investigation.
     }
 
     // ========================================================================

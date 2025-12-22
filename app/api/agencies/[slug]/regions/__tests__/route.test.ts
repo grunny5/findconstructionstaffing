@@ -327,15 +327,16 @@ describe('PUT /api/agencies/[slug]/regions', () => {
           };
         } else if (callCount === 4) {
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({
+            upsert: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
           };
         } else if (callCount === 5) {
           return {
-            insert: jest.fn().mockResolvedValue({
+            delete: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            not: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
@@ -410,10 +411,9 @@ describe('PUT /api/agencies/[slug]/regions', () => {
           };
         } else if (callCount === 4) {
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({
+            upsert: jest.fn().mockResolvedValue({
               data: null,
-              error: { message: 'Delete failed' },
+              error: { message: 'Upsert failed' },
             }),
           };
         }
@@ -427,7 +427,7 @@ describe('PUT /api/agencies/[slug]/regions', () => {
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
-      expect(data.error.message).toBe('Failed to delete existing regions');
+      expect(data.error.message).toBe('Failed to insert/update regions');
     });
 
     it('should return 500 when insert operation fails', async () => {
@@ -462,17 +462,9 @@ describe('PUT /api/agencies/[slug]/regions', () => {
           };
         } else if (callCount === 4) {
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({
+            upsert: jest.fn().mockResolvedValue({
               data: null,
-              error: null,
-            }),
-          };
-        } else if (callCount === 5) {
-          return {
-            insert: jest.fn().mockResolvedValue({
-              data: null,
-              error: { message: 'Insert failed' },
+              error: { message: 'Upsert failed' },
             }),
           };
         }
@@ -486,7 +478,7 @@ describe('PUT /api/agencies/[slug]/regions', () => {
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
-      expect(data.error.message).toBe('Failed to update regions');
+      expect(data.error.message).toBe('Failed to insert/update regions');
     });
   });
 
@@ -536,15 +528,16 @@ describe('PUT /api/agencies/[slug]/regions', () => {
           };
         } else if (callCount === 4) {
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({
+            upsert: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
           };
         } else if (callCount === 5) {
           return {
-            insert: jest.fn().mockResolvedValue({
+            delete: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            not: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),

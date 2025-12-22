@@ -2,7 +2,13 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  within,
+} from '@testing-library/react';
 import HomePage from '../page';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useRouter, useSearchParams } from 'next/navigation';

@@ -304,8 +304,7 @@ describe('PUT /api/agencies/[slug]/trades', () => {
 
         if (table === 'agency_trades' && callIndex === 4) {
           return {
-            delete: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({
+            upsert: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
@@ -314,7 +313,9 @@ describe('PUT /api/agencies/[slug]/trades', () => {
 
         if (table === 'agency_trades' && callIndex === 5) {
           return {
-            insert: jest.fn().mockResolvedValue({
+            delete: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            not: jest.fn().mockResolvedValue({
               data: null,
               error: null,
             }),
