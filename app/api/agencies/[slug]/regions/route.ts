@@ -196,8 +196,15 @@ export async function PUT(
     const newRegionNames =
       validRegions?.map((r) => r.name).filter(Boolean) || [];
 
+    // Store old relationships for potential rollback
+    const oldRelationships =
+      currentRegions?.map((ar) => ({
+        agency_id: agencyId,
+        region_id: ar.region_id,
+      })) || [];
+
     // ========================================================================
-    // 6. DELETE EXISTING RELATIONSHIPS & INSERT NEW ONES (TRANSACTION)
+    // 6. DELETE EXISTING RELATIONSHIPS & INSERT NEW ONES (WITH ROLLBACK)
     // ========================================================================
     const { error: deleteError } = await supabase
       .from('agency_regions')
@@ -228,6 +235,18 @@ export async function PUT(
 
     if (insertError) {
       console.error('Error inserting agency regions:', insertError);
+
+      // Rollback: Restore old relationships
+      if (oldRelationships.length > 0) {
+        const { error: rollbackError } = await supabase
+          .from('agency_regions')
+          .insert(oldRelationships);
+
+        if (rollbackError) {
+          console.error('CRITICAL: Rollback failed:', rollbackError);
+        }
+      }
+
       return NextResponse.json(
         {
           error: {
