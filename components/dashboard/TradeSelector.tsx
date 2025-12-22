@@ -63,8 +63,9 @@ export function TradeSelector({
             </span>
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Select the construction trades your agency specializes in. Top{' '}
-            {FEATURED_COUNT} will be featured on your profile.
+            Select up to {maxTrades} construction trades your agency specializes
+            in. The top {Math.min(FEATURED_COUNT, maxTrades)} will be featured
+            on your profile.
           </p>
         </div>
         <Button
@@ -128,17 +129,17 @@ export function TradeSelector({
       )}
 
       {/* Helper Text */}
-      {isAtMaxTrades && (
+      {isAtMaxTrades ? (
         <p className="text-xs text-muted-foreground">
           Maximum {maxTrades} trades reached. Remove a trade to add another.
         </p>
-      )}
-      {selectedTrades.length > 0 && selectedTrades.length < FEATURED_COUNT && (
+      ) : selectedTrades.length > 0 &&
+        selectedTrades.length < Math.min(FEATURED_COUNT, maxTrades) ? (
         <p className="text-xs text-muted-foreground">
-          Add {FEATURED_COUNT - selectedTrades.length} more trade(s) to maximize
-          featured trades on your profile.
+          Add {Math.min(FEATURED_COUNT, maxTrades) - selectedTrades.length} more
+          trade(s) to maximize featured trades on your profile.
         </p>
-      )}
+      ) : null}
 
       {/* Selection Modal */}
       <TradeSelectionModal
