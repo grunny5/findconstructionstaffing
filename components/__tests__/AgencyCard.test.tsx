@@ -20,7 +20,7 @@ function toAgencyCardProps(
     offers_per_diem: agency.offers_per_diem,
     is_union: agency.is_union,
     trades: agency.trades.map((t) => t.name),
-    regions: agency.regions.map((r) => r.code),
+    regions: agency.regions,
     rating: agency.rating ?? undefined,
     reviewCount: agency.review_count,
     projectCount: agency.project_count,
@@ -99,14 +99,12 @@ describe('AgencyCard', () => {
     expect(screen.getByText('Plumber')).toBeInTheDocument();
   });
 
-  it('should handle regions data without displaying', () => {
-    // AgencyCard receives regions but doesn't display them in the UI
-    const { container } = render(
-      <AgencyCard agency={toAgencyCardProps(mockAgency)} />
-    );
+  it('should display regions', () => {
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
-    // Verify the component renders without errors when regions are provided
-    expect(container).toBeTruthy();
+    expect(screen.getByText('Serves:')).toBeInTheDocument();
+    expect(screen.getByText('TX')).toBeInTheDocument();
+    expect(screen.getByText('CA')).toBeInTheDocument();
   });
 
   it('should render rating if available', () => {
@@ -284,6 +282,77 @@ describe('AgencyCard', () => {
       // Should NOT show the 4th and 5th trades
       expect(screen.queryByText('Welder')).not.toBeInTheDocument();
       expect(screen.queryByText('Mason')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Service Regions Display', () => {
+    it('should render service regions section', () => {
+      const agencyWithRegions = {
+        ...mockAgency,
+        regions: [
+          { id: '1', name: 'Texas', code: 'TX' },
+          { id: '2', name: 'California', code: 'CA' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithRegions)} />);
+
+      expect(screen.getByText('Serves:')).toBeInTheDocument();
+      expect(screen.getByText('TX')).toBeInTheDocument();
+      expect(screen.getByText('CA')).toBeInTheDocument();
+    });
+
+    it('should show "+X more" for agencies with >3 regions', () => {
+      const agencyWithManyRegions = {
+        ...mockAgency,
+        regions: [
+          { id: '1', name: 'Texas', code: 'TX' },
+          { id: '2', name: 'California', code: 'CA' },
+          { id: '3', name: 'Florida', code: 'FL' },
+          { id: '4', name: 'New York', code: 'NY' },
+          { id: '5', name: 'Illinois', code: 'IL' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithManyRegions)} />);
+      expect(screen.getByText('+2 more')).toBeInTheDocument();
+    });
+
+    it('should show "Nationwide" for agencies with 50 states', () => {
+      const fiftyStates = Array.from({ length: 50 }, (_, i) => ({
+        id: `${i}`,
+        name: `State ${i}`,
+        code: `S${i}`,
+      }));
+
+      const nationwideAgency = {
+        ...mockAgency,
+        regions: fiftyStates,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(nationwideAgency)} />);
+      expect(screen.getByText('Nationwide')).toBeInTheDocument();
+    });
+
+    it('should not show regions section when no regions', () => {
+      const agencyNoRegions = {
+        ...mockAgency,
+        regions: [],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyNoRegions)} />);
+      expect(screen.queryByText('Serves:')).not.toBeInTheDocument();
+    });
+
+    it('should link region badges to filtered search', () => {
+      const agencyWithRegions = {
+        ...mockAgency,
+        regions: [{ id: '1', name: 'Texas', code: 'TX' }],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithRegions)} />);
+      const txLink = screen.getByText('TX').closest('a');
+      expect(txLink).toHaveAttribute('href', '/?states[]=TX');
     });
   });
 });

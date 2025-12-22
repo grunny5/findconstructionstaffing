@@ -2358,21 +2358,21 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Link states to search filter
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Profile shows "Service Regions" section
-  - [ ] States displayed as small badges/tags
-  - [ ] If <=5 states: show all expanded
-  - [ ] If >5 states: show first 5 + "View All" button/link
-  - [ ] "View All" expands to show all states
-  - [ ] States link to search filtered by that state
-  - [ ] Search results show "Serves: [State abbreviations]"
-  - [ ] If all 50 states selected: show "Nationwide" badge
-  - [ ] Mobile: tags wrap gracefully
+  - [x] Profile shows "Service Regions" section
+  - [x] States displayed as small badges/tags
+  - [x] If <=5 states: show all expanded
+  - [x] If >5 states: show first 5 + "View All" button/link
+  - [x] "View All" expands to show all states
+  - [x] States link to search filtered by that state
+  - [x] Search results show "Serves: [State abbreviations]"
+  - [x] If all 50 states selected: show "Nationwide" badge
+  - [x] Mobile: tags wrap gracefully
 - **Definition of Done:**
-  - [ ] Profile displays regions correctly
-  - [ ] Search results show regions
-  - [ ] Component tests verify rendering
-  - [ ] Component tests verify "Nationwide" logic
-  - [ ] Responsive design tested
+  - [x] Profile displays regions correctly
+  - [x] Search results show regions
+  - [x] Component tests verify rendering
+  - [x] Component tests verify "Nationwide" logic
+  - [x] Responsive design tested
   - [ ] PR submitted with screenshots
   - [ ] **Final Check:** Clear geographic coverage
 

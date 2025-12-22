@@ -157,8 +157,8 @@ function HomePageContent() {
       rating: agency.rating || undefined,
       // Map trades to string array for AgencyCard component
       trades: agency.trades?.map((t) => t.name) || [],
-      // Map regions to string array for AgencyCard component
-      regions: agency.regions?.map((r) => r.name) || [],
+      // Pass full Region objects for AgencyCard component
+      regions: agency.regions || [],
       // Add any additional fields needed for UI
       reviewCount: agency.review_count || 12 + ((index * 7) % 88),
       projectCount: agency.project_count || 45 + ((index * 13) % 455),

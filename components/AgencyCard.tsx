@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { RegionBadges } from '@/components/RegionBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import {
   Star,
   ArrowUpRight,
 } from 'lucide-react';
+import type { Region } from '@/types/api';
 
 interface AgencyCardProps {
   agency: {
@@ -31,7 +33,7 @@ interface AgencyCardProps {
     offers_per_diem: boolean;
     is_union: boolean;
     trades?: string[];
-    regions?: string[];
+    regions?: Region[];
     rating?: number;
     reviewCount?: number;
     projectCount?: number;
@@ -205,6 +207,21 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                         +{agency.trades.length - 3} more
                       </Badge>
                     )}
+                  </div>
+                )}
+
+                {/* Service Regions */}
+                {agency.regions && agency.regions.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Serves:
+                    </span>
+                    <RegionBadges
+                      regions={agency.regions}
+                      maxDisplay={3}
+                      variant="outline"
+                      showViewAll={false}
+                    />
                   </div>
                 )}
               </div>

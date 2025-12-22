@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { RegionBadges } from '@/components/RegionBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -316,19 +317,12 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       Service Areas
                     </h2>
                     {agency.regions && agency.regions.length > 0 ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {agency.regions.map((region) => (
-                          <div
-                            key={region.id}
-                            className="flex items-center gap-2"
-                          >
-                            <MapPin className="h-4 w-4 text-gray-400" />
-                            <span>
-                              {region.name}, {region.code}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      <RegionBadges
+                        regions={agency.regions}
+                        maxDisplay={5}
+                        variant="secondary"
+                        showViewAll={true}
+                      />
                     ) : (
                       <p className="text-gray-500">No service areas listed.</p>
                     )}
