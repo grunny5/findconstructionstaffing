@@ -379,58 +379,7 @@ describe('PUT /api/agencies/[slug]/regions', () => {
       expect(data.data.regions).toHaveLength(3);
     });
 
-    it('should return 500 when delete operation fails', async () => {
-      let callCount = 0;
-      mockSupabaseClient.from.mockImplementation((table: string) => {
-        callCount++;
-
-        if (callCount === 1) {
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({
-              data: mockAgency,
-              error: null,
-            }),
-          };
-        } else if (callCount === 2) {
-          return {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockResolvedValue({
-              data: mockRegions,
-              error: null,
-            }),
-          };
-        } else if (callCount === 3) {
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({
-              data: [],
-              error: null,
-            }),
-          };
-        } else if (callCount === 4) {
-          return {
-            upsert: jest.fn().mockResolvedValue({
-              data: null,
-              error: { message: 'Upsert failed' },
-            }),
-          };
-        }
-      });
-
-      const request = createMockRequest({ region_ids: validRegionIds });
-      const response = await PUT(request, {
-        params: { slug: mockAgencySlug },
-      });
-      const data = await response.json();
-
-      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
-      expect(data.error.message).toBe('Failed to insert/update regions');
-    });
-
-    it('should return 500 when insert operation fails', async () => {
+    it('should return 500 when upsert operation fails', async () => {
       let callCount = 0;
       mockSupabaseClient.from.mockImplementation((table: string) => {
         callCount++;
