@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import HomePage from '../page';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -351,13 +351,17 @@ const applyFilters = async (filters: {
   states?: string[];
 }) => {
   if (filters.trades) {
+    const tradeFilters = screen.getByTestId('trade-filters');
     for (const trade of filters.trades) {
-      fireEvent.click(screen.getByText(trade));
+      const button = within(tradeFilters).getByText(trade);
+      fireEvent.click(button);
     }
   }
   if (filters.states) {
+    const stateFilters = screen.getByTestId('state-filters');
     for (const state of filters.states) {
-      fireEvent.click(screen.getByText(state));
+      const button = within(stateFilters).getByText(state);
+      fireEvent.click(button);
     }
   }
 };
@@ -621,8 +625,10 @@ describe('Filter Integration Tests', () => {
 
       const { rerender } = render(<HomePage />);
 
-      // Click Texas filter
-      fireEvent.click(screen.getByText('Texas'));
+      // Click Texas filter - target specifically the filter button, not region badges
+      const stateFilters = screen.getByTestId('state-filters');
+      const texasButton = within(stateFilters).getByText('Texas');
+      fireEvent.click(texasButton);
 
       // Mock the API response with Texas-only agencies
       mockUseAgencies.mockReturnValue({
@@ -663,8 +669,9 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Click multiple state filters
-      fireEvent.click(screen.getByText('Texas'));
-      fireEvent.click(screen.getByText('California'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
+      fireEvent.click(within(stateFilters).getByText('California'));
 
       await waitFor(() => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
@@ -689,8 +696,9 @@ describe('Filter Integration Tests', () => {
 
       render(<HomePage />);
 
-      fireEvent.click(screen.getByText('Texas'));
-      fireEvent.click(screen.getByText('New York'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
+      fireEvent.click(within(stateFilters).getByText('New York'));
 
       await waitFor(() => {
         const lastCall =
@@ -711,8 +719,9 @@ describe('Filter Integration Tests', () => {
 
       render(<HomePage />);
 
-      fireEvent.click(screen.getByText('Texas'));
-      fireEvent.click(screen.getByText('California'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
+      fireEvent.click(within(stateFilters).getByText('California'));
 
       await waitForRouterUpdate(mockReplace, {
         states: ['TX', 'CA'],
@@ -742,8 +751,10 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Apply both filters
-      fireEvent.click(screen.getByText('Electrician'));
-      fireEvent.click(screen.getByText('Texas'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
 
       await waitFor(() => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
@@ -780,8 +791,10 @@ describe('Filter Integration Tests', () => {
       fireEvent.change(searchInput, { target: { value: 'elite' } });
 
       // Add filters
-      fireEvent.click(screen.getByText('Electrician'));
-      fireEvent.click(screen.getByText('Texas'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
 
       await waitFor(() => {
         expect(mockUseAgencies).toHaveBeenCalledWith({
@@ -807,10 +820,12 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Apply multiple filters
-      fireEvent.click(screen.getByText('Electrician'));
-      fireEvent.click(screen.getByText('Plumber'));
-      fireEvent.click(screen.getByText('Texas'));
-      fireEvent.click(screen.getByText('California'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      fireEvent.click(within(tradeFilters).getByText('Plumber'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
+      fireEvent.click(within(stateFilters).getByText('California'));
 
       await waitFor(() => {
         // Should show total active filters (2 trades + 2 states = 4)
@@ -831,8 +846,10 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Apply filters
-      fireEvent.click(screen.getByText('Electrician'));
-      fireEvent.click(screen.getByText('Texas'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
 
       // Clear all filters - use test ID for more reliable selection
       const clearButton = screen.getByTestId('clear-all-filters-button');
@@ -958,8 +975,10 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Apply filters
-      fireEvent.click(screen.getByText('Electrician'));
-      fireEvent.click(screen.getByText('Texas'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
 
       await waitForRouterUpdate(mockReplace, {
         trades: ['electrician'],
@@ -1041,8 +1060,10 @@ describe('Filter Integration Tests', () => {
       render(<HomePage />);
 
       // Apply very restrictive filters
-      fireEvent.click(screen.getByText('Electrician'));
-      fireEvent.click(screen.getByText('New York'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('New York'));
 
       await waitFor(() => {
         expect(screen.getByText('No agencies found')).toBeInTheDocument();
