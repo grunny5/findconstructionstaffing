@@ -204,9 +204,23 @@ async function testConnection(
 }
 
 // Extract unique trades from mock data
-// Now uses the standardized allTrades list directly
+// Combines trades referenced by agencies with the standardized allTrades catalog
 function extractUniqueTrades(): string[] {
-  return [...allTrades].sort();
+  const tradesSet = new Set<string>();
+
+  // Include all trades referenced by agencies
+  mockAgencies.forEach((agency) => {
+    agency.trades.forEach((trade) => {
+      tradesSet.add(trade);
+    });
+  });
+
+  // Also include all standardized trades for completeness
+  allTrades.forEach((trade) => {
+    tradesSet.add(trade);
+  });
+
+  return Array.from(tradesSet).sort();
 }
 
 // Seed trades table

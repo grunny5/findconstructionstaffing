@@ -114,7 +114,25 @@ export async function PUT(
     // ========================================================================
     // 3. PARSE AND VALIDATE REQUEST BODY
     // ========================================================================
-    const body = await request.json();
+    // Parse request body with error handling for malformed JSON
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.VALIDATION_ERROR,
+              message: 'Invalid JSON in request body',
+              details: { body: 'Malformed JSON syntax' },
+            },
+          },
+          { status: HTTP_STATUS.BAD_REQUEST }
+        );
+      }
+      throw error; // Re-throw unexpected errors
+    }
 
     const validation = agencyTradesSchema.safeParse(body);
 
@@ -207,13 +225,6 @@ export async function PUT(
         .filter(Boolean) || [];
 
     const newTradeNames = validTrades?.map((t) => t.name).filter(Boolean) || [];
-
-    // Store old relationships for potential rollback
-    const oldRelationships =
-      currentTrades?.map((at) => ({
-        agency_id: agencyId,
-        trade_id: at.trade_id,
-      })) || [];
 
     // ========================================================================
     // 6. UPSERT NEW RELATIONSHIPS & DELETE ORPHANED ONES

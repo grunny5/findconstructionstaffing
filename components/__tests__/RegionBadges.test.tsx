@@ -1,12 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RegionBadges } from '../RegionBadges';
 import { US_STATE_CODES } from '@/lib/utils';
-
-interface Region {
-  id: string;
-  name: string;
-  code: string;
-}
+import { Region } from '@/types/api';
 
 const mockRegions: Region[] = [
   { id: '1', name: 'Texas', code: 'TX' },
