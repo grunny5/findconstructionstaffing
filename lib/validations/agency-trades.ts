@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 export const MAX_TRADES = 10;
+export const FEATURED_COUNT = 3;
 
 export const agencyTradesSchema = z.object({
   trade_ids: z

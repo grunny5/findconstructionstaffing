@@ -7,8 +7,7 @@ import { Plus, X, Star } from 'lucide-react';
 import { TradeSelectionModal } from './TradeSelectionModal';
 import type { Trade } from '@/types/supabase';
 import { cn } from '@/lib/utils';
-
-const FEATURED_COUNT = 3;
+import { FEATURED_COUNT } from '@/lib/validations/agency-trades';
 
 interface TradeSelectorProps {
   selectedTrades: Trade[];
@@ -147,6 +146,7 @@ export function TradeSelector({
         onOpenChange={setShowModal}
         selectedTrades={selectedTrades}
         onSave={handleSave}
+        maxTrades={maxTrades}
       />
     </div>
   );

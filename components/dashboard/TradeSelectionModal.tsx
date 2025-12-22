@@ -42,9 +42,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { supabase } from '@/lib/supabase';
 import type { Trade } from '@/types/supabase';
 import { cn } from '@/lib/utils';
-
-const MAX_TRADES = 10;
-const FEATURED_COUNT = 3;
+import { MAX_TRADES, FEATURED_COUNT } from '@/lib/validations/agency-trades';
 
 interface SelectedTrade extends Trade {
   isFeatured?: boolean;
@@ -55,6 +53,7 @@ interface TradeSelectionModalProps {
   onOpenChange: (open: boolean) => void;
   selectedTrades: Trade[];
   onSave: (trades: Trade[]) => void;
+  maxTrades?: number;
 }
 
 interface SortableTradeItemProps {
@@ -118,6 +117,7 @@ export function TradeSelectionModal({
   onOpenChange,
   selectedTrades: initialSelectedTrades,
   onSave,
+  maxTrades = MAX_TRADES,
 }: TradeSelectionModalProps) {
   const [availableTrades, setAvailableTrades] = useState<Trade[]>([]);
   const [selectedTrades, setSelectedTrades] = useState<SelectedTrade[]>([]);
@@ -205,7 +205,7 @@ export function TradeSelectionModal({
         }));
       });
     } else {
-      if (selectedTrades.length >= MAX_TRADES) {
+      if (selectedTrades.length >= maxTrades) {
         // Don't add - show warning (already shown in UI)
         return;
       }
@@ -255,15 +255,23 @@ export function TradeSelectionModal({
     trade.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isAtMaxTrades = selectedTrades.length >= MAX_TRADES;
+  const isAtMaxTrades = selectedTrades.length >= maxTrades;
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      handleCancel();
+    } else {
+      onOpenChange(newOpen);
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>Select Trade Specializations</DialogTitle>
           <DialogDescription>
-            Choose up to {MAX_TRADES} trades. Drag to reorder - top{' '}
+            Choose up to {maxTrades} trades. Drag to reorder - top{' '}
             {FEATURED_COUNT} will be featured on your profile.
           </DialogDescription>
         </DialogHeader>
@@ -345,7 +353,7 @@ export function TradeSelectionModal({
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold mb-2">
-                  Selected Trades ({selectedTrades.length}/{MAX_TRADES})
+                  Selected Trades ({selectedTrades.length}/{maxTrades})
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   Drag to reorder. Top {FEATURED_COUNT} are featured.
@@ -356,7 +364,7 @@ export function TradeSelectionModal({
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Maximum {MAX_TRADES} trades allowed. Remove one to add
+                    Maximum {maxTrades} trades allowed. Remove one to add
                     another.
                   </AlertDescription>
                 </Alert>
