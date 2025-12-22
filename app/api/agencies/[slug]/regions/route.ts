@@ -102,7 +102,7 @@ export async function PUT(
       return NextResponse.json(
         {
           error: {
-            code: ERROR_CODES.UNAUTHORIZED,
+            code: ERROR_CODES.FORBIDDEN,
             message: 'Forbidden: You do not own this agency',
           },
         },

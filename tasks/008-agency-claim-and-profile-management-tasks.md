@@ -2049,7 +2049,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
 - **Acceptance Criteria (for this task):**
   - [x] Component displays currently selected trades as chips/badges
   - [x] "Add Trades" button opens selection modal
-  - [x] Modal shows searchable list of all 48 trades
+  - [x] Modal shows searchable list of all 57 trades
   - [x] Search filters trades in real-time
   - [x] Clicking trade checkbox adds to "Selected Trades" list
   - [x] Selected trades list shows drag handles for reordering
