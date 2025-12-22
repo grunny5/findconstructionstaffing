@@ -5,15 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RegionSelectionModal } from '../RegionSelectionModal';
 import type { Region } from '@/types/supabase';
-
-// Mock Supabase
-const mockFrom = jest.fn();
-
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: (...args: any[]) => mockFrom(...args),
-  },
-}));
+import { supabase } from '@/lib/supabase';
 
 const mockRegions: Region[] = [
   { id: '1', name: 'Alabama', state_code: 'AL', slug: 'alabama' },
@@ -33,16 +25,13 @@ describe('RegionSelectionModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset mockFrom to return mockRegions by default
-    mockFrom.mockImplementation(() => ({
-      select: jest.fn().mockImplementation(() => ({
-        order: jest
-          .fn()
-          .mockImplementation(() =>
-            Promise.resolve({ data: mockRegions, error: null })
-          ),
-      })),
-    }));
+
+    // Mock the from().select().order() chain to return mockRegions
+    const mockOrder = jest
+      .fn()
+      .mockResolvedValue({ data: mockRegions, error: null });
+    const mockSelect = jest.fn().mockReturnValue({ order: mockOrder });
+    (supabase.from as jest.Mock).mockReturnValue({ select: mockSelect });
   });
 
   it('should render modal dialog', () => {
@@ -182,16 +171,11 @@ describe('RegionSelectionModal', () => {
   });
 
   it('should display error message when fetch fails', async () => {
-    mockFrom.mockImplementation(() => ({
-      select: jest.fn().mockImplementation(() => ({
-        order: jest.fn().mockImplementation(() =>
-          Promise.resolve({
-            data: null,
-            error: { message: 'Database error' },
-          })
-        ),
-      })),
-    }));
+    const mockOrder = jest
+      .fn()
+      .mockResolvedValue({ data: null, error: { message: 'Database error' } });
+    const mockSelect = jest.fn().mockReturnValue({ order: mockOrder });
+    (supabase.from as jest.Mock).mockReturnValue({ select: mockSelect });
 
     render(<RegionSelectionModal {...defaultProps} />);
 
