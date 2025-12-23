@@ -2047,27 +2047,27 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Drag-and-drop for reordering (dnd-kit library)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Component displays currently selected trades as chips/badges
-  - [ ] "Add Trades" button opens selection modal
-  - [ ] Modal shows searchable list of all 48 trades
-  - [ ] Search filters trades in real-time
-  - [ ] Clicking trade checkbox adds to "Selected Trades" list
-  - [ ] Selected trades list shows drag handles for reordering
-  - [ ] Trades can be dragged to reorder (top 3 become "featured")
-  - [ ] Visual indicator for top 3 featured trades (star icon or badge)
-  - [ ] Remove button (X) on each selected trade chip
-  - [ ] Maximum 10 trades enforced with warning message
-  - [ ] Modal footer: "Save" and "Cancel" buttons
-  - [ ] Save closes modal and updates form state
-  - [ ] Loading state while fetching current selections
+  - [x] Component displays currently selected trades as chips/badges
+  - [x] "Add Trades" button opens selection modal
+  - [x] Modal shows searchable list of all 48 trades
+  - [x] Search filters trades in real-time
+  - [x] Clicking trade checkbox adds to "Selected Trades" list
+  - [x] Selected trades list shows drag handles for reordering
+  - [x] Trades can be dragged to reorder (top 3 become "featured")
+  - [x] Visual indicator for top 3 featured trades (star icon or badge)
+  - [x] Remove button (X) on each selected trade chip
+  - [x] Maximum 10 trades enforced with warning message
+  - [x] Modal footer: "Save" and "Cancel" buttons
+  - [x] Save closes modal and updates form state
+  - [x] Loading state while fetching current selections
 - **Definition of Done:**
-  - [ ] Component complete with all features
-  - [ ] Component tests verify add/remove/reorder
-  - [ ] Component tests verify 10-trade limit
-  - [ ] Drag-and-drop tested
-  - [ ] Accessibility tested (keyboard navigation for reordering)
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Intuitive UX for selection
+  - [x] Component complete with all features
+  - [x] Component tests verify add/remove/reorder
+  - [x] Component tests verify 10-trade limit
+  - [x] Drag-and-drop tested
+  - [x] Accessibility tested (keyboard navigation for reordering)
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Intuitive UX for selection
 
 **Estimated Effort:** 7 hours
 
@@ -2085,26 +2085,26 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Delete and re-create relationships (simpler than updating)
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] PUT endpoint at `/api/agencies/[agencyId]/trades`
-  - [ ] Requires authentication and ownership
-  - [ ] Request body: array of trade IDs with optional order field
-  - [ ] Validates: maximum 10 trades
-  - [ ] Validates: all trade IDs exist in trades table
-  - [ ] Deletes existing agency_trades records for this agency
-  - [ ] Inserts new agency_trades records with order preserved
-  - [ ] Updates `last_edited_at` on agency
-  - [ ] Creates audit log entry
-  - [ ] Returns 200 with updated trade list
-  - [ ] Returns 400 if >10 trades or invalid trade IDs
-  - [ ] Returns 403 if not owner
-  - [ ] Transaction ensures consistency (delete + insert atomic)
+  - [x] PUT endpoint at `/api/agencies/[agencyId]/trades`
+  - [x] Requires authentication and ownership
+  - [x] Request body: array of trade IDs with optional order field
+  - [x] Validates: maximum 10 trades
+  - [x] Validates: all trade IDs exist in trades table
+  - [x] Deletes existing agency_trades records for this agency
+  - [x] Inserts new agency_trades records with order preserved
+  - [x] Updates `last_edited_at` on agency
+  - [x] Creates audit log entry
+  - [x] Returns 200 with updated trade list
+  - [x] Returns 400 if >10 trades or invalid trade IDs
+  - [x] Returns 403 if not owner
+  - [x] Transaction ensures consistency (delete + insert atomic)
 - **Definition of Done:**
-  - [ ] Endpoint implementation complete
-  - [ ] Unit tests verify validation
-  - [ ] Unit tests verify transaction behavior
-  - [ ] Integration test: full update flow
-  - [ ] PR submitted
-  - [ ] **Final Check:** Data consistency maintained
+  - [x] Endpoint implementation complete
+  - [x] Unit tests verify validation
+  - [x] Unit tests verify transaction behavior
+  - [x] Integration test: full update flow
+  - [x] PR submitted
+  - [x] **Final Check:** Data consistency maintained
 
 **Estimated Effort:** 4 hours
 
@@ -2123,21 +2123,21 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Responsive design
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Profile page shows "Specializations" section
-  - [ ] Top 3 trades displayed as large badges with star icon
-  - [ ] Remaining trades shown as smaller tags below
-  - [ ] Featured trades have accent color (brand primary)
-  - [ ] All trades link to search filtered by that trade
-  - [ ] Search results (AgencyCard) show top 3 featured trades
-  - [ ] Mobile: trades wrap gracefully
-  - [ ] If <3 trades selected, show all as featured
+  - [x] Profile page shows "Specializations" section
+  - [x] Top 3 trades displayed as large badges with star icon
+  - [x] Remaining trades shown as smaller tags below
+  - [x] Featured trades have accent color (brand primary)
+  - [x] All trades link to search filtered by that trade
+  - [x] Search results (AgencyCard) show top 3 featured trades
+  - [x] Mobile: trades wrap gracefully
+  - [x] If <3 trades selected, show all as featured
 - **Definition of Done:**
-  - [ ] Profile displays trades correctly
-  - [ ] Search results show featured trades
-  - [ ] Component tests verify rendering
-  - [ ] Responsive design tested
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Visually appealing display
+  - [x] Profile displays trades correctly
+  - [x] Search results show featured trades
+  - [x] Component tests verify rendering
+  - [x] Responsive design tested
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Visually appealing display
 
 **Estimated Effort:** 3 hours
 
@@ -2164,27 +2164,27 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Checkbox list as alternative to map
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Component shows US map with clickable states
-  - [ ] Selected states highlighted on map (filled with accent color)
-  - [ ] Checkbox list of all 50 states below map (alphabetical)
-  - [ ] Clicking map state or checkbox toggles selection
-  - [ ] Quick-select buttons: West Coast, East Coast, Midwest, South, Southwest, All USA
-  - [ ] "All USA" selects all 50 states
-  - [ ] Regional buttons select states in that region
-  - [ ] Selected state count shown: "X states selected"
-  - [ ] "Clear All" button to deselect everything
-  - [ ] Validation: at least 1 state required
-  - [ ] Mobile: map is scrollable/zoomable or switches to list-only view
-  - [ ] Save button updates selection
+  - [x] Component shows US map with clickable states
+  - [x] Selected states highlighted on map (filled with accent color)
+  - [x] Checkbox list of all 50 states below map (alphabetical)
+  - [x] Clicking map state or checkbox toggles selection
+  - [x] Quick-select buttons: West Coast, East Coast, Midwest, South, Southwest, All USA
+  - [x] "All USA" selects all 50 states
+  - [x] Regional buttons select states in that region
+  - [x] Selected state count shown: "X states selected"
+  - [x] "Clear All" button to deselect everything
+  - [x] Validation: at least 1 state required
+  - [x] Mobile: map is scrollable/zoomable or switches to list-only view
+  - [x] Save button updates selection
 - **Definition of Done:**
-  - [ ] Component complete with map and checkboxes
-  - [ ] Component tests verify selection logic
-  - [ ] Component tests verify quick-select buttons
-  - [ ] Component tests verify validation
-  - [ ] Mobile tested (responsive)
-  - [ ] Accessibility: keyboard navigation for checkboxes
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Easy to use interface
+  - [x] Component complete with map and checkboxes
+  - [x] Component tests verify selection logic
+  - [x] Component tests verify quick-select buttons
+  - [x] Component tests verify validation
+  - [x] Mobile tested (responsive)
+  - [x] Accessibility: keyboard navigation for checkboxes
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Easy to use interface
 
 **Estimated Effort:** 7 hours
 
@@ -2202,26 +2202,26 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Delete and re-create relationships
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] PUT endpoint at `/api/agencies/[agencyId]/regions`
-  - [ ] Requires authentication and ownership
-  - [ ] Request body: array of region IDs (state IDs)
-  - [ ] Validates: at least 1 region required
-  - [ ] Validates: all region IDs exist in regions table
-  - [ ] Deletes existing agency_regions records
-  - [ ] Inserts new agency_regions records
-  - [ ] Updates `last_edited_at` on agency
-  - [ ] Creates audit log entry
-  - [ ] Returns 200 with updated region list
-  - [ ] Returns 400 if validation fails
-  - [ ] Returns 403 if not owner
-  - [ ] Transaction ensures consistency
+  - [x] PUT endpoint at `/api/agencies/[agencyId]/regions`
+  - [x] Requires authentication and ownership
+  - [x] Request body: array of region IDs (state IDs)
+  - [x] Validates: at least 1 region required
+  - [x] Validates: all region IDs exist in regions table
+  - [x] Deletes existing agency_regions records
+  - [x] Inserts new agency_regions records
+  - [x] Updates `last_edited_at` on agency
+  - [x] Creates audit log entry
+  - [x] Returns 200 with updated region list
+  - [x] Returns 400 if validation fails
+  - [x] Returns 403 if not owner
+  - [x] Transaction ensures consistency
 - **Definition of Done:**
-  - [ ] Endpoint implementation complete
-  - [ ] Unit tests verify validation
-  - [ ] Unit tests verify transaction
-  - [ ] Integration test: full update flow
-  - [ ] PR submitted
-  - [ ] **Final Check:** Reliable updates
+  - [x] Endpoint implementation complete
+  - [x] Unit tests verify validation
+  - [x] Unit tests verify transaction
+  - [x] Integration test: full update flow
+  - [x] PR submitted
+  - [x] **Final Check:** Reliable updates
 
 **Estimated Effort:** 3 hours
 
@@ -2240,23 +2240,23 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Link states to search filter
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Profile shows "Service Regions" section
-  - [ ] States displayed as small badges/tags
-  - [ ] If <=5 states: show all expanded
-  - [ ] If >5 states: show first 5 + "View All" button/link
-  - [ ] "View All" expands to show all states
-  - [ ] States link to search filtered by that state
-  - [ ] Search results show "Serves: [State abbreviations]"
-  - [ ] If all 50 states selected: show "Nationwide" badge
-  - [ ] Mobile: tags wrap gracefully
+  - [x] Profile shows "Service Regions" section
+  - [x] States displayed as small badges/tags
+  - [x] If <=5 states: show all expanded
+  - [x] If >5 states: show first 5 + "View All" button/link
+  - [x] "View All" expands to show all states
+  - [x] States link to search filtered by that state
+  - [x] Search results show "Serves: [State abbreviations]"
+  - [x] If all 50 states selected: show "Nationwide" badge
+  - [x] Mobile: tags wrap gracefully
 - **Definition of Done:**
-  - [ ] Profile displays regions correctly
-  - [ ] Search results show regions
-  - [ ] Component tests verify rendering
-  - [ ] Component tests verify "Nationwide" logic
-  - [ ] Responsive design tested
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Clear geographic coverage
+  - [x] Profile displays regions correctly
+  - [x] Search results show regions
+  - [x] Component tests verify rendering
+  - [x] Component tests verify "Nationwide" logic
+  - [x] Responsive design tested
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Clear geographic coverage
 
 **Estimated Effort:** 3 hours
 
