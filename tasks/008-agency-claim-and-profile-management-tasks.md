@@ -2612,19 +2612,19 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Trigger email when completion transitions to 100%
   - One-time email (don't resend if they dip below 100% and back)
 - **Acceptance Criteria (for this task):**
-  - [ ] Email template created: Congratulations message, "You've unlocked:", List of benefits (Featured badge, Priority search placement, Verified profile status), CTA: "View Your Profile"
-  - [ ] Email sent when completion reaches 100% for first time
-  - [ ] Flag in database prevents duplicate emails (`completion_email_sent` boolean)
-  - [ ] Email includes link to public profile
-  - [ ] Plain text version provided
-  - [ ] Email send errors logged but don't block profile update
+  - [x] Email template created: Congratulations message, "You've unlocked:", List of benefits (Featured badge, Priority search placement, Verified profile status), CTA: "View Your Profile"
+  - [x] Email sent when completion reaches 100% for first time
+  - [x] Flag in database prevents duplicate emails (`completion_email_sent` boolean)
+  - [x] Email includes link to public profile
+  - [x] Plain text version provided
+  - [x] Email send errors logged but don't block profile update
 - **Definition of Done:**
-  - [ ] Email template created
-  - [ ] Email sending integrated
-  - [ ] Test email sent and verified
-  - [ ] Duplicate prevention tested
+  - [x] Email template created
+  - [x] Email sending integrated
+  - [x] Test email sent and verified
+  - [x] Duplicate prevention tested
   - [ ] PR submitted with email preview
-  - [ ] **Final Check:** Celebratory tone
+  - [x] **Final Check:** Celebratory tone
 
 **Estimated Effort:** 3 hours
 
