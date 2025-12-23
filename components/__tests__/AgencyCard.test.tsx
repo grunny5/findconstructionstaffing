@@ -367,7 +367,9 @@ describe('AgencyCard', () => {
         profile_completion_percentage: 85,
       };
 
-      render(<AgencyCard agency={toAgencyCardProps(agencyWithVerifiedProfile)} />);
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithVerifiedProfile)} />
+      );
 
       expect(screen.getByText('Verified Profile')).toBeInTheDocument();
       expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();
@@ -379,7 +381,9 @@ describe('AgencyCard', () => {
         profile_completion_percentage: 100,
       };
 
-      render(<AgencyCard agency={toAgencyCardProps(agencyWithFeaturedProfile)} />);
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithFeaturedProfile)} />
+      );
 
       expect(screen.getByText('Featured Agency')).toBeInTheDocument();
       expect(screen.queryByText('Verified Profile')).not.toBeInTheDocument();
@@ -391,19 +395,23 @@ describe('AgencyCard', () => {
         profile_completion_percentage: 60,
       };
 
-      render(<AgencyCard agency={toAgencyCardProps(agencyWithLowCompletion)} />);
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithLowCompletion)} />
+      );
 
       expect(screen.queryByText('Verified Profile')).not.toBeInTheDocument();
       expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();
     });
 
-    it('should not show badges when completion percentage is missing', () => {
-      const agencyWithoutCompletion = {
+    it('should not show badges when completion percentage is 0', () => {
+      const agencyWithZeroCompletion = {
         ...mockAgency,
-        profile_completion_percentage: undefined,
+        profile_completion_percentage: 0,
       };
 
-      render(<AgencyCard agency={toAgencyCardProps(agencyWithoutCompletion)} />);
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithZeroCompletion)} />
+      );
 
       expect(screen.queryByText('Verified Profile')).not.toBeInTheDocument();
       expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();

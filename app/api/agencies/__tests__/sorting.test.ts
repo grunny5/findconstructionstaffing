@@ -211,7 +211,9 @@ describe('Agencies API - Sorting', () => {
     // Mock should return agencies sorted by profile_completion_percentage DESC, then name ASC
     const sortedAgencies = [...mockAgenciesWithCompletion].sort((a, b) => {
       if (b.profile_completion_percentage !== a.profile_completion_percentage) {
-        return b.profile_completion_percentage - a.profile_completion_percentage;
+        return (
+          b.profile_completion_percentage - a.profile_completion_percentage
+        );
       }
       return a.name.localeCompare(b.name);
     });
@@ -310,9 +312,9 @@ describe('Agencies API - Sorting', () => {
 
       // Verify completion percentages are in descending order
       for (let i = 0; i < agencies.length - 1; i++) {
-        expect(agencies[i].profile_completion_percentage).toBeGreaterThanOrEqual(
-          agencies[i + 1].profile_completion_percentage
-        );
+        expect(
+          agencies[i].profile_completion_percentage
+        ).toBeGreaterThanOrEqual(agencies[i + 1].profile_completion_percentage);
       }
     }
   });

@@ -91,8 +91,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
     agency.profile_completion_percentage &&
     agency.profile_completion_percentage >= 80 &&
     agency.profile_completion_percentage < 100;
-  const showFeaturedBadge =
-    agency.profile_completion_percentage === 100;
+  const showFeaturedBadge = agency.profile_completion_percentage === 100;
 
   return (
     <Card className="group hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm hover:-translate-y-1 relative">
