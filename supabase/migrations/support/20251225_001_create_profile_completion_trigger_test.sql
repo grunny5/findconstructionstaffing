@@ -2,9 +2,9 @@
 -- TEST SCRIPT: Profile Completion Trigger
 -- =============================================================================
 -- This script tests the profile completion calculation trigger
--- Run this after applying migration 20251224_002_create_profile_completion_trigger.sql
+-- Run this after applying migration 20251225_001_create_profile_completion_trigger.sql
 --
--- To run: psql -U postgres -d your_database -f 20251224_002_create_profile_completion_trigger.test.sql
+-- To run: psql -U postgres -d your_database -f 20251225_001_create_profile_completion_trigger_test.sql
 
 -- =============================================================================
 -- TEST 1: Verify Functions Exist

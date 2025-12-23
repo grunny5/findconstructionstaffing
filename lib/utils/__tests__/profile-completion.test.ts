@@ -357,8 +357,8 @@ describe('calculateProfileCompletion', () => {
         expect(calculateProfileCompletion(agency)).toBe(5);
       });
 
-      it('should award points for year 1801 (boundary)', () => {
-        const agency = { ...createMinimalAgency(), founded_year: 1801 };
+      it('should award points for year 1800 (lower boundary)', () => {
+        const agency = { ...createMinimalAgency(), founded_year: 1800 };
         expect(calculateProfileCompletion(agency)).toBe(10);
       });
 

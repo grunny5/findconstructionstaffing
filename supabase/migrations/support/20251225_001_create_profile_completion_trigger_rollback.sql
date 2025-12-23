@@ -1,7 +1,7 @@
 -- =============================================================================
 -- ROLLBACK SCRIPT: Profile Completion Trigger
 -- =============================================================================
--- This script rolls back migration 20251224_002_create_profile_completion_trigger.sql
+-- This script rolls back migration 20251225_001_create_profile_completion_trigger.sql
 -- ⚠️ WARNING: This will remove automatic profile completion calculation
 
 -- Drop triggers first (in reverse order of creation)

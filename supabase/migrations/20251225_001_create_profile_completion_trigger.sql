@@ -18,7 +18,7 @@
 CREATE OR REPLACE FUNCTION calculate_profile_completion(agency_row agencies)
 RETURNS INTEGER
 LANGUAGE plpgsql
-IMMUTABLE
+STABLE
 AS $$
 DECLARE
   score INTEGER := 0;
@@ -100,9 +100,9 @@ BEGIN
     score := score + 10;
   END IF;
 
-  -- Founded Year (5) - Must be between 1800 and current year
+  -- Founded Year (5) - Must be between 1800 and current year (inclusive)
   IF agency_row.founded_year IS NOT NULL
-     AND agency_row.founded_year > 1800
+     AND agency_row.founded_year >= 1800
      AND agency_row.founded_year <= current_year THEN
     score := score + 5;
   END IF;
