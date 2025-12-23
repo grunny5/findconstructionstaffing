@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { RegionBadges } from '@/components/RegionBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -247,19 +248,58 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 <Card>
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold mb-4">
-                      Trade Specialties
+                      Specializations
                     </h2>
                     {agency.trades && agency.trades.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {agency.trades.map((trade) => (
-                          <Badge
-                            key={trade.id}
-                            variant="secondary"
-                            className="text-sm"
-                          >
-                            {trade.name}
-                          </Badge>
-                        ))}
+                      <div className="space-y-6">
+                        {/* Featured Trades (Top 3) */}
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-600 mb-3">
+                            Featured Specialties
+                          </h3>
+                          <div className="flex flex-wrap gap-3">
+                            {agency.trades.slice(0, 3).map((trade) => (
+                              <Link
+                                key={trade.id}
+                                href={`/?trade=${encodeURIComponent(trade.name)}`}
+                                className="inline-block"
+                              >
+                                <Badge
+                                  variant="default"
+                                  className="text-base px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+                                >
+                                  <Star className="h-4 w-4 mr-2 fill-current" />
+                                  {trade.name}
+                                </Badge>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Additional Trades (if more than 3) */}
+                        {agency.trades.length > 3 && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-600 mb-3">
+                              Additional Specialties
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {agency.trades.slice(3).map((trade) => (
+                                <Link
+                                  key={trade.id}
+                                  href={`/?trade=${encodeURIComponent(trade.name)}`}
+                                  className="inline-block"
+                                >
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-sm hover:bg-secondary/80 transition-colors cursor-pointer"
+                                  >
+                                    {trade.name}
+                                  </Badge>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <p className="text-gray-500">
@@ -277,19 +317,12 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       Service Areas
                     </h2>
                     {agency.regions && agency.regions.length > 0 ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {agency.regions.map((region) => (
-                          <div
-                            key={region.id}
-                            className="flex items-center gap-2"
-                          >
-                            <MapPin className="h-4 w-4 text-gray-400" />
-                            <span>
-                              {region.name}, {region.code}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      <RegionBadges
+                        regions={agency.regions}
+                        maxDisplay={5}
+                        variant="secondary"
+                        showViewAll={true}
+                      />
                     ) : (
                       <p className="text-gray-500">No service areas listed.</p>
                     )}

@@ -345,7 +345,7 @@ describe('Idempotency Tests', () => {
       const firstRunLog = logSpy.mock.calls.find(
         (call) =>
           typeof call[0] === 'string' &&
-          call[0].includes('Created: 48, Skipped: 0')
+          call[0].includes('Created: 57, Skipped: 0')
       );
       expect(firstRunLog).toBeDefined();
 
@@ -359,7 +359,7 @@ describe('Idempotency Tests', () => {
       const secondRunLog = logSpy.mock.calls.find(
         (call) =>
           typeof call[0] === 'string' &&
-          call[0].includes('Created: 0, Skipped: 48')
+          call[0].includes('Created: 0, Skipped: 57')
       );
       expect(secondRunLog).toBeDefined();
 

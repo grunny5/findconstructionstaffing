@@ -36,7 +36,7 @@ describe('AdminClaimsPage', () => {
       from: jest.fn(),
     };
 
-    mockedCreateClient.mockReturnValue(mockSupabaseClient);
+    mockedCreateClient.mockResolvedValue(mockSupabaseClient);
     mockedRedirect.mockImplementation((url: string) => {
       throw new Error(`Redirecting to ${url}`);
     });

@@ -65,7 +65,7 @@ export async function GET() {
     // 1. AUTHENTICATION CHECK
     // ========================================================================
     // Create Supabase client using shared utility
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {

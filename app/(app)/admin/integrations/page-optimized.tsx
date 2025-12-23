@@ -15,7 +15,7 @@ interface IntegrationSummaryRPC {
 }
 
 export default async function AdminIntegrationsPageOptimized() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Check authentication and admin status
   const {

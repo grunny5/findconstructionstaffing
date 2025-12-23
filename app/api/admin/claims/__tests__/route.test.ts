@@ -28,7 +28,7 @@ describe('GET /api/admin/claims', () => {
       from: jest.fn(),
     };
 
-    mockedCreateClient.mockReturnValue(mockSupabaseClient);
+    mockedCreateClient.mockResolvedValue(mockSupabaseClient);
   });
 
   // ========================================================================

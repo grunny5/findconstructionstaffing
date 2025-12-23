@@ -9,7 +9,7 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Check authentication
   const {
