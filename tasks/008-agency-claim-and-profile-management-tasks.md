@@ -2298,24 +2298,24 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - TypeScript strict mode
   - Comprehensive unit tests
 - **Acceptance Criteria (for this task):**
-  - [ ] Function signature: `calculateProfileCompletion(agency: Agency): number`
-  - [ ] Scoring formula implemented exactly per FSD:
+  - [x] Function signature: `calculateProfileCompletion(agency: Agency): number`
+  - [x] Scoring formula implemented exactly per FSD:
     - Basic Info (20%): Name (5%), Description (10%), Website (5%)
     - Contact (15%): Phone (5%), Email (5%), Headquarters (5%)
     - Services (40%): Trades selected (20%), Regions selected (20%)
     - Additional (15%): Logo (10%), Founded Year (5%)
     - Details (10%): Employee Count (5%), Company Size (5%)
-  - [ ] Returns percentage 0-100
-  - [ ] Empty/null fields count as 0%
-  - [ ] Function handles missing optional fields gracefully
-  - [ ] Trades and regions scoring: proportional (e.g., 1 trade = 20%, 5+ trades = 20%)
+  - [x] Returns percentage 0-100
+  - [x] Empty/null fields count as 0%
+  - [x] Function handles missing optional fields gracefully
+  - [x] Trades and regions scoring: proportional (e.g., 1 trade = 20%, 5+ trades = 20%)
 - **Definition of Done:**
-  - [ ] Function implementation complete
-  - [ ] Unit tests cover all scoring components
-  - [ ] Unit tests verify edge cases (empty profile, fully complete)
-  - [ ] JSDoc documentation added
+  - [x] Function implementation complete
+  - [x] Unit tests cover all scoring components
+  - [x] Unit tests verify edge cases (empty profile, fully complete)
+  - [x] JSDoc documentation added
   - [ ] PR submitted with tests
-  - [ ] **Final Check:** 100% test coverage
+  - [x] **Final Check:** 100% test coverage
 
 **Estimated Effort:** 3 hours
 
