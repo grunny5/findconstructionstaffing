@@ -40,6 +40,7 @@ export function ProfileCompletionWidget({
     if (percentage === 100) {
       const duration = 3000;
       const end = Date.now() + duration;
+      let frameId: number;
 
       const frame = () => {
         confetti({
@@ -58,11 +59,17 @@ export function ProfileCompletionWidget({
         });
 
         if (Date.now() < end) {
-          requestAnimationFrame(frame);
+          frameId = requestAnimationFrame(frame);
         }
       };
 
-      frame();
+      frameId = requestAnimationFrame(frame);
+
+      return () => {
+        if (frameId) {
+          cancelAnimationFrame(frameId);
+        }
+      };
     }
   }, [percentage]);
 
