@@ -2543,22 +2543,22 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Conditional rendering based on percentage
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Banner displays based on completion %:
+  - [x] Banner displays based on completion %:
     - <50%: "Complete your profile to get 3x more leads" (red/warning)
     - 50-79%: "Almost there! Complete your profile for premium placement" (yellow/info)
     - 80-99%: "Just one more step to unlock Featured Agency status" (blue/info)
     - 100%: "Congratulations! Your profile is complete" (green/success) with confetti
-  - [ ] Banner has call-to-action button linking to incomplete section
-  - [ ] Banner is dismissible (stores in localStorage per session)
-  - [ ] Banner reappears on next login if still incomplete
-  - [ ] 100% banner shows for 1 week, then becomes small badge
+  - [x] Banner has call-to-action button linking to incomplete section
+  - [x] Banner is dismissible (stores in localStorage per session)
+  - [x] Banner reappears on next login if still incomplete
+  - [x] 100% banner shows for 1 week, then becomes small badge
 - **Definition of Done:**
-  - [ ] Banner component complete
-  - [ ] Component tests verify all states
-  - [ ] Component tests verify dismissal logic
-  - [ ] Confetti tested (or celebration animation)
+  - [x] Banner component complete
+  - [x] Component tests verify all states
+  - [x] Component tests verify dismissal logic
+  - [x] Confetti tested (or celebration animation)
   - [ ] PR submitted with screenshots of all states
-  - [ ] **Final Check:** Encouraging, not annoying
+  - [x] **Final Check:** Encouraging, not annoying
 
 **Estimated Effort:** 4 hours
 
