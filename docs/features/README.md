@@ -18,6 +18,7 @@ Features that have been fully implemented:
 4. [004 - Agencies API Refactor](./completed/004-agencies-api-refactor.md) - API improvements and optimization
 5. [005 - Test Standardization](./completed/005-test-standardization.md) - Unified testing approach
 6. [006 - Frontend API Connection](./completed/006-frontend-api-connection.md) - UI integration with backend
+7. [008 - Agency Claim and Profile Management](./completed/008-agency-claim-and-profile-management.md) - Complete claim workflow and profile editing
 
 ## Feature Naming Convention
 
@@ -69,4 +70,4 @@ Related docs and guides
 
 ---
 
-**Last Updated**: 2025-12-11
+**Last Updated**: 2025-12-23

@@ -66,6 +66,16 @@ FindConstructionStaffing is a Next.js-based directory application designed to st
    - Server-side route protection
    - Comprehensive test coverage (1145 tests passing)
 
+6. **Agency Claim & Profile Management** ✅
+   - Agency claim request workflow with email domain verification
+   - Admin claim review and approval dashboard with filtering
+   - Profile editing dashboard for agency owners
+   - Trade and region management with multi-select UI
+   - Profile completion tracking (0-100% scoring)
+   - Audit trail for all profile changes
+   - Email notifications (confirmation, approval, rejection, completion)
+   - Comprehensive test coverage (2,197+ tests passing)
+
 ### Project Structure
 
 ```
@@ -160,14 +170,19 @@ Currently using mock data with plans for Supabase integration:
   - [x] Email/password signup and login
   - [x] Role-based access control
   - [x] Admin user management UI (Phase 4 complete)
-  - [ ] Email verification (partially implemented)
-  - [ ] Password reset flow
-  - [ ] Account settings/profile management
-- [ ] Agency dashboard for profile management
+  - [x] Email verification (complete)
+  - [x] Password reset flow (complete)
+  - [x] Account settings/profile management (complete)
+- [x] Agency claim and profile management (Phase 2A complete) ✅
+  - [x] Agency claim request workflow
+  - [x] Admin claim verification and approval
+  - [x] Profile editing dashboard for agency owners
+  - [x] Trade and region management
+  - [x] Profile completion tracking
+  - [x] Audit logging for all changes
 - [ ] Advanced agency profiles with portfolios
 - [ ] Review and rating system
 - [ ] Lead distribution system
-- [ ] Email notifications
 
 #### Phase 3: Advanced Capabilities
 
