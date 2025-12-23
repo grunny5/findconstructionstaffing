@@ -214,6 +214,49 @@ EXISTS (
 - Role verification: See current roles of all users
 - Security monitoring: Identify users with elevated permissions
 
+---
+
+### 20251225_001_create_profile_completion_trigger.sql
+
+**Purpose:** Automatically calculate and update profile completion percentage when agency data changes
+
+**Changes:**
+- Creates `calculate_profile_completion(agency_row agencies)` PL/pgSQL function implementing scoring logic:
+  - Basic Info (20%): name (5%), description (10%), website (5%)
+  - Contact (15%): phone (5%), email (5%), headquarters (5%)
+  - Services (40%): trades count (20%), regions count (20%)
+  - Additional (15%): logo_url (10%), founded_year (5%, validated 1800-current year)
+  - Details (10%): employee_count (5%), company_size (5%)
+- Creates trigger functions:
+  - `trigger_update_agency_completion()` - Updates on agency INSERT/UPDATE
+  - `trigger_update_agency_completion_from_relations()` - Updates when trades/regions change
+- Creates three triggers:
+  - `agencies_profile_completion_trigger` - BEFORE INSERT OR UPDATE on agencies
+  - `agency_trades_completion_trigger` - AFTER INSERT/UPDATE/DELETE on agency_trades
+  - `agency_regions_completion_trigger` - AFTER INSERT/UPDATE/DELETE on agency_regions
+- Backfills all existing agencies with calculated completion percentage
+
+**Rollback:** `support/20251225_001_create_profile_completion_trigger_rollback.sql`
+
+**Testing:** `support/20251225_001_create_profile_completion_trigger_test.sql`
+
+**Related Tasks:** Task 5.1.2 - Create Database Trigger to Auto-Update Completion Percentage
+
+**How it works:**
+1. When an agency is inserted or updated, the BEFORE trigger automatically calculates and sets `profile_completion_percentage`
+2. When trades or regions are added/removed from an agency, the AFTER triggers recalculate the parent agency's completion
+3. All calculation logic is in PL/pgSQL, matching the TypeScript implementation in `lib/utils/profile-completion.ts`
+4. Handles NULL values gracefully - empty fields contribute 0% to the score
+
+**Use cases:**
+- Agency dashboard: Display completion progress widget
+- Gamification: Incentivize agencies to complete their profiles
+- Search ranking: Prioritize complete profiles in search results
+- Analytics: Track average profile completion across the platform
+- Automatic updates: No manual recalculation needed when profile changes
+
+---
+
 ## Testing Migrations
 
 ### Automated Testing

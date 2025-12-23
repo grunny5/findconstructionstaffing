@@ -2333,21 +2333,21 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Trigger fires on INSERT/UPDATE of agencies table
   - TypeScript function in Supabase (or plpgsql)
 - **Acceptance Criteria (for this task):**
-  - [ ] Trigger function `calculate_profile_completion()` created
-  - [ ] Function implements same logic as TypeScript version
-  - [ ] Trigger fires BEFORE INSERT OR UPDATE on agencies table
-  - [ ] Trigger sets `NEW.profile_completion_percentage`
-  - [ ] Trigger handles NULL values gracefully
-  - [ ] Trigger also fires when agency_trades or agency_regions change (or separate triggers)
-  - [ ] Migration includes rollback (drop trigger)
-  - [ ] Migration tested locally
+  - [x] Trigger function `calculate_profile_completion()` created
+  - [x] Function implements same logic as TypeScript version
+  - [x] Trigger fires BEFORE INSERT OR UPDATE on agencies table
+  - [x] Trigger sets `NEW.profile_completion_percentage`
+  - [x] Trigger handles NULL values gracefully
+  - [x] Trigger also fires when agency_trades or agency_regions change (or separate triggers)
+  - [x] Migration includes rollback (drop trigger)
+  - [x] Migration tested locally
 - **Definition of Done:**
-  - [ ] Migration created and tested
-  - [ ] Trigger fires correctly on updates
-  - [ ] Verified percentage updates automatically
-  - [ ] Tests verify trigger logic
+  - [x] Migration created and tested
+  - [x] Trigger fires correctly on updates
+  - [x] Verified percentage updates automatically
+  - [x] Tests verify trigger logic
   - [ ] PR submitted
-  - [ ] **Final Check:** Always in sync
+  - [x] **Final Check:** Always in sync
 
 **Estimated Effort:** 4 hours
 
