@@ -9,6 +9,7 @@ import {
 } from '@/__tests__/utils/supabase-mock';
 import { supabase } from '@/lib/supabase';
 import { isErrorResponse } from '@/types/api';
+import type { Agency } from '@/types/api';
 import { createMockNextRequest } from '@/__tests__/utils/api-mocks';
 import {
   PerformanceMonitor,
@@ -50,143 +51,79 @@ function createMonitoringMocks() {
   return { mockMonitor, mockErrorTracker };
 }
 
+// Factory function for creating mock agencies
+function createMockAgency(overrides: {
+  id: string;
+  name: string;
+  slug: string;
+  profile_completion_percentage: number;
+  verified?: boolean;
+  featured?: boolean;
+}): Agency {
+  return {
+    id: overrides.id,
+    name: overrides.name,
+    slug: overrides.slug,
+    profile_completion_percentage: overrides.profile_completion_percentage,
+    is_claimed: true,
+    offers_per_diem: false,
+    is_union: false,
+    verified: overrides.verified ?? true,
+    featured: overrides.featured ?? true,
+    rating: null,
+    review_count: 0,
+    project_count: 0,
+    description: `${overrides.name} description`,
+    logo_url: null,
+    website: null,
+    phone: null,
+    email: null,
+    founded_year: null,
+    employee_count: null,
+    headquarters: null,
+    last_edited_at: null,
+    last_edited_by: null,
+    trades: [],
+    regions: [],
+  };
+}
+
 // Mock agencies with varying completion percentages
-const mockAgenciesWithCompletion = [
-  {
+const mockAgenciesWithCompletion: Agency[] = [
+  createMockAgency({
     id: '001',
     name: 'AAA Agency',
     slug: 'aaa-agency',
     profile_completion_percentage: 100,
-    is_active: true,
-    is_claimed: true,
-    offers_per_diem: false,
-    is_union: false,
-    verified: true,
-    featured: true,
-    rating: null,
-    review_count: 0,
-    project_count: 0,
-    description: 'AAA Agency description',
-    logo_url: null,
-    website: null,
-    phone: null,
-    email: null,
-    founded_year: null,
-    employee_count: null,
-    headquarters: null,
-    last_edited_at: null,
-    last_edited_by: null,
-    trades: [],
-    regions: [],
-  },
-  {
+  }),
+  createMockAgency({
     id: '002',
     name: 'Agency A',
     slug: 'agency-a',
     profile_completion_percentage: 100,
-    is_active: true,
-    is_claimed: true,
-    offers_per_diem: false,
-    is_union: false,
-    verified: true,
-    featured: true,
-    rating: null,
-    review_count: 0,
-    project_count: 0,
-    description: 'Agency A description',
-    logo_url: null,
-    website: null,
-    phone: null,
-    email: null,
-    founded_year: null,
-    employee_count: null,
-    headquarters: null,
-    last_edited_at: null,
-    last_edited_by: null,
-    trades: [],
-    regions: [],
-  },
-  {
+  }),
+  createMockAgency({
     id: '003',
     name: 'ZZZ Agency',
     slug: 'zzz-agency',
     profile_completion_percentage: 100,
-    is_active: true,
-    is_claimed: true,
-    offers_per_diem: false,
-    is_union: false,
-    verified: true,
-    featured: true,
-    rating: null,
-    review_count: 0,
-    project_count: 0,
-    description: 'ZZZ Agency description',
-    logo_url: null,
-    website: null,
-    phone: null,
-    email: null,
-    founded_year: null,
-    employee_count: null,
-    headquarters: null,
-    last_edited_at: null,
-    last_edited_by: null,
-    trades: [],
-    regions: [],
-  },
-  {
+  }),
+  createMockAgency({
     id: '004',
     name: 'Agency B',
     slug: 'agency-b',
     profile_completion_percentage: 85,
-    is_active: true,
-    is_claimed: true,
-    offers_per_diem: false,
-    is_union: false,
     verified: false,
     featured: false,
-    rating: null,
-    review_count: 0,
-    project_count: 0,
-    description: 'Agency B description',
-    logo_url: null,
-    website: null,
-    phone: null,
-    email: null,
-    founded_year: null,
-    employee_count: null,
-    headquarters: null,
-    last_edited_at: null,
-    last_edited_by: null,
-    trades: [],
-    regions: [],
-  },
-  {
+  }),
+  createMockAgency({
     id: '005',
     name: 'Agency C',
     slug: 'agency-c',
     profile_completion_percentage: 50,
-    is_active: true,
-    is_claimed: true,
-    offers_per_diem: false,
-    is_union: false,
     verified: false,
     featured: false,
-    rating: null,
-    review_count: 0,
-    project_count: 0,
-    description: 'Agency C description',
-    logo_url: null,
-    website: null,
-    phone: null,
-    email: null,
-    founded_year: null,
-    employee_count: null,
-    headquarters: null,
-    last_edited_at: null,
-    last_edited_by: null,
-    trades: [],
-    regions: [],
-  },
+  }),
 ];
 
 describe('Agencies API - Sorting', () => {
@@ -240,15 +177,10 @@ describe('Agencies API - Sorting', () => {
 
       // Agencies with 100% completion should be first
       const completionPercentages = agencies.map(
-        (a: any) => a.profile_completion_percentage
+        (a: Agency) => a.profile_completion_percentage
       );
 
-      // First three agencies should have 100% completion
-      expect(completionPercentages[0]).toBe(100);
-      expect(completionPercentages[1]).toBe(100);
-      expect(completionPercentages[2]).toBe(100);
-
-      // Later agencies should have lower completion
+      // Verify grouping: first three have 100%, rest have lower completion
       const has100Percent = completionPercentages.slice(0, 3);
       const hasLowerPercent = completionPercentages.slice(3);
 
@@ -271,19 +203,15 @@ describe('Agencies API - Sorting', () => {
     if (!isErrorResponse(responseData)) {
       const agencies = responseData.data;
 
-      // Among 100% completion agencies, AAA should come before ZZZ
+      // Verify alphabetical order among 100% completion agencies
       const hundredPercentAgencies = agencies.filter(
-        (a: any) => a.profile_completion_percentage === 100
+        (a: Agency) => a.profile_completion_percentage === 100
       );
 
-      const names = hundredPercentAgencies.map((a: any) => a.name);
+      const names = hundredPercentAgencies.map((a: Agency) => a.name);
 
-      // Verify alphabetical order
-      expect(names[0]).toBe('AAA Agency');
-      expect(names[1]).toBe('Agency A');
-      expect(names[2]).toBe('ZZZ Agency');
-
-      // Verify all names are in alphabetical order
+      // Verify expected count and alphabetical order
+      expect(hundredPercentAgencies.length).toBe(3);
       const sortedNames = [...names].sort();
       expect(names).toEqual(sortedNames);
     }
