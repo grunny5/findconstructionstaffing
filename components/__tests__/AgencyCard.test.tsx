@@ -30,6 +30,7 @@ function toAgencyCardProps(
     headquarters: agency.headquarters ?? undefined,
     verified: agency.verified,
     featured: agency.featured,
+    profile_completion_percentage: agency.profile_completion_percentage,
   };
 }
 
@@ -356,6 +357,109 @@ describe('AgencyCard', () => {
       render(<AgencyCard agency={toAgencyCardProps(agencyWithRegions)} />);
       const txLink = screen.getByText('TX').closest('a');
       expect(txLink).toHaveAttribute('href', '/?states[]=TX');
+    });
+  });
+
+  describe('Profile Completion Badges', () => {
+    it('should show Verified Profile badge for 80-99% completion', () => {
+      const agencyWithVerifiedProfile = {
+        ...mockAgency,
+        profile_completion_percentage: 85,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithVerifiedProfile)} />);
+
+      expect(screen.getByText('Verified Profile')).toBeInTheDocument();
+      expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();
+    });
+
+    it('should show Featured Agency badge for 100% completion', () => {
+      const agencyWithFeaturedProfile = {
+        ...mockAgency,
+        profile_completion_percentage: 100,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithFeaturedProfile)} />);
+
+      expect(screen.getByText('Featured Agency')).toBeInTheDocument();
+      expect(screen.queryByText('Verified Profile')).not.toBeInTheDocument();
+    });
+
+    it('should not show badges for <80% completion', () => {
+      const agencyWithLowCompletion = {
+        ...mockAgency,
+        profile_completion_percentage: 60,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithLowCompletion)} />);
+
+      expect(screen.queryByText('Verified Profile')).not.toBeInTheDocument();
+      expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();
+    });
+
+    it('should not show badges when completion percentage is missing', () => {
+      const agencyWithoutCompletion = {
+        ...mockAgency,
+        profile_completion_percentage: undefined,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithoutCompletion)} />);
+
+      expect(screen.queryByText('Verified Profile')).not.toBeInTheDocument();
+      expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();
+    });
+
+    it('should show Verified Profile badge at exactly 80% completion', () => {
+      const agencyAt80Percent = {
+        ...mockAgency,
+        profile_completion_percentage: 80,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyAt80Percent)} />);
+
+      expect(screen.getByText('Verified Profile')).toBeInTheDocument();
+    });
+
+    it('should show Verified Profile badge at 99% completion', () => {
+      const agencyAt99Percent = {
+        ...mockAgency,
+        profile_completion_percentage: 99,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyAt99Percent)} />);
+
+      expect(screen.getByText('Verified Profile')).toBeInTheDocument();
+      expect(screen.queryByText('Featured Agency')).not.toBeInTheDocument();
+    });
+
+    it('should have correct styling for Verified Profile badge', () => {
+      const agencyWithVerifiedProfile = {
+        ...mockAgency,
+        profile_completion_percentage: 85,
+      };
+
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithVerifiedProfile)} />
+      );
+
+      const badge = screen.getByText('Verified Profile').closest('div');
+      expect(badge).toHaveClass('bg-blue-500');
+      expect(badge).toHaveClass('text-white');
+    });
+
+    it('should have correct styling for Featured Agency badge', () => {
+      const agencyWithFeaturedProfile = {
+        ...mockAgency,
+        profile_completion_percentage: 100,
+      };
+
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithFeaturedProfile)} />
+      );
+
+      const badge = screen.getByText('Featured Agency').closest('div');
+      expect(badge).toHaveClass('from-amber-400');
+      expect(badge).toHaveClass('to-yellow-500');
     });
   });
 });

@@ -2577,22 +2577,22 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Conditional rendering
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] AgencyCard shows "Verified Profile" badge if completion >= 80%
-  - [ ] Badge has checkmark icon and blue color
-  - [ ] AgencyCard shows "Featured Agency" badge if completion = 100%
-  - [ ] Featured badge has star icon and gold/yellow color
-  - [ ] Badges displayed prominently (top-right of card)
-  - [ ] Search API sorts by: completion DESC, then name ASC
-  - [ ] 100% complete agencies appear first in results
-  - [ ] Tooltip on badge hover explains benefit
-  - [ ] Mobile: badges still visible and readable
+  - [x] AgencyCard shows "Verified Profile" badge if completion >= 80%
+  - [x] Badge has checkmark icon and blue color
+  - [x] AgencyCard shows "Featured Agency" badge if completion = 100%
+  - [x] Featured badge has star icon and gold/yellow color
+  - [x] Badges displayed prominently (top-right of card)
+  - [x] Search API sorts by: completion DESC, then name ASC
+  - [x] 100% complete agencies appear first in results
+  - [x] Tooltip on badge hover explains benefit
+  - [x] Mobile: badges still visible and readable
 - **Definition of Done:**
-  - [ ] Badges display correctly
-  - [ ] Component tests verify badge logic
-  - [ ] Search sorting tested
-  - [ ] Integration test: 100% profile appears first
+  - [x] Badges display correctly
+  - [x] Component tests verify badge logic
+  - [x] Search sorting tested
+  - [x] Integration test: 100% profile appears first
   - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Clear visual incentive
+  - [x] **Final Check:** Clear visual incentive
 
 **Estimated Effort:** 3 hours
 
