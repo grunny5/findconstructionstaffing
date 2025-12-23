@@ -38,7 +38,7 @@ interface SyncLog {
 }
 
 export default async function AdminIntegrationsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Check authentication and admin status
   const {

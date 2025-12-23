@@ -74,7 +74,7 @@ describe('GET /api/claims/my-requests', () => {
       },
       from: jest.fn(),
     };
-    mockedCreateClient.mockReturnValue(mockSupabaseClient);
+    mockedCreateClient.mockResolvedValue(mockSupabaseClient);
   });
 
   describe('Authentication', () => {

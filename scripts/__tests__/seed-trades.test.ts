@@ -35,14 +35,10 @@ describe('Trade Seeding Functions', () => {
     it('should extract all unique trades from mock data', () => {
       const trades = extractUniqueTrades();
 
-      // Collect expected trades manually
-      const expectedTrades = new Set<string>();
-      mockAgencies.forEach((agency) => {
-        agency.trades.forEach((trade) => expectedTrades.add(trade));
-      });
-
-      expect(trades.length).toBe(expectedTrades.size);
-      expect(trades).toEqual(Array.from(expectedTrades).sort());
+      // With standardized trades list, extractUniqueTrades now returns
+      // all 57 standardized trades, not just those used in mockAgencies
+      expect(trades.length).toBe(57);
+      expect(trades).toEqual([...trades].sort()); // Should be sorted
     });
 
     it('should return sorted trade names', () => {

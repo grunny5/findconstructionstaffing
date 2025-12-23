@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
 import { Agency } from '@/types/api';
+import { US_STATE_CODES } from '@/lib/utils';
 
 // Helper to convert Agency type to AgencyCard props
 function toAgencyCardProps(
@@ -20,7 +21,7 @@ function toAgencyCardProps(
     offers_per_diem: agency.offers_per_diem,
     is_union: agency.is_union,
     trades: agency.trades.map((t) => t.name),
-    regions: agency.regions.map((r) => r.code),
+    regions: agency.regions,
     rating: agency.rating ?? undefined,
     reviewCount: agency.review_count,
     projectCount: agency.project_count,
@@ -99,14 +100,12 @@ describe('AgencyCard', () => {
     expect(screen.getByText('Plumber')).toBeInTheDocument();
   });
 
-  it('should handle regions data without displaying', () => {
-    // AgencyCard receives regions but doesn't display them in the UI
-    const { container } = render(
-      <AgencyCard agency={toAgencyCardProps(mockAgency)} />
-    );
+  it('should display regions', () => {
+    render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
-    // Verify the component renders without errors when regions are provided
-    expect(container).toBeTruthy();
+    expect(screen.getByText('Serves:')).toBeInTheDocument();
+    expect(screen.getByText('TX')).toBeInTheDocument();
+    expect(screen.getByText('CA')).toBeInTheDocument();
   });
 
   it('should render rating if available', () => {
@@ -208,5 +207,155 @@ describe('AgencyCard', () => {
 
     // After error, should show initials instead
     expect(screen.getByText('TA')).toBeInTheDocument();
+  });
+
+  describe('Featured Trades Display', () => {
+    it('should display star icon on featured trades', () => {
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(mockAgency)} />
+      );
+
+      // Find the trade links and verify they contain SVG star icons
+      const electricianLink = screen.getByText('Electrician').closest('a');
+      const plumberLink = screen.getByText('Plumber').closest('a');
+
+      // Each link should contain an SVG (the Star icon)
+      expect(electricianLink?.querySelector('svg')).toBeTruthy();
+      expect(plumberLink?.querySelector('svg')).toBeTruthy();
+    });
+
+    it('should link featured trades to search page with trade filter', () => {
+      render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+
+      // Check that trade badges are wrapped in links
+      const electricianLink = screen
+        .getByText('Electrician')
+        .closest('a') as HTMLAnchorElement;
+      expect(electricianLink).toHaveAttribute('href', '/?trade=Electrician');
+
+      const plumberLink = screen
+        .getByText('Plumber')
+        .closest('a') as HTMLAnchorElement;
+      expect(plumberLink).toHaveAttribute('href', '/?trade=Plumber');
+    });
+
+    it('should display all trades as featured when less than 3', () => {
+      const agencyWithTwoTrades = {
+        ...mockAgency,
+        trades: [
+          { id: '1', name: 'Electrician', slug: 'electrician' },
+          { id: '2', name: 'Plumber', slug: 'plumber' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithTwoTrades)} />);
+
+      // Both trades should be displayed
+      expect(screen.getByText('Electrician')).toBeInTheDocument();
+      expect(screen.getByText('Plumber')).toBeInTheDocument();
+
+      // Should not show "+X more" since all trades are displayed
+      expect(screen.queryByText(/\+\d+ more/)).not.toBeInTheDocument();
+    });
+
+    it('should show "+X more" badge for trades beyond top 3', () => {
+      const agencyWithManyTrades = {
+        ...mockAgency,
+        trades: [
+          { id: '1', name: 'Electrician', slug: 'electrician' },
+          { id: '2', name: 'Plumber', slug: 'plumber' },
+          { id: '3', name: 'Carpenter', slug: 'carpenter' },
+          { id: '4', name: 'Welder', slug: 'welder' },
+          { id: '5', name: 'Mason', slug: 'mason' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithManyTrades)} />);
+
+      // Should show first 3 as featured
+      expect(screen.getByText('Electrician')).toBeInTheDocument();
+      expect(screen.getByText('Plumber')).toBeInTheDocument();
+      expect(screen.getByText('Carpenter')).toBeInTheDocument();
+
+      // Should show +2 more badge
+      expect(screen.getByText('+2 more')).toBeInTheDocument();
+
+      // Should NOT show the 4th and 5th trades
+      expect(screen.queryByText('Welder')).not.toBeInTheDocument();
+      expect(screen.queryByText('Mason')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Service Regions Display', () => {
+    it('should render service regions section', () => {
+      const agencyWithRegions = {
+        ...mockAgency,
+        regions: [
+          { id: '1', name: 'Texas', code: 'TX' },
+          { id: '2', name: 'California', code: 'CA' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithRegions)} />);
+
+      expect(screen.getByText('Serves:')).toBeInTheDocument();
+      expect(screen.getByText('TX')).toBeInTheDocument();
+      expect(screen.getByText('CA')).toBeInTheDocument();
+    });
+
+    it('should show "+X more" for agencies with >3 regions', () => {
+      const agencyWithManyRegions = {
+        ...mockAgency,
+        regions: [
+          { id: '1', name: 'Texas', code: 'TX' },
+          { id: '2', name: 'California', code: 'CA' },
+          { id: '3', name: 'Florida', code: 'FL' },
+          { id: '4', name: 'New York', code: 'NY' },
+          { id: '5', name: 'Illinois', code: 'IL' },
+        ],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithManyRegions)} />);
+      expect(screen.getByText('+2 more')).toBeInTheDocument();
+    });
+
+    it('should show "Nationwide" for agencies with 50 states', () => {
+      // Create 50 valid US states using actual state codes
+      const allStateCodesArray = Array.from(US_STATE_CODES);
+      const fiftyStates = allStateCodesArray.map((code, i) => ({
+        id: `${i + 1}`,
+        name: `State ${code}`,
+        code,
+      }));
+
+      const nationwideAgency = {
+        ...mockAgency,
+        regions: fiftyStates,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(nationwideAgency)} />);
+      expect(screen.getByText('Nationwide')).toBeInTheDocument();
+    });
+
+    it('should not show regions section when no regions', () => {
+      const agencyNoRegions = {
+        ...mockAgency,
+        regions: [],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyNoRegions)} />);
+      expect(screen.queryByText('Serves:')).not.toBeInTheDocument();
+    });
+
+    it('should link region badges to filtered search', () => {
+      const agencyWithRegions = {
+        ...mockAgency,
+        regions: [{ id: '1', name: 'Texas', code: 'TX' }],
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithRegions)} />);
+      const txLink = screen.getByText('TX').closest('a');
+      expect(txLink).toHaveAttribute('href', '/?states[]=TX');
+    });
   });
 });

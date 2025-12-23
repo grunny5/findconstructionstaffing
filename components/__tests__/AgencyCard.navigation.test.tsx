@@ -37,7 +37,10 @@ const mockAgency = {
   offers_per_diem: true,
   is_union: false,
   trades: ['Electrician', 'Plumber', 'Carpenter'],
-  regions: ['Texas', 'California'],
+  regions: [
+    { id: '1', name: 'Texas', code: 'TX' },
+    { id: '2', name: 'California', code: 'CA' },
+  ],
   rating: 4.5,
   reviewCount: 25,
   projectCount: 150,
@@ -159,6 +162,28 @@ describe('AgencyCard Navigation Tests', () => {
       name: /View Elite Construction Staffing profile/i,
     });
     expect(nameLink).toHaveFocus();
+
+    // Tab through featured trade links (3 trades)
+    await user.tab();
+    const electricianLink = screen.getByText('Electrician').closest('a');
+    expect(electricianLink).toHaveFocus();
+
+    await user.tab();
+    const plumberLink = screen.getByText('Plumber').closest('a');
+    expect(plumberLink).toHaveFocus();
+
+    await user.tab();
+    const carpenterLink = screen.getByText('Carpenter').closest('a');
+    expect(carpenterLink).toHaveFocus();
+
+    // Tab through region badges (2 regions: TX, CA)
+    await user.tab();
+    const txLink = screen.getByText('TX').closest('a');
+    expect(txLink).toHaveFocus();
+
+    await user.tab();
+    const caLink = screen.getByText('CA').closest('a');
+    expect(caLink).toHaveFocus();
 
     // Tab to View Profile button
     await user.tab();

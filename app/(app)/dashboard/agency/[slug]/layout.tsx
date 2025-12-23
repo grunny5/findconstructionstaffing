@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   children,
   params,
 }: DashboardLayoutProps) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Fetch agency data to get the name for the sidebar
   const { data: agency, error } = await supabase

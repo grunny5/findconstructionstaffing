@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { ClaimsTable } from '@/components/admin/ClaimsTable';
 
 export default async function AdminClaimsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Check authentication
   const {

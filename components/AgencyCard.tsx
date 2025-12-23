@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { RegionBadges } from '@/components/RegionBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import {
   Star,
   ArrowUpRight,
 } from 'lucide-react';
+import type { Region } from '@/types/api';
 
 interface AgencyCardProps {
   agency: {
@@ -31,7 +33,7 @@ interface AgencyCardProps {
     offers_per_diem: boolean;
     is_union: boolean;
     trades?: string[];
-    regions?: string[];
+    regions?: Region[];
     rating?: number;
     reviewCount?: number;
     projectCount?: number;
@@ -179,17 +181,23 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                   </div>
                 </div>
 
-                {/* Specialties - Clean Badge Layout */}
+                {/* Specialties - Featured Trades Display */}
                 {agency.trades && agency.trades.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {agency.trades.slice(0, 3).map((trade, index) => (
-                      <Badge
+                      <Link
                         key={index}
-                        variant="secondary"
-                        className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1 rounded-lg font-medium"
+                        href={`/?trade=${encodeURIComponent(trade)}`}
+                        className="inline-block"
                       >
-                        {trade}
-                      </Badge>
+                        <Badge
+                          variant="default"
+                          className="bg-gradient-to-r from-slate-900 to-slate-700 text-white hover:from-slate-800 hover:to-slate-600 px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer"
+                        >
+                          <Star className="h-3 w-3 mr-1.5 fill-current inline-block" />
+                          {trade}
+                        </Badge>
+                      </Link>
                     ))}
                     {agency.trades.length > 3 && (
                       <Badge
@@ -199,6 +207,21 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                         +{agency.trades.length - 3} more
                       </Badge>
                     )}
+                  </div>
+                )}
+
+                {/* Service Regions */}
+                {agency.regions && agency.regions.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Serves:
+                    </span>
+                    <RegionBadges
+                      regions={agency.regions}
+                      maxDisplay={3}
+                      variant="outline"
+                      showViewAll={false}
+                    />
                   </div>
                 )}
               </div>

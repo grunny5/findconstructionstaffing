@@ -64,7 +64,7 @@ export async function PUT(
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },

@@ -4,7 +4,7 @@ import { UsersTable } from '@/components/admin/UsersTable';
 import type { Profile } from '@/types/database';
 
 export default async function AdminUsersPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 export default async function ClaimAgencyPage({ params }: PageProps) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

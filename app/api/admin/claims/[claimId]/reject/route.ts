@@ -36,7 +36,7 @@ export async function POST(
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {
