@@ -40,14 +40,15 @@ The Find Construction Staffing API uses **Supabase Auth** for authentication wit
 Users authenticate through Supabase Auth and receive a JWT token. The token is automatically managed by the Supabase client library.
 
 **Login Example:**
-```typescript
-import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient()
+```typescript
+import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
 const { data, error } = await supabase.auth.signInWithPassword({
   email: 'user@example.com',
-  password: 'secure-password'
-})
+  password: 'secure-password',
+});
 
 // JWT token is automatically included in subsequent requests
 ```
@@ -57,6 +58,7 @@ const { data, error } = await supabase.auth.signInWithPassword({
 For authenticated endpoints, the JWT token must be included in the request. The Supabase client automatically includes the token in the `Authorization` header.
 
 **Authenticated Request Example:**
+
 ```bash
 curl -X POST https://api.findconstructionstaffing.com/api/claims/request \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -291,6 +293,7 @@ Submit a request to claim ownership of an agency.
 **Authentication:** Required (authenticated user)
 
 **Request Body:**
+
 ```json
 {
   "agency_id": "123e4567-e89b-12d3-a456-426614174000",
@@ -301,12 +304,14 @@ Submit a request to claim ownership of an agency.
 ```
 
 **Validation Rules:**
+
 - `agency_id`: Required, valid UUID
 - `business_email`: Required, valid email format
 - `business_phone`: Required, E.164 format (+1-XXX-XXX-XXXX)
 - `verification_notes`: Optional, max 500 characters
 
 **Success Response (201 Created):**
+
 ```json
 {
   "data": {
@@ -350,11 +355,13 @@ Submit a request to claim ownership of an agency.
   ```
 
 **Side Effects:**
+
 - Creates record in `agency_claim_requests` table
 - Sends confirmation email to business_email
 - Creates audit log entry
 
 **Example Request:**
+
 ```bash
 curl -X POST https://api.findconstructionstaffing.com/api/claims/request \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -374,9 +381,11 @@ Retrieve all claim requests submitted by the authenticated user.
 **Authentication:** Required (authenticated user)
 
 **Query Parameters:**
+
 - None
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -407,6 +416,7 @@ Retrieve all claim requests submitted by the authenticated user.
 - `500 Internal Server Error` - Database error
 
 **Example Request:**
+
 ```bash
 curl https://api.findconstructionstaffing.com/api/claims/my-requests \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
@@ -421,11 +431,13 @@ List all agency claim requests (admin only).
 **Authentication:** Required (admin role)
 
 **Query Parameters:**
+
 - `status` (optional): Filter by status (`pending`, `approved`, `rejected`)
 - `limit` (optional): Results per page (1-100, default: 50)
 - `offset` (optional): Starting position (default: 0)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -470,6 +482,7 @@ List all agency claim requests (admin only).
 - `400 Bad Request` - Invalid query parameters
 
 **Example Request:**
+
 ```bash
 curl "https://api.findconstructionstaffing.com/api/admin/claims?status=pending&limit=20" \
   -H "Authorization: Bearer ADMIN_JWT_TOKEN"
@@ -482,12 +495,15 @@ Approve an agency claim request (admin only).
 **Authentication:** Required (admin role)
 
 **URL Parameters:**
+
 - `claimId`: UUID of the claim request
 
 **Request Body:**
+
 - None (empty body or no body required)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -517,12 +533,14 @@ Approve an agency claim request (admin only).
   ```
 
 **Side Effects:**
+
 - Updates claim status to `approved`
 - Sets `agencies.claimed_by` to the requesting user
 - Sends approval email to user
 - Creates audit log entry
 
 **Example Request:**
+
 ```bash
 curl -X POST "https://api.findconstructionstaffing.com/api/admin/claims/789e0123-e89b-12d3-a456-426614174002/approve" \
   -H "Authorization: Bearer ADMIN_JWT_TOKEN" \
@@ -536,9 +554,11 @@ Reject an agency claim request (admin only).
 **Authentication:** Required (admin role)
 
 **URL Parameters:**
+
 - `claimId`: UUID of the claim request
 
 **Request Body:**
+
 ```json
 {
   "rejection_reason": "Email domain does not match agency domain"
@@ -546,9 +566,11 @@ Reject an agency claim request (admin only).
 ```
 
 **Validation Rules:**
+
 - `rejection_reason`: Required, 10-500 characters
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -572,12 +594,14 @@ Reject an agency claim request (admin only).
 - `400 Bad Request` - Missing or invalid rejection_reason
 
 **Side Effects:**
+
 - Updates claim status to `rejected`
 - Stores rejection_reason
 - Sends rejection email to user
 - Creates audit log entry
 
 **Example Request:**
+
 ```bash
 curl -X POST "https://api.findconstructionstaffing.com/api/admin/claims/789e0123-e89b-12d3-a456-426614174002/reject" \
   -H "Authorization: Bearer ADMIN_JWT_TOKEN" \
@@ -594,9 +618,11 @@ Get comprehensive dashboard data for an agency (owner only).
 **Authentication:** Required (agency owner)
 
 **URL Parameters:**
+
 - `slug`: Agency slug (e.g., "elite-construction-staffing")
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -654,6 +680,7 @@ Get comprehensive dashboard data for an agency (owner only).
 - `404 Not Found` - Agency not found
 
 **Example Request:**
+
 ```bash
 curl https://api.findconstructionstaffing.com/api/agencies/elite-construction-staffing/dashboard \
   -H "Authorization: Bearer OWNER_JWT_TOKEN"
@@ -666,9 +693,11 @@ Update agency profile information (owner only).
 **Authentication:** Required (agency owner)
 
 **URL Parameters:**
+
 - `slug`: Agency slug
 
 **Request Body:**
+
 ```json
 {
   "name": "Elite Construction Staffing LLC",
@@ -680,6 +709,7 @@ Update agency profile information (owner only).
 ```
 
 **Validation Rules:**
+
 - `name`: Optional, 2-200 characters
 - `description`: Optional, 10-2000 characters
 - `website`: Optional, valid URL
@@ -687,6 +717,7 @@ Update agency profile information (owner only).
 - `email`: Optional, valid email format
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -713,11 +744,13 @@ Update agency profile information (owner only).
 - `400 Bad Request` - Validation failed
 
 **Side Effects:**
+
 - Creates entry in `agency_profile_edits` table for audit trail
 - Updates `last_edited_at` and `last_edited_by` fields
 - May send profile completion email if reaches 100%
 
 **Example Request:**
+
 ```bash
 curl -X PUT https://api.findconstructionstaffing.com/api/agencies/elite-construction-staffing/profile \
   -H "Authorization: Bearer OWNER_JWT_TOKEN" \
@@ -736,25 +769,25 @@ Update agency trades/specializations (owner only).
 **Authentication:** Required (agency owner)
 
 **URL Parameters:**
+
 - `slug`: Agency slug
 
 **Request Body:**
+
 ```json
 {
-  "trade_ids": [
-    "trade-uuid-1",
-    "trade-uuid-2",
-    "trade-uuid-3"
-  ]
+  "trade_ids": ["trade-uuid-1", "trade-uuid-2", "trade-uuid-3"]
 }
 ```
 
 **Validation Rules:**
+
 - `trade_ids`: Required array of valid trade UUIDs
 - Minimum: 1 trade
 - Maximum: 10 trades
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -795,6 +828,7 @@ Update agency trades/specializations (owner only).
   ```
 
 **Side Effects:**
+
 - Upserts relationships in `agency_trades` table
 - Deletes orphaned trade relationships
 - Creates audit log entry
@@ -802,6 +836,7 @@ Update agency trades/specializations (owner only).
 - May send profile completion email if reaches 100%
 
 **Example Request:**
+
 ```bash
 curl -X PUT https://api.findconstructionstaffing.com/api/agencies/elite-construction-staffing/trades \
   -H "Authorization: Bearer OWNER_JWT_TOKEN" \
@@ -818,24 +853,25 @@ Update agency service regions (owner only).
 **Authentication:** Required (agency owner)
 
 **URL Parameters:**
+
 - `slug`: Agency slug
 
 **Request Body:**
+
 ```json
 {
-  "region_ids": [
-    "region-uuid-1",
-    "region-uuid-2"
-  ]
+  "region_ids": ["region-uuid-1", "region-uuid-2"]
 }
 ```
 
 **Validation Rules:**
+
 - `region_ids`: Required array of valid region UUIDs
 - Minimum: 1 region
 - No maximum limit
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -876,6 +912,7 @@ Update agency service regions (owner only).
   ```
 
 **Side Effects:**
+
 - Upserts relationships in `agency_regions` table
 - Deletes orphaned region relationships
 - Creates audit log entry
@@ -883,6 +920,7 @@ Update agency service regions (owner only).
 - May send profile completion email if reaches 100%
 
 **Example Request:**
+
 ```bash
 curl -X PUT https://api.findconstructionstaffing.com/api/agencies/elite-construction-staffing/regions \
   -H "Authorization: Bearer OWNER_JWT_TOKEN" \
@@ -914,6 +952,7 @@ All profile changes and claim actions are logged in audit tables:
 - **agency_claim_audit_log** - Tracks all claim-related actions (submit, approve, reject)
 
 Each audit entry includes:
+
 - User who performed the action
 - Timestamp
 - Field name or action type
