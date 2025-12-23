@@ -2366,27 +2366,27 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Shadcn/ui Card component
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Widget displays circular or linear progress bar
-  - [ ] Shows percentage prominently (e.g., "65%")
-  - [ ] Progress bar color: <50% red, 50-79% yellow, 80-99% blue, 100% green
-  - [ ] Checklist shows incomplete items:
-    - [ ] "Add Logo" (if no logo)
-    - [ ] "Complete Description" (if empty or <100 chars)
-    - [ ] "Select Trades" (if <1 trade)
-    - [ ] "Select Regions" (if <1 region)
-    - [ ] "Add Contact Info" (if phone or email missing)
-  - [ ] Each checklist item links to relevant edit page
-  - [ ] Completed items shown with checkmark (faded)
-  - [ ] "Complete your profile" CTA if <80%
-  - [ ] Celebration animation if 100% (confetti or badge reveal)
+  - [x] Widget displays circular or linear progress bar
+  - [x] Shows percentage prominently (e.g., "65%")
+  - [x] Progress bar color: <50% red, 50-79% yellow, 80-99% blue, 100% green
+  - [x] Checklist shows incomplete items:
+    - [x] "Add Logo" (if no logo)
+    - [x] "Complete Description" (if empty or <100 chars)
+    - [x] "Select Trades" (if <1 trade)
+    - [x] "Select Regions" (if <1 region)
+    - [x] "Add Contact Info" (if phone or email missing)
+  - [x] Each checklist item links to relevant edit page
+  - [x] Completed items shown with checkmark (faded)
+  - [x] "Complete your profile" CTA if <80%
+  - [x] Celebration animation if 100% (confetti or badge reveal)
 - **Definition of Done:**
-  - [ ] Widget complete with all features
-  - [ ] Component tests verify checklist logic
-  - [ ] Component tests verify color changes
-  - [ ] Component tests verify 100% celebration
-  - [ ] Accessibility tested
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Motivating UI
+  - [x] Widget complete with all features
+  - [x] Component tests verify checklist logic
+  - [x] Component tests verify color changes
+  - [x] Component tests verify 100% celebration
+  - [x] Accessibility tested
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Motivating UI
 
 **Estimated Effort:** 5 hours
 

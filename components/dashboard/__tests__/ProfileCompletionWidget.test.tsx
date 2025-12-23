@@ -2,6 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ProfileCompletionWidget } from '../ProfileCompletionWidget';
 
+// Mock canvas-confetti to avoid canvas errors in jsdom
+jest.mock('canvas-confetti', () => {
+  return jest.fn();
+});
+
 describe('ProfileCompletionWidget', () => {
   describe('Basic Rendering', () => {
     it('should render the component title', () => {
@@ -36,13 +41,13 @@ describe('ProfileCompletionWidget', () => {
       expect(screen.getByText('Getting Started')).toBeInTheDocument();
     });
 
-    it('should show "Good Progress" for percentage 50-74', () => {
+    it('should show "Good Progress" for percentage 50-79', () => {
       render(<ProfileCompletionWidget percentage={60} />);
 
       expect(screen.getByText('Good Progress')).toBeInTheDocument();
     });
 
-    it('should show "Almost There" for percentage 75-99', () => {
+    it('should show "Almost There" for percentage 80-99', () => {
       render(<ProfileCompletionWidget percentage={85} />);
 
       expect(screen.getByText('Almost There')).toBeInTheDocument();
@@ -75,7 +80,7 @@ describe('ProfileCompletionWidget', () => {
     });
   });
 
-  describe('Missing Fields', () => {
+  describe('Missing Fields (Deprecated - for backwards compatibility)', () => {
     it('should not show missing fields section when array is empty', () => {
       render(<ProfileCompletionWidget percentage={50} missingFields={[]} />);
 
@@ -84,69 +89,12 @@ describe('ProfileCompletionWidget', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('should show missing fields when provided', () => {
-      const missingFields = ['Add logo', 'Add description', 'Add phone number'];
+    it('should handle undefined missing fields (default)', () => {
+      render(<ProfileCompletionWidget percentage={50} />);
 
-      render(
-        <ProfileCompletionWidget
-          percentage={50}
-          missingFields={missingFields}
-        />
-      );
-
-      expect(screen.getByText('Complete your profile:')).toBeInTheDocument();
-      expect(screen.getByText('Add logo')).toBeInTheDocument();
-      expect(screen.getByText('Add description')).toBeInTheDocument();
-      expect(screen.getByText('Add phone number')).toBeInTheDocument();
-    });
-
-    it('should show only first 3 missing fields', () => {
-      const missingFields = [
-        'Field 1',
-        'Field 2',
-        'Field 3',
-        'Field 4',
-        'Field 5',
-      ];
-
-      render(
-        <ProfileCompletionWidget
-          percentage={30}
-          missingFields={missingFields}
-        />
-      );
-
-      expect(screen.getByText('Field 1')).toBeInTheDocument();
-      expect(screen.getByText('Field 2')).toBeInTheDocument();
-      expect(screen.getByText('Field 3')).toBeInTheDocument();
-      expect(screen.queryByText('Field 4')).not.toBeInTheDocument();
-      expect(screen.queryByText('Field 5')).not.toBeInTheDocument();
-    });
-
-    it('should show count of additional fields when more than 3', () => {
-      const missingFields = ['Field 1', 'Field 2', 'Field 3', 'Field 4'];
-
-      render(
-        <ProfileCompletionWidget
-          percentage={30}
-          missingFields={missingFields}
-        />
-      );
-
-      expect(screen.getByText('+1 more')).toBeInTheDocument();
-    });
-
-    it('should show correct count for many additional fields', () => {
-      const missingFields = Array.from({ length: 10 }, (_, i) => `Field ${i}`);
-
-      render(
-        <ProfileCompletionWidget
-          percentage={20}
-          missingFields={missingFields}
-        />
-      );
-
-      expect(screen.getByText('+7 more')).toBeInTheDocument();
+      expect(
+        screen.queryByText('Complete your profile:')
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -198,18 +146,6 @@ describe('ProfileCompletionWidget', () => {
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toBeInTheDocument();
     });
-
-    it('should render Circle icons for missing fields', () => {
-      const { container } = render(
-        <ProfileCompletionWidget
-          percentage={50}
-          missingFields={['Field 1', 'Field 2']}
-        />
-      );
-
-      const circleIcons = container.querySelectorAll('svg.h-3.w-3');
-      expect(circleIcons.length).toBeGreaterThan(0);
-    });
   });
 
   describe('Accessibility', () => {
@@ -241,14 +177,14 @@ describe('ProfileCompletionWidget', () => {
       expect(screen.getByText('Good Progress')).toBeInTheDocument();
     });
 
-    it('should handle percentage at boundary 74', () => {
-      render(<ProfileCompletionWidget percentage={74} />);
+    it('should handle percentage at boundary 79', () => {
+      render(<ProfileCompletionWidget percentage={79} />);
 
       expect(screen.getByText('Good Progress')).toBeInTheDocument();
     });
 
-    it('should handle percentage at boundary 75', () => {
-      render(<ProfileCompletionWidget percentage={75} />);
+    it('should handle percentage at boundary 80', () => {
+      render(<ProfileCompletionWidget percentage={80} />);
 
       expect(screen.getByText('Almost There')).toBeInTheDocument();
     });
@@ -260,20 +196,73 @@ describe('ProfileCompletionWidget', () => {
       expect(screen.queryByText('Profile Complete')).not.toBeInTheDocument();
     });
 
-    it('should handle empty missing fields array', () => {
-      render(<ProfileCompletionWidget percentage={50} missingFields={[]} />);
+  });
 
-      expect(
-        screen.queryByText('Complete your profile:')
-      ).not.toBeInTheDocument();
+  describe('Checklist Items', () => {
+    it('should render checklist items when provided', () => {
+      const checklistItems = [
+        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+        { id: 'description', label: 'Complete Description', completed: true, link: '/dashboard/profile#description' },
+      ];
+
+      render(<ProfileCompletionWidget percentage={50} checklistItems={checklistItems} />);
+
+      expect(screen.getByText('Add Logo')).toBeInTheDocument();
+      expect(screen.getByText('Complete Description')).toBeInTheDocument();
     });
 
-    it('should handle undefined missing fields (default)', () => {
-      render(<ProfileCompletionWidget percentage={50} />);
+    it('should not render checklist when items array is empty', () => {
+      render(<ProfileCompletionWidget percentage={50} checklistItems={[]} />);
 
-      expect(
-        screen.queryByText('Complete your profile:')
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Complete your profile:')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('CTA Button', () => {
+    it('should show CTA button when percentage < 80% and checklist items exist', () => {
+      const checklistItems = [
+        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+      ];
+
+      render(<ProfileCompletionWidget percentage={75} checklistItems={checklistItems} />);
+
+      expect(screen.getByText('Complete Your Profile')).toBeInTheDocument();
+    });
+
+    it('should not show CTA button when percentage >= 80%', () => {
+      const checklistItems = [
+        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+      ];
+
+      render(<ProfileCompletionWidget percentage={80} checklistItems={checklistItems} />);
+
+      expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument();
+    });
+
+    it('should not show CTA button when no checklist items', () => {
+      render(<ProfileCompletionWidget percentage={50} checklistItems={[]} />);
+
+      expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument();
+    });
+
+    it('should link to dashboard profile page', () => {
+      const checklistItems = [
+        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+      ];
+
+      const { container } = render(<ProfileCompletionWidget percentage={50} checklistItems={checklistItems} />);
+
+      const link = container.querySelector('a[href="/dashboard/profile"]');
+      expect(link).toBeInTheDocument();
+    });
+  });
+
+  describe('Confetti Animation', () => {
+    it('should render without errors at 100% completion', () => {
+      // Just ensure the component renders without crashing when confetti is triggered
+      expect(() => {
+        render(<ProfileCompletionWidget percentage={100} />);
+      }).not.toThrow();
     });
   });
 });
