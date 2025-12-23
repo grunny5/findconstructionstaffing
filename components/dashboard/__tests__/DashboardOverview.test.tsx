@@ -118,11 +118,9 @@ describe('DashboardOverview', () => {
       );
     });
 
-    it('should not show logo field when logo exists', () => {
-      const { container } = render(<DashboardOverview agency={mockAgency} />);
+    it('should show Update Logo in Quick Actions when logo exists', () => {
+      render(<DashboardOverview agency={mockAgency} />);
 
-      // The ProfileCompletionWidget should still show "Add Logo" but completed
-      // Quick Actions will also show "Update Logo" when logo exists
       const updateLogoButton = screen.getByText('Update Logo');
       expect(updateLogoButton).toBeInTheDocument();
     });
