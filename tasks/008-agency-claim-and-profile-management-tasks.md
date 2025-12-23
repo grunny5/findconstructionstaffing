@@ -2437,7 +2437,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - [x] Unit tests cover all scoring components
   - [x] Unit tests verify edge cases (empty profile, fully complete)
   - [x] JSDoc documentation added
-  - [ ] PR submitted with tests
+  - [x] PR submitted with tests
   - [x] **Final Check:** 100% test coverage
 
 **Estimated Effort:** 3 hours
@@ -2469,7 +2469,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - [x] Trigger fires correctly on updates
   - [x] Verified percentage updates automatically
   - [x] Tests verify trigger logic
-  - [ ] PR submitted
+  - [x] PR submitted
   - [x] **Final Check:** Always in sync
 
 **Estimated Effort:** 4 hours

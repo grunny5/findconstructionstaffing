@@ -195,17 +195,31 @@ describe('ProfileCompletionWidget', () => {
       expect(screen.getByText('Almost There')).toBeInTheDocument();
       expect(screen.queryByText('Profile Complete')).not.toBeInTheDocument();
     });
-
   });
 
   describe('Checklist Items', () => {
     it('should render checklist items when provided', () => {
       const checklistItems = [
-        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
-        { id: 'description', label: 'Complete Description', completed: true, link: '/dashboard/profile#description' },
+        {
+          id: 'logo',
+          label: 'Add Logo',
+          completed: false,
+          link: '/dashboard/profile#logo',
+        },
+        {
+          id: 'description',
+          label: 'Complete Description',
+          completed: true,
+          link: '/dashboard/profile#description',
+        },
       ];
 
-      render(<ProfileCompletionWidget percentage={50} checklistItems={checklistItems} />);
+      render(
+        <ProfileCompletionWidget
+          percentage={50}
+          checklistItems={checklistItems}
+        />
+      );
 
       expect(screen.getByText('Add Logo')).toBeInTheDocument();
       expect(screen.getByText('Complete Description')).toBeInTheDocument();
@@ -214,43 +228,79 @@ describe('ProfileCompletionWidget', () => {
     it('should not render checklist when items array is empty', () => {
       render(<ProfileCompletionWidget percentage={50} checklistItems={[]} />);
 
-      expect(screen.queryByText('Complete your profile:')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Complete your profile:')
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('CTA Button', () => {
     it('should show CTA button when percentage < 80% and checklist items exist', () => {
       const checklistItems = [
-        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+        {
+          id: 'logo',
+          label: 'Add Logo',
+          completed: false,
+          link: '/dashboard/profile#logo',
+        },
       ];
 
-      render(<ProfileCompletionWidget percentage={75} checklistItems={checklistItems} />);
+      render(
+        <ProfileCompletionWidget
+          percentage={75}
+          checklistItems={checklistItems}
+        />
+      );
 
       expect(screen.getByText('Complete Your Profile')).toBeInTheDocument();
     });
 
     it('should not show CTA button when percentage >= 80%', () => {
       const checklistItems = [
-        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+        {
+          id: 'logo',
+          label: 'Add Logo',
+          completed: false,
+          link: '/dashboard/profile#logo',
+        },
       ];
 
-      render(<ProfileCompletionWidget percentage={80} checklistItems={checklistItems} />);
+      render(
+        <ProfileCompletionWidget
+          percentage={80}
+          checklistItems={checklistItems}
+        />
+      );
 
-      expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Complete Your Profile')
+      ).not.toBeInTheDocument();
     });
 
     it('should not show CTA button when no checklist items', () => {
       render(<ProfileCompletionWidget percentage={50} checklistItems={[]} />);
 
-      expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Complete Your Profile')
+      ).not.toBeInTheDocument();
     });
 
     it('should link to dashboard profile page', () => {
       const checklistItems = [
-        { id: 'logo', label: 'Add Logo', completed: false, link: '/dashboard/profile#logo' },
+        {
+          id: 'logo',
+          label: 'Add Logo',
+          completed: false,
+          link: '/dashboard/profile#logo',
+        },
       ];
 
-      const { container } = render(<ProfileCompletionWidget percentage={50} checklistItems={checklistItems} />);
+      const { container } = render(
+        <ProfileCompletionWidget
+          percentage={50}
+          checklistItems={checklistItems}
+        />
+      );
 
       const link = container.querySelector('a[href="/dashboard/profile"]');
       expect(link).toBeInTheDocument();

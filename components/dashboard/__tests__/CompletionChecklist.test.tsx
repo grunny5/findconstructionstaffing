@@ -138,7 +138,9 @@ describe('CompletionChecklist', () => {
 
       const { container } = render(<CompletionChecklist items={items} />);
 
-      const circleIcon = container.querySelector('svg.h-4.w-4:not(.text-green-600)');
+      const circleIcon = container.querySelector(
+        'svg.h-4.w-4:not(.text-green-600)'
+      );
       expect(circleIcon).toBeInTheDocument();
     });
   });
@@ -166,7 +168,10 @@ describe('CompletionChecklist', () => {
       expect(logoLink).toHaveAttribute('href', '/dashboard/profile#logo');
 
       const descLink = screen.getByText('Complete Description').closest('a');
-      expect(descLink).toHaveAttribute('href', '/dashboard/profile#description');
+      expect(descLink).toHaveAttribute(
+        'href',
+        '/dashboard/profile#description'
+      );
     });
   });
 });
@@ -393,7 +398,13 @@ describe('generateChecklistItems', () => {
       const items = generateChecklistItems(profile);
 
       expect(items).toHaveLength(5);
-      expect(items.map((i) => i.id)).toEqual(['logo', 'description', 'trades', 'regions', 'contact']);
+      expect(items.map((i) => i.id)).toEqual([
+        'logo',
+        'description',
+        'trades',
+        'regions',
+        'contact',
+      ]);
     });
 
     it('should include proper links for all items', () => {
@@ -401,7 +412,9 @@ describe('generateChecklistItems', () => {
 
       const items = generateChecklistItems(profile);
 
-      expect(items.every((item) => item.link.startsWith('/dashboard/profile#'))).toBe(true);
+      expect(
+        items.every((item) => item.link.startsWith('/dashboard/profile#'))
+      ).toBe(true);
     });
   });
 });
