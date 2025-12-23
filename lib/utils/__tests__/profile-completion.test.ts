@@ -180,7 +180,10 @@ describe('calculateProfileCompletion', () => {
 
     describe('Headquarters (5%)', () => {
       it('should award 5% for valid headquarters', () => {
-        const agency = { ...createMinimalAgency(), headquarters: 'Houston, TX' };
+        const agency = {
+          ...createMinimalAgency(),
+          headquarters: 'Houston, TX',
+        };
         expect(calculateProfileCompletion(agency)).toBe(10); // 5% name + 5% headquarters
       });
 
@@ -253,7 +256,9 @@ describe('calculateProfileCompletion', () => {
       it('should award 20% for one region', () => {
         const agency = {
           ...createMinimalAgency(),
-          regions: [{ id: '1', name: 'Texas', state_code: 'TX', slug: 'texas' }],
+          regions: [
+            { id: '1', name: 'Texas', state_code: 'TX', slug: 'texas' },
+          ],
         };
         expect(calculateProfileCompletion(agency)).toBe(25); // 5% name + 20% regions
       });

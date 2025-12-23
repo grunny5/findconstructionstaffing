@@ -102,12 +102,20 @@ export function calculateProfileCompletion(agency: Agency): number {
   // ========================================
 
   // Trades (20%) - Full credit if at least one trade is selected
-  if (agency.trades && Array.isArray(agency.trades) && agency.trades.length > 0) {
+  if (
+    agency.trades &&
+    Array.isArray(agency.trades) &&
+    agency.trades.length > 0
+  ) {
     score += 20;
   }
 
   // Regions (20%) - Full credit if at least one region is selected
-  if (agency.regions && Array.isArray(agency.regions) && agency.regions.length > 0) {
+  if (
+    agency.regions &&
+    Array.isArray(agency.regions) &&
+    agency.regions.length > 0
+  ) {
     score += 20;
   }
 
