@@ -129,7 +129,11 @@ export function calculateProfileCompletion(agency: Agency): number {
   }
 
   // Founded Year (5%)
-  if (agency.founded_year && agency.founded_year > 0) {
+  if (
+    agency.founded_year &&
+    agency.founded_year > 1800 &&
+    agency.founded_year <= new Date().getFullYear()
+  ) {
     score += 5;
   }
 

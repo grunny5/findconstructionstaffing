@@ -351,6 +351,37 @@ describe('calculateProfileCompletion', () => {
         const agency = { ...createMinimalAgency(), founded_year: -1 };
         expect(calculateProfileCompletion(agency)).toBe(5);
       });
+
+      it('should not award points for year before 1800', () => {
+        const agency = { ...createMinimalAgency(), founded_year: 1799 };
+        expect(calculateProfileCompletion(agency)).toBe(5);
+      });
+
+      it('should award points for year 1801 (boundary)', () => {
+        const agency = { ...createMinimalAgency(), founded_year: 1801 };
+        expect(calculateProfileCompletion(agency)).toBe(10);
+      });
+
+      it('should not award points for future year', () => {
+        const agency = {
+          ...createMinimalAgency(),
+          founded_year: new Date().getFullYear() + 1,
+        };
+        expect(calculateProfileCompletion(agency)).toBe(5);
+      });
+
+      it('should not award points for unreasonably high year (9999)', () => {
+        const agency = { ...createMinimalAgency(), founded_year: 9999 };
+        expect(calculateProfileCompletion(agency)).toBe(5);
+      });
+
+      it('should award points for current year (boundary)', () => {
+        const agency = {
+          ...createMinimalAgency(),
+          founded_year: new Date().getFullYear(),
+        };
+        expect(calculateProfileCompletion(agency)).toBe(10);
+      });
     });
 
     it('should award full 15% when logo and founded year are present', () => {
