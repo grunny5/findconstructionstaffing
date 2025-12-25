@@ -14,6 +14,10 @@ export type Agency = {
   is_active: boolean;
   offers_per_diem: boolean;
   is_union: boolean;
+  founded_year?: number;
+  employee_count?: string;
+  headquarters?: string;
+  company_size?: string;
   created_at: string;
   updated_at: string;
   claimed_at?: string;

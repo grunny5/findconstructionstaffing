@@ -239,7 +239,7 @@ components:
         founded_year:
           type: integer
           nullable: true
-          minimum: 1900
+          minimum: 1800
           maximum: 2100
           description: Year agency was founded
           example: 2010

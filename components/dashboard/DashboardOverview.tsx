@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { ProfileCompletionWidget } from './ProfileCompletionWidget';
+import { generateChecklistItems } from './CompletionChecklist';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,16 +35,8 @@ export function DashboardOverview({
   agency,
   isLoading = false,
 }: DashboardOverviewProps) {
-  // Calculate missing fields for profile completion
-  const getMissingFields = () => {
-    const fields: string[] = [];
-    if (!agency.logo_url) fields.push('Add company logo');
-    if (!agency.description) fields.push('Add company description');
-    if (agency.profile_completion_percentage < 100) {
-      fields.push('Complete all profile fields');
-    }
-    return fields;
-  };
+  // Generate checklist items for profile completion
+  const checklistItems = generateChecklistItems(agency);
 
   if (isLoading) {
     return <DashboardOverviewSkeleton />;
@@ -83,7 +76,7 @@ export function DashboardOverview({
         <div className="md:col-span-1">
           <ProfileCompletionWidget
             percentage={agency.profile_completion_percentage}
-            missingFields={getMissingFields()}
+            checklistItems={checklistItems}
           />
         </div>
 

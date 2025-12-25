@@ -8,6 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   MapPin,
   Users,
   Phone,
@@ -16,6 +22,7 @@ import {
   Building2,
   Star,
   ArrowUpRight,
+  CheckCircle2,
 } from 'lucide-react';
 import type { Region } from '@/types/api';
 
@@ -42,6 +49,7 @@ interface AgencyCardProps {
     headquarters?: string;
     verified?: boolean;
     featured?: boolean;
+    profile_completion_percentage?: number;
   };
 }
 
@@ -78,8 +86,53 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
     agency.email ||
     'contact@' + agency.name.toLowerCase().replace(/\s+/g, '') + '.com';
 
+  // Determine which completion badge to show
+  const showVerifiedBadge =
+    agency.profile_completion_percentage &&
+    agency.profile_completion_percentage >= 80 &&
+    agency.profile_completion_percentage < 100;
+  const showFeaturedBadge = agency.profile_completion_percentage === 100;
+
   return (
-    <Card className="group hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm hover:-translate-y-1">
+    <Card className="group hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm hover:-translate-y-1 relative">
+      {/* Completion Badges - Top Right */}
+      {(showVerifiedBadge || showFeaturedBadge) && (
+        <div className="absolute top-4 right-4 z-10">
+          <TooltipProvider>
+            {showFeaturedBadge && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg shadow-amber-500/30">
+                    <Star className="h-4 w-4 fill-current" />
+                    Featured Agency
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">
+                    Complete profile with priority placement in search results
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {showVerifiedBadge && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg shadow-blue-500/30">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Verified Profile
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">
+                    Profile is 80%+ complete with verified information
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </TooltipProvider>
+        </div>
+      )}
+
       <CardContent className="p-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Modern Logo */}

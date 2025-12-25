@@ -14,10 +14,10 @@ export const EMPLOYEE_COUNT_OPTIONS = [
   { value: '1001+', label: '1001+ employees' },
 ] as const;
 
-// Generate year options from 1900 to current year
+// Generate year options from 1800 to current year
 const currentYear = new Date().getFullYear();
 export const FOUNDED_YEAR_OPTIONS = Array.from(
-  { length: currentYear - 1899 },
+  { length: currentYear - 1799 },
   (_, i) => ({
     value: String(currentYear - i),
     label: String(currentYear - i),
@@ -33,7 +33,7 @@ export const FOUNDED_YEAR_OPTIONS = Array.from(
  * - website: Valid HTTP/HTTPS URL
  * - phone: E.164 format phone number
  * - email: Valid email address
- * - founded_year: Year between 1900 and current year
+ * - founded_year: Year between 1800 and current year
  * - employee_count: One of the predefined ranges
  * - headquarters: City/state location (max 200 chars)
  */
@@ -85,9 +85,9 @@ export const agencyProfileSchema = z.object({
     .refine(
       (year) => {
         const y = parseInt(year, 10);
-        return y >= 1900 && y <= currentYear;
+        return y >= 1800 && y <= currentYear;
       },
-      { message: `Year must be between 1900 and ${currentYear}` }
+      { message: `Year must be between 1800 and ${currentYear}` }
     )
     .optional()
     .or(z.literal('')),

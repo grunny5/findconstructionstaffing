@@ -411,7 +411,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply pagination and ordering using validated parameters
+    // Sort by profile completion (highest first), then by name alphabetically
     query = query
+      .order('profile_completion_percentage', { ascending: false })
       .order('name', { ascending: true })
       .range(offset, offset + limit - 1);
 

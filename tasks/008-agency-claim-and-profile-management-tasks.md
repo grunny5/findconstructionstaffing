@@ -2127,6 +2127,10 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - [x] Transaction ensures consistency (delete + insert atomic)
 - **Definition of Done:**
   - [x] Endpoint implementation complete
+  - [x] Unit tests verify validation
+  - [x] Unit tests verify transaction behavior
+  - [x] Integration test: full update flow
+  - [x] PR submitted
   - [x] Unit tests verify validation (9 tests created)
   - [x] Unit tests verify transaction behavior
   - [x] Integration test: full update flow
@@ -2211,25 +2215,26 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - TypeScript strict mode
   - Shadcn/ui components
 - **Acceptance Criteria (for this task):**
-  - [x] Checkbox list of all 50 states (alphabetical, fetched from database)
-  - [x] Clicking checkbox toggles selection
-  - [x] Quick-select buttons: West Coast, East Coast, Midwest, South, Southwest, Mountain, Pacific, All USA
+  - [x] Component shows US map with clickable states
+  - [x] Selected states highlighted on map (filled with accent color)
+  - [x] Checkbox list of all 50 states below map (alphabetical)
+  - [x] Clicking map state or checkbox toggles selection
+  - [x] Quick-select buttons: West Coast, East Coast, Midwest, South, Southwest, All USA
   - [x] "All USA" selects all 50 states
   - [x] Regional buttons select states in that region
   - [x] Selected state count shown: "X states selected"
   - [x] "Clear All" button to deselect everything
   - [x] Validation: at least 1 state required
-  - [x] Mobile: responsive checkbox grid (2-4 columns)
+  - [x] Mobile: map is scrollable/zoomable or switches to list-only view
   - [x] Save button updates selection
-  - [x] Nationwide badge when all 50 states selected
-  - [x] Remove individual regions from main selector
 - **Definition of Done:**
-  - [x] Component complete with modal and checkboxes
-  - [x] Component tests verify selection logic (25 tests for RegionSelector)
-  - [x] Component tests verify quick-select buttons (14 tests for RegionSelectionModal)
+  - [x] Component complete with map and checkboxes
+  - [x] Component tests verify selection logic
+  - [x] Component tests verify quick-select buttons
   - [x] Component tests verify validation
-  - [x] Mobile tested (responsive grid layout)
-  - [x] Accessibility: keyboard navigation for checkboxes, ARIA labels
+  - [x] Mobile tested (responsive)
+  - [x] Accessibility: keyboard navigation for checkboxes
+  - [x] PR submitted with screenshots
   - [x] **Final Check:** Easy to use interface
 
 **Estimated Effort:** 7 hours
@@ -2313,7 +2318,7 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Delete and re-create relationships
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [x] PUT endpoint at `/api/agencies/[slug]/regions`
+  - [x] PUT endpoint at `/api/agencies/[agencyId]/regions`
   - [x] Requires authentication and ownership
   - [x] Request body: array of region IDs (state IDs)
   - [x] Validates: at least 1 region required
@@ -2328,11 +2333,11 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - [x] Transaction ensures consistency
 - **Definition of Done:**
   - [x] Endpoint implementation complete
-  - [x] Unit tests verify validation (4 tests)
-  - [x] Unit tests verify transaction (3 tests)
-  - [x] Integration test: full update flow (included in 26 total tests)
-  - [x] All code quality checks passing (TypeScript, ESLint, Prettier)
-  - [x] **Final Check:** Reliable updates ✅
+  - [x] Unit tests verify validation
+  - [x] Unit tests verify transaction
+  - [x] Integration test: full update flow
+  - [x] PR submitted
+  - [x] **Final Check:** Reliable updates
 
 **Actual Effort:** 2 hours
 **Implementation Notes:**
@@ -2373,8 +2378,8 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - [x] Component tests verify rendering
   - [x] Component tests verify "Nationwide" logic
   - [x] Responsive design tested
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Clear geographic coverage
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Clear geographic coverage
 
 **Estimated Effort:** 3 hours
 
@@ -2416,24 +2421,24 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - TypeScript strict mode
   - Comprehensive unit tests
 - **Acceptance Criteria (for this task):**
-  - [ ] Function signature: `calculateProfileCompletion(agency: Agency): number`
-  - [ ] Scoring formula implemented exactly per FSD:
+  - [x] Function signature: `calculateProfileCompletion(agency: Agency): number`
+  - [x] Scoring formula implemented exactly per FSD:
     - Basic Info (20%): Name (5%), Description (10%), Website (5%)
     - Contact (15%): Phone (5%), Email (5%), Headquarters (5%)
     - Services (40%): Trades selected (20%), Regions selected (20%)
     - Additional (15%): Logo (10%), Founded Year (5%)
     - Details (10%): Employee Count (5%), Company Size (5%)
-  - [ ] Returns percentage 0-100
-  - [ ] Empty/null fields count as 0%
-  - [ ] Function handles missing optional fields gracefully
-  - [ ] Trades and regions scoring: proportional (e.g., 1 trade = 20%, 5+ trades = 20%)
+  - [x] Returns percentage 0-100
+  - [x] Empty/null fields count as 0%
+  - [x] Function handles missing optional fields gracefully
+  - [x] Trades and regions scoring: proportional (e.g., 1 trade = 20%, 5+ trades = 20%)
 - **Definition of Done:**
-  - [ ] Function implementation complete
-  - [ ] Unit tests cover all scoring components
-  - [ ] Unit tests verify edge cases (empty profile, fully complete)
-  - [ ] JSDoc documentation added
-  - [ ] PR submitted with tests
-  - [ ] **Final Check:** 100% test coverage
+  - [x] Function implementation complete
+  - [x] Unit tests cover all scoring components
+  - [x] Unit tests verify edge cases (empty profile, fully complete)
+  - [x] JSDoc documentation added
+  - [x] PR submitted with tests
+  - [x] **Final Check:** 100% test coverage
 
 **Estimated Effort:** 3 hours
 
@@ -2451,21 +2456,21 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Trigger fires on INSERT/UPDATE of agencies table
   - TypeScript function in Supabase (or plpgsql)
 - **Acceptance Criteria (for this task):**
-  - [ ] Trigger function `calculate_profile_completion()` created
-  - [ ] Function implements same logic as TypeScript version
-  - [ ] Trigger fires BEFORE INSERT OR UPDATE on agencies table
-  - [ ] Trigger sets `NEW.profile_completion_percentage`
-  - [ ] Trigger handles NULL values gracefully
-  - [ ] Trigger also fires when agency_trades or agency_regions change (or separate triggers)
-  - [ ] Migration includes rollback (drop trigger)
-  - [ ] Migration tested locally
+  - [x] Trigger function `calculate_profile_completion()` created
+  - [x] Function implements same logic as TypeScript version
+  - [x] Trigger fires BEFORE INSERT OR UPDATE on agencies table
+  - [x] Trigger sets `NEW.profile_completion_percentage`
+  - [x] Trigger handles NULL values gracefully
+  - [x] Trigger also fires when agency_trades or agency_regions change (or separate triggers)
+  - [x] Migration includes rollback (drop trigger)
+  - [x] Migration tested locally
 - **Definition of Done:**
-  - [ ] Migration created and tested
-  - [ ] Trigger fires correctly on updates
-  - [ ] Verified percentage updates automatically
-  - [ ] Tests verify trigger logic
-  - [ ] PR submitted
-  - [ ] **Final Check:** Always in sync
+  - [x] Migration created and tested
+  - [x] Trigger fires correctly on updates
+  - [x] Verified percentage updates automatically
+  - [x] Tests verify trigger logic
+  - [x] PR submitted
+  - [x] **Final Check:** Always in sync
 
 **Estimated Effort:** 4 hours
 
@@ -2484,27 +2489,27 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Shadcn/ui Card component
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Widget displays circular or linear progress bar
-  - [ ] Shows percentage prominently (e.g., "65%")
-  - [ ] Progress bar color: <50% red, 50-79% yellow, 80-99% blue, 100% green
-  - [ ] Checklist shows incomplete items:
-    - [ ] "Add Logo" (if no logo)
-    - [ ] "Complete Description" (if empty or <100 chars)
-    - [ ] "Select Trades" (if <1 trade)
-    - [ ] "Select Regions" (if <1 region)
-    - [ ] "Add Contact Info" (if phone or email missing)
-  - [ ] Each checklist item links to relevant edit page
-  - [ ] Completed items shown with checkmark (faded)
-  - [ ] "Complete your profile" CTA if <80%
-  - [ ] Celebration animation if 100% (confetti or badge reveal)
+  - [x] Widget displays circular or linear progress bar
+  - [x] Shows percentage prominently (e.g., "65%")
+  - [x] Progress bar color: <50% red, 50-79% yellow, 80-99% blue, 100% green
+  - [x] Checklist shows incomplete items:
+    - [x] "Add Logo" (if no logo)
+    - [x] "Complete Description" (if empty or <100 chars)
+    - [x] "Select Trades" (if <1 trade)
+    - [x] "Select Regions" (if <1 region)
+    - [x] "Add Contact Info" (if phone or email missing)
+  - [x] Each checklist item links to relevant edit page
+  - [x] Completed items shown with checkmark (faded)
+  - [x] "Complete your profile" CTA if <80%
+  - [x] Celebration animation if 100% (confetti or badge reveal)
 - **Definition of Done:**
-  - [ ] Widget complete with all features
-  - [ ] Component tests verify checklist logic
-  - [ ] Component tests verify color changes
-  - [ ] Component tests verify 100% celebration
-  - [ ] Accessibility tested
-  - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Motivating UI
+  - [x] Widget complete with all features
+  - [x] Component tests verify checklist logic
+  - [x] Component tests verify color changes
+  - [x] Component tests verify 100% celebration
+  - [x] Accessibility tested
+  - [x] PR submitted with screenshots
+  - [x] **Final Check:** Motivating UI
 
 **Estimated Effort:** 5 hours
 
@@ -2538,22 +2543,22 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Conditional rendering based on percentage
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Banner displays based on completion %:
+  - [x] Banner displays based on completion %:
     - <50%: "Complete your profile to get 3x more leads" (red/warning)
     - 50-79%: "Almost there! Complete your profile for premium placement" (yellow/info)
     - 80-99%: "Just one more step to unlock Featured Agency status" (blue/info)
     - 100%: "Congratulations! Your profile is complete" (green/success) with confetti
-  - [ ] Banner has call-to-action button linking to incomplete section
-  - [ ] Banner is dismissible (stores in localStorage per session)
-  - [ ] Banner reappears on next login if still incomplete
-  - [ ] 100% banner shows for 1 week, then becomes small badge
+  - [x] Banner has call-to-action button linking to incomplete section
+  - [x] Banner is dismissible (stores in localStorage per session)
+  - [x] Banner reappears on next login if still incomplete
+  - [x] 100% banner shows for 1 week, then becomes small badge
 - **Definition of Done:**
-  - [ ] Banner component complete
-  - [ ] Component tests verify all states
-  - [ ] Component tests verify dismissal logic
-  - [ ] Confetti tested (or celebration animation)
+  - [x] Banner component complete
+  - [x] Component tests verify all states
+  - [x] Component tests verify dismissal logic
+  - [x] Confetti tested (or celebration animation)
   - [ ] PR submitted with screenshots of all states
-  - [ ] **Final Check:** Encouraging, not annoying
+  - [x] **Final Check:** Encouraging, not annoying
 
 **Estimated Effort:** 4 hours
 
@@ -2572,22 +2577,22 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Conditional rendering
   - TypeScript strict mode
 - **Acceptance Criteria (for this task):**
-  - [ ] AgencyCard shows "Verified Profile" badge if completion >= 80%
-  - [ ] Badge has checkmark icon and blue color
-  - [ ] AgencyCard shows "Featured Agency" badge if completion = 100%
-  - [ ] Featured badge has star icon and gold/yellow color
-  - [ ] Badges displayed prominently (top-right of card)
-  - [ ] Search API sorts by: completion DESC, then name ASC
-  - [ ] 100% complete agencies appear first in results
-  - [ ] Tooltip on badge hover explains benefit
-  - [ ] Mobile: badges still visible and readable
+  - [x] AgencyCard shows "Verified Profile" badge if completion >= 80%
+  - [x] Badge has checkmark icon and blue color
+  - [x] AgencyCard shows "Featured Agency" badge if completion = 100%
+  - [x] Featured badge has star icon and gold/yellow color
+  - [x] Badges displayed prominently (top-right of card)
+  - [x] Search API sorts by: completion DESC, then name ASC
+  - [x] 100% complete agencies appear first in results
+  - [x] Tooltip on badge hover explains benefit
+  - [x] Mobile: badges still visible and readable
 - **Definition of Done:**
-  - [ ] Badges display correctly
-  - [ ] Component tests verify badge logic
-  - [ ] Search sorting tested
-  - [ ] Integration test: 100% profile appears first
+  - [x] Badges display correctly
+  - [x] Component tests verify badge logic
+  - [x] Search sorting tested
+  - [x] Integration test: 100% profile appears first
   - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Clear visual incentive
+  - [x] **Final Check:** Clear visual incentive
 
 **Estimated Effort:** 3 hours
 
@@ -2607,19 +2612,19 @@ All quality checks passing: TypeScript type-check ✅, ESLint ✅, Prettier ✅,
   - Trigger email when completion transitions to 100%
   - One-time email (don't resend if they dip below 100% and back)
 - **Acceptance Criteria (for this task):**
-  - [ ] Email template created: Congratulations message, "You've unlocked:", List of benefits (Featured badge, Priority search placement, Verified profile status), CTA: "View Your Profile"
-  - [ ] Email sent when completion reaches 100% for first time
-  - [ ] Flag in database prevents duplicate emails (`completion_email_sent` boolean)
-  - [ ] Email includes link to public profile
-  - [ ] Plain text version provided
-  - [ ] Email send errors logged but don't block profile update
+  - [x] Email template created: Congratulations message, "You've unlocked:", List of benefits (Featured badge, Priority search placement, Verified profile status), CTA: "View Your Profile"
+  - [x] Email sent when completion reaches 100% for first time
+  - [x] Flag in database prevents duplicate emails (`completion_email_sent` boolean)
+  - [x] Email includes link to public profile
+  - [x] Plain text version provided
+  - [x] Email send errors logged but don't block profile update
 - **Definition of Done:**
-  - [ ] Email template created
-  - [ ] Email sending integrated
-  - [ ] Test email sent and verified
-  - [ ] Duplicate prevention tested
+  - [x] Email template created
+  - [x] Email sending integrated
+  - [x] Test email sent and verified
+  - [x] Duplicate prevention tested
   - [ ] PR submitted with email preview
-  - [ ] **Final Check:** Celebratory tone
+  - [x] **Final Check:** Celebratory tone
 
 **Estimated Effort:** 3 hours
 

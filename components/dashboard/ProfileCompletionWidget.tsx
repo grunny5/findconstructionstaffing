@@ -1,29 +1,77 @@
+'use client';
+
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Circle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import confetti from 'canvas-confetti';
+import { CompletionChecklist, type ChecklistItem } from './CompletionChecklist';
 
 interface ProfileCompletionWidgetProps {
   percentage: number;
+  checklistItems?: ChecklistItem[];
+  /** @deprecated Use checklistItems instead */
   missingFields?: string[];
 }
 
 export function ProfileCompletionWidget({
   percentage,
+  checklistItems = [],
   missingFields = [],
 }: ProfileCompletionWidgetProps) {
   const getCompletionStatus = () => {
     if (percentage === 100) return 'Complete';
-    if (percentage >= 75) return 'Almost There';
+    if (percentage >= 80) return 'Almost There';
     if (percentage >= 50) return 'Good Progress';
     return 'Getting Started';
   };
 
   const getCompletionColor = () => {
     if (percentage === 100) return 'text-green-600';
-    if (percentage >= 75) return 'text-blue-600';
+    if (percentage >= 80) return 'text-blue-600';
     if (percentage >= 50) return 'text-yellow-600';
-    return 'text-orange-600';
+    return 'text-red-600';
   };
+
+  // Celebrate with confetti when profile reaches 100%
+  useEffect(() => {
+    if (percentage === 100) {
+      const duration = 3000;
+      const end = Date.now() + duration;
+      let frameId: number;
+
+      const frame = () => {
+        confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#22c55e', '#16a34a', '#15803d'],
+        });
+        confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#22c55e', '#16a34a', '#15803d'],
+        });
+
+        if (Date.now() < end) {
+          frameId = requestAnimationFrame(frame);
+        }
+      };
+
+      frameId = requestAnimationFrame(frame);
+
+      return () => {
+        if (frameId) {
+          cancelAnimationFrame(frameId);
+        }
+      };
+    }
+  }, [percentage]);
 
   return (
     <Card>
@@ -81,27 +129,20 @@ export function ProfileCompletionWidget({
           </p>
         </div>
 
-        {/* Missing Fields */}
-        {missingFields.length > 0 && (
-          <div className="space-y-2 pt-2 border-t">
-            <p className="text-sm font-medium">Complete your profile:</p>
-            <ul className="space-y-1">
-              {missingFields.slice(0, 3).map((field, index) => (
-                <li
-                  key={index}
-                  className="flex items-center gap-2 text-sm text-muted-foreground"
-                >
-                  <Circle className="h-3 w-3" />
-                  <span>{field}</span>
-                </li>
-              ))}
-              {missingFields.length > 3 && (
-                <li className="text-sm text-muted-foreground pl-5">
-                  +{missingFields.length - 3} more
-                </li>
-              )}
-            </ul>
+        {/* Completion Checklist */}
+        {checklistItems.length > 0 && (
+          <div className="pt-2 border-t">
+            <CompletionChecklist items={checklistItems} />
           </div>
+        )}
+
+        {/* CTA Button for < 80% completion */}
+        {percentage < 80 && checklistItems.length > 0 && (
+          <Link href="/dashboard/profile" className="block">
+            <Button className="w-full" variant="default">
+              Complete Your Profile
+            </Button>
+          </Link>
         )}
 
         {/* Completion Badge */}

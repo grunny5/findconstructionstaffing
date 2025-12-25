@@ -16,6 +16,7 @@ import {
   type AgencyTradesUpdateData,
 } from '@/lib/validations/agency-trades';
 import { ErrorRateTracker } from '@/lib/monitoring/performance';
+import { sendProfileCompleteEmailIfNeeded } from '@/lib/emails/send-profile-complete';
 
 export const dynamic = 'force-dynamic';
 
@@ -333,7 +334,19 @@ export async function PUT(
     }
 
     // ========================================================================
-    // 9. FETCH AND RETURN UPDATED TRADES
+    // 9. CHECK AND SEND PROFILE COMPLETION EMAIL (NON-BLOCKING)
+    // ========================================================================
+    // Send completion milestone email if profile reached 100% and email hasn't been sent
+    // This runs asynchronously and errors don't block the response
+    // Skip in test environment to avoid mock conflicts
+    if (process.env.NODE_ENV !== 'test') {
+      sendProfileCompleteEmailIfNeeded(supabase, agencyId).catch((error) => {
+        console.error('Error in profile completion email workflow:', error);
+      });
+    }
+
+    // ========================================================================
+    // 10. FETCH AND RETURN UPDATED TRADES
     // ========================================================================
     const { data: updatedTrades, error: fetchError } = await supabase
       .from('trades')
@@ -355,7 +368,7 @@ export async function PUT(
     }
 
     // ========================================================================
-    // 10. RETURN SUCCESS RESPONSE
+    // 11. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {

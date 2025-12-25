@@ -107,14 +107,22 @@ describe('DashboardOverview', () => {
     it('should show missing fields when profile incomplete', () => {
       render(<DashboardOverview agency={mockAgencyIncomplete} />);
 
-      expect(screen.getByText('Add company logo')).toBeInTheDocument();
-      expect(screen.getByText('Add company description')).toBeInTheDocument();
+      // Check within the Profile Completion Widget (checklist)
+      const profileCompletionWidget = screen
+        .getAllByText('Profile Completion')[1] // Second occurrence is the widget
+        .closest('.rounded-lg');
+
+      expect(profileCompletionWidget).toHaveTextContent('Add Logo');
+      expect(profileCompletionWidget).toHaveTextContent(
+        'Complete Description (at least 100 characters)'
+      );
     });
 
-    it('should not show logo field when logo exists', () => {
+    it('should show Update Logo in Quick Actions when logo exists', () => {
       render(<DashboardOverview agency={mockAgency} />);
 
-      expect(screen.queryByText('Add company logo')).not.toBeInTheDocument();
+      const updateLogoButton = screen.getByText('Update Logo');
+      expect(updateLogoButton).toBeInTheDocument();
     });
   });
 
@@ -142,8 +150,13 @@ describe('DashboardOverview', () => {
     it('should show "Add Logo" when no logo exists', () => {
       render(<DashboardOverview agency={mockAgencyIncomplete} />);
 
-      expect(screen.getByText('Add Logo')).toBeInTheDocument();
-      expect(screen.getByText('Upload company logo')).toBeInTheDocument();
+      // Check for the "Add Logo" button in Quick Actions section
+      const quickActionsSection = screen
+        .getByText('Quick Actions')
+        .closest('.rounded-lg');
+
+      expect(quickActionsSection).toHaveTextContent('Add Logo');
+      expect(quickActionsSection).toHaveTextContent('Upload company logo');
     });
 
     it('should render Update Services action', () => {
