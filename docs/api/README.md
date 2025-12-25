@@ -227,7 +227,7 @@ Currently no rate limiting is implemented. Future versions may include:
 
 ## Authentication
 
-The agencies endpoint is currently public and requires no authentication.
+See the [Authentication](#authentication) section at the top of this document for comprehensive authentication details, including access levels for all endpoints.
 
 ## Versioning
 
