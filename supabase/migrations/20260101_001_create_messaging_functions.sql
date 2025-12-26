@@ -73,7 +73,7 @@ BEGIN
 
   -- Validation 5: context_type must be valid
   IF p_context_type NOT IN ('agency_inquiry', 'general') THEN
-    RAISE EXCEPTION 'Invalid context_type: %%. Must be either ''agency_inquiry'' or ''general''', p_context_type;
+    RAISE EXCEPTION 'Invalid context_type: %. Must be either ''agency_inquiry'' or ''general''', p_context_type;
   END IF;
 
   -- Validation 6: If context_type is 'agency_inquiry', context_id must be provided

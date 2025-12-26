@@ -1,11 +1,11 @@
 /**
- * Migration: Fix Empty Array Validation in create_conversation_with_participants
+ * Migration: Add context_type Validation to create_conversation_with_participants
  *
- * Purpose: Corrects validation bug where empty participant arrays would bypass
- * the minimum participant check due to array_length() returning NULL.
+ * Purpose: Adds validation to ensure only allowed context_type values
+ * ('agency_inquiry' or 'general') are accepted.
  *
- * Bug: array_length([], 1) returns NULL, and NULL < 2 evaluates to NULL (not TRUE)
- * Fix: Use COALESCE(array_length(...), 0) to convert NULL to 0
+ * Issue: Function didn't validate context_type values, allowing invalid types
+ * to be inserted into the database without error.
  *
  * Related: CodeRabbit AI code review finding
  * Feature: #009 Direct Messaging System
@@ -18,7 +18,7 @@ DROP FUNCTION IF EXISTS public.create_conversation_with_participants(
   p_participant_ids UUID[]
 );
 
--- Recreate with corrected validation
+-- Recreate with context_type validation
 CREATE OR REPLACE FUNCTION public.create_conversation_with_participants(
   p_context_type TEXT,
   p_context_id UUID DEFAULT NULL,
@@ -44,7 +44,7 @@ BEGIN
   END IF;
 
   -- Validation 2: At least 2 participants required
-  -- FIX: Use COALESCE to handle NULL from empty array
+  -- Use COALESCE to handle NULL from empty array
   IF COALESCE(array_length(p_participant_ids, 1), 0) < 2 THEN
     RAISE EXCEPTION 'At least 2 participants required for conversation';
   END IF;
@@ -64,7 +64,7 @@ BEGIN
     RAISE EXCEPTION 'One or more participant IDs do not exist in profiles table';
   END IF;
 
-  -- Validation 5: context_type must be valid
+  -- Validation 5: context_type must be valid (NEW)
   IF p_context_type NOT IN ('agency_inquiry', 'general') THEN
     RAISE EXCEPTION 'Invalid context_type: %. Must be either ''agency_inquiry'' or ''general''', p_context_type;
   END IF;
@@ -108,4 +108,5 @@ GRANT EXECUTE ON FUNCTION public.create_conversation_with_participants TO authen
 COMMENT ON FUNCTION public.create_conversation_with_participants IS
 'Creates a new conversation with multiple participants atomically.
 Validates authentication, participant count (min 2), caller inclusion,
-participant existence, and agency context. Fixed in v2 to handle empty arrays correctly.';
+participant existence, context_type validity, and agency context.
+Updated in v3 to add context_type validation.';
