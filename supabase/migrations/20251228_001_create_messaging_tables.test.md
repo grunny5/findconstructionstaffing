@@ -1,6 +1,6 @@
 # Migration Test: Create Messaging Tables
 
-**Migration:** `20251225_001_create_messaging_tables.sql`
+**Migration:** `20251228_001_create_messaging_tables.sql`
 **Feature:** Direct Messaging System (Feature #009)
 **Task:** 1.1.1 - Create Database Migration for Messaging Tables
 
