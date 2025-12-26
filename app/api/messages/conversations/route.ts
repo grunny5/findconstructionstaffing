@@ -165,11 +165,17 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1);
 
     // Execute conversation query
-    const { data: conversations, error: conversationsError, count } =
-      await conversationsQuery;
+    const {
+      data: conversations,
+      error: conversationsError,
+      count,
+    } = await conversationsQuery;
 
     if (conversationsError) {
-      console.error('Database error fetching conversations:', conversationsError);
+      console.error(
+        'Database error fetching conversations:',
+        conversationsError
+      );
       return NextResponse.json(
         {
           error: {
@@ -280,16 +286,15 @@ export async function GET(request: NextRequest) {
 
       // Calculate unread count
       // Count messages after user's last_read_at timestamp
-      const unreadCount =
-        userParticipant?.last_read_at
-          ? (lastMessages || []).filter(
-              (m) =>
-                m.conversation_id === conversation.id &&
-                new Date(m.created_at) > new Date(userParticipant.last_read_at!)
-            ).length
-          : (lastMessages || []).filter(
-              (m) => m.conversation_id === conversation.id
-            ).length;
+      const unreadCount = userParticipant?.last_read_at
+        ? (lastMessages || []).filter(
+            (m) =>
+              m.conversation_id === conversation.id &&
+              new Date(m.created_at) > new Date(userParticipant.last_read_at!)
+          ).length
+        : (lastMessages || []).filter(
+            (m) => m.conversation_id === conversation.id
+          ).length;
 
       // Get last message preview
       const lastMessage = (lastMessages || []).find(
@@ -523,7 +528,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find conversation with both users and matching context
-    for (const [convId, count] of conversationCounts.entries()) {
+    for (const [convId, count] of Array.from(conversationCounts.entries())) {
       if (count === 2) {
         // Both users are participants
         const conv = conversationData.get(convId);
@@ -620,7 +625,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (fetchError || !conversation) {
-      console.error('Database error fetching created conversation:', fetchError);
+      console.error(
+        'Database error fetching created conversation:',
+        fetchError
+      );
       return NextResponse.json(
         {
           error: {

@@ -78,9 +78,7 @@ export const conversationsQuerySchema = z.object({
     .optional(),
 });
 
-export type ConversationsQueryParams = z.infer<
-  typeof conversationsQuerySchema
->;
+export type ConversationsQueryParams = z.infer<typeof conversationsQuerySchema>;
 
 /**
  * Schema for creating a new conversation with initial message
@@ -137,12 +135,14 @@ export const createConversationSchema = z
           !/\b(onerror|onclick|onload|onmouseover|onfocus|onblur|oninput|onchange|onsubmit)\s*=/gi.test(
             content
           ),
-        { message: 'Message contains invalid HTML (event handlers not allowed)' }
+        {
+          message: 'Message contains invalid HTML (event handlers not allowed)',
+        }
       )
-      .refine(
-        (content) => !/javascript:/gi.test(content),
-        { message: 'Message contains invalid content (javascript: URLs not allowed)' }
-      ),
+      .refine((content) => !/javascript:/gi.test(content), {
+        message:
+          'Message contains invalid content (javascript: URLs not allowed)',
+      }),
   })
   .refine(
     (data) => {
@@ -153,8 +153,7 @@ export const createConversationSchema = z
       return true;
     },
     {
-      message:
-        'Context ID is required when context type is "agency_inquiry"',
+      message: 'Context ID is required when context type is "agency_inquiry"',
       path: ['context_id'],
     }
   );
@@ -195,10 +194,10 @@ export const sendMessageSchema = z.object({
         ),
       { message: 'Message contains invalid HTML (event handlers not allowed)' }
     )
-    .refine(
-      (content) => !/javascript:/gi.test(content),
-      { message: 'Message contains invalid content (javascript: URLs not allowed)' }
-    ),
+    .refine((content) => !/javascript:/gi.test(content), {
+      message:
+        'Message contains invalid content (javascript: URLs not allowed)',
+    }),
 });
 
 export type SendMessageData = z.infer<typeof sendMessageSchema>;
@@ -237,10 +236,10 @@ export const editMessageSchema = z.object({
         ),
       { message: 'Message contains invalid HTML (event handlers not allowed)' }
     )
-    .refine(
-      (content) => !/javascript:/gi.test(content),
-      { message: 'Message contains invalid content (javascript: URLs not allowed)' }
-    ),
+    .refine((content) => !/javascript:/gi.test(content), {
+      message:
+        'Message contains invalid content (javascript: URLs not allowed)',
+    }),
 });
 
 export type EditMessageData = z.infer<typeof editMessageSchema>;

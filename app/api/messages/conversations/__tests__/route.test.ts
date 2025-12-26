@@ -951,7 +951,8 @@ describe('GET /api/messages/conversations', () => {
           expect.objectContaining({ id: 'user-123' }),
           expect.objectContaining({ id: 'recipient-123' }),
         ]),
-        last_message_preview: 'Hello, I would like to inquire about your services.',
+        last_message_preview:
+          'Hello, I would like to inquire about your services.',
         unread_count: 0,
         agency_name: 'Test Agency',
       });
@@ -962,7 +963,10 @@ describe('GET /api/messages/conversations', () => {
         {
           p_context_type: 'agency_inquiry',
           p_context_id: '123e4567-e89b-12d3-a456-426614174002',
-          p_participant_ids: ['user-123', '123e4567-e89b-12d3-a456-426614174001'],
+          p_participant_ids: [
+            'user-123',
+            '123e4567-e89b-12d3-a456-426614174001',
+          ],
         }
       );
     });
@@ -1349,12 +1353,10 @@ describe('GET /api/messages/conversations', () => {
           return {
             insert: jest.fn().mockReturnThis(),
             select: jest.fn().mockReturnThis(),
-            single: jest
-              .fn()
-              .mockResolvedValue({
-                data: null,
-                error: { message: 'Insert failed' },
-              }),
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Insert failed' },
+            }),
           };
         }
         return mockDuplicateQuery;

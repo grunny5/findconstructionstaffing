@@ -304,7 +304,11 @@ describe('GET /api/messages/conversations/[id]', () => {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({
-              data: { id: 'conv-123', context_type: 'general', context_id: null },
+              data: {
+                id: 'conv-123',
+                context_type: 'general',
+                context_id: null,
+              },
               error: null,
             }),
           };
@@ -376,7 +380,11 @@ describe('GET /api/messages/conversations/[id]', () => {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({
-              data: { id: 'conv-123', context_type: 'general', context_id: null },
+              data: {
+                id: 'conv-123',
+                context_type: 'general',
+                context_id: null,
+              },
               error: null,
             }),
           };
@@ -463,7 +471,11 @@ describe('GET /api/messages/conversations/[id]', () => {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({
-              data: { id: 'conv-123', context_type: 'general', context_id: null },
+              data: {
+                id: 'conv-123',
+                context_type: 'general',
+                context_id: null,
+              },
               error: null,
             }),
           };
@@ -635,7 +647,11 @@ describe('GET /api/messages/conversations/[id]', () => {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({
-              data: { id: 'conv-123', context_type: 'general', context_id: null },
+              data: {
+                id: 'conv-123',
+                context_type: 'general',
+                context_id: null,
+              },
               error: null,
             }),
           };
@@ -667,7 +683,9 @@ describe('GET /api/messages/conversations/[id]', () => {
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
-      expect(data.error.message).toBe('Failed to fetch conversation participants');
+      expect(data.error.message).toBe(
+        'Failed to fetch conversation participants'
+      );
     });
 
     it('should return 500 when messages fetch fails', async () => {
@@ -677,7 +695,11 @@ describe('GET /api/messages/conversations/[id]', () => {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({
-              data: { id: 'conv-123', context_type: 'general', context_id: null },
+              data: {
+                id: 'conv-123',
+                context_type: 'general',
+                context_id: null,
+              },
               error: null,
             }),
           };

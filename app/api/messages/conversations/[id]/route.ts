@@ -204,7 +204,10 @@ export async function GET(
         .single();
 
       if (cursorMessage) {
-        messagesQuery = messagesQuery.lt('created_at', cursorMessage.created_at);
+        messagesQuery = messagesQuery.lt(
+          'created_at',
+          cursorMessage.created_at
+        );
       }
     }
 
@@ -231,7 +234,10 @@ export async function GET(
     // 7. FETCH AGENCY NAME IF APPLICABLE
     // ========================================================================
     let agencyName = null;
-    if (conversation.context_type === 'agency_inquiry' && conversation.context_id) {
+    if (
+      conversation.context_type === 'agency_inquiry' &&
+      conversation.context_id
+    ) {
       const { data: agency } = await supabase
         .from('agencies')
         .select('name')

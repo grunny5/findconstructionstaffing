@@ -38,31 +38,25 @@ describe('conversationsQuerySchema', () => {
     });
 
     it('should reject limit below 1', () => {
-      expect(() =>
-        conversationsQuerySchema.parse({ limit: '0' })
-      ).toThrow('Limit must be at least 1');
+      expect(() => conversationsQuerySchema.parse({ limit: '0' })).toThrow(
+        'Limit must be at least 1'
+      );
 
-      expect(() =>
-        conversationsQuerySchema.parse({ limit: '-5' })
-      ).toThrow();
+      expect(() => conversationsQuerySchema.parse({ limit: '-5' })).toThrow();
     });
 
     it('should reject limit above maximum', () => {
-      expect(() =>
-        conversationsQuerySchema.parse({ limit: '101' })
-      ).toThrow(`Limit must not exceed ${MAX_CONVERSATIONS_LIMIT}`);
+      expect(() => conversationsQuerySchema.parse({ limit: '101' })).toThrow(
+        `Limit must not exceed ${MAX_CONVERSATIONS_LIMIT}`
+      );
 
-      expect(() =>
-        conversationsQuerySchema.parse({ limit: '500' })
-      ).toThrow();
+      expect(() => conversationsQuerySchema.parse({ limit: '500' })).toThrow();
     });
 
     it('should reject non-integer limit', () => {
       // Note: parseInt('10.5') = 10, so decimal strings get truncated
       // This test verifies non-numeric strings are rejected
-      expect(() =>
-        conversationsQuerySchema.parse({ limit: 'abc' })
-      ).toThrow();
+      expect(() => conversationsQuerySchema.parse({ limit: 'abc' })).toThrow();
 
       expect(() =>
         conversationsQuerySchema.parse({ limit: 'not-a-number' })
@@ -83,21 +77,17 @@ describe('conversationsQuerySchema', () => {
     });
 
     it('should reject negative offset', () => {
-      expect(() =>
-        conversationsQuerySchema.parse({ offset: '-1' })
-      ).toThrow('Offset must be 0 or greater');
+      expect(() => conversationsQuerySchema.parse({ offset: '-1' })).toThrow(
+        'Offset must be 0 or greater'
+      );
 
-      expect(() =>
-        conversationsQuerySchema.parse({ offset: '-10' })
-      ).toThrow();
+      expect(() => conversationsQuerySchema.parse({ offset: '-10' })).toThrow();
     });
 
     it('should reject non-integer offset', () => {
       // Note: parseInt('5.5') = 5, so decimal strings get truncated
       // This test verifies non-numeric strings are rejected
-      expect(() =>
-        conversationsQuerySchema.parse({ offset: 'abc' })
-      ).toThrow();
+      expect(() => conversationsQuerySchema.parse({ offset: 'abc' })).toThrow();
 
       expect(() =>
         conversationsQuerySchema.parse({ offset: 'not-a-number' })
@@ -115,9 +105,9 @@ describe('conversationsQuerySchema', () => {
     });
 
     it('should reject invalid filter values', () => {
-      expect(() =>
-        conversationsQuerySchema.parse({ filter: 'read' })
-      ).toThrow('Filter must be one of: all, unread');
+      expect(() => conversationsQuerySchema.parse({ filter: 'read' })).toThrow(
+        'Filter must be one of: all, unread'
+      );
 
       expect(() =>
         conversationsQuerySchema.parse({ filter: 'invalid' })
@@ -137,9 +127,9 @@ describe('conversationsQuerySchema', () => {
     });
 
     it('should reject empty search after trim', () => {
-      expect(() =>
-        conversationsQuerySchema.parse({ search: '   ' })
-      ).toThrow('Search term must not be empty');
+      expect(() => conversationsQuerySchema.parse({ search: '   ' })).toThrow(
+        'Search term must not be empty'
+      );
     });
 
     it('should reject search terms that are too long', () => {
@@ -416,7 +406,9 @@ describe('sendMessageSchema', () => {
   it('should reject javascript: URLs', () => {
     expect(() =>
       sendMessageSchema.parse({ content: 'javascript:alert(1)' })
-    ).toThrow('Message contains invalid content (javascript: URLs not allowed)');
+    ).toThrow(
+      'Message contains invalid content (javascript: URLs not allowed)'
+    );
   });
 
   it('should require content field', () => {
@@ -465,7 +457,9 @@ describe('editMessageSchema', () => {
   it('should reject javascript: URLs', () => {
     expect(() =>
       editMessageSchema.parse({ content: 'Link: javascript:void(0)' })
-    ).toThrow('Message contains invalid content (javascript: URLs not allowed)');
+    ).toThrow(
+      'Message contains invalid content (javascript: URLs not allowed)'
+    );
   });
 });
 
