@@ -12,11 +12,13 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Week 1: Database & API Foundation
+## 📦 Week 1: Database & API Foundation ✅ COMPLETE
 
 **Goal:** Create database schema, RLS policies, validation, and core API endpoints
 **Estimated Duration:** 5 days
+**Actual Duration:** 3 days
 **Dependencies:** None (fresh implementation)
+**Status:** All 3 stories complete, 9 tasks complete, 102 tests passing, 95%+ coverage
 
 ---
 
@@ -272,7 +274,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 1.3: Implement Core API Endpoints
+### ✅ Story 1.3: Implement Core API Endpoints - COMPLETE
 
 > As a **Backend Developer**, I want **to create the core API endpoints for conversations**, so that **users can list, create, and view conversations**.
 
@@ -343,7 +345,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### Task 1.3.2: Implement POST /api/messages/conversations Endpoint
+### Task 1.3.2: Implement POST /api/messages/conversations Endpoint ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to start a new conversation with initial message
@@ -357,27 +359,35 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Insert initial message
   - Return 409 if duplicate conversation exists
 - **Acceptance Criteria (for this task):**
-  - [ ] POST endpoint responds to /api/messages/conversations
-  - [ ] Validates body with `createConversationSchema`
-  - [ ] Returns 400 on validation errors with field-specific messages
-  - [ ] Checks authentication
-  - [ ] Checks if conversation already exists (same recipient + context)
-  - [ ] Returns 409 with existing conversation_id if duplicate
-  - [ ] Calls `create_conversation_with_participants([auth.uid(), recipient_id])`
-  - [ ] Inserts initial message into messages table
-  - [ ] Returns 201 with { conversation_id, message_id, created_at }
-  - [ ] Handles database errors gracefully
-  - [ ] Logs conversation creation for monitoring
+  - [x] POST endpoint responds to /api/messages/conversations
+  - [x] Validates body with `createConversationSchema`
+  - [x] Returns 400 on validation errors with field-specific messages
+  - [x] Checks authentication
+  - [x] Checks if conversation already exists (same recipient + context)
+  - [x] Returns 409 with existing conversation_id if duplicate
+  - [x] Calls `create_conversation_with_participants([auth.uid(), recipient_id])`
+  - [x] Inserts initial message into messages table
+  - [x] Returns 201 with { conversation_id, message_id, created_at }
+  - [x] Handles database errors gracefully
+  - [x] Logs conversation creation for monitoring
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests cover: success, duplicate, validation, auth
-  - [ ] Error handling comprehensive
-  - [ ] **Final Check:** Atomic operations, no race conditions
+  - [x] Endpoint functional
+  - [x] Unit tests cover: success, duplicate, validation, auth
+  - [x] Error handling comprehensive
+  - [x] **Final Check:** Atomic operations, no race conditions
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - POST handler added to `/app/api/messages/conversations/route.ts` (lines 378-698)
+  - Comprehensive 13 test cases added to `__tests__/route.test.ts`
+  - All 74 tests passing (37 GET + 37 POST across 2 environments)
+  - Duplicate detection using Map-based participant counting
+  - Returns enriched conversation with participants and agency_name
+  - Full error handling with appropriate HTTP status codes
 
 ---
 
-### Task 1.3.3: Implement GET /api/messages/conversations/[id] Endpoint
+### Task 1.3.3: Implement GET /api/messages/conversations/[id] Endpoint ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to fetch single conversation with paginated messages
@@ -390,28 +400,39 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Auto-update user's last_read_at
   - RLS ensures user is participant
 - **Acceptance Criteria (for this task):**
-  - [ ] GET endpoint responds to /api/messages/conversations/[id]
-  - [ ] Validates id is UUID
-  - [ ] Returns 400 if invalid UUID
-  - [ ] Checks authentication
-  - [ ] Fetches conversation with participants (RLS handles authorization)
-  - [ ] Returns 404 if conversation not found or user not participant
-  - [ ] Fetches messages with cursor-based pagination (before param)
-  - [ ] Default limit: 50 messages, sorted by created_at DESC
-  - [ ] Returns { data: { conversation: {...}, messages: [], has_more: bool } }
-  - [ ] Updates conversation_participants.last_read_at = NOW() for current user
-  - [ ] Includes context_agency if applicable
-  - [ ] Handles database errors
+  - [x] GET endpoint responds to /api/messages/conversations/[id]
+  - [x] Validates id is UUID
+  - [x] Returns 400 if invalid UUID
+  - [x] Checks authentication
+  - [x] Fetches conversation with participants (RLS handles authorization)
+  - [x] Returns 404 if conversation not found or user not participant
+  - [x] Fetches messages with cursor-based pagination (before param)
+  - [x] Default limit: 50 messages, sorted by created_at DESC
+  - [x] Returns { data: { conversation: {...}, messages: [], has_more: bool } }
+  - [x] Updates conversation_participants.last_read_at = NOW() for current user
+  - [x] Includes context_agency if applicable
+  - [x] Handles database errors
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests cover: success, pagination, 404, auth
-  - [ ] last_read_at updates verified
-  - [ ] **Final Check:** Cursor pagination working correctly
+  - [x] Endpoint functional
+  - [x] Unit tests cover: success, pagination, 404, auth
+  - [x] last_read_at updates verified
+  - [x] **Final Check:** Cursor pagination working correctly
 - **Estimated Effort:** 3.5 hours
+- **Actual Effort:** 4 hours
+- **Implementation Notes:**
+  - GET handler created in `/app/api/messages/conversations/[id]/route.ts` (311 lines)
+  - Comprehensive 14 test cases added to `__tests__/route.test.ts` (720+ lines)
+  - All 102 tests passing (51 tests × 2 environments)
+  - Cursor-based pagination using `before` parameter (message ID) with `.lt()` timestamp comparison
+  - Fire-and-forget `last_read_at` update using `.then()` pattern for non-blocking response
+  - Agency name enrichment for agency_inquiry contexts
+  - Full error handling with appropriate HTTP status codes (400, 401, 404, 500)
+  - Complex mock implementation for thenable query builder to support chaining and await
+  - Test coverage: success cases, validation, authentication, authorization, database errors, pagination
 
 ---
 
-### Task 1.3.4: Write Unit Tests for Week 1 API Routes
+### Task 1.3.4: Write Unit Tests for Week 1 API Routes ✅ COMPLETE
 
 - **Role:** Backend Developer / QA Engineer
 - **Objective:** Create comprehensive unit tests for all API routes from Week 1
@@ -425,20 +446,30 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Mock auth responses
   - Test success, validation errors, auth errors, database errors
 - **Acceptance Criteria (for this task):**
-  - [ ] Test suite for GET /api/messages/conversations: 10+ test cases
-  - [ ] Test suite for POST /api/messages/conversations: 8+ test cases
-  - [ ] Test suite for GET /api/messages/conversations/[id]: 8+ test cases
-  - [ ] All tests passing
-  - [ ] Code coverage >= 85% for API routes
-  - [ ] Tests cover: authentication, validation, success, errors, edge cases
-  - [ ] Tests use descriptive names following convention
-  - [ ] Mock data is realistic and consistent
+  - [x] Test suite for GET /api/messages/conversations: 10+ test cases (24 created)
+  - [x] Test suite for POST /api/messages/conversations: 8+ test cases (13 created)
+  - [x] Test suite for GET /api/messages/conversations/[id]: 8+ test cases (14 created)
+  - [x] All tests passing (102 tests passed)
+  - [x] Code coverage >= 85% for API routes (95.27% and 98% achieved)
+  - [x] Tests cover: authentication, validation, success, errors, edge cases
+  - [x] Tests use descriptive names following convention
+  - [x] Mock data is realistic and consistent
 - **Definition of Done:**
-  - [ ] All test files created
-  - [ ] All tests passing
-  - [ ] Coverage report shows >= 85%
-  - [ ] **Final Check:** Test quality meets Feature 008 standards
+  - [x] All test files created
+  - [x] All tests passing
+  - [x] Coverage report shows >= 85%
+  - [x] **Final Check:** Test quality meets Feature 008 standards
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** Completed as part of Tasks 1.3.1, 1.3.2, 1.3.3 (integrated approach)
+- **Implementation Notes:**
+  - Tests were created alongside each endpoint implementation (TDD approach)
+  - `/app/api/messages/conversations/__tests__/route.test.ts`: 37 test cases (24 GET + 13 POST)
+  - `/app/api/messages/conversations/[id]/__tests__/route.test.ts`: 14 test cases
+  - Total: 102 tests passing (51 test cases × 2 environments)
+  - Coverage achieved:
+    - conversations route: 95.27% statements, 87.03% branches, 100% functions, 95.16% lines
+    - conversations/[id] route: 98% statements, 88.88% branches, 100% functions, 97.95% lines
+  - All tests follow Feature 008 patterns: mocked Supabase, standardized error handling, comprehensive edge cases
 
 ---
 

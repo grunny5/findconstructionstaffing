@@ -3,7 +3,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { GET } from '../route';
+import { GET, POST } from '../route';
 import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 
@@ -24,6 +24,7 @@ describe('GET /api/messages/conversations', () => {
         getUser: jest.fn(),
       },
       from: jest.fn(),
+      rpc: jest.fn(),
     };
 
     mockedCreateClient.mockResolvedValue(mockSupabaseClient);
@@ -822,6 +823,591 @@ describe('GET /api/messages/conversations', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(data.error.code).toBe(ERROR_CODES.INTERNAL_ERROR);
       expect(data.error.message).toBe('An unexpected error occurred');
+    });
+  });
+
+  describe('POST /api/messages/conversations', () => {
+    // Helper function to setup successful POST auth
+    const setupPostAuthMock = () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123', email: 'test@example.com' } },
+        error: null,
+      });
+    };
+
+    it('should create conversation with initial message successfully', async () => {
+      setupPostAuthMock();
+      const mockRpcResponse = { data: 'conv-123', error: null };
+      const mockMessageResponse = {
+        data: {
+          id: 'msg-123',
+          created_at: '2024-01-15T12:00:00Z',
+        },
+        error: null,
+      };
+      const mockConversationResponse = {
+        data: {
+          id: 'conv-123',
+          context_type: 'agency_inquiry',
+          context_id: 'agency-123',
+          last_message_at: '2024-01-15T12:00:00Z',
+          created_at: '2024-01-15T12:00:00Z',
+          updated_at: '2024-01-15T12:00:00Z',
+        },
+        error: null,
+      };
+      const mockParticipantsResponse = {
+        data: [
+          {
+            user_id: 'user-123',
+            profiles: {
+              id: 'user-123',
+              full_name: 'Test User',
+              email: 'test@example.com',
+            },
+          },
+          {
+            user_id: 'recipient-123',
+            profiles: {
+              id: 'recipient-123',
+              full_name: 'Recipient User',
+              email: 'recipient@example.com',
+            },
+          },
+        ],
+        error: null,
+      };
+      const mockAgencyResponse = {
+        data: { name: 'Test Agency' },
+        error: null,
+      };
+
+      // Mock duplicate check (no existing conversation)
+      const mockDuplicateQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'conversation_participants') {
+          // This is called twice: once for duplicate check, once for fetching participants
+          const participantsQuery = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockResolvedValue({ data: null, error: null }), // For duplicate check
+            eq: jest.fn().mockResolvedValue(mockParticipantsResponse), // For fetching participants
+          };
+          return participantsQuery;
+        }
+        if (table === 'messages') {
+          return {
+            insert: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue(mockMessageResponse),
+          };
+        }
+        if (table === 'conversations') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue(mockConversationResponse),
+          };
+        }
+        if (table === 'agencies') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue(mockAgencyResponse),
+          };
+        }
+        return mockDuplicateQuery;
+      });
+
+      mockSupabaseClient.rpc.mockResolvedValue(mockRpcResponse);
+
+      const requestBody = {
+        recipient_id: '123e4567-e89b-12d3-a456-426614174001',
+        context_type: 'agency_inquiry',
+        context_id: '123e4567-e89b-12d3-a456-426614174002',
+        initial_message: 'Hello, I would like to inquire about your services.',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(data.data).toMatchObject({
+        id: 'conv-123',
+        context_type: 'agency_inquiry',
+        context_id: 'agency-123',
+        participants: expect.arrayContaining([
+          expect.objectContaining({ id: 'user-123' }),
+          expect.objectContaining({ id: 'recipient-123' }),
+        ]),
+        last_message_preview: 'Hello, I would like to inquire about your services.',
+        unread_count: 0,
+        agency_name: 'Test Agency',
+      });
+
+      // Verify RPC was called with correct parameters
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'create_conversation_with_participants',
+        {
+          p_context_type: 'agency_inquiry',
+          p_context_id: '123e4567-e89b-12d3-a456-426614174002',
+          p_participant_ids: ['user-123', '123e4567-e89b-12d3-a456-426614174001'],
+        }
+      );
+    });
+
+    it('should create general conversation without context_id', async () => {
+      setupPostAuthMock();
+      const mockRpcResponse = { data: 'conv-456', error: null };
+      const mockMessageResponse = {
+        data: {
+          id: 'msg-456',
+          created_at: '2024-01-15T12:00:00Z',
+        },
+        error: null,
+      };
+      const mockConversationResponse = {
+        data: {
+          id: 'conv-456',
+          context_type: 'general',
+          context_id: null,
+          last_message_at: '2024-01-15T12:00:00Z',
+          created_at: '2024-01-15T12:00:00Z',
+          updated_at: '2024-01-15T12:00:00Z',
+        },
+        error: null,
+      };
+      const mockParticipantsResponse = {
+        data: [
+          {
+            user_id: 'user-123',
+            profiles: {
+              id: 'user-123',
+              full_name: 'Test User',
+              email: 'test@example.com',
+            },
+          },
+          {
+            user_id: 'recipient-456',
+            profiles: {
+              id: 'recipient-456',
+              full_name: 'Another User',
+              email: 'another@example.com',
+            },
+          },
+        ],
+        error: null,
+      };
+
+      // Mock duplicate check (no existing conversation)
+      const mockDuplicateQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'conversation_participants') {
+          // This is called twice: once for duplicate check, once for fetching participants
+          const participantsQuery = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockResolvedValue({ data: null, error: null }), // For duplicate check
+            eq: jest.fn().mockResolvedValue(mockParticipantsResponse), // For fetching participants
+          };
+          return participantsQuery;
+        }
+        if (table === 'messages') {
+          return {
+            insert: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue(mockMessageResponse),
+          };
+        }
+        if (table === 'conversations') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue(mockConversationResponse),
+          };
+        }
+        return mockDuplicateQuery;
+      });
+
+      mockSupabaseClient.rpc.mockResolvedValue(mockRpcResponse);
+
+      const requestBody = {
+        recipient_id: '123e4567-e89b-12d3-a456-426614174003',
+        context_type: 'general',
+        initial_message: 'Hi there!',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(data.data).toMatchObject({
+        id: 'conv-456',
+        context_type: 'general',
+        context_id: null,
+        agency_name: null,
+      });
+    });
+
+    it('should return 409 CONFLICT when duplicate conversation exists', async () => {
+      setupPostAuthMock();
+      // Mock existing conversation with both participants
+      const mockDuplicateQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              conversation_id: 'existing-conv-123',
+              conversations: {
+                id: 'existing-conv-123',
+                context_type: 'agency_inquiry',
+                context_id: '123e4567-e89b-12d3-a456-426614174002',
+              },
+            },
+            {
+              conversation_id: 'existing-conv-123',
+              conversations: {
+                id: 'existing-conv-123',
+                context_type: 'agency_inquiry',
+                context_id: '123e4567-e89b-12d3-a456-426614174002',
+              },
+            },
+          ],
+          error: null,
+        }),
+      };
+
+      mockSupabaseClient.from.mockReturnValue(mockDuplicateQuery);
+
+      const requestBody = {
+        recipient_id: '123e4567-e89b-12d3-a456-426614174001',
+        context_type: 'agency_inquiry',
+        context_id: '123e4567-e89b-12d3-a456-426614174002',
+        initial_message: 'Test message',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CONFLICT);
+      expect(data.error.code).toBe('CONVERSATION_EXISTS');
+      expect(data.error.message).toBe(
+        'A conversation already exists with this recipient'
+      );
+      expect(data.error.details.conversation_id).toBe('existing-conv-123');
+    });
+
+    it('should return 400 BAD_REQUEST for missing required fields', async () => {
+      setupPostAuthMock();
+      const requestBody = {
+        // Missing recipient_id
+        context_type: 'general',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.details).toHaveProperty('recipient_id');
+    });
+
+    it('should return 400 BAD_REQUEST for invalid recipient_id format', async () => {
+      setupPostAuthMock();
+      const requestBody = {
+        recipient_id: 'not-a-uuid',
+        context_type: 'general',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.details).toHaveProperty('recipient_id');
+    });
+
+    it('should return 400 BAD_REQUEST for invalid context_type', async () => {
+      setupPostAuthMock();
+      const requestBody = {
+        recipient_id: 'recipient-123',
+        context_type: 'invalid_type',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.details).toHaveProperty('context_type');
+    });
+
+    it('should return 400 BAD_REQUEST when context_id missing for agency_inquiry', async () => {
+      setupPostAuthMock();
+      const requestBody = {
+        recipient_id: 'recipient-123',
+        context_type: 'agency_inquiry',
+        // Missing context_id
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.details).toHaveProperty('context_id');
+    });
+
+    it('should return 400 BAD_REQUEST for empty initial_message', async () => {
+      setupPostAuthMock();
+      const requestBody = {
+        recipient_id: 'recipient-123',
+        context_type: 'general',
+        initial_message: '',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.details).toHaveProperty('initial_message');
+    });
+
+    it('should return 400 BAD_REQUEST for initial_message exceeding 10000 chars', async () => {
+      setupPostAuthMock();
+      const requestBody = {
+        recipient_id: 'recipient-123',
+        context_type: 'general',
+        initial_message: 'a'.repeat(10001),
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.details).toHaveProperty('initial_message');
+    });
+
+    it('should return 401 UNAUTHORIZED when user not authenticated', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: 'Not authenticated' },
+      });
+
+      const requestBody = {
+        recipient_id: 'recipient-123',
+        context_type: 'general',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+    });
+
+    it('should return 500 when RPC function fails', async () => {
+      setupPostAuthMock();
+      const mockDuplicateQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      mockSupabaseClient.from.mockReturnValue(mockDuplicateQuery);
+      mockSupabaseClient.rpc.mockResolvedValue({
+        data: null,
+        error: { message: 'RPC function failed' },
+      });
+
+      const requestBody = {
+        recipient_id: '123e4567-e89b-12d3-a456-426614174001',
+        context_type: 'general',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+    });
+
+    it('should return 500 when message insertion fails', async () => {
+      setupPostAuthMock();
+      const mockRpcResponse = { data: 'conv-123', error: null };
+      const mockDuplicateQuery = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'conversation_participants') {
+          return mockDuplicateQuery;
+        }
+        if (table === 'messages') {
+          return {
+            insert: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            single: jest
+              .fn()
+              .mockResolvedValue({
+                data: null,
+                error: { message: 'Insert failed' },
+              }),
+          };
+        }
+        return mockDuplicateQuery;
+      });
+
+      mockSupabaseClient.rpc.mockResolvedValue(mockRpcResponse);
+
+      const requestBody = {
+        recipient_id: '123e4567-e89b-12d3-a456-426614174001',
+        context_type: 'general',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+    });
+
+    it('should return 500 when unexpected error occurs', async () => {
+      setupPostAuthMock();
+      mockSupabaseClient.from.mockImplementation(() => {
+        throw new Error('Unexpected error');
+      });
+
+      const requestBody = {
+        recipient_id: '123e4567-e89b-12d3-a456-426614174001',
+        context_type: 'general',
+        initial_message: 'Test',
+      };
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations',
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.INTERNAL_ERROR);
     });
   });
 });
