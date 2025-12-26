@@ -52,7 +52,7 @@ BEGIN
   END IF;
 
   -- Validation 2: At least 2 participants required
-  IF array_length(p_participant_ids, 1) < 2 THEN
+  IF COALESCE(array_length(p_participant_ids, 1), 0) < 2 THEN
     RAISE EXCEPTION 'At least 2 participants required for conversation';
   END IF;
 

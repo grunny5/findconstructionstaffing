@@ -144,7 +144,24 @@ SELECT create_conversation_with_participants(
 -- Expected: ERROR - Authentication required to create conversation
 ```
 
-### Test 4: Less Than 2 Participants (FAIL)
+### Test 4a: Empty Participant Array (FAIL)
+
+```sql
+-- Test: Create conversation with empty participant array
+SET LOCAL role TO authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "alice_id"}';
+
+SELECT create_conversation_with_participants(
+  'general',
+  NULL,
+  ARRAY[]::UUID[]
+);
+
+-- Expected: ERROR - At least 2 participants required for conversation
+-- Note: Uses COALESCE(array_length(...), 0) to handle NULL from empty array
+```
+
+### Test 4b: Less Than 2 Participants (FAIL)
 
 ```sql
 -- Test: Create conversation with only 1 participant
