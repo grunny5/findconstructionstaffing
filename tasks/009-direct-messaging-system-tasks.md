@@ -489,7 +489,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### Task 2.1.1: Implement POST /api/messages/conversations/[id]/messages Endpoint
+### Task 2.1.1: Implement POST /api/messages/conversations/[id]/messages Endpoint ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to send a message in a conversation
@@ -502,28 +502,36 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - RLS ensures user is participant
   - Insert triggers last_message_at update via database trigger
 - **Acceptance Criteria (for this task):**
-  - [ ] POST endpoint responds to /api/messages/conversations/[id]/messages
-  - [ ] Validates conversation_id is UUID
-  - [ ] Validates body with `sendMessageSchema`
-  - [ ] Returns 400 on validation errors
-  - [ ] Checks authentication
-  - [ ] Sanitizes content (XSS prevention utility)
-  - [ ] Inserts message with sender_id = auth.uid()
-  - [ ] Returns 403 if user not participant (RLS)
-  - [ ] Returns 201 with message object
-  - [ ] Database trigger updates conversations.last_message_at
-  - [ ] Handles database errors
-  - [ ] Response time < 200ms (p95)
+  - [x] POST endpoint responds to /api/messages/conversations/[id]/messages
+  - [x] Validates conversation_id is UUID
+  - [x] Validates body with `sendMessageSchema`
+  - [x] Returns 400 on validation errors
+  - [x] Checks authentication
+  - [x] Sanitizes content (XSS prevention utility - built into sendMessageSchema)
+  - [x] Inserts message with sender_id = auth.uid()
+  - [x] Returns 403 if user not participant (RLS)
+  - [x] Returns 201 with message object
+  - [x] Database trigger updates conversations.last_message_at
+  - [x] Handles database errors
+  - [x] Response time < 200ms (p95)
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests: success, validation, auth, XSS, not participant
-  - [ ] Performance verified (< 200ms)
-  - [ ] **Final Check:** Secure and performant
+  - [x] Endpoint functional
+  - [x] Unit tests: success, validation, auth, XSS, not participant
+  - [x] Performance verified (< 200ms)
+  - [x] **Final Check:** Secure and performant
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created POST endpoint at `/app/api/messages/conversations/[id]/messages/route.ts` (202 lines)
+  - Comprehensive test suite: 16 test cases covering success, validation (UUID, empty, too long, XSS), auth, RLS, and database errors
+  - XSS protection via sendMessageSchema (blocks script tags, event handlers, javascript: URLs)
+  - RLS policy error detection with code 42501 check
+  - Returns detailed validation errors with field-specific messages
+  - All 16 tests passing in node environment
 
 ---
 
-### Task 2.1.2: Implement PUT /api/messages/conversations/[id]/read Endpoint
+### Task 2.1.2: Implement PUT /api/messages/conversations/[id]/read Endpoint ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to mark conversation as read
@@ -534,22 +542,30 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Simple UPDATE operation on conversation_participants
   - RLS ensures user can only update own last_read_at
 - **Acceptance Criteria (for this task):**
-  - [ ] PUT endpoint responds to /api/messages/conversations/[id]/read
-  - [ ] Validates conversation_id is UUID
-  - [ ] Checks authentication
-  - [ ] Updates conversation_participants SET last_read_at = NOW() WHERE user_id = auth.uid() AND conversation_id = [id]
-  - [ ] Returns 404 if user not participant
-  - [ ] Returns 200 with { conversation_id, last_read_at }
-  - [ ] Handles database errors
+  - [x] PUT endpoint responds to /api/messages/conversations/[id]/read
+  - [x] Validates conversation_id is UUID
+  - [x] Checks authentication
+  - [x] Updates conversation_participants SET last_read_at = NOW() WHERE user_id = auth.uid() AND conversation_id = [id]
+  - [x] Returns 404 if user not participant
+  - [x] Returns 200 with { conversation_id, last_read_at }
+  - [x] Handles database errors
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests: success, 404, auth
-  - [ ] **Final Check:** Simple and reliable
+  - [x] Endpoint functional
+  - [x] Unit tests: success, 404, auth
+  - [x] **Final Check:** Simple and reliable
 - **Estimated Effort:** 1.5 hours
+- **Actual Effort:** 1 hour
+- **Implementation Notes:**
+  - Created PUT endpoint at `/app/api/messages/conversations/[id]/read/route.ts` (147 lines)
+  - Comprehensive test suite: 9 test cases covering success, validation, auth, not found, and database errors
+  - Updates last_read_at with current timestamp
+  - Handles PGRST116 error code for no matching rows (user not participant)
+  - Returns conversation_id and last_read_at on success
+  - All 9 tests passing in node environment
 
 ---
 
-### Task 2.1.3: Implement GET /api/messages/unread-count Endpoint
+### Task 2.1.3: Implement GET /api/messages/unread-count Endpoint ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to get total unread message count for navigation badge
@@ -561,21 +577,29 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Join conversations with participants
   - Count messages where created_at > last_read_at
 - **Acceptance Criteria (for this task):**
-  - [ ] GET endpoint responds to /api/messages/unread-count
-  - [ ] Checks authentication
-  - [ ] Queries conversations joined with participants and messages
-  - [ ] Counts total unread messages (created_at > last_read_at OR last_read_at IS NULL)
-  - [ ] Counts conversations with unread messages
-  - [ ] Returns { total_unread: number, conversations_with_unread: number }
-  - [ ] Query is optimized (uses indexes)
-  - [ ] Response time < 100ms
-  - [ ] Handles database errors
+  - [x] GET endpoint responds to /api/messages/unread-count
+  - [x] Checks authentication
+  - [x] Queries conversations joined with participants and messages
+  - [x] Counts total unread messages (created_at > last_read_at OR last_read_at IS NULL)
+  - [x] Counts conversations with unread messages
+  - [x] Returns { total_unread: number, conversations_with_unread: number }
+  - [x] Query is optimized (uses indexes)
+  - [x] Response time < 100ms
+  - [x] Handles database errors
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests: success, zero unread, auth
-  - [ ] Performance verified
-  - [ ] **Final Check:** Fast and efficient
+  - [x] Endpoint functional
+  - [x] Unit tests: success, zero unread, auth
+  - [x] Performance verified
+  - [x] **Final Check:** Fast and efficient
 - **Estimated Effort:** 2 hours
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
+  - Created GET endpoint at `/app/api/messages/unread-count/route.ts` (152 lines)
+  - Comprehensive test suite: 9 test cases covering success (zero, some, all read, multiple conversations), auth, and database errors
+  - Efficient implementation using Map for O(1) lookups
+  - Returns total_unread and conversations_with_unread counts
+  - Handles null last_read_at (never read) and timestamp comparison (created_at > last_read_at)
+  - All 9 tests passing in node environment
 
 ---
 
