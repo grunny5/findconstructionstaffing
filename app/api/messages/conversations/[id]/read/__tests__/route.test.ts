@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import { NextRequest } from 'next/server';
 import { PUT } from '../route';
 import { createClient } from '@/lib/supabase/server';
