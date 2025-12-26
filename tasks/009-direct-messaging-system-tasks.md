@@ -167,7 +167,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### Task 1.2.1: Create Zod Validation Schemas for Messaging
+### Task 1.2.1: Create Zod Validation Schemas for Messaging ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create comprehensive Zod schemas for all messaging API endpoints
@@ -182,21 +182,41 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Custom refinement for context_id requirement
   - XSS prevention regex
 - **Acceptance Criteria (for this task):**
-  - [ ] `conversationsQuerySchema` created (limit, offset, filter, search)
-  - [ ] `createConversationSchema` created (recipient_id, context_type, context_id, initial_message)
-  - [ ] Custom refinement: context_id required when context_type = 'agency_inquiry'
-  - [ ] `sendMessageSchema` created (content with XSS check)
-  - [ ] `editMessageSchema` created (content with XSS check)
-  - [ ] XSS refinement rejects `<script>` tags
-  - [ ] Message content max length: 10,000 chars
-  - [ ] All schemas export with clear types
-  - [ ] Unit tests for each schema (valid/invalid cases)
+  - [x] `conversationsQuerySchema` created (limit, offset, filter, search)
+  - [x] `createConversationSchema` created (recipient_id, context_type, context_id, initial_message)
+  - [x] Custom refinement: context_id required when context_type = 'agency_inquiry'
+  - [x] `sendMessageSchema` created (content with XSS check)
+  - [x] `editMessageSchema` created (content with XSS check)
+  - [x] XSS refinement rejects `<script>` tags
+  - [x] Message content max length: 10,000 chars
+  - [x] All schemas export with clear types
+  - [x] Unit tests for each schema (valid/invalid cases)
 - **Definition of Done:**
-  - [ ] File created with all schemas
-  - [ ] Unit tests passing (20+ test cases)
-  - [ ] Zod errors provide helpful messages
-  - [ ] **Final Check:** Follows validation patterns from Feature 008
+  - [x] File created with all schemas
+  - [x] Unit tests passing (20+ test cases)
+  - [x] Zod errors provide helpful messages
+  - [x] **Final Check:** Follows validation patterns from Feature 008
 - **Estimated Effort:** 2 hours
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
+  - Validation file created: `lib/validations/messages.ts` (257 lines)
+  - Test file created: `lib/validations/__tests__/messages.test.ts` (547 lines)
+  - All 58 tests passing ✅
+  - Schemas created:
+    - `conversationsQuerySchema` - pagination, filtering, search validation
+    - `createConversationSchema` - recipient, context, initial message with custom refinement
+    - `sendMessageSchema` - message content with XSS protection
+    - `editMessageSchema` - edited content with XSS protection
+    - `markConversationReadSchema` - mark as read (empty body)
+  - XSS protection includes:
+    - `<script>` tag detection (case-insensitive)
+    - Event handler detection (onerror, onclick, onload, etc.)
+    - `javascript:` URL detection
+  - Helper functions: `truncateMessage()`, `isValidMessageLength()`
+  - Exported constants for reuse: MESSAGE_MIN_LENGTH, MESSAGE_MAX_LENGTH, CONTEXT_TYPES, etc.
+  - TypeScript types exported for all schemas using `z.infer`
+  - Follows exact patterns from Feature 008 (agency-profile.ts, claim-request.ts)
+  - All error messages are clear and helpful
 
 ---
 
