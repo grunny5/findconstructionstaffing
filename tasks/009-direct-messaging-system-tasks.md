@@ -603,7 +603,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### Task 2.1.4: Implement PATCH /api/messages/[messageId] Endpoint (Optional v1)
+### Task 2.1.4: Implement PATCH /api/messages/[messageId] Endpoint (Optional v1) ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to edit a message within 5-minute window
@@ -615,26 +615,36 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - RLS ensures user can only edit own messages
   - Set edited_at = NOW()
 - **Acceptance Criteria (for this task):**
-  - [ ] PATCH endpoint responds to /api/messages/[messageId]
-  - [ ] Validates messageId is UUID
-  - [ ] Validates body with `editMessageSchema`
-  - [ ] Checks authentication
-  - [ ] Fetches message to check sender_id and created_at
-  - [ ] Returns 403 if not sender
-  - [ ] Returns 400 "Edit window expired" if created_at > 5 minutes ago
-  - [ ] Sanitizes new content
-  - [ ] Updates message SET content = new_content, edited_at = NOW()
-  - [ ] Returns 200 with updated message
-  - [ ] Handles database errors
+  - [x] PATCH endpoint responds to /api/messages/[messageId]
+  - [x] Validates messageId is UUID
+  - [x] Validates body with `editMessageSchema`
+  - [x] Checks authentication
+  - [x] Fetches message to check sender_id and created_at
+  - [x] Returns 403 if not sender
+  - [x] Returns 400 "Edit window expired" if created_at > 5 minutes ago
+  - [x] Sanitizes new content (via editMessageSchema)
+  - [x] Updates message SET content = new_content, edited_at = NOW()
+  - [x] Returns 200 with updated message
+  - [x] Handles database errors
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests: success, expired, not sender, auth
-  - [ ] **Final Check:** Edit window enforced
+  - [x] Endpoint functional
+  - [x] Unit tests: success, expired, not sender, auth
+  - [x] **Final Check:** Edit window enforced
 - **Estimated Effort:** 2.5 hours
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
+  - Created PATCH endpoint at `/app/api/messages/[messageId]/route.ts` (287 lines)
+  - Comprehensive test suite: 20 test cases covering success, validation (UUID, empty, too long, XSS), auth, authorization, edit window, deleted messages, and database errors
+  - XSS protection via editMessageSchema (blocks script tags, event handlers, javascript: URLs)
+  - Edit window enforced: 5 minutes (300,000 ms) from message creation
+  - Prevents editing deleted messages
+  - Only sender can edit their own messages
+  - Sets edited_at timestamp on successful edit
+  - All 20 tests passing in node environment
 
 ---
 
-### Task 2.1.5: Implement DELETE /api/messages/[messageId] Endpoint (Optional v1)
+### Task 2.1.5: Implement DELETE /api/messages/[messageId] Endpoint (Optional v1) ✅ COMPLETE
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to soft-delete a message
@@ -645,20 +655,30 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Soft delete: SET deleted_at = NOW()
   - RLS allows user to delete own messages, admins to delete any
 - **Acceptance Criteria (for this task):**
-  - [ ] DELETE endpoint responds to /api/messages/[messageId]
-  - [ ] Validates messageId is UUID
-  - [ ] Checks authentication
-  - [ ] Checks if user is sender OR admin
-  - [ ] Returns 403 if not authorized
-  - [ ] Updates message SET deleted_at = NOW()
-  - [ ] Content remains in database (audit trail)
-  - [ ] Returns 200 with { id, deleted_at }
-  - [ ] Handles database errors
+  - [x] DELETE endpoint responds to /api/messages/[messageId]
+  - [x] Validates messageId is UUID
+  - [x] Checks authentication
+  - [x] Checks if user is sender OR admin
+  - [x] Returns 403 if not authorized
+  - [x] Updates message SET deleted_at = NOW()
+  - [x] Content remains in database (audit trail)
+  - [x] Returns 200 with { id, deleted_at }
+  - [x] Handles database errors
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests: success (user), success (admin), not authorized
-  - [ ] **Final Check:** Soft delete working, audit trail preserved
+  - [x] Endpoint functional
+  - [x] Unit tests: success (user), success (admin), not authorized
+  - [x] **Final Check:** Soft delete working, audit trail preserved
 - **Estimated Effort:** 2 hours
+- **Actual Effort:** 1 hour
+- **Implementation Notes:**
+  - Added DELETE handler to `/app/api/messages/[messageId]/route.ts` (213 lines added, total 500 lines)
+  - Comprehensive test suite: 13 test cases covering success (user and admin), validation, auth, profile fetch errors, not found, authorization, already deleted, and database errors
+  - Admin role detection: Fetches user profile to check if role === 'admin'
+  - Authorization: Users can delete own messages, admins can delete any message
+  - Soft delete implementation: Sets deleted_at timestamp, preserves content for audit trail
+  - Prevents double-deletion (returns 400 if already deleted)
+  - All 13 tests passing in node environment
+  - Combined with PATCH endpoint: Total 33 test cases, 66 tests across 2 environments, all passing
 
 ---
 
