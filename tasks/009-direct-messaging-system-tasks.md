@@ -589,17 +589,18 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 - **Key Files to Create:**
   - `lib/utils/sanitize.ts`
 - **Key Patterns to Follow:**
-  - Use DOMPurify or built-in sanitization
-  - Remove script tags, event handlers, dangerous attributes
-  - Allow safe HTML (bold, italic, links) if needed
+  - Store as plain text only (no HTML allowed)
+  - Strip all HTML tags before saving to database
+  - Render as Markdown on client side for formatting
+  - Validation rejects content with `<script>` or event handlers
 - **Acceptance Criteria (for this task):**
-  - [ ] Function `sanitizeHtml(content: string): string` created
-  - [ ] Removes `<script>` tags and content
-  - [ ] Removes `onerror`, `onclick`, and other event handlers
-  - [ ] Removes `javascript:` URLs
-  - [ ] Optionally allows safe tags (b, i, a) if markdown support added later
-  - [ ] Returns sanitized string
-  - [ ] Unit tests cover: script tags, event handlers, safe content, edge cases
+  - [ ] Function `sanitizeMessageContent(content: string): string` created
+  - [ ] Strips ALL HTML tags from input
+  - [ ] Validates no `<script>` tags present
+  - [ ] Validates no event handlers (`onerror`, `onclick`, etc.)
+  - [ ] Validates no `javascript:` URLs
+  - [ ] Returns plain text only (client handles Markdown rendering)
+  - [ ] Unit tests cover: HTML stripping, script rejection, event handler rejection, plain text passthrough
   - [ ] All tests passing
 - **Definition of Done:**
   - [ ] Utility created and exported
@@ -1090,10 +1091,13 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Check if recipient online (recent activity)
   - Queue email send (non-blocking)
   - Batch messages (wait 5 min, group from same sender)
+  - Use Supabase Realtime Presence for online detection (recommended) OR user_activity table
 - **Acceptance Criteria (for this task):**
   - [ ] After message insert, check if recipient online
-  - [ ] Online detection: user active in last 5 minutes (check session or last API call)
-  - [ ] If offline, queue email notification
+  - [ ] Online detection implementation (choose one):
+    - **Option A (Recommended):** Use Supabase Realtime Presence API to check if user has active channel subscription
+    - **Option B:** Create `user_activity` table with last_seen_at timestamp, update on each API call
+  - [ ] If offline (no presence OR last_seen_at > 5 min ago), queue email notification
   - [ ] Email includes: sender name/company, message preview (200 chars), conversation link
   - [ ] Batching: if multiple messages from same sender within 5 min, send one email: "3 new messages from [Sender]"
   - [ ] Email send is non-blocking (doesn't delay API response)
@@ -1231,15 +1235,18 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 - **Key Files to Create:**
   - `lib/middleware/rate-limit.ts`
 - **Key Patterns to Follow:**
-  - In-memory rate limiting (or Redis if available)
+  - Use Vercel KV or Upstash Redis for rate limiting (serverless-compatible)
+  - DO NOT use in-memory storage (doesn't work in serverless/edge environments)
   - Per-user limits (based on auth.uid())
   - Return 429 Too Many Requests
+  - Sliding window algorithm for accurate rate limiting
 - **Acceptance Criteria (for this task):**
   - [ ] Middleware `rateLimitMessages(req)` created
-  - [ ] Tracks message sends per user per minute
+  - [ ] Implementation uses Vercel KV (recommended) or Upstash Redis
+  - [ ] Tracks message sends per user per minute using sliding window
   - [ ] Limit: 50 messages per user per minute
   - [ ] Returns 429 "Too many requests. Please wait before sending more messages." if exceeded
-  - [ ] Resets counter after 1 minute
+  - [ ] Counter automatically expires after 1 minute (using Redis TTL)
   - [ ] Applies to POST /api/messages/conversations/[id]/messages
   - [ ] Unit tests: under limit, at limit, over limit, reset
   - [ ] Integration test with API endpoint
