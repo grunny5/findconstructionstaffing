@@ -505,6 +505,38 @@ describe('GET /api/messages/conversations', () => {
       );
       expect(hasMatchingParticipant).toBe(true);
     });
+
+    it('should use filtered count for pagination when filter applied', async () => {
+      setupSuccessfulMocks();
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations?filter=unread'
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      // total should reflect filtered count, not DB count
+      expect(data.pagination.total).toBe(data.data.length);
+      // hasMore should be false when filters applied (client-side filtering)
+      expect(data.pagination.hasMore).toBe(false);
+    });
+
+    it('should use filtered count for pagination when search applied', async () => {
+      setupSuccessfulMocks();
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/messages/conversations?search=test'
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      // total should reflect filtered count, not DB count
+      expect(data.pagination.total).toBe(data.data.length);
+      // hasMore should be false when filters applied (client-side filtering)
+      expect(data.pagination.hasMore).toBe(false);
+    });
   });
 
   describe('Database Error Handling', () => {

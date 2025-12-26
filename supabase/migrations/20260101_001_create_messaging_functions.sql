@@ -71,12 +71,17 @@ BEGIN
     RAISE EXCEPTION 'One or more participant IDs do not exist in profiles table';
   END IF;
 
-  -- Validation 5: If context_type is 'agency_inquiry', context_id must be provided
+  -- Validation 5: context_type must be valid
+  IF p_context_type NOT IN ('agency_inquiry', 'general') THEN
+    RAISE EXCEPTION 'Invalid context_type: %%. Must be either ''agency_inquiry'' or ''general''', p_context_type;
+  END IF;
+
+  -- Validation 6: If context_type is 'agency_inquiry', context_id must be provided
   IF p_context_type = 'agency_inquiry' AND p_context_id IS NULL THEN
     RAISE EXCEPTION 'context_id required when context_type is agency_inquiry';
   END IF;
 
-  -- Validation 6: If context_id provided, verify agency exists
+  -- Validation 7: If context_id provided, verify agency exists
   IF p_context_id IS NOT NULL THEN
     IF NOT EXISTS (SELECT 1 FROM public.agencies WHERE id = p_context_id) THEN
       RAISE EXCEPTION 'Agency with id % does not exist', p_context_id;

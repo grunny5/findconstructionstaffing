@@ -209,6 +209,23 @@ SELECT create_conversation_with_participants(
 -- Expected: ERROR - One or more participant IDs do not exist in profiles table
 ```
 
+### Test 6.5: Invalid context_type (FAIL)
+
+```sql
+-- Test: Create conversation with invalid context_type
+SET LOCAL role TO authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "alice_id"}';
+
+SELECT create_conversation_with_participants(
+  'invalid_type',
+  NULL,
+  ARRAY['alice_id', 'bob_id']::UUID[]
+);
+
+-- Expected: ERROR - Invalid context_type: invalid_type. Must be either 'agency_inquiry' or 'general'
+-- Note: Validation 5 added to prevent invalid context types from being inserted
+```
+
 ### Test 7: Agency Inquiry Without context_id (FAIL)
 
 ```sql

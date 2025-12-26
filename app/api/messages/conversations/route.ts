@@ -333,13 +333,21 @@ export async function GET(request: NextRequest) {
     // ========================================================================
     // 7. BUILD RESPONSE
     // ========================================================================
+    // Note: Use filtered count for pagination when client-side filters are applied
+    // Check if actual filtering occurred (filter='unread' or search was provided)
+    const hasClientSideFilters = filter === 'unread' || search !== undefined;
+    const filteredCount = filteredConversations.length;
+    const totalCount = count || 0;
+
     const response: ConversationsApiResponse = {
       data: filteredConversations,
       pagination: {
-        total: count || 0,
+        total: hasClientSideFilters ? filteredCount : totalCount,
         limit,
         offset,
-        hasMore: offset + limit < (count || 0),
+        hasMore: hasClientSideFilters
+          ? false // Client-side filtering means we can't know if more exist
+          : offset + limit < totalCount,
       },
     };
 
