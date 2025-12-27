@@ -15,6 +15,16 @@ jest.mock('@/lib/auth/auth-context', () => ({
   })),
 }));
 
+// Mock useUnreadCount hook
+jest.mock('@/hooks/useUnreadCount', () => ({
+  useUnreadCount: jest.fn(() => ({
+    unreadCount: 0,
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+}));
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import ProfileError from '../error';
 import AgencyNotFound from '../not-found';
@@ -26,6 +36,7 @@ const originalEnv = process.env.NODE_ENV;
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  usePathname: jest.fn(() => '/'),
 }));
 
 // Mock console.error to prevent test output noise
