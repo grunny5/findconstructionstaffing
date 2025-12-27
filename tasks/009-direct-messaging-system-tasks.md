@@ -861,17 +861,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Use `npx shadcn-ui@latest add` command
   - Verify components work with existing Tailwind config
 - **Acceptance Criteria (for this task):**
-  - [ ] Run `npx shadcn-ui@latest add avatar`
-  - [ ] Run `npx shadcn-ui@latest add scroll-area`
-  - [ ] Components added to components/ui/
-  - [ ] Imports working from "@/components/ui/avatar"
-  - [ ] Verify with simple test component rendering
-  - [ ] No TypeScript errors
-  - [ ] No styling conflicts
+  - [x] Run `npx shadcn-ui@latest add avatar`
+  - [x] Run `npx shadcn-ui@latest add scroll-area`
+  - [x] Components added to components/ui/
+  - [x] Imports working from "@/components/ui/avatar"
+  - [x] Verify with simple test component rendering
+  - [x] No TypeScript errors
+  - [x] No styling conflicts
 - **Definition of Done:**
-  - [ ] Both components installed
-  - [ ] Verified working in dev environment
-  - [ ] **Final Check:** Shadcn/ui patterns followed
+  - [x] Both components installed
+  - [x] Verified working in dev environment
+  - [x] **Final Check:** Shadcn/ui patterns followed
 - **Estimated Effort:** 0.5 hours
 - **Actual Effort:** 0.25 hours
 - **Implementation Notes:**
@@ -897,23 +897,23 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Responsive design (mobile-first)
   - Accessibility (ARIA labels)
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts: message, sender, isOwnMessage, onEdit?, onDelete?
-  - [ ] Renders message content (sanitized)
-  - [ ] Shows sender avatar and name
-  - [ ] Different styling: own messages right-aligned, others left-aligned
-  - [ ] Shows timestamp (relative: "2h ago")
-  - [ ] Shows "(edited)" label if edited_at not null
-  - [ ] Shows "(This message was deleted)" if deleted_at not null
-  - [ ] Action menu (⋯) on hover with Edit/Delete options (if isOwnMessage and within 5 min for edit)
-  - [ ] Calls onEdit/onDelete when actions clicked
-  - [ ] Responsive design (mobile-optimized)
-  - [ ] WCAG 2.1 AA compliant (contrast, alt text)
-  - [ ] Component tests: own/other, edited, deleted, actions
+  - [x] Component accepts: message, sender, isOwnMessage, onEdit?, onDelete?
+  - [x] Renders message content (sanitized)
+  - [x] Shows sender avatar and name
+  - [x] Different styling: own messages right-aligned, others left-aligned
+  - [x] Shows timestamp (relative: "2h ago")
+  - [x] Shows "(edited)" label if edited_at not null
+  - [x] Shows "(This message was deleted)" if deleted_at not null
+  - [x] Action menu (⋯) on hover with Edit/Delete options (if isOwnMessage and within 5 min for edit)
+  - [x] Calls onEdit/onDelete when actions clicked
+  - [x] Responsive design (mobile-optimized)
+  - [x] WCAG 2.1 AA compliant (contrast, alt text)
+  - [x] Component tests: own/other, edited, deleted, actions
 - **Definition of Done:**
-  - [ ] Component created and working
-  - [ ] Tests passing (10+ test cases)
-  - [ ] Storybook story created (optional)
-  - [ ] **Final Check:** Matches design, accessible, responsive
+  - [x] Component created and working
+  - [x] Tests passing (10+ test cases)
+  - [x] Storybook story created (optional)
+  - [x] **Final Check:** Matches design, accessible, responsive
 - **Estimated Effort:** 4 hours
 - **Actual Effort:** 2.5 hours
 - **Implementation Notes:**
@@ -943,22 +943,22 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Show relative timestamp
   - Highlight if unread
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts: conversation, currentUserId, isActive, onClick
-  - [ ] Shows other participant's avatar and name
-  - [ ] Shows last message preview (truncated to 60 chars)
-  - [ ] Shows timestamp (relative: "2h ago", "Yesterday", "Dec 20")
-  - [ ] Shows unread badge with count if unread_count > 0
-  - [ ] Shows context icon (🏢) if context_type = 'agency_inquiry'
-  - [ ] Hover state with background change
-  - [ ] Active state highlighting (if isActive)
-  - [ ] Calls onClick when clicked
-  - [ ] Responsive design
-  - [ ] Accessibility (keyboard nav, ARIA)
-  - [ ] Component tests: with/without unread, context, active state
+  - [x] Component accepts: conversation, currentUserId, isActive, onClick
+  - [x] Shows other participant's avatar and name
+  - [x] Shows last message preview (truncated to 60 chars)
+  - [x] Shows timestamp (relative: "2h ago", "Yesterday", "Dec 20")
+  - [x] Shows unread badge with count if unread_count > 0
+  - [x] Shows context icon (🏢) if context_type = 'agency_inquiry'
+  - [x] Hover state with background change
+  - [x] Active state highlighting (if isActive)
+  - [x] Calls onClick when clicked
+  - [x] Responsive design
+  - [x] Accessibility (keyboard nav, ARIA)
+  - [x] Component tests: with/without unread, context, active state
 - **Definition of Done:**
-  - [ ] Component created
-  - [ ] Tests passing (8+ test cases)
-  - [ ] **Final Check:** Matches inbox design
+  - [x] Component created
+  - [x] Tests passing (8+ test cases)
+  - [x] **Final Check:** Matches inbox design
 - **Estimated Effort:** 3 hours
 - **Actual Effort:** 2 hours
 - **Implementation Notes:**
