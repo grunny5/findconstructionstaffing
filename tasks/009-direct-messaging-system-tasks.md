@@ -990,23 +990,23 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Disable send when empty or over limit
   - Keyboard shortcuts (Enter = send, Shift+Enter = newline)
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts: conversationId, onSend, disabled?
-  - [ ] Textarea auto-resizes (min 1 row, max 5 rows)
-  - [ ] Character counter shows "X / 10,000"
-  - [ ] Counter turns red when over limit
-  - [ ] Send button disabled when empty or over 10,000 chars
-  - [ ] Enter key sends message (if not Shift+Enter)
-  - [ ] Shift+Enter adds newline
-  - [ ] Shows loading state while sending
-  - [ ] Shows error state if send fails
-  - [ ] Clears input after successful send
-  - [ ] Focuses textarea after send
-  - [ ] Responsive design
-  - [ ] Component tests: send, keyboard shortcuts, validation, error
+  - [x] Component accepts: conversationId, onSend, disabled?
+  - [x] Textarea auto-resizes (min 1 row, max 5 rows)
+  - [x] Character counter shows "X / 10,000"
+  - [x] Counter turns red when over limit
+  - [x] Send button disabled when empty or over 10,000 chars
+  - [x] Enter key sends message (if not Shift+Enter)
+  - [x] Shift+Enter adds newline
+  - [x] Shows loading state while sending
+  - [x] Shows error state if send fails
+  - [x] Clears input after successful send
+  - [x] Focuses textarea after send
+  - [x] Responsive design
+  - [x] Component tests: send, keyboard shortcuts, validation, error
 - **Definition of Done:**
-  - [ ] Component created
-  - [ ] Tests passing (12+ test cases)
-  - [ ] **Final Check:** UX smooth, keyboard accessible
+  - [x] Component created
+  - [x] Tests passing (12+ test cases)
+  - [x] **Final Check:** UX smooth, keyboard accessible
 - **Estimated Effort:** 3.5 hours
 - **Actual Effort:** 2.5 hours
 - **Implementation Notes:**
@@ -1038,19 +1038,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Link to agency profile if context exists
   - Mobile responsive (back button)
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts: conversation, currentUserId
-  - [ ] Shows other participant's avatar, name, role badge
-  - [ ] Shows context banner if context_type = 'agency_inquiry': "Inquiry about [Agency Name]"
-  - [ ] "View Profile" link to /recruiters/[slug] if context_agency exists
-  - [ ] Shows conversation start date: "Started Dec 20, 2025"
-  - [ ] Back button (← Back) on mobile
-  - [ ] Responsive design (stacked on mobile)
-  - [ ] Accessibility
-  - [ ] Component tests: with/without context, mobile/desktop
+  - [x] Component accepts: conversation, currentUserId
+  - [x] Shows other participant's avatar, name, role badge
+  - [x] Shows context banner if context_type = 'agency_inquiry': "Inquiry about [Agency Name]"
+  - [x] "View Profile" link to /recruiters/[slug] if context_agency exists
+  - [x] Shows conversation start date: "Started Dec 20, 2025"
+  - [x] Back button (← Back) on mobile
+  - [x] Responsive design (stacked on mobile)
+  - [x] Accessibility
+  - [x] Component tests: with/without context, mobile/desktop
 - **Definition of Done:**
-  - [ ] Component created
-  - [ ] Tests passing (6+ test cases)
-  - [ ] **Final Check:** Design matches mockup
+  - [x] Component created
+  - [x] Tests passing (6+ test cases)
+  - [x] **Final Check:** Design matches mockup
 - **Estimated Effort:** 2.5 hours
 - **Actual Effort:** 1.5 hours
 - **Implementation Notes:**
@@ -1082,19 +1082,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - Show "9+" if count > 9
   - Hidden if count = 0
 - **Acceptance Criteria (for this task):**
-  - [ ] Component accepts: count, max? (default 9)
-  - [ ] Shows count if 1-9
-  - [ ] Shows "9+" if count > 9
-  - [ ] Shows "99+" if count > 99 and max = 99
-  - [ ] Hidden (returns null) if count = 0
-  - [ ] Red background (#EF4444), white text
-  - [ ] Circular badge
-  - [ ] Small size (fits in nav)
-  - [ ] Component tests: 0, 5, 10, 100
+  - [x] Component accepts: count, max? (default 9)
+  - [x] Shows count if 1-9
+  - [x] Shows "9+" if count > 9
+  - [x] Shows "99+" if count > 99 and max = 99
+  - [x] Hidden (returns null) if count = 0
+  - [x] Red background (#EF4444), white text
+  - [x] Circular badge
+  - [x] Small size (fits in nav)
+  - [x] Component tests: 0, 5, 10, 100
 - **Definition of Done:**
-  - [ ] Component created
-  - [ ] Tests passing (6+ test cases)
-  - [ ] **Final Check:** Simple, reusable, accessible
+  - [x] Component created
+  - [x] Tests passing (6+ test cases)
+  - [x] **Final Check:** Simple, reusable, accessible
 - **Estimated Effort:** 1 hour
 - **Actual Effort:** 0.5 hours
 - **Implementation Notes:**
