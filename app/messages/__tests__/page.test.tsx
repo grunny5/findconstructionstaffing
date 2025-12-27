@@ -9,6 +9,13 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock Next.js cookies
+jest.mock('next/headers', () => ({
+  cookies: jest.fn().mockResolvedValue({
+    toString: () => 'mocked-cookie-string',
+  }),
+}));
+
 // Mock Supabase client
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(),
@@ -117,6 +124,7 @@ describe('MessagesPage', () => {
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
+            Cookie: 'mocked-cookie-string',
           },
           cache: 'no-store',
         })

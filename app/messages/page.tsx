@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { MessagesInboxClient } from '@/components/messages/MessagesInboxClient';
 import type { ConversationWithParticipants } from '@/types/api';
@@ -33,11 +34,14 @@ export default async function MessagesPage() {
   let fetchError: Error | null = null;
 
   try {
+    // Forward authentication cookies to internal API
+    const cookieStore = await cookies();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages/conversations?limit=50`,
       {
         headers: {
           'Content-Type': 'application/json',
+          Cookie: cookieStore.toString(),
         },
         cache: 'no-store', // Always fetch fresh data
       }
