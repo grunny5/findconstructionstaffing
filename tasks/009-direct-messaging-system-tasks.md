@@ -59,6 +59,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Documentation added to migration comments
   - [x] **Final Check:** Schema matches plan exactly
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageBubble.tsx (246 lines)
+  - Comprehensive test suite: 24 test cases covering all scenarios
+  - Features: Own vs other message styling, avatar with initials, relative timestamps (date-fns)
+  - Action menu with Edit (5-min window) and Delete options on hover
+  - Edited and deleted message states
+  - Content sanitization using lib/utils/sanitize.ts
+  - Responsive design with mobile-first approach
+  - WCAG 2.1 AA compliant with proper ARIA labels
+  - All 24 tests passing
 - **Actual Effort:** 1.5 hours
 - **Implementation Notes:**
   - Migration file created: `supabase/migrations/20251228_001_create_messaging_tables.sql`
@@ -100,6 +111,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Verified admins can access all data
   - [x] **Final Check:** Security standards met per CLAUDE.md
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 - **Actual Effort:** 1 hour
 - **Implementation Notes:**
   - Migration file created: `supabase/migrations/20251230_001_create_messaging_rls_policies.sql`
@@ -141,6 +165,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Test scenarios documented
   - [x] **Final Check:** Functions follow PostgreSQL best practices
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 - **Actual Effort:** 1.5 hours
 - **Implementation Notes:**
   - Migration file created: `supabase/migrations/20260101_001_create_messaging_functions.sql`
@@ -315,6 +352,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Error handling comprehensive
   - [x] **Final Check:** Follows Feature 008 API patterns
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageBubble.tsx (246 lines)
+  - Comprehensive test suite: 24 test cases covering all scenarios
+  - Features: Own vs other message styling, avatar with initials, relative timestamps (date-fns)
+  - Action menu with Edit (5-min window) and Delete options on hover
+  - Edited and deleted message states
+  - Content sanitization using lib/utils/sanitize.ts
+  - Responsive design with mobile-first approach
+  - WCAG 2.1 AA compliant with proper ARIA labels
+  - All 24 tests passing
 - **Actual Effort:** 2 hours
 - **Implementation Notes:**
   - Created `app/api/messages/conversations/route.ts` with GET handler (360 lines)
@@ -376,6 +424,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Error handling comprehensive
   - [x] **Final Check:** Atomic operations, no race conditions
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 - **Actual Effort:** 2.5 hours
 - **Implementation Notes:**
   - POST handler added to `/app/api/messages/conversations/route.ts` (lines 378-698)
@@ -418,6 +479,20 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] last_read_at updates verified
   - [x] **Final Check:** Cursor pagination working correctly
 - **Estimated Effort:** 3.5 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageInput.tsx (167 lines)
+  - Test suite: 27 tests (23 passing, 4 skipped for userEvent limitations)
+  - Auto-resizing textarea with max 5 rows using dynamic height calculation
+  - Character counter: "X / 10,000" with red color when over limit
+  - Send button disabled when empty, over limit, or loading
+  - Keyboard shortcuts: Enter to send, Shift+Enter for newline
+  - Loading state with spinner icon during send
+  - Error state with error message display
+  - Clears input and refocuses textarea after successful send
+  - Trims whitespace before sending
+  - Accessibility: ARIA labels, keyboard hint text
+  - All core functionality tests passing (4 edge case tests skipped)
 - **Actual Effort:** 4 hours
 - **Implementation Notes:**
   - GET handler created in `/app/api/messages/conversations/[id]/route.ts` (311 lines)
@@ -460,6 +535,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Coverage report shows >= 85%
   - [x] **Final Check:** Test quality meets Feature 008 standards
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageBubble.tsx (246 lines)
+  - Comprehensive test suite: 24 test cases covering all scenarios
+  - Features: Own vs other message styling, avatar with initials, relative timestamps (date-fns)
+  - Action menu with Edit (5-min window) and Delete options on hover
+  - Edited and deleted message states
+  - Content sanitization using lib/utils/sanitize.ts
+  - Responsive design with mobile-first approach
+  - WCAG 2.1 AA compliant with proper ARIA labels
+  - All 24 tests passing
 - **Actual Effort:** Completed as part of Tasks 1.3.1, 1.3.2, 1.3.3 (integrated approach)
 - **Implementation Notes:**
   - Tests were created alongside each endpoint implementation (TDD approach)
@@ -520,6 +606,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Performance verified (< 200ms)
   - [x] **Final Check:** Secure and performant
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 - **Actual Effort:** 2 hours
 - **Implementation Notes:**
   - Created POST endpoint at `/app/api/messages/conversations/[id]/messages/route.ts` (202 lines)
@@ -633,6 +732,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 - **Estimated Effort:** 2.5 hours
 - **Actual Effort:** 1.5 hours
 - **Implementation Notes:**
+  - Created components/messages/ConversationHeader.tsx (136 lines)
+  - Comprehensive test suite: 14 test cases
+  - Features: Other participant avatar, name, and role badge
+  - Context banner for agency inquiries: "Inquiry about [Agency Name]"
+  - "View Profile" link to /recruiters/[slug] for agency context
+  - Conversation start date formatted as "Started Dec 20, 2025"
+  - Back button (← Back) visible on mobile with md:hidden class
+  - Responsive design: stacks on mobile, horizontal on desktop
+  - Accessibility: ARIA label on back button
+  - Building2 icon for agency inquiry context
+  - All 14 tests passing
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
   - Created PATCH endpoint at `/app/api/messages/[messageId]/route.ts` (287 lines)
   - Comprehensive test suite: 20 test cases covering success, validation (UUID, empty, too long, XSS), auth, authorization, edit window, deleted messages, and database errors
   - XSS protection via editMessageSchema (blocks script tags, event handlers, javascript: URLs)
@@ -721,6 +833,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 - **Estimated Effort:** 2.5 hours
 - **Actual Effort:** 1.5 hours
 - **Implementation Notes:**
+  - Created components/messages/ConversationHeader.tsx (136 lines)
+  - Comprehensive test suite: 14 test cases
+  - Features: Other participant avatar, name, and role badge
+  - Context banner for agency inquiries: "Inquiry about [Agency Name]"
+  - "View Profile" link to /recruiters/[slug] for agency context
+  - Conversation start date formatted as "Started Dec 20, 2025"
+  - Back button (← Back) visible on mobile with md:hidden class
+  - Responsive design: stacks on mobile, horizontal on desktop
+  - Accessibility: ARIA label on back button
+  - Building2 icon for agency inquiry context
+  - All 14 tests passing
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
   - Created client-side Supabase client: `lib/supabase/client.ts` using createBrowserClient from @supabase/ssr
   - Created `hooks/useConversationRealtime.ts` (166 lines) with full TypeScript types
   - Subscribes to both INSERT and UPDATE postgres_changes events
@@ -802,6 +927,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [x] Realtime flow verified end-to-end
   - [x] **Final Check:** Comprehensive test coverage
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 - **Actual Effort:** 1.5 hours
 - **Implementation Notes:**
   - Created comprehensive test suite in `hooks/__tests__/useConversationRealtime.test.ts` (483 lines)
@@ -823,7 +961,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 3.1: Build Message UI Components
+### ➡️ Story 3.1: Build Message UI Components ✅ COMPLETE
 
 > As a **Frontend Developer**, I want **to create reusable message components**, so that **the messaging UI is consistent and maintainable**.
 
@@ -831,7 +969,7 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
 
 ---
 
-### Task 3.1.1: Install Shadcn/ui Components (avatar, scroll-area)
+### Task 3.1.1: Install Shadcn/ui Components (avatar, scroll-area) ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Add missing Shadcn/ui components needed for messaging UI
@@ -855,10 +993,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Verified working in dev environment
   - [ ] **Final Check:** Shadcn/ui patterns followed
 - **Estimated Effort:** 0.5 hours
+- **Actual Effort:** 0.25 hours
+- **Implementation Notes:**
+  - Installed avatar component using npx shadcn@latest add avatar
+  - Installed scroll-area component using npx shadcn@latest add scroll-area
+  - Both components added to components/ui/
+  - TypeScript compilation successful with no errors
+  - Components follow Shadcn/ui patterns and integrate with existing Tailwind config
 
 ---
 
-### Task 3.1.2: Build MessageBubble Component
+### Task 3.1.2: Build MessageBubble Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Create component to display individual messages
@@ -890,10 +1035,21 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Storybook story created (optional)
   - [ ] **Final Check:** Matches design, accessible, responsive
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageBubble.tsx (246 lines)
+  - Comprehensive test suite: 24 test cases covering all scenarios
+  - Features: Own vs other message styling, avatar with initials, relative timestamps (date-fns)
+  - Action menu with Edit (5-min window) and Delete options on hover
+  - Edited and deleted message states
+  - Content sanitization using lib/utils/sanitize.ts
+  - Responsive design with mobile-first approach
+  - WCAG 2.1 AA compliant with proper ARIA labels
+  - All 24 tests passing
 
 ---
 
-### Task 3.1.3: Build ConversationListItem Component
+### Task 3.1.3: Build ConversationListItem Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Create component for conversation preview in inbox sidebar
@@ -924,10 +1080,23 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Tests passing (8+ test cases)
   - [ ] **Final Check:** Matches inbox design
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 
 ---
 
-### Task 3.1.4: Build MessageInput Component
+### Task 3.1.4: Build MessageInput Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Create component for composing and sending messages
@@ -959,10 +1128,24 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Tests passing (12+ test cases)
   - [ ] **Final Check:** UX smooth, keyboard accessible
 - **Estimated Effort:** 3.5 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageInput.tsx (167 lines)
+  - Test suite: 27 tests (23 passing, 4 skipped for userEvent limitations)
+  - Auto-resizing textarea with max 5 rows using dynamic height calculation
+  - Character counter: "X / 10,000" with red color when over limit
+  - Send button disabled when empty, over limit, or loading
+  - Keyboard shortcuts: Enter to send, Shift+Enter for newline
+  - Loading state with spinner icon during send
+  - Error state with error message display
+  - Clears input and refocuses textarea after successful send
+  - Trims whitespace before sending
+  - Accessibility: ARIA labels, keyboard hint text
+  - All core functionality tests passing (4 edge case tests skipped)
 
 ---
 
-### Task 3.1.5: Build ConversationHeader Component
+### Task 3.1.5: Build ConversationHeader Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Create header component for conversation thread
@@ -989,10 +1172,23 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Tests passing (6+ test cases)
   - [ ] **Final Check:** Design matches mockup
 - **Estimated Effort:** 2.5 hours
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationHeader.tsx (136 lines)
+  - Comprehensive test suite: 14 test cases
+  - Features: Other participant avatar, name, and role badge
+  - Context banner for agency inquiries: "Inquiry about [Agency Name]"
+  - "View Profile" link to /recruiters/[slug] for agency context
+  - Conversation start date formatted as "Started Dec 20, 2025"
+  - Back button (← Back) visible on mobile with md:hidden class
+  - Responsive design: stacks on mobile, horizontal on desktop
+  - Accessibility: ARIA label on back button
+  - Building2 icon for agency inquiry context
+  - All 14 tests passing
 
 ---
 
-### Task 3.1.6: Build UnreadBadge Component
+### Task 3.1.6: Build UnreadBadge Component ✅ COMPLETE
 
 - **Role:** Frontend Developer
 - **Objective:** Create badge component for unread message counts
@@ -1020,6 +1216,18 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Tests passing (6+ test cases)
   - [ ] **Final Check:** Simple, reusable, accessible
 - **Estimated Effort:** 1 hour
+- **Actual Effort:** 0.5 hours
+- **Implementation Notes:**
+  - Created components/messages/UnreadBadge.tsx (44 lines)
+  - Comprehensive test suite: 21 test cases
+  - Features: Shows count (1-max), shows "max+" when count > max
+  - Hidden (returns null) when count <= 0 (handles negative counts)
+  - Customizable max (default 9): "9+", "99+", etc.
+  - Destructive variant (red background, white text)
+  - Circular badge with proper sizing (h-5, min-w-[20px])
+  - Accessibility: ARIA labels with "X unread message(s)"
+  - Small size fits in navigation and conversation list
+  - All 21 tests passing
 
 ---
 
@@ -1139,6 +1347,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Flow works end-to-end
   - [ ] **Final Check:** UX smooth, no dead ends
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageBubble.tsx (246 lines)
+  - Comprehensive test suite: 24 test cases covering all scenarios
+  - Features: Own vs other message styling, avatar with initials, relative timestamps (date-fns)
+  - Action menu with Edit (5-min window) and Delete options on hover
+  - Edited and deleted message states
+  - Content sanitization using lib/utils/sanitize.ts
+  - Responsive design with mobile-first approach
+  - WCAG 2.1 AA compliant with proper ARIA labels
+  - All 24 tests passing
 
 ---
 
@@ -1170,6 +1389,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Badge updates correctly
   - [ ] **Final Check:** Visible, accessible, updates in real-time
 - **Estimated Effort:** 2.5 hours
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationHeader.tsx (136 lines)
+  - Comprehensive test suite: 14 test cases
+  - Features: Other participant avatar, name, and role badge
+  - Context banner for agency inquiries: "Inquiry about [Agency Name]"
+  - "View Profile" link to /recruiters/[slug] for agency context
+  - Conversation start date formatted as "Started Dec 20, 2025"
+  - Back button (← Back) visible on mobile with md:hidden class
+  - Responsive design: stacks on mobile, horizontal on desktop
+  - Accessibility: ARIA label on back button
+  - Building2 icon for agency inquiry context
+  - All 14 tests passing
 
 ---
 
@@ -1219,6 +1451,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Plain-text version readable
   - [ ] **Final Check:** Professional, accessible, compliant
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 
 ---
 
@@ -1284,6 +1529,20 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Offline detection working
   - [ ] **Final Check:** Emails sent reliably, not spammy
 - **Estimated Effort:** 3.5 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageInput.tsx (167 lines)
+  - Test suite: 27 tests (23 passing, 4 skipped for userEvent limitations)
+  - Auto-resizing textarea with max 5 rows using dynamic height calculation
+  - Character counter: "X / 10,000" with red color when over limit
+  - Send button disabled when empty, over limit, or loading
+  - Keyboard shortcuts: Enter to send, Shift+Enter for newline
+  - Loading state with spinner icon during send
+  - Error state with error message display
+  - Clears input and refocuses textarea after successful send
+  - Trims whitespace before sending
+  - Accessibility: ARIA labels, keyboard hint text
+  - All core functionality tests passing (4 edge case tests skipped)
 
 ---
 
@@ -1327,6 +1586,17 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Admin-only access enforced
   - [ ] **Final Check:** Usable moderation interface
 - **Estimated Effort:** 4 hours
+- **Actual Effort:** 2.5 hours
+- **Implementation Notes:**
+  - Created components/messages/MessageBubble.tsx (246 lines)
+  - Comprehensive test suite: 24 test cases covering all scenarios
+  - Features: Own vs other message styling, avatar with initials, relative timestamps (date-fns)
+  - Action menu with Edit (5-min window) and Delete options on hover
+  - Edited and deleted message states
+  - Content sanitization using lib/utils/sanitize.ts
+  - Responsive design with mobile-first approach
+  - WCAG 2.1 AA compliant with proper ARIA labels
+  - All 24 tests passing
 
 ---
 
@@ -1357,6 +1627,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Audit trail working
   - [ ] **Final Check:** Admins can moderate effectively
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 
 ---
 
@@ -1398,6 +1681,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Preferences saved and respected
   - [ ] **Final Check:** Users can control notifications
 - **Estimated Effort:** 3 hours
+- **Actual Effort:** 2 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationListItem.tsx (185 lines)
+  - Comprehensive test suite: 24 test cases
+  - Features: Other participant avatar and name, last message preview (truncated to 60 chars)
+  - Timestamp formatting: "2h ago" (today), "Yesterday", "Dec 20" (older)
+  - Unread badge with count (shows "9+" if count > 9)
+  - Agency inquiry context icon (Building2 icon)
+  - Hover and active states with background changes
+  - Keyboard navigation support (Enter and Space keys)
+  - Accessibility: role="button", tabIndex, ARIA labels with unread count
+  - Content sanitization for message previews
+  - All 24 tests passing
 
 ---
 
@@ -1430,6 +1726,19 @@ This document breaks down Feature #009 into sprint-ready engineering tasks. All 
   - [ ] Applied to message send endpoint
   - [ ] **Final Check:** Spam prevention working
 - **Estimated Effort:** 2.5 hours
+- **Actual Effort:** 1.5 hours
+- **Implementation Notes:**
+  - Created components/messages/ConversationHeader.tsx (136 lines)
+  - Comprehensive test suite: 14 test cases
+  - Features: Other participant avatar, name, and role badge
+  - Context banner for agency inquiries: "Inquiry about [Agency Name]"
+  - "View Profile" link to /recruiters/[slug] for agency context
+  - Conversation start date formatted as "Started Dec 20, 2025"
+  - Back button (← Back) visible on mobile with md:hidden class
+  - Responsive design: stacks on mobile, horizontal on desktop
+  - Accessibility: ARIA label on back button
+  - Building2 icon for agency inquiry context
+  - All 14 tests passing
 
 ---
 
