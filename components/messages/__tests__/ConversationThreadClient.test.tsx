@@ -21,7 +21,10 @@ jest.mock('next/navigation', () => ({
 // Mock useConversationRealtime hook
 const mockRealtime = jest.fn();
 jest.mock('@/hooks/useConversationRealtime', () => ({
-  useConversationRealtime: (conversationId: string, callback: Function) => {
+  useConversationRealtime: (
+    conversationId: string,
+    callback: (...args: any) => any
+  ) => {
     mockRealtime.mockImplementation(callback);
   },
 }));
@@ -494,7 +497,9 @@ describe('ConversationThreadClient', () => {
               () =>
                 resolve({
                   ok: true,
-                  json: async () => ({ data: { messages: [], has_more: false } }),
+                  json: async () => ({
+                    data: { messages: [], has_more: false },
+                  }),
                 }),
               100
             )

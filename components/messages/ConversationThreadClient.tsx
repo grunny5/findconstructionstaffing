@@ -68,9 +68,8 @@ export function ConversationThreadClient({
   currentUserId,
 }: ConversationThreadClientProps) {
   const router = useRouter();
-  const [messages, setMessages] = useState<MessageWithSender[]>(
-    initialMessages
-  );
+  const [messages, setMessages] =
+    useState<MessageWithSender[]>(initialMessages);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -79,17 +78,17 @@ export function ConversationThreadClient({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isNearBottom, setIsNearBottom] = useState(true);
 
-  // Auto-scroll to bottom on mount
-  useEffect(() => {
-    scrollToBottom();
-  }, []);
-
   // Scroll to bottom helper
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
     messagesEndRef.current?.scrollIntoView({ behavior });
     setShowNewMessageButton(false);
     setIsNearBottom(true);
   }, []);
+
+  // Auto-scroll to bottom on mount
+  useEffect(() => {
+    scrollToBottom();
+  }, [scrollToBottom]);
 
   // Check if user is near bottom of scroll area
   const handleScroll = useCallback(() => {
@@ -108,7 +107,15 @@ export function ConversationThreadClient({
 
   // Handle new messages from real-time subscription
   const handleNewMessage = useCallback(
-    (message: { id: string; conversation_id: string; sender_id: string; content: string; created_at: string; edited_at: string | null; deleted_at: string | null }) => {
+    (message: {
+      id: string;
+      conversation_id: string;
+      sender_id: string;
+      content: string;
+      created_at: string;
+      edited_at: string | null;
+      deleted_at: string | null;
+    }) => {
       // Construct MessageWithSender from realtime message
       const sender = initialConversation.participants.find(
         (p) => p.id === message.sender_id

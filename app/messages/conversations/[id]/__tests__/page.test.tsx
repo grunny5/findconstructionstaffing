@@ -170,9 +170,7 @@ describe('ConversationPage', () => {
       const result = await ConversationPage({ params: { id: 'conv-1' } });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining(
-          '/api/messages/conversations/conv-1?limit=50'
-        ),
+        expect.stringContaining('/api/messages/conversations/conv-1?limit=50'),
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
