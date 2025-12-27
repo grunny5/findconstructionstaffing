@@ -56,11 +56,6 @@ export function SendMessageButton({
   const isEmpty = content.trim().length === 0;
   const canSend = !isEmpty && !isOverLimit && !isSending;
 
-  // Don't render if agency is not claimed
-  if (!isClaimed) {
-    return null;
-  }
-
   // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -82,6 +77,11 @@ export function SendMessageButton({
       textareaRef.current?.focus();
     }
   }, [isOpen]);
+
+  // Don't render if agency is not claimed
+  if (!isClaimed) {
+    return null;
+  }
 
   const handleButtonClick = async () => {
     // 1. Check authentication
@@ -216,7 +216,8 @@ export function SendMessageButton({
               disabled={isSending}
               className={cn(
                 'min-h-[120px] resize-none',
-                isOverLimit && 'border-destructive focus-visible:ring-destructive'
+                isOverLimit &&
+                  'border-destructive focus-visible:ring-destructive'
               )}
               aria-label="Message input"
               aria-describedby="char-counter"

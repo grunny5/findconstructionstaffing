@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface UnreadCountData {
   total_unread: number;
@@ -34,7 +34,7 @@ export function useUnreadCount(
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     if (!enabled) {
       setIsLoading(false);
       return;
@@ -60,12 +60,12 @@ export function useUnreadCount(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [enabled]);
 
   // Initial fetch
   useEffect(() => {
     fetchUnreadCount();
-  }, [enabled]);
+  }, [fetchUnreadCount]);
 
   // Polling
   useEffect(() => {
@@ -78,7 +78,7 @@ export function useUnreadCount(
     }, pollInterval);
 
     return () => clearInterval(interval);
-  }, [enabled, pollInterval]);
+  }, [enabled, pollInterval, fetchUnreadCount]);
 
   return {
     unreadCount,

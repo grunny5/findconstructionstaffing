@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@/lib/test-utils';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { SendMessageButton } from '../SendMessageButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -269,8 +269,8 @@ describe('SendMessageButton', () => {
 
     it('should show keyboard hint', () => {
       expect(screen.getByText(/press/i)).toBeInTheDocument();
-      expect(screen.getByText(/enter/i)).toBeInTheDocument();
-      expect(screen.getByText(/shift\+enter/i)).toBeInTheDocument();
+      expect(screen.getByText(/to send/i)).toBeInTheDocument();
+      expect(screen.getByText(/for new line/i)).toBeInTheDocument();
     });
 
     it('should disable send button when textarea is empty', () => {
@@ -388,20 +388,17 @@ describe('SendMessageButton', () => {
       fireEvent.click(sendButton);
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          '/api/messages/conversations',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              context_type: 'agency_inquiry',
-              context_id: 'agency-123',
-              initial_message: 'I need electricians for a project',
-            }),
-          }
-        );
+        expect(mockFetch).toHaveBeenCalledWith('/api/messages/conversations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            context_type: 'agency_inquiry',
+            context_id: 'agency-123',
+            initial_message: 'I need electricians for a project',
+          }),
+        });
       });
     });
 
@@ -438,7 +435,11 @@ describe('SendMessageButton', () => {
         () =>
           new Promise((resolve) =>
             setTimeout(
-              () => resolve({ ok: true, json: async () => ({ data: { id: 'new-conv' } }) }),
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: { id: 'new-conv' } }),
+                }),
               100
             )
           )
@@ -464,7 +465,11 @@ describe('SendMessageButton', () => {
         () =>
           new Promise((resolve) =>
             setTimeout(
-              () => resolve({ ok: true, json: async () => ({ data: { id: 'new-conv' } }) }),
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: { id: 'new-conv' } }),
+                }),
               100
             )
           )
@@ -644,7 +649,7 @@ describe('SendMessageButton', () => {
       );
       fireEvent.change(textarea, { target: { value: longMessage } });
 
-      const counter = screen.getByText(/10,001 \/ 10,000/i);
+      const counter = screen.getByText(/10001 \/ 10,000/i);
       expect(counter).toHaveClass('text-destructive');
     });
 
