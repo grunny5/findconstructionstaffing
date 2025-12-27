@@ -103,8 +103,8 @@ export function ConversationListItem({
       className={cn(
         'flex cursor-pointer gap-3 rounded-lg p-3 transition-colors',
         'hover:bg-accent focus:bg-accent focus:outline-none',
-        isActive && 'bg-accent',
-        hasUnread && 'bg-muted'
+        hasUnread && 'bg-muted',
+        isActive && 'bg-accent'
       )}
       onClick={() => onClick(conversation.id)}
       onKeyDown={(e) => {
