@@ -406,3 +406,47 @@ export interface UnreadCountResponse {
   /** Number of conversations with unread messages */
   unread_conversations: number;
 }
+
+// =============================================================================
+// ROUTE CONTEXT TYPES
+// =============================================================================
+
+/**
+ * Generic route context for Next.js 15 async params
+ *
+ * In Next.js 15+, dynamic route params are async and must be awaited.
+ *
+ * @see https://nextjs.org/docs/app/api-reference/file-conventions/route#context-optional
+ *
+ * @example
+ * ```typescript
+ * type RouteContext = AsyncRouteContext<{ id: string }>;
+ *
+ * export async function GET(req: NextRequest, context: RouteContext) {
+ *   const { id } = await context.params;
+ *   // ...
+ * }
+ * ```
+ */
+export type AsyncRouteContext<T extends Record<string, string>> = {
+  params: Promise<T>;
+};
+
+/**
+ * Generic route context for Next.js 14 sync params
+ *
+ * In Next.js 14 and earlier, dynamic route params are synchronous.
+ *
+ * @example
+ * ```typescript
+ * type RouteContext = SyncRouteContext<{ id: string }>;
+ *
+ * export async function GET(req: NextRequest, context: RouteContext) {
+ *   const { id } = context.params;
+ *   // ...
+ * }
+ * ```
+ */
+export type SyncRouteContext<T extends Record<string, string>> = {
+  params: T;
+};

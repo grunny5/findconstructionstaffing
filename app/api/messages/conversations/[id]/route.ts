@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import { ERROR_CODES, HTTP_STATUS, SyncRouteContext } from '@/types/api';
 import { z } from 'zod';
 
 // UUID validation schema
@@ -12,11 +12,7 @@ const queryParamsSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
+type RouteContext = SyncRouteContext<{ id: string }>;
 
 /**
  * GET /api/messages/conversations/[id]

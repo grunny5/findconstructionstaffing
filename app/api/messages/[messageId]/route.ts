@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { editMessageSchema } from '@/lib/validations/messages';
 import { z } from 'zod';
-import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import { ERROR_CODES, HTTP_STATUS, AsyncRouteContext } from '@/types/api';
 
 // =============================================================================
 // VALIDATION SCHEMAS
@@ -31,9 +31,7 @@ const EDIT_WINDOW_MS = 5 * 60 * 1000;
 // TYPES
 // =============================================================================
 
-type RouteContext = {
-  params: Promise<{ messageId: string }>;
-};
+type RouteContext = AsyncRouteContext<{ messageId: string }>;
 
 // =============================================================================
 // PATCH /api/messages/[messageId] - Edit Message
