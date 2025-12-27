@@ -51,9 +51,8 @@ export function MessagesInboxClient({
   currentUserId,
 }: MessagesInboxClientProps) {
   const router = useRouter();
-  const [conversations] = useState<ConversationWithParticipants[]>(
-    initialConversations
-  );
+  const [conversations] =
+    useState<ConversationWithParticipants[]>(initialConversations);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -107,7 +106,11 @@ export function MessagesInboxClient({
         </div>
 
         {/* Tabs */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'unread')} className="px-4 pt-4">
+        <Tabs
+          value={filter}
+          onValueChange={(v) => setFilter(v as 'all' | 'unread')}
+          className="px-4 pt-4"
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="all" className="flex items-center gap-2">
               All
@@ -144,7 +147,10 @@ export function MessagesInboxClient({
         <div className="flex-1 overflow-y-auto">
           {filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-4 text-center">
-              <MessageSquare className="h-12 w-12 text-gray-300 mb-3" aria-hidden="true" />
+              <MessageSquare
+                className="h-12 w-12 text-gray-300 mb-3"
+                aria-hidden="true"
+              />
               <p className="text-gray-600 font-medium mb-1">
                 {search.trim()
                   ? 'No conversations found'
@@ -178,7 +184,10 @@ export function MessagesInboxClient({
       <div className="hidden lg:flex flex-1 items-center justify-center bg-gray-50">
         {selectedId ? (
           <div className="text-center text-gray-500">
-            <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
+            <MessageSquare
+              className="h-16 w-16 mx-auto mb-4 text-gray-300"
+              aria-hidden="true"
+            />
             <p className="text-lg font-medium mb-2">
               Conversation view coming soon
             </p>
@@ -188,7 +197,10 @@ export function MessagesInboxClient({
           </div>
         ) : (
           <div className="text-center text-gray-500">
-            <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
+            <MessageSquare
+              className="h-16 w-16 mx-auto mb-4 text-gray-300"
+              aria-hidden="true"
+            />
             <p className="text-lg font-medium mb-2">No conversation selected</p>
             <p className="text-sm">
               Select a conversation from the sidebar to view messages

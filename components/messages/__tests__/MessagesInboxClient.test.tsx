@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MessagesInboxClient } from '../MessagesInboxClient';
 import type { ConversationWithParticipants } from '@/types/api';
@@ -23,15 +29,11 @@ const mockConversations: ConversationWithParticipants[] = [
         id: 'user-1',
         full_name: 'John Doe',
         email: 'john@example.com',
-        joined_at: '2025-01-10T10:00:00Z',
-        last_read_at: '2025-01-10T12:00:00Z',
       },
       {
         id: 'user-2',
         full_name: 'Jane Smith',
         email: 'jane@example.com',
-        joined_at: '2025-01-10T10:00:00Z',
-        last_read_at: '2025-01-11T10:00:00Z',
       },
     ],
     last_message_preview: 'Hello, how are you?',
@@ -50,15 +52,11 @@ const mockConversations: ConversationWithParticipants[] = [
         id: 'user-1',
         full_name: 'John Doe',
         email: 'john@example.com',
-        joined_at: '2025-01-09T10:00:00Z',
-        last_read_at: '2025-01-09T10:00:00Z',
       },
       {
         id: 'user-3',
         full_name: 'Bob Johnson',
         email: 'bob@example.com',
-        joined_at: '2025-01-09T10:00:00Z',
-        last_read_at: '2025-01-09T10:00:00Z',
       },
     ],
     last_message_preview: 'Thanks for the info',
@@ -222,7 +220,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      const searchInput = screen.getByPlaceholderText(
+        'Search conversations...'
+      );
       fireEvent.change(searchInput, { target: { value: 'Jane' } });
 
       expect(screen.getByText('Jane Smith')).toBeInTheDocument();
@@ -237,7 +237,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      const searchInput = screen.getByPlaceholderText(
+        'Search conversations...'
+      );
       fireEvent.change(searchInput, { target: { value: 'JANE' } });
 
       expect(screen.getByText('Jane Smith')).toBeInTheDocument();
@@ -251,7 +253,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      const searchInput = screen.getByPlaceholderText(
+        'Search conversations...'
+      );
       fireEvent.change(searchInput, { target: { value: 'NonexistentName' } });
 
       expect(screen.getByText('No conversations found')).toBeInTheDocument();
@@ -265,7 +269,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      const searchInput = screen.getByPlaceholderText(
+        'Search conversations...'
+      );
       fireEvent.change(searchInput, { target: { value: 'Jane' } });
       fireEvent.change(searchInput, { target: { value: '' } });
 
@@ -318,7 +324,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const conversation = screen.getByText('Jane Smith').closest('[role="button"]');
+      const conversation = screen
+        .getByText('Jane Smith')
+        .closest('[role="button"]');
       fireEvent.click(conversation!);
 
       expect(conversation).toHaveClass('bg-accent');
@@ -339,7 +347,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const conversation = screen.getByText('Jane Smith').closest('[role="button"]');
+      const conversation = screen
+        .getByText('Jane Smith')
+        .closest('[role="button"]');
       fireEvent.click(conversation!);
 
       expect(mockPush).toHaveBeenCalledWith('/messages/conversations/conv-1');
@@ -353,7 +363,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const conversation = screen.getByText('Jane Smith').closest('[role="button"]');
+      const conversation = screen
+        .getByText('Jane Smith')
+        .closest('[role="button"]');
       fireEvent.click(conversation!);
 
       expect(mockPush).not.toHaveBeenCalled();
@@ -369,9 +381,7 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      expect(
-        screen.getByText('No conversation selected')
-      ).toBeInTheDocument();
+      expect(screen.getByText('No conversation selected')).toBeInTheDocument();
     });
 
     it('should show selected conversation message in main panel', () => {
@@ -382,7 +392,9 @@ describe('MessagesInboxClient', () => {
         />
       );
 
-      const conversation = screen.getByText('Jane Smith').closest('[role="button"]');
+      const conversation = screen
+        .getByText('Jane Smith')
+        .closest('[role="button"]');
       fireEvent.click(conversation!);
 
       expect(

@@ -47,7 +47,9 @@ export default async function MessagesPage() {
       const data = await response.json();
       conversations = data.data || [];
     } else {
-      fetchError = new Error(`Failed to fetch conversations: ${response.statusText}`);
+      fetchError = new Error(
+        `Failed to fetch conversations: ${response.statusText}`
+      );
     }
   } catch (error) {
     fetchError = error as Error;

@@ -146,9 +146,7 @@ describe('MessagesPage', () => {
       });
 
       // Mock console.error to verify error logging
-      const consoleErrorSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const result = await MessagesPage();
 
@@ -175,14 +173,10 @@ describe('MessagesPage', () => {
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-      (global.fetch as jest.Mock).mockRejectedValue(
-        new Error('Network error')
-      );
+      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
       // Mock console.error to verify error logging
-      const consoleErrorSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const result = await MessagesPage();
 
