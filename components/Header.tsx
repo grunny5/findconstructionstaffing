@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -21,13 +22,19 @@ import {
   User,
   LogOut,
   LayoutDashboard,
+  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { isFeatureEnabled } from '@/lib/feature-flags';
+import { UnreadBadge } from '@/components/messages/UnreadBadge';
+import { useUnreadCount } from '@/hooks/useUnreadCount';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, profile, agencySlug, signOut } = useAuth();
+  const pathname = usePathname();
+  const { unreadCount } = useUnreadCount(!!user);
 
   const navItems = [
     { label: 'Browse Directory', href: '/', icon: Building2 },
@@ -78,7 +85,7 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              // Logged in - show Claim Listing + User Menu
+              // Logged in - show Claim Listing + Messages + User Menu
               <>
                 <Button
                   variant="outline"
@@ -87,6 +94,24 @@ export default function Header() {
                   asChild
                 >
                   <Link href="/claim-listing">Claim Listing</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    'glass-button relative',
+                    pathname?.startsWith('/messages') &&
+                      'bg-slate-100 text-slate-900'
+                  )}
+                  asChild
+                >
+                  <Link href="/messages" className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>Messages</span>
+                    {unreadCount > 0 && (
+                      <UnreadBadge count={unreadCount} max={9} />
+                    )}
+                  </Link>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -210,6 +235,27 @@ export default function Header() {
                           onClick={() => setIsOpen(false)}
                         >
                           Claim Listing
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full glass-button relative',
+                          pathname?.startsWith('/messages') &&
+                            'bg-slate-100 text-slate-900'
+                        )}
+                        asChild
+                      >
+                        <Link
+                          href="/messages"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center justify-center gap-2"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          <span>Messages</span>
+                          {unreadCount > 0 && (
+                            <UnreadBadge count={unreadCount} max={9} />
+                          )}
                         </Link>
                       </Button>
                       {profile?.role === 'admin' &&
