@@ -295,3 +295,158 @@ export interface ClaimsApiResponse {
   /** Pagination metadata */
   pagination: PaginationMetadata;
 }
+
+/**
+ * Messaging API Types (Feature #009)
+ * Provides type-safe interfaces for the direct messaging system
+ */
+
+/**
+ * Participant profile information in conversations
+ */
+export interface ConversationParticipantProfile {
+  /** User's unique identifier */
+  id: string;
+  /** User's full name */
+  full_name: string | null;
+  /** User's email address */
+  email: string;
+}
+
+/**
+ * Conversation with participant information and unread count
+ */
+export interface ConversationWithParticipants {
+  /** Unique conversation identifier */
+  id: string;
+  /** Type of conversation: agency_inquiry or general */
+  context_type: 'agency_inquiry' | 'general';
+  /** Agency ID if context_type is agency_inquiry */
+  context_id: string | null;
+  /** Timestamp of last message in conversation */
+  last_message_at: string;
+  /** Creation timestamp */
+  created_at: string;
+  /** Last update timestamp */
+  updated_at: string;
+  /** Array of participants in this conversation */
+  participants: ConversationParticipantProfile[];
+  /** Preview of last message */
+  last_message_preview: string | null;
+  /** Number of unread messages for current user */
+  unread_count: number;
+  /** Agency name if context_type is agency_inquiry */
+  agency_name?: string | null;
+}
+
+/**
+ * Message with sender information
+ */
+export interface MessageWithSender {
+  /** Unique message identifier */
+  id: string;
+  /** Conversation this message belongs to */
+  conversation_id: string;
+  /** ID of user who sent the message */
+  sender_id: string;
+  /** Message content */
+  content: string;
+  /** Creation timestamp */
+  created_at: string;
+  /** Edit timestamp (null if never edited) */
+  edited_at: string | null;
+  /** Soft-delete timestamp (null if not deleted) */
+  deleted_at: string | null;
+  /** Sender's profile information */
+  sender: ConversationParticipantProfile;
+}
+
+/**
+ * Conversation detail with messages and participants
+ */
+export interface ConversationDetailResponse {
+  /** Conversation metadata */
+  conversation: ConversationWithParticipants;
+  /** Array of messages in the conversation */
+  messages: MessageWithSender[];
+  /** Pagination metadata for messages */
+  pagination: PaginationMetadata;
+}
+
+/**
+ * API response for conversations list
+ */
+export interface ConversationsApiResponse {
+  /** Array of conversations with participants */
+  data: ConversationWithParticipants[];
+  /** Pagination metadata */
+  pagination: PaginationMetadata;
+}
+
+/**
+ * Single conversation response
+ */
+export interface ConversationResponse {
+  data: ConversationWithParticipants;
+}
+
+/**
+ * Single message response
+ */
+export interface MessageResponse {
+  data: MessageWithSender;
+}
+
+/**
+ * Unread message count response
+ */
+export interface UnreadCountResponse {
+  /** Total number of unread messages across all conversations */
+  unread_count: number;
+  /** Number of conversations with unread messages */
+  unread_conversations: number;
+}
+
+// =============================================================================
+// ROUTE CONTEXT TYPES
+// =============================================================================
+
+/**
+ * Generic route context for Next.js 15 async params
+ *
+ * In Next.js 15+, dynamic route params are async and must be awaited.
+ *
+ * @see https://nextjs.org/docs/app/api-reference/file-conventions/route#context-optional
+ *
+ * @example
+ * ```typescript
+ * type RouteContext = AsyncRouteContext<{ id: string }>;
+ *
+ * export async function GET(req: NextRequest, context: RouteContext) {
+ *   const { id } = await context.params;
+ *   // ...
+ * }
+ * ```
+ */
+export type AsyncRouteContext<T extends Record<string, string>> = {
+  params: Promise<T>;
+};
+
+/**
+ * Generic route context for Next.js 14 sync params
+ *
+ * In Next.js 14 and earlier, dynamic route params are synchronous.
+ *
+ * @example
+ * ```typescript
+ * type RouteContext = SyncRouteContext<{ id: string }>;
+ *
+ * export async function GET(req: NextRequest, context: RouteContext) {
+ *   const { id } = context.params;
+ *   // ...
+ * }
+ * ```
+ */
+export type SyncRouteContext<T extends Record<string, string>> = {
+  params: T;
+};
