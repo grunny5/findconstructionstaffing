@@ -24,6 +24,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { Agency, AgencyResponse, isErrorResponse } from '@/types/api';
+import { SendMessageButton } from '@/components/messages/SendMessageButton';
 import Link from 'next/link';
 
 interface PageProps {
@@ -131,6 +132,12 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       </a>
                     </Button>
                   )}
+                  <SendMessageButton
+                    agencyId={agency.id}
+                    agencyName={agency.name}
+                    agencySlug={agency.slug}
+                    isClaimed={agency.is_claimed}
+                  />
                   {!agency.is_claimed && (
                     <Button
                       variant="outline"
