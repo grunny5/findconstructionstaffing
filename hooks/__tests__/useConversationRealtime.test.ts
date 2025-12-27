@@ -429,7 +429,7 @@ describe('useConversationRealtime', () => {
       );
 
       const insertHandler = mockChannel.on.mock.calls[0][2];
-      const message: Message = {
+      const message1: Message = {
         id: 'msg-1',
         conversation_id: conversationId,
         sender_id: 'user-1',
@@ -439,13 +439,28 @@ describe('useConversationRealtime', () => {
         deleted_at: null,
       };
 
-      insertHandler({ new: message });
-      expect(callback1).toHaveBeenCalledWith(message);
+      insertHandler({ new: message1 });
+      expect(callback1).toHaveBeenCalledWith(message1);
 
-      // Changing callback should trigger cleanup and re-subscription
+      // Changing callback should NOT trigger cleanup (performance optimization via useRef)
       rerender({ cb: callback2 });
 
-      expect(mockSupabase.removeChannel).toHaveBeenCalled();
+      expect(mockSupabase.removeChannel).not.toHaveBeenCalled();
+
+      // New messages should use the new callback
+      const message2: Message = {
+        id: 'msg-2',
+        conversation_id: conversationId,
+        sender_id: 'user-2',
+        content: 'Test 2',
+        created_at: new Date().toISOString(),
+        edited_at: null,
+        deleted_at: null,
+      };
+
+      insertHandler({ new: message2 });
+      expect(callback2).toHaveBeenCalledWith(message2);
+      expect(callback1).toHaveBeenCalledTimes(1); // Should not be called again
     });
   });
 

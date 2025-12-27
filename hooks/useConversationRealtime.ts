@@ -25,7 +25,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -82,6 +82,14 @@ export function useConversationRealtime(
   conversationId: string,
   onMessage: MessageCallback
 ): void {
+  // Store callback in ref to avoid re-subscriptions when it changes
+  const onMessageRef = useRef(onMessage);
+
+  // Update ref when callback changes
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
+
   useEffect(() => {
     // Skip subscription if no conversationId provided
     if (!conversationId) {
@@ -105,8 +113,8 @@ export function useConversationRealtime(
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          // Invoke callback with the new message
-          onMessage(payload.new as Message);
+          // Invoke callback with the new message using ref
+          onMessageRef.current(payload.new as Message);
         }
       );
 
@@ -120,8 +128,8 @@ export function useConversationRealtime(
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          // Invoke callback with the updated message
-          onMessage(payload.new as Message);
+          // Invoke callback with the updated message using ref
+          onMessageRef.current(payload.new as Message);
         }
       );
 
@@ -158,7 +166,7 @@ export function useConversationRealtime(
           });
       }
     };
-  }, [conversationId, onMessage]);
+  }, [conversationId]);
 
   // Hook has side effects only, no return value
 }
