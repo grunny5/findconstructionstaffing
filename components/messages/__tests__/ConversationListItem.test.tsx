@@ -477,5 +477,75 @@ describe('ConversationListItem', () => {
       expect(screen.queryByText(/<script>/)).not.toBeInTheDocument();
       expect(screen.queryByText(/<b>/)).not.toBeInTheDocument();
     });
+
+    it('should handle participant with empty name (show "?" as initials)', () => {
+      const conversationWithEmptyName = {
+        ...mockConversation,
+        participants: [
+          {
+            user_id: 'user-1',
+            user: {
+              id: 'user-1',
+              name: '',
+              avatar_url: null,
+            },
+          },
+          {
+            user_id: 'user-2',
+            user: {
+              id: 'user-2',
+              name: 'Jane Smith',
+              avatar_url: null,
+            },
+          },
+        ],
+      };
+
+      render(
+        <ConversationListItem
+          conversation={conversationWithEmptyName}
+          currentUserId="user-2"
+          onClick={jest.fn()}
+        />
+      );
+
+      // Should show "?" as fallback initials for empty name
+      expect(screen.getByText('?')).toBeInTheDocument();
+    });
+
+    it('should handle participant with whitespace-only name (show "?" as initials)', () => {
+      const conversationWithWhitespaceName = {
+        ...mockConversation,
+        participants: [
+          {
+            user_id: 'user-1',
+            user: {
+              id: 'user-1',
+              name: '   ',
+              avatar_url: null,
+            },
+          },
+          {
+            user_id: 'user-2',
+            user: {
+              id: 'user-2',
+              name: 'Jane Smith',
+              avatar_url: null,
+            },
+          },
+        ],
+      };
+
+      render(
+        <ConversationListItem
+          conversation={conversationWithWhitespaceName}
+          currentUserId="user-2"
+          onClick={jest.fn()}
+        />
+      );
+
+      // Should show "?" as fallback initials for whitespace-only name
+      expect(screen.getByText('?')).toBeInTheDocument();
+    });
   });
 });

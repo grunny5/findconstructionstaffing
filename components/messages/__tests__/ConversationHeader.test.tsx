@@ -294,5 +294,77 @@ describe('ConversationHeader', () => {
       expect(screen.getByText('Jane Smith')).toBeInTheDocument();
       expect(screen.queryByText('Recruiter')).not.toBeInTheDocument();
     });
+
+    it('should handle participant with empty name (show "?" as initials)', () => {
+      const conversationWithEmptyName = {
+        ...mockConversation,
+        participants: [
+          {
+            user_id: 'user-1',
+            user: {
+              id: 'user-1',
+              name: '',
+              avatar_url: null,
+              role: null,
+            },
+          },
+          {
+            user_id: 'user-2',
+            user: {
+              id: 'user-2',
+              name: 'Jane Smith',
+              avatar_url: null,
+              role: null,
+            },
+          },
+        ],
+      };
+
+      render(
+        <ConversationHeader
+          conversation={conversationWithEmptyName}
+          currentUserId="user-2"
+        />
+      );
+
+      // Should show "?" as fallback initials for empty name
+      expect(screen.getByText('?')).toBeInTheDocument();
+    });
+
+    it('should handle participant with whitespace-only name (show "?" as initials)', () => {
+      const conversationWithWhitespaceName = {
+        ...mockConversation,
+        participants: [
+          {
+            user_id: 'user-1',
+            user: {
+              id: 'user-1',
+              name: '   ',
+              avatar_url: null,
+              role: null,
+            },
+          },
+          {
+            user_id: 'user-2',
+            user: {
+              id: 'user-2',
+              name: 'Jane Smith',
+              avatar_url: null,
+              role: null,
+            },
+          },
+        ],
+      };
+
+      render(
+        <ConversationHeader
+          conversation={conversationWithWhitespaceName}
+          currentUserId="user-2"
+        />
+      );
+
+      // Should show "?" as fallback initials for whitespace-only name
+      expect(screen.getByText('?')).toBeInTheDocument();
+    });
   });
 });

@@ -424,4 +424,35 @@ describe('MessageInput', () => {
       });
     });
   });
+
+  describe('Auto-resize Edge Cases', () => {
+    it('should handle lineHeight="normal" without crashing', async () => {
+      const user = userEvent.setup();
+
+      // Mock getComputedStyle to return "normal" for lineHeight
+      const originalGetComputedStyle = window.getComputedStyle;
+      window.getComputedStyle = jest.fn((element) => {
+        const styles = originalGetComputedStyle(element);
+        return {
+          ...styles,
+          lineHeight: 'normal', // This would cause NaN with parseInt
+        } as CSSStyleDeclaration;
+      });
+
+      render(<MessageInput conversationId="conv-1" onSend={jest.fn()} />);
+
+      const textarea = screen.getByLabelText('Message input');
+
+      // Type some content to trigger auto-resize
+      await user.click(textarea);
+      await user.paste('Line 1\nLine 2\nLine 3');
+
+      // Should not crash and textarea should still be visible
+      expect(textarea).toBeInTheDocument();
+      expect(textarea).toHaveValue('Line 1\nLine 2\nLine 3');
+
+      // Restore original getComputedStyle
+      window.getComputedStyle = originalGetComputedStyle;
+    });
+  });
 });

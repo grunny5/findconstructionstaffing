@@ -53,9 +53,11 @@ export function MessageInput({
     textarea.style.height = 'auto';
 
     // Calculate the number of rows based on scrollHeight
-    const lineHeight = parseInt(getComputedStyle(textarea).lineHeight);
+    const computedLineHeight = getComputedStyle(textarea).lineHeight;
+    const lineHeight = parseFloat(computedLineHeight);
+    const effectiveLineHeight = Number.isNaN(lineHeight) ? 20 : lineHeight;
     const maxRows = 5;
-    const maxHeight = lineHeight * maxRows;
+    const maxHeight = effectiveLineHeight * maxRows;
 
     // Set height to fit content, up to max
     const newHeight = Math.min(textarea.scrollHeight, maxHeight);

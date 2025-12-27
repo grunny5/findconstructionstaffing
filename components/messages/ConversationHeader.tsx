@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getInitials } from '@/lib/utils/getInitials';
 
 export interface ConversationHeaderProps {
   conversation: {
@@ -44,16 +45,6 @@ export interface ConversationHeaderProps {
   };
   currentUserId: string;
   onBack?: () => void;
-}
-
-/**
- * Get initials from a name
- */
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 export function ConversationHeader({

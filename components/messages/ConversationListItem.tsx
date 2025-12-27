@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sanitizeMessagePreview } from '@/lib/utils/sanitize';
+import { getInitials } from '@/lib/utils/getInitials';
 
 export interface ConversationListItemProps {
   conversation: {
@@ -44,16 +45,6 @@ export interface ConversationListItemProps {
   currentUserId: string;
   isActive?: boolean;
   onClick: (conversationId: string) => void;
-}
-
-/**
- * Get initials from a name (first letter of first and last name)
- */
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 /**
