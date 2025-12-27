@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { sendMessageSchema } from '@/lib/validations/messages';
 import { z } from 'zod';
+import { sendMessageNotificationEmail } from '@/lib/emails/send-message-notification';
 
 // UUID validation schema
 const uuidSchema = z.string().uuid();
@@ -179,7 +180,95 @@ export async function POST(
     }
 
     // ========================================================================
-    // 5. RETURN SUCCESS RESPONSE
+    // 5. SEND EMAIL NOTIFICATION (NON-BLOCKING)
+    // ========================================================================
+    // Don't await - email sending shouldn't block the response
+    // Errors are handled internally and logged, won't fail the request
+    (async () => {
+      try {
+        // Get conversation participants to identify recipient
+        const { data: participants } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', conversationId);
+
+        if (!participants || participants.length === 0) {
+          console.warn(
+            `No participants found for conversation ${conversationId}`
+          );
+          return;
+        }
+
+        // Find recipient (the participant who is NOT the sender)
+        const recipientId = participants.find((p) => p.user_id !== user.id)
+          ?.user_id;
+
+        if (!recipientId) {
+          console.warn(
+            `No recipient found for conversation ${conversationId} (sender: ${user.id})`
+          );
+          return;
+        }
+
+        // Get sender profile
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+
+        // Get recipient profile with email
+        const { data: recipientProfile } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', recipientId)
+          .single();
+
+        if (!recipientProfile?.email) {
+          console.warn(`Recipient ${recipientId} has no email address`);
+          return;
+        }
+
+        // Check if sender is an agency owner (to include company name)
+        const { data: agencyClaim } = await supabase
+          .from('agency_claims')
+          .select(
+            `
+            agency:agencies(name)
+          `
+          )
+          .eq('user_id', user.id)
+          .eq('status', 'approved')
+          .single();
+
+        // Send email notification
+        const result = await sendMessageNotificationEmail({
+          recipientEmail: recipientProfile.email,
+          recipientName: recipientProfile.full_name || undefined,
+          senderName: senderProfile?.full_name || 'A user',
+          senderCompany: (agencyClaim?.agency as any)?.name || undefined,
+          messagePreview: content,
+          conversationId: conversationId,
+        });
+
+        if (result.sent) {
+          console.log(
+            `Email notification sent to ${recipientProfile.email} for message ${message.id}`
+          );
+        } else {
+          console.warn(
+            `Email notification failed for message ${message.id}: ${result.reason}`
+          );
+        }
+      } catch (emailError) {
+        // Catch any unexpected errors in email flow
+        // This is a fallback - sendMessageNotificationEmail already has error handling
+        console.error('Unexpected error in email notification flow:', emailError);
+      }
+    })();
+
+    // ========================================================================
+    // 6. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {

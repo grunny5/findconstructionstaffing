@@ -6,17 +6,25 @@ import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import { sendMessageNotificationEmail } from '@/lib/emails/send-message-notification';
 
 // Mock Supabase
 jest.mock('@/lib/supabase/server');
 
+// Mock email function
+jest.mock('@/lib/emails/send-message-notification');
+
 const mockedCreateClient = jest.mocked(createClient);
+const mockedSendEmail = jest.mocked(sendMessageNotificationEmail);
 
 describe('POST /api/messages/conversations/[id]/messages', () => {
   let mockSupabaseClient: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Default email mock - successful send
+    mockedSendEmail.mockResolvedValue({ sent: true });
 
     // Default Supabase mock
     mockSupabaseClient = {
@@ -461,6 +469,379 @@ describe('POST /api/messages/conversations/[id]/messages', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
       expect(data.error.message).toBe('Message was not created');
+    });
+  });
+
+  describe('Email Notifications', () => {
+    const conversationId = '123e4567-e89b-12d3-a456-426614174000';
+    const userId = 'user-123';
+    const recipientId = 'user-456';
+
+    it('should send email notification when message is sent successfully', async () => {
+      // Mock auth
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: userId, email: 'sender@example.com' } },
+        error: null,
+      });
+
+      // Mock message insert
+      const mockMessage = {
+        id: 'msg-123',
+        conversation_id: conversationId,
+        sender_id: userId,
+        content: 'Hello, this is a test message',
+        created_at: '2025-01-01T00:00:00Z',
+        edited_at: null,
+        deleted_at: null,
+      };
+
+      // Setup chain mocks for message insert and email notification queries
+      const mockFrom = jest.fn();
+
+      // First call: insert message
+      mockFrom.mockReturnValueOnce({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockMessage,
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Second call: get conversation participants
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ user_id: userId }, { user_id: recipientId }],
+            error: null,
+          }),
+        }),
+      });
+
+      // Third call: get sender profile
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { full_name: 'John Sender' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Fourth call: get recipient profile
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { full_name: 'Jane Recipient', email: 'recipient@example.com' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Fifth call: check agency claim
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      });
+
+      mockSupabaseClient.from = mockFrom;
+
+      const request = new NextRequest(
+        `http://localhost:3000/api/messages/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            content: 'Hello, this is a test message',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: { id: conversationId },
+      });
+
+      // Wait for async email sending to complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(mockedSendEmail).toHaveBeenCalledWith({
+        recipientEmail: 'recipient@example.com',
+        recipientName: 'Jane Recipient',
+        senderName: 'John Sender',
+        senderCompany: undefined,
+        messagePreview: 'Hello, this is a test message',
+        conversationId: conversationId,
+      });
+    });
+
+    it('should include sender company name if sender is agency owner', async () => {
+      // Mock auth
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: userId, email: 'agency@example.com' } },
+        error: null,
+      });
+
+      // Mock message insert
+      const mockMessage = {
+        id: 'msg-123',
+        conversation_id: conversationId,
+        sender_id: userId,
+        content: 'We can help with your staffing needs',
+        created_at: '2025-01-01T00:00:00Z',
+        edited_at: null,
+        deleted_at: null,
+      };
+
+      const mockFrom = jest.fn();
+
+      // Message insert
+      mockFrom.mockReturnValueOnce({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockMessage,
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Get participants
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ user_id: userId }, { user_id: recipientId }],
+            error: null,
+          }),
+        }),
+      });
+
+      // Get sender profile
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { full_name: 'Agency Owner' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Get recipient profile
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { full_name: 'Contractor', email: 'contractor@example.com' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Get agency claim - this time with agency data
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: { agency: { name: 'Acme Staffing Agency' } },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      });
+
+      mockSupabaseClient.from = mockFrom;
+
+      const request = new NextRequest(
+        `http://localhost:3000/api/messages/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            content: 'We can help with your staffing needs',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: { id: conversationId },
+      });
+
+      // Wait for async email sending
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(mockedSendEmail).toHaveBeenCalledWith({
+        recipientEmail: 'contractor@example.com',
+        recipientName: 'Contractor',
+        senderName: 'Agency Owner',
+        senderCompany: 'Acme Staffing Agency',
+        messagePreview: 'We can help with your staffing needs',
+        conversationId: conversationId,
+      });
+    });
+
+    it('should not fail request if email notification fails', async () => {
+      // Mock auth
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: userId, email: 'sender@example.com' } },
+        error: null,
+      });
+
+      // Mock message insert
+      const mockMessage = {
+        id: 'msg-123',
+        conversation_id: conversationId,
+        sender_id: userId,
+        content: 'Test message',
+        created_at: '2025-01-01T00:00:00Z',
+        edited_at: null,
+        deleted_at: null,
+      };
+
+      mockSupabaseClient.from.mockReturnValue({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockMessage,
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Mock email send failure
+      mockedSendEmail.mockResolvedValue({
+        sent: false,
+        reason: 'resend_api_key_missing',
+      });
+
+      const request = new NextRequest(
+        `http://localhost:3000/api/messages/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ content: 'Test message' }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: { id: conversationId },
+      });
+
+      const data = await response.json();
+
+      // Request should still succeed even if email fails
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(data.data.message).toEqual(mockMessage);
+    });
+
+    it('should not fail request if recipient has no email address', async () => {
+      // Mock auth
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: userId, email: 'sender@example.com' } },
+        error: null,
+      });
+
+      // Mock message insert
+      const mockMessage = {
+        id: 'msg-123',
+        conversation_id: conversationId,
+        sender_id: userId,
+        content: 'Test message',
+        created_at: '2025-01-01T00:00:00Z',
+        edited_at: null,
+        deleted_at: null,
+      };
+
+      const mockFrom = jest.fn();
+
+      // Message insert
+      mockFrom.mockReturnValueOnce({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockMessage,
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Get participants
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ user_id: userId }, { user_id: recipientId }],
+            error: null,
+          }),
+        }),
+      });
+
+      // Get sender profile
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { full_name: 'John Sender' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Get recipient profile - NO EMAIL
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { full_name: 'Jane Recipient', email: null },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      mockSupabaseClient.from = mockFrom;
+
+      const request = new NextRequest(
+        `http://localhost:3000/api/messages/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ content: 'Test message' }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: { id: conversationId },
+      });
+
+      // Wait for async email logic
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const data = await response.json();
+
+      // Request should still succeed
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(data.data.message).toEqual(mockMessage);
+      // Email should not be sent
+      expect(mockedSendEmail).not.toHaveBeenCalled();
     });
   });
 
