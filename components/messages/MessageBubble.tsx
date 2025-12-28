@@ -15,6 +15,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -23,10 +24,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sanitizeMessageContent } from '@/lib/utils/sanitize';
+import { toast } from 'sonner';
 
 export interface MessageBubbleProps {
   message: {
@@ -42,6 +54,7 @@ export interface MessageBubbleProps {
     avatar_url?: string | null;
   };
   isOwnMessage: boolean;
+  isAdmin?: boolean; // New prop for admin users
   onEdit?: (messageId: string) => void;
   onDelete?: (messageId: string) => void;
 }
@@ -69,12 +82,19 @@ export function MessageBubble({
   message,
   sender,
   isOwnMessage,
+  isAdmin = false,
   onEdit,
   onDelete,
 }: MessageBubbleProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const isDeleted = !!message.deleted_at;
   const isEdited = !!message.edited_at;
-  const showActions = isOwnMessage && !isDeleted && (onEdit || onDelete);
+
+  // Show actions if:
+  // 1. It's the user's own message and not deleted, OR
+  // 2. User is an admin and message is not deleted
+  const showActions = !isDeleted && ((isOwnMessage && (onEdit || onDelete)) || (isAdmin && onDelete));
   const canEditMessage = canEdit(message.created_at);
 
   // Sanitize content for safe display
@@ -86,6 +106,23 @@ export function MessageBubble({
   const timestamp = formatDistanceToNow(new Date(message.created_at), {
     addSuffix: true,
   });
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (onDelete) {
+      try {
+        await onDelete(message.id);
+        toast.success('Message deleted');
+        setShowDeleteConfirm(false);
+      } catch (error) {
+        toast.error('Failed to delete message');
+        console.error('Delete error:', error);
+      }
+    }
+  };
 
   return (
     <div
@@ -132,7 +169,7 @@ export function MessageBubble({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'}>
-                {onEdit && canEditMessage && (
+                {onEdit && canEditMessage && isOwnMessage && !isAdmin && (
                   <DropdownMenuItem
                     onClick={() => onEdit(message.id)}
                     className="cursor-pointer"
@@ -143,11 +180,11 @@ export function MessageBubble({
                 )}
                 {onDelete && (
                   <DropdownMenuItem
-                    onClick={() => onDelete(message.id)}
+                    onClick={handleDeleteClick}
                     className="cursor-pointer text-destructive focus:text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                    {isAdmin && !isOwnMessage ? 'Delete (Admin)' : 'Delete'}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -182,7 +219,7 @@ export function MessageBubble({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'}>
-                {onEdit && canEditMessage && (
+                {onEdit && canEditMessage && isOwnMessage && !isAdmin && (
                   <DropdownMenuItem
                     onClick={() => onEdit(message.id)}
                     className="cursor-pointer"
@@ -193,11 +230,11 @@ export function MessageBubble({
                 )}
                 {onDelete && (
                   <DropdownMenuItem
-                    onClick={() => onDelete(message.id)}
+                    onClick={handleDeleteClick}
                     className="cursor-pointer text-destructive focus:text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                    {isAdmin && !isOwnMessage ? 'Delete (Admin)' : 'Delete'}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -215,6 +252,33 @@ export function MessageBubble({
           {timestamp}
         </span>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {isAdmin && !isOwnMessage
+                ? 'Delete this message? (Admin Action)'
+                : 'Delete this message?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAdmin && !isOwnMessage
+                ? 'This message will be removed by a moderator. This action cannot be undone and will be logged for audit purposes.'
+                : 'This action cannot be undone. The message will be permanently deleted.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

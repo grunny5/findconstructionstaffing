@@ -19,6 +19,7 @@ interface ConversationThreadClientProps {
   initialMessages: MessageWithSender[];
   initialHasMore: boolean;
   currentUserId: string;
+  isAdmin?: boolean;
 }
 
 /**
@@ -66,6 +67,7 @@ export function ConversationThreadClient({
   initialMessages,
   initialHasMore,
   currentUserId,
+  isAdmin = false,
 }: ConversationThreadClientProps) {
   const router = useRouter();
   const [messages, setMessages] =
@@ -218,6 +220,31 @@ export function ConversationThreadClient({
     }
   };
 
+  // Handle delete message
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/messages/${messageId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Update local state to mark message as deleted
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId
+              ? { ...msg, deleted_at: new Date().toISOString() }
+              : msg
+          )
+        );
+      } else {
+        throw new Error('Failed to delete message');
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      throw error; // Re-throw for toast error handling
+    }
+  };
+
   // Mark conversation as read on mount
   useEffect(() => {
     fetch(`/api/messages/conversations/${initialConversation.id}/read`, {
@@ -311,6 +338,8 @@ export function ConversationThreadClient({
                     avatar_url: null,
                   }}
                   isOwnMessage={message.sender_id === currentUserId}
+                  isAdmin={isAdmin}
+                  onDelete={handleDeleteMessage}
                 />
               ))}
             </div>
