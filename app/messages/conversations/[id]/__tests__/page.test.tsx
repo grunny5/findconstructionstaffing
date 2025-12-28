@@ -42,6 +42,19 @@ describe('ConversationPage', () => {
     email: 'test@example.com',
   };
 
+  const mockProfileQuery = {
+    from: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { role: 'user' },
+            error: null,
+          }),
+        }),
+      }),
+    }),
+  };
+
   const mockConversation = {
     id: 'conv-1',
     context_type: 'agency_inquiry',
@@ -111,6 +124,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -131,6 +145,7 @@ describe('ConversationPage', () => {
             error: new Error('Authentication failed'),
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -153,6 +168,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -197,6 +213,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -219,6 +236,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -251,6 +269,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -280,6 +299,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -313,6 +333,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -353,6 +374,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -390,6 +412,7 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
+        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);

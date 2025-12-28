@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { User, Mail, Lock, AlertTriangle } from 'lucide-react';
+import { User, Mail, Lock, AlertTriangle, Bell } from 'lucide-react';
 
 /**
  * Props for the SettingsSidebar component.
@@ -15,7 +15,7 @@ interface SettingsSidebarProps {
 
 /**
  * Navigation sections configuration for the settings sidebar.
- * Includes Profile, Email, Password, and Account (danger zone) sections.
+ * Includes Profile, Email, Password, Notifications, and Account (danger zone) sections.
  */
 const settingsSections = [
   {
@@ -37,6 +37,12 @@ const settingsSections = [
     description: 'Change your password',
   },
   {
+    name: 'Notifications',
+    href: '/settings/notifications',
+    icon: Bell,
+    description: 'Manage notification preferences',
+  },
+  {
     name: 'Account',
     href: '/settings/account',
     icon: AlertTriangle,
@@ -52,6 +58,7 @@ const settingsSections = [
  * - Profile: Manage personal information
  * - Email: Update email address
  * - Password: Change password
+ * - Notifications: Manage notification preferences
  * - Account: Danger zone for destructive actions
  *
  * Features:

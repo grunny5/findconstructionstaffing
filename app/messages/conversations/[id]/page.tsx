@@ -41,6 +41,15 @@ export default async function ConversationPage({
     redirect(`/login?redirectTo=/messages/conversations/${params.id}`);
   }
 
+  // Fetch user profile to check if admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const isAdmin = profile?.role === 'admin';
+
   // Fetch conversation and messages
   let conversation: ConversationWithParticipants | null = null;
   let messages: MessageWithSender[] = [];
@@ -95,6 +104,7 @@ export default async function ConversationPage({
         initialMessages={messages}
         initialHasMore={hasMore}
         currentUserId={user.id}
+        isAdmin={isAdmin}
       />
     </div>
   );

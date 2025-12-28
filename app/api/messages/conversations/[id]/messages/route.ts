@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { sendMessageSchema } from '@/lib/validations/messages';
 import { z } from 'zod';
+import { sendMessageNotificationEmail } from '@/lib/emails/send-message-notification';
+import { checkRateLimit } from '@/lib/middleware/rate-limit';
 
 // UUID validation schema
 const uuidSchema = z.string().uuid();
@@ -11,6 +13,13 @@ interface RouteContext {
   params: {
     id: string;
   };
+}
+
+// Type for agency claim response from database
+interface AgencyClaimResponse {
+  agency: {
+    name: string;
+  } | null;
 }
 
 /**
@@ -110,7 +119,15 @@ export async function POST(
     }
 
     // ========================================================================
-    // 4. INSERT MESSAGE
+    // 4. RATE LIMITING CHECK
+    // ========================================================================
+    const rateLimitResponse = await checkRateLimit(user.id);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // ========================================================================
+    // 5. INSERT MESSAGE
     // ========================================================================
     // RLS policy will ensure user is a participant
     // Database trigger will update conversations.last_message_at
@@ -179,7 +196,104 @@ export async function POST(
     }
 
     // ========================================================================
-    // 5. RETURN SUCCESS RESPONSE
+    // 6. SEND EMAIL NOTIFICATION (NON-BLOCKING)
+    // ========================================================================
+    // Don't await - email sending shouldn't block the response
+    // Errors are handled internally and logged, won't fail the request
+    (async () => {
+      try {
+        // Get conversation participants to identify recipient
+        const { data: participants } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', conversationId);
+
+        if (!participants || participants.length === 0) {
+          console.warn(
+            `No participants found for conversation ${conversationId}`
+          );
+          return;
+        }
+
+        // Find recipient (the participant who is NOT the sender)
+        const recipientId = participants.find(
+          (p) => p.user_id !== user.id
+        )?.user_id;
+
+        if (!recipientId) {
+          console.warn(
+            `No recipient found for conversation ${conversationId} (sender: ${user.id})`
+          );
+          return;
+        }
+
+        // Fetch profiles and agency claim in parallel for better performance
+        const [
+          { data: senderProfile },
+          { data: recipientProfile },
+          { data: agencyClaim },
+        ] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single(),
+          supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', recipientId)
+            .single(),
+          supabase
+            .from('agency_claims')
+            .select(
+              `
+            agency:agencies(name)
+          `
+            )
+            .eq('user_id', user.id)
+            .eq('status', 'approved')
+            .single(),
+        ]);
+
+        if (!recipientProfile?.email) {
+          console.warn(`Recipient ${recipientId} has no email address`);
+          return;
+        }
+
+        // Send email notification
+        const result = await sendMessageNotificationEmail({
+          recipientId: recipientId,
+          recipientEmail: recipientProfile.email,
+          recipientName: recipientProfile.full_name || undefined,
+          senderName: senderProfile?.full_name || 'A user',
+          senderCompany:
+            (agencyClaim as AgencyClaimResponse | null)?.agency?.name ||
+            undefined,
+          messagePreview: content,
+          conversationId: conversationId,
+        });
+
+        if (result.sent) {
+          console.log(
+            `Email notification sent to ${recipientProfile.email} for message ${message.id}`
+          );
+        } else {
+          console.warn(
+            `Email notification failed for message ${message.id}: ${result.reason}`
+          );
+        }
+      } catch (emailError) {
+        // Catch any unexpected errors in email flow
+        // This is a fallback - sendMessageNotificationEmail already has error handling
+        console.error(
+          'Unexpected error in email notification flow:',
+          emailError
+        );
+      }
+    })();
+
+    // ========================================================================
+    // 7. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {
