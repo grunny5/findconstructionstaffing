@@ -243,6 +243,7 @@ export async function POST(
 
         // Send email notification
         const result = await sendMessageNotificationEmail({
+          recipientId: recipientId,
           recipientEmail: recipientProfile.email,
           recipientName: recipientProfile.full_name || undefined,
           senderName: senderProfile?.full_name || 'A user',

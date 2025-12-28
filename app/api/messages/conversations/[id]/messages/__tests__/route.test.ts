@@ -579,6 +579,7 @@ describe('POST /api/messages/conversations/[id]/messages', () => {
 
       expect(response.status).toBe(HTTP_STATUS.CREATED);
       expect(mockedSendEmail).toHaveBeenCalledWith({
+        recipientId: 'user-456',
         recipientEmail: 'recipient@example.com',
         recipientName: 'Jane Recipient',
         senderName: 'John Sender',
@@ -689,6 +690,7 @@ describe('POST /api/messages/conversations/[id]/messages', () => {
 
       expect(response.status).toBe(HTTP_STATUS.CREATED);
       expect(mockedSendEmail).toHaveBeenCalledWith({
+        recipientId: 'user-456',
         recipientEmail: 'contractor@example.com',
         recipientName: 'Contractor',
         senderName: 'Agency Owner',

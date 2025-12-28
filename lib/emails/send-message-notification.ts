@@ -6,12 +6,14 @@
  */
 
 import { Resend } from 'resend';
+import { createClient } from '@/lib/supabase/server';
 import {
   generateNewMessageHTML,
   generateNewMessageText,
 } from './new-message-notification';
 
 interface SendMessageNotificationParams {
+  recipientId: string; // User ID to check preferences
   recipientEmail: string;
   recipientName?: string;
   senderName: string;
@@ -31,11 +33,12 @@ interface MessageNotificationResult {
  * Send message notification email via Resend
  *
  * This function:
- * 1. Checks RESEND_API_KEY is configured
- * 2. Generates HTML and text email templates
- * 3. Sends email via Resend
- * 4. Handles errors gracefully without throwing
- * 5. Logs success/failure for debugging
+ * 1. Checks recipient's notification preferences (email_enabled, email_daily_digest_enabled)
+ * 2. Checks RESEND_API_KEY is configured
+ * 3. Generates HTML and text email templates
+ * 4. Sends email via Resend
+ * 5. Handles errors gracefully without throwing
+ * 6. Logs success/failure for debugging
  *
  * @param params - Email parameters including recipient, sender, and message details
  * @returns Result object with sent status and optional reason/error
@@ -43,6 +46,7 @@ interface MessageNotificationResult {
  * @example
  * ```typescript
  * const result = await sendMessageNotificationEmail({
+ *   recipientId: 'user-123',
  *   recipientEmail: 'user@example.com',
  *   recipientName: 'John Doe',
  *   senderName: 'Jane Smith',
@@ -61,7 +65,37 @@ export async function sendMessageNotificationEmail(
 ): Promise<MessageNotificationResult> {
   try {
     // ========================================================================
-    // 1. CHECK RESEND API KEY
+    // 1. CHECK NOTIFICATION PREFERENCES
+    // ========================================================================
+    const supabase = await createClient();
+
+    const { data: preferences } = await supabase
+      .from('notification_preferences')
+      .select('email_enabled, email_batch_enabled, email_daily_digest_enabled')
+      .eq('user_id', params.recipientId)
+      .single();
+
+    // If preferences exist and email is disabled, don't send
+    if (preferences && !preferences.email_enabled) {
+      console.log(
+        `Email notifications disabled for user ${params.recipientId} - skipping message notification`
+      );
+      return { sent: false, reason: 'email_notifications_disabled' };
+    }
+
+    // If preferences exist and daily digest is enabled, don't send real-time notification
+    if (preferences && preferences.email_daily_digest_enabled) {
+      console.log(
+        `Daily digest enabled for user ${params.recipientId} - skipping real-time notification`
+      );
+      return { sent: false, reason: 'daily_digest_enabled' };
+    }
+
+    // Note: Batch mode logic would be implemented here in a real batching system
+    // For now, we send immediately if batch mode is disabled or preferences don't exist
+
+    // ========================================================================
+    // 2. CHECK RESEND API KEY
     // ========================================================================
     const resendApiKey = process.env.RESEND_API_KEY;
 
@@ -71,12 +105,12 @@ export async function sendMessageNotificationEmail(
     }
 
     // ========================================================================
-    // 2. GET SITE URL
+    // 3. GET SITE URL
     // ========================================================================
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     // ========================================================================
-    // 3. GENERATE EMAIL TEMPLATES
+    // 4. GENERATE EMAIL TEMPLATES
     // ========================================================================
     const emailParams = {
       ...params,
@@ -87,7 +121,7 @@ export async function sendMessageNotificationEmail(
     const emailText = generateNewMessageText(emailParams);
 
     // ========================================================================
-    // 4. SEND EMAIL VIA RESEND
+    // 5. SEND EMAIL VIA RESEND
     // ========================================================================
     const resend = new Resend(resendApiKey);
 
