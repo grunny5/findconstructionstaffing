@@ -97,11 +97,7 @@ describe('Rate Limiting Middleware', () => {
       const userId = 'user-api-test';
       const rateLimitResponse = await checkRateLimit(userId);
 
-      if (rateLimitResponse) {
-        fail('Expected no rate limit response when under limit');
-      }
-
-      // Continue with API logic...
+      // When Redis is not configured, no rate limit response
       expect(rateLimitResponse).toBeNull();
     });
 
@@ -197,26 +193,18 @@ describe('Rate Limiting Middleware', () => {
     it('should work as documented in code comments', async () => {
       // Example from code comments:
       const result = await rateLimitMessages('user-123');
-      if (!result.success) {
-        // Would return 429 in real scenario
-        expect(result.error).toBeDefined();
-      } else {
-        // Request allowed
-        expect(result.success).toBe(true);
-      }
+
+      // When Redis is not configured, request is allowed
+      expect(result.success).toBe(true);
+      expect(result.enabled).toBe(false);
     });
 
     it('should work with checkRateLimit helper as documented', async () => {
       const userId = 'user-test';
       const rateLimitResponse = await checkRateLimit(userId);
 
-      if (rateLimitResponse) {
-        // Would return early with 429
-        expect(rateLimitResponse.status).toBe(429);
-      } else {
-        // Continue with normal flow
-        expect(rateLimitResponse).toBeNull();
-      }
+      // When Redis is not configured, no rate limit response
+      expect(rateLimitResponse).toBeNull();
     });
   });
 

@@ -56,7 +56,7 @@ export interface MessageBubbleProps {
   isOwnMessage: boolean;
   isAdmin?: boolean; // New prop for admin users
   onEdit?: (messageId: string) => void;
-  onDelete?: (messageId: string) => void;
+  onDelete?: (messageId: string) => Promise<void>;
 }
 
 /**

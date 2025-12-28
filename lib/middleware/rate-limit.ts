@@ -62,7 +62,7 @@ function initializeRateLimiter(): Ratelimit | null {
       redis: redisClient,
       limiter: Ratelimit.slidingWindow(
         RATE_LIMIT_MAX_REQUESTS,
-        `${RATE_LIMIT_WINDOW_MS} ms`
+        `${RATE_LIMIT_WINDOW_MS / 1000} s`
       ),
       analytics: true,
       prefix: 'ratelimit:messages',
