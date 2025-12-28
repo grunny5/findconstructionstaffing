@@ -169,16 +169,6 @@ describe('ConversationPage', () => {
           }),
         },
         ...mockProfileQuery,
-        from: jest.fn().mockReturnValue({
-          select: jest.fn().mockReturnValue({
-            eq: jest.fn().mockReturnValue({
-              single: jest.fn().mockResolvedValue({
-                data: { role: 'user' },
-                error: null,
-              }),
-            }),
-          }),
-        }),
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -224,7 +214,6 @@ describe('ConversationPage', () => {
           }),
         },
         ...mockProfileQuery,
-        ...mockProfileQuery,
       };
 
       (createClient as jest.Mock).mockResolvedValue(mockSupabase);
@@ -247,7 +236,6 @@ describe('ConversationPage', () => {
             error: null,
           }),
         },
-        ...mockProfileQuery,
         ...mockProfileQuery,
       };
 

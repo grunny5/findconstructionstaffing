@@ -64,9 +64,7 @@ export async function sendMessageNotificationEmail(
   params: SendMessageNotificationParams
 ): Promise<MessageNotificationResult> {
   try {
-    // ========================================================================
-    // 1. CHECK NOTIFICATION PREFERENCES
-    // ========================================================================
+    // Check notification preferences
     const supabase = await createClient();
 
     const { data: preferences } = await supabase
@@ -94,9 +92,7 @@ export async function sendMessageNotificationEmail(
     // Note: Batch mode logic would be implemented here in a real batching system
     // For now, we send immediately if batch mode is disabled or preferences don't exist
 
-    // ========================================================================
-    // 2. CHECK RESEND API KEY
-    // ========================================================================
+    // Check Resend API key
     const resendApiKey = process.env.RESEND_API_KEY;
 
     if (!resendApiKey) {
@@ -106,14 +102,17 @@ export async function sendMessageNotificationEmail(
       return { sent: false, reason: 'resend_api_key_missing' };
     }
 
-    // ========================================================================
-    // 3. GET SITE URL
-    // ========================================================================
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // Get site URL (required for email links)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
-    // ========================================================================
-    // 4. GENERATE EMAIL TEMPLATES
-    // ========================================================================
+    if (!siteUrl) {
+      console.error(
+        'NEXT_PUBLIC_SITE_URL not configured - skipping message notification to avoid incorrect email links'
+      );
+      return { sent: false, reason: 'site_url_missing' };
+    }
+
+    // Generate email templates
     const emailParams = {
       ...params,
       siteUrl,
@@ -122,9 +121,7 @@ export async function sendMessageNotificationEmail(
     const emailHtml = generateNewMessageHTML(emailParams);
     const emailText = generateNewMessageText(emailParams);
 
-    // ========================================================================
-    // 5. SEND EMAIL VIA RESEND
-    // ========================================================================
+    // Send email via Resend
     const resend = new Resend(resendApiKey);
 
     // Get configurable sender email (allows different emails for staging/production)
