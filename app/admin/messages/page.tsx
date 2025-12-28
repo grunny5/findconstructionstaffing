@@ -3,6 +3,26 @@ import { createClient } from '@/lib/supabase/server';
 import { AdminMessagesClient } from '@/components/admin/AdminMessagesClient';
 
 /**
+ * Type for conversation participant with profile data from database
+ */
+interface ConversationParticipantWithProfile {
+  user_id: string;
+  profiles:
+    | {
+        id: string;
+        full_name: string | null;
+        email: string;
+        role: string;
+      }
+    | {
+        id: string;
+        full_name: string | null;
+        email: string;
+        role: string;
+      }[];
+}
+
+/**
  * Admin Messages Page
  *
  * Displays all platform conversations for moderation purposes.
@@ -167,12 +187,19 @@ export default async function AdminMessagesPage() {
       context_agency: agency
         ? { id: agency.id, name: agency.name, slug: agency.slug }
         : null,
-      participants: conv.conversation_participants.map((p: any) => ({
-        id: p.profiles.id,
-        full_name: p.profiles.full_name || 'Unknown',
-        email: p.profiles.email,
-        role: p.profiles.role,
-      })),
+      participants: conv.conversation_participants.map(
+        (p: ConversationParticipantWithProfile) => {
+          const profile = Array.isArray(p.profiles)
+            ? p.profiles[0]
+            : p.profiles;
+          return {
+            id: profile.id,
+            full_name: profile.full_name || 'Unknown',
+            email: profile.email,
+            role: profile.role,
+          };
+        }
+      ),
       total_messages: stats.totalMessages,
       recent_messages_24h: stats.recentMessages,
       last_message_preview: lastMessage?.deleted_at

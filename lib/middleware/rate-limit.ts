@@ -1,5 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -197,12 +198,12 @@ export async function rateLimitMessages(
  */
 export async function checkRateLimit(
   userId: string
-): Promise<Response | null> {
+): Promise<NextResponse | null> {
   const result = await rateLimitMessages(userId);
 
   if (!result.success) {
-    return new Response(
-      JSON.stringify({
+    return NextResponse.json(
+      {
         error: {
           code: 'RATE_LIMIT_EXCEEDED',
           message: result.error || 'Too many requests',
@@ -212,17 +213,14 @@ export async function checkRateLimit(
             retryAfter: Math.ceil((result.reset - Date.now()) / 1000),
           },
         },
-      }),
+      },
       {
         status: 429,
         headers: {
-          'Content-Type': 'application/json',
           'X-RateLimit-Limit': String(result.limit),
           'X-RateLimit-Remaining': String(result.remaining),
           'X-RateLimit-Reset': String(result.reset),
-          'Retry-After': String(
-            Math.ceil((result.reset - Date.now()) / 1000)
-          ),
+          'Retry-After': String(Math.ceil((result.reset - Date.now()) / 1000)),
         },
       }
     );

@@ -221,15 +221,6 @@ export function MessageBubble({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'}>
-                {onEdit && canEditMessage && isOwnMessage && !isAdmin && (
-                  <DropdownMenuItem
-                    onClick={() => onEdit(message.id)}
-                    className="cursor-pointer"
-                  >
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
                 {onDelete && (
                   <DropdownMenuItem
                     onClick={handleDeleteClick}

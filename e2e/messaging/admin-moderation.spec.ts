@@ -22,7 +22,9 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Admin Message Moderation', () => {
-  test.skip('should allow admin to view all conversations', async ({ page }) => {
+  test.skip('should allow admin to view all conversations', async ({
+    page,
+  }) => {
     // TODO: Setup - create test conversations
     // TODO: Authenticate as admin
     // await loginAsAdmin(page);
@@ -175,9 +177,10 @@ test.describe('Admin Message Moderation', () => {
     await searchInput.clear();
 
     // Step 5: All conversations should be visible again
-    await expect(
-      page.locator('[data-testid="conversation-row"]')
-    ).toHaveCountGreaterThan(1);
+    const conversationCount = await page
+      .locator('[data-testid="conversation-row"]')
+      .count();
+    expect(conversationCount).toBeGreaterThan(1);
 
     // TODO: Cleanup
   });

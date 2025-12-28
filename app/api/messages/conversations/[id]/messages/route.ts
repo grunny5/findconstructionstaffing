@@ -15,6 +15,13 @@ interface RouteContext {
   };
 }
 
+// Type for agency claim response from database
+interface AgencyClaimResponse {
+  agency: {
+    name: string;
+  } | null;
+}
+
 /**
  * POST /api/messages/conversations/[id]/messages
  *
@@ -259,7 +266,9 @@ export async function POST(
           recipientEmail: recipientProfile.email,
           recipientName: recipientProfile.full_name || undefined,
           senderName: senderProfile?.full_name || 'A user',
-          senderCompany: (agencyClaim?.agency as any)?.name || undefined,
+          senderCompany:
+            (agencyClaim as AgencyClaimResponse | null)?.agency?.name ||
+            undefined,
           messagePreview: content,
           conversationId: conversationId,
         });

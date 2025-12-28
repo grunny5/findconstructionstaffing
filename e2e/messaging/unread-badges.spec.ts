@@ -75,7 +75,9 @@ test.describe('Unread Message Badges', () => {
       await expect(conversationBadge).toHaveText('1');
 
       // Step 9: Recipient opens conversation
-      await recipientPage.locator(`a[href="/messages/conversations/${conversationId}"]`).click();
+      await recipientPage
+        .locator(`a[href="/messages/conversations/${conversationId}"]`)
+        .click();
 
       // Step 10: Wait for mark-as-read API call
       await recipientPage.waitForTimeout(1000);
