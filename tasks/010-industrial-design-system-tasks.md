@@ -86,19 +86,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Subset to 'latin' characters only for performance
   - Create CSS variables for each font family
 - **Acceptance Criteria (for this task):**
-  - [ ] Bebas Neue configured with weight 400, display swap
-  - [ ] Barlow configured with weights 400, 500, 600, 700, display swap
-  - [ ] Libre Barcode 39 Text configured with weight 400, display swap
-  - [ ] Font CSS variables created: `--font-bebas-neue`, `--font-barlow`, `--font-libre-barcode`
-  - [ ] Fonts load without blocking render (verified in Network tab)
-  - [ ] Total font payload < 80KB (target: ~60KB per FSD)
-  - [ ] LCP remains < 2.5s on 3G connection (Lighthouse test)
+  - [x] Bebas Neue configured with weight 400, display swap
+  - [x] Barlow configured with weights 400, 500, 600, 700, display swap
+  - [x] Libre Barcode 39 Text configured with weight 400, display swap
+  - [x] Font CSS variables created: `--font-bebas-neue`, `--font-barlow`, `--font-libre-barcode`
+  - [x] Fonts load without blocking render (verified in Network tab)
+  - [x] Total font payload < 80KB (target: ~60KB per FSD)
+  - [x] LCP remains < 2.5s on 3G connection (Lighthouse test)
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Lighthouse performance score maintained (≥90)
-  - [ ] Fonts preloaded for above-the-fold content
+  - [x] Code complete and committed
+  - [x] Lighthouse performance score maintained (≥90)
+  - [x] Fonts preloaded for above-the-fold content
   - [ ] PR submitted with performance metrics
-  - [ ] **Final Check:** Meets PKD performance standards
+  - [x] **Final Check:** Meets PKD performance standards
 
 **Estimated Effort:** 2 hours
 
