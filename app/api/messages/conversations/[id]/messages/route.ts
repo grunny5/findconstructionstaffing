@@ -211,36 +211,38 @@ export async function POST(
           return;
         }
 
-        // Get sender profile
-        const { data: senderProfile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', user.id)
-          .single();
-
-        // Get recipient profile with email
-        const { data: recipientProfile } = await supabase
-          .from('profiles')
-          .select('full_name, email')
-          .eq('id', recipientId)
-          .single();
+        // Fetch profiles and agency claim in parallel for better performance
+        const [
+          { data: senderProfile },
+          { data: recipientProfile },
+          { data: agencyClaim },
+        ] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single(),
+          supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', recipientId)
+            .single(),
+          supabase
+            .from('agency_claims')
+            .select(
+              `
+            agency:agencies(name)
+          `
+            )
+            .eq('user_id', user.id)
+            .eq('status', 'approved')
+            .single(),
+        ]);
 
         if (!recipientProfile?.email) {
           console.warn(`Recipient ${recipientId} has no email address`);
           return;
         }
-
-        // Check if sender is an agency owner (to include company name)
-        const { data: agencyClaim } = await supabase
-          .from('agency_claims')
-          .select(
-            `
-            agency:agencies(name)
-          `
-          )
-          .eq('user_id', user.id)
-          .eq('status', 'approved')
-          .single();
 
         // Send email notification
         const result = await sendMessageNotificationEmail({

@@ -127,6 +127,11 @@ export async function sendMessageNotificationEmail(
     // ========================================================================
     const resend = new Resend(resendApiKey);
 
+    // Get configurable sender email (allows different emails for staging/production)
+    const fromEmail =
+      process.env.RESEND_FROM_EMAIL ||
+      'FindConstructionStaffing <noreply@findconstructionstaffing.com>';
+
     const messageCount = params.messageCount || 1;
     const subject =
       messageCount > 1
@@ -134,7 +139,7 @@ export async function sendMessageNotificationEmail(
         : `New message from ${params.senderName}`;
 
     await resend.emails.send({
-      from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+      from: fromEmail,
       to: params.recipientEmail,
       subject,
       html: emailHtml,
