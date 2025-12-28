@@ -4,6 +4,7 @@ import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { sendMessageSchema } from '@/lib/validations/messages';
 import { z } from 'zod';
 import { sendMessageNotificationEmail } from '@/lib/emails/send-message-notification';
+import { checkRateLimit } from '@/lib/middleware/rate-limit';
 
 // UUID validation schema
 const uuidSchema = z.string().uuid();
@@ -111,7 +112,15 @@ export async function POST(
     }
 
     // ========================================================================
-    // 4. INSERT MESSAGE
+    // 4. RATE LIMITING CHECK
+    // ========================================================================
+    const rateLimitResponse = await checkRateLimit(user.id);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // ========================================================================
+    // 5. INSERT MESSAGE
     // ========================================================================
     // RLS policy will ensure user is a participant
     // Database trigger will update conversations.last_message_at
@@ -180,7 +189,7 @@ export async function POST(
     }
 
     // ========================================================================
-    // 5. SEND EMAIL NOTIFICATION (NON-BLOCKING)
+    // 6. SEND EMAIL NOTIFICATION (NON-BLOCKING)
     // ========================================================================
     // Don't await - email sending shouldn't block the response
     // Errors are handled internally and logged, won't fail the request
@@ -275,7 +284,7 @@ export async function POST(
     })();
 
     // ========================================================================
-    // 6. RETURN SUCCESS RESPONSE
+    // 7. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {
