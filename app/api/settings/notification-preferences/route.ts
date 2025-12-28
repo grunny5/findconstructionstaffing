@@ -103,17 +103,11 @@ export async function GET(): Promise<NextResponse> {
         email_daily_digest_enabled: false,
       };
 
-      return NextResponse.json(
-        { data: defaults },
-        { status: HTTP_STATUS.OK }
-      );
+      return NextResponse.json({ data: defaults }, { status: HTTP_STATUS.OK });
     }
 
     // Case: Preferences exist - return them
-    return NextResponse.json(
-      { data: preferences },
-      { status: HTTP_STATUS.OK }
-    );
+    return NextResponse.json({ data: preferences }, { status: HTTP_STATUS.OK });
   } catch (error) {
     console.error(
       'Unexpected error in notification preferences GET endpoint:',
@@ -267,6 +261,6 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         },
       },
       { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-      );
+    );
   }
 }

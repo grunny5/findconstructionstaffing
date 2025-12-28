@@ -100,7 +100,9 @@ export async function sendMessageNotificationEmail(
     const resendApiKey = process.env.RESEND_API_KEY;
 
     if (!resendApiKey) {
-      console.warn('RESEND_API_KEY not configured - skipping message notification');
+      console.warn(
+        'RESEND_API_KEY not configured - skipping message notification'
+      );
       return { sent: false, reason: 'resend_api_key_missing' };
     }
 

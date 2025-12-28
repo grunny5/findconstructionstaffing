@@ -35,18 +35,12 @@ export function generateNewMessageHTML(
   } = params;
 
   // Sanitize message preview and truncate to 200 chars
-  const sanitizedPreview = escapeHtml(
-    messagePreview.substring(0, 200).trim()
-  );
+  const sanitizedPreview = escapeHtml(messagePreview.substring(0, 200).trim());
   const truncatedPreview =
-    messagePreview.length > 200
-      ? `${sanitizedPreview}...`
-      : sanitizedPreview;
+    messagePreview.length > 200 ? `${sanitizedPreview}...` : sanitizedPreview;
 
   const escapedSenderName = escapeHtml(senderName);
-  const escapedSenderCompany = senderCompany
-    ? escapeHtml(senderCompany)
-    : null;
+  const escapedSenderCompany = senderCompany ? escapeHtml(senderCompany) : null;
 
   const messageText =
     messageCount > 1

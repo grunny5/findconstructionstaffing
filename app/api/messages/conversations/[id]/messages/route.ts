@@ -200,8 +200,9 @@ export async function POST(
         }
 
         // Find recipient (the participant who is NOT the sender)
-        const recipientId = participants.find((p) => p.user_id !== user.id)
-          ?.user_id;
+        const recipientId = participants.find(
+          (p) => p.user_id !== user.id
+        )?.user_id;
 
         if (!recipientId) {
           console.warn(
@@ -264,7 +265,10 @@ export async function POST(
       } catch (emailError) {
         // Catch any unexpected errors in email flow
         // This is a fallback - sendMessageNotificationEmail already has error handling
-        console.error('Unexpected error in email notification flow:', emailError);
+        console.error(
+          'Unexpected error in email notification flow:',
+          emailError
+        );
       }
     })();
 

@@ -537,7 +537,10 @@ describe('POST /api/messages/conversations/[id]/messages', () => {
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
-              data: { full_name: 'Jane Recipient', email: 'recipient@example.com' },
+              data: {
+                full_name: 'Jane Recipient',
+                email: 'recipient@example.com',
+              },
               error: null,
             }),
           }),
@@ -648,7 +651,10 @@ describe('POST /api/messages/conversations/[id]/messages', () => {
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
-              data: { full_name: 'Contractor', email: 'contractor@example.com' },
+              data: {
+                full_name: 'Contractor',
+                email: 'contractor@example.com',
+              },
               error: null,
             }),
           }),

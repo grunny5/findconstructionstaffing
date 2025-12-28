@@ -140,7 +140,9 @@ describe('Notification Preferences API', () => {
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
         // Mock console.error to suppress error output
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation();
 
         const response = await GET();
         const data = await response.json();
@@ -171,10 +173,13 @@ describe('Notification Preferences API', () => {
 
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
-        const request = new NextRequest('http://localhost/api/settings/notification-preferences', {
-          method: 'PATCH',
-          body: JSON.stringify(mockPreferences),
-        });
+        const request = new NextRequest(
+          'http://localhost/api/settings/notification-preferences',
+          {
+            method: 'PATCH',
+            body: JSON.stringify(mockPreferences),
+          }
+        );
 
         const response = await PATCH(request);
         const data = await response.json();
@@ -197,10 +202,13 @@ describe('Notification Preferences API', () => {
 
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
-        const request = new NextRequest('http://localhost/api/settings/notification-preferences', {
-          method: 'PATCH',
-          body: 'invalid json',
-        });
+        const request = new NextRequest(
+          'http://localhost/api/settings/notification-preferences',
+          {
+            method: 'PATCH',
+            body: 'invalid json',
+          }
+        );
 
         const response = await PATCH(request);
         const data = await response.json();
@@ -222,13 +230,16 @@ describe('Notification Preferences API', () => {
 
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
-        const request = new NextRequest('http://localhost/api/settings/notification-preferences', {
-          method: 'PATCH',
-          body: JSON.stringify({
-            email_enabled: true,
-            // Missing email_batch_enabled and email_daily_digest_enabled
-          }),
-        });
+        const request = new NextRequest(
+          'http://localhost/api/settings/notification-preferences',
+          {
+            method: 'PATCH',
+            body: JSON.stringify({
+              email_enabled: true,
+              // Missing email_batch_enabled and email_daily_digest_enabled
+            }),
+          }
+        );
 
         const response = await PATCH(request);
         const data = await response.json();
@@ -250,14 +261,17 @@ describe('Notification Preferences API', () => {
 
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
-        const request = new NextRequest('http://localhost/api/settings/notification-preferences', {
-          method: 'PATCH',
-          body: JSON.stringify({
-            email_enabled: 'not a boolean',
-            email_batch_enabled: true,
-            email_daily_digest_enabled: false,
-          }),
-        });
+        const request = new NextRequest(
+          'http://localhost/api/settings/notification-preferences',
+          {
+            method: 'PATCH',
+            body: JSON.stringify({
+              email_enabled: 'not a boolean',
+              email_batch_enabled: true,
+              email_daily_digest_enabled: false,
+            }),
+          }
+        );
 
         const response = await PATCH(request);
         const data = await response.json();
@@ -296,10 +310,13 @@ describe('Notification Preferences API', () => {
 
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
-        const request = new NextRequest('http://localhost/api/settings/notification-preferences', {
-          method: 'PATCH',
-          body: JSON.stringify(updatedPreferences),
-        });
+        const request = new NextRequest(
+          'http://localhost/api/settings/notification-preferences',
+          {
+            method: 'PATCH',
+            body: JSON.stringify(updatedPreferences),
+          }
+        );
 
         const response = await PATCH(request);
         const data = await response.json();
@@ -308,7 +325,9 @@ describe('Notification Preferences API', () => {
         expect(data.data).toEqual(updatedPreferences);
 
         // Verify upsert was called with correct parameters
-        expect(mockSupabase.from).toHaveBeenCalledWith('notification_preferences');
+        expect(mockSupabase.from).toHaveBeenCalledWith(
+          'notification_preferences'
+        );
         expect(mockSupabase.from().upsert).toHaveBeenCalledWith(
           {
             user_id: mockUser.id,
@@ -344,12 +363,17 @@ describe('Notification Preferences API', () => {
         (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
         // Mock console.error to suppress error output
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation();
 
-        const request = new NextRequest('http://localhost/api/settings/notification-preferences', {
-          method: 'PATCH',
-          body: JSON.stringify(mockPreferences),
-        });
+        const request = new NextRequest(
+          'http://localhost/api/settings/notification-preferences',
+          {
+            method: 'PATCH',
+            body: JSON.stringify(mockPreferences),
+          }
+        );
 
         const response = await PATCH(request);
         const data = await response.json();

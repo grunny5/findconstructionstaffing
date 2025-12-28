@@ -94,7 +94,9 @@ export function MessageBubble({
   // Show actions if:
   // 1. It's the user's own message and not deleted, OR
   // 2. User is an admin and message is not deleted
-  const showActions = !isDeleted && ((isOwnMessage && (onEdit || onDelete)) || (isAdmin && onDelete));
+  const showActions =
+    !isDeleted &&
+    ((isOwnMessage && (onEdit || onDelete)) || (isAdmin && onDelete));
   const canEditMessage = canEdit(message.created_at);
 
   // Sanitize content for safe display

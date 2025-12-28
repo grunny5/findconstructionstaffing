@@ -120,9 +120,7 @@ export function AdminMessagesClient({
       <div className="space-y-4">
         <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
           <TabsList>
-            <TabsTrigger value="all">
-              All ({counts.all})
-            </TabsTrigger>
+            <TabsTrigger value="all">All ({counts.all})</TabsTrigger>
             <TabsTrigger value="high_volume">
               High Volume ({counts.high_volume})
             </TabsTrigger>
@@ -211,9 +209,7 @@ export function AdminMessagesClient({
 
                     {/* Total Messages */}
                     <TableCell className="text-right">
-                      <Badge variant="secondary">
-                        {conv.total_messages}
-                      </Badge>
+                      <Badge variant="secondary">{conv.total_messages}</Badge>
                     </TableCell>
 
                     {/* 24h Activity */}
@@ -250,11 +246,7 @@ export function AdminMessagesClient({
 
                     {/* Actions */}
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                      >
+                      <Button variant="outline" size="sm" asChild>
                         <Link href={`/messages/conversations/${conv.id}`}>
                           View
                         </Link>

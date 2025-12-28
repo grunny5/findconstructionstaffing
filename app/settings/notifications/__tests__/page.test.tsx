@@ -62,15 +62,25 @@ describe('NotificationsSettingsPage', () => {
       render(<NotificationsSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Notification Preferences')).toBeInTheDocument();
+        expect(
+          screen.getByText('Notification Preferences')
+        ).toBeInTheDocument();
       });
 
-      expect(global.fetch).toHaveBeenCalledWith('/api/settings/notification-preferences');
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/settings/notification-preferences'
+      );
 
       // Verify switches are set correctly
-      const emailSwitch = screen.getByRole('switch', { name: /email notifications/i });
-      const batchSwitch = screen.getByRole('switch', { name: /batch notifications/i });
-      const digestSwitch = screen.getByRole('switch', { name: /daily digest/i });
+      const emailSwitch = screen.getByRole('switch', {
+        name: /email notifications/i,
+      });
+      const batchSwitch = screen.getByRole('switch', {
+        name: /batch notifications/i,
+      });
+      const digestSwitch = screen.getByRole('switch', {
+        name: /daily digest/i,
+      });
 
       expect(emailSwitch).toBeChecked();
       expect(batchSwitch).toBeChecked();
@@ -86,7 +96,9 @@ describe('NotificationsSettingsPage', () => {
       render(<NotificationsSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to load notification preferences/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/failed to load notification preferences/i)
+        ).toBeInTheDocument();
       });
 
       consoleErrorSpy.mockRestore();
@@ -107,7 +119,9 @@ describe('NotificationsSettingsPage', () => {
       render(<NotificationsSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Notification Preferences')).toBeInTheDocument();
+        expect(
+          screen.getByText('Notification Preferences')
+        ).toBeInTheDocument();
       });
 
       // Clear the initial fetch call
@@ -117,9 +131,15 @@ describe('NotificationsSettingsPage', () => {
     it('should disable batch and digest when email is disabled', async () => {
       const user = userEvent.setup();
 
-      const emailSwitch = screen.getByRole('switch', { name: /email notifications/i });
-      const batchSwitch = screen.getByRole('switch', { name: /batch notifications/i });
-      const digestSwitch = screen.getByRole('switch', { name: /daily digest/i });
+      const emailSwitch = screen.getByRole('switch', {
+        name: /email notifications/i,
+      });
+      const batchSwitch = screen.getByRole('switch', {
+        name: /batch notifications/i,
+      });
+      const digestSwitch = screen.getByRole('switch', {
+        name: /daily digest/i,
+      });
 
       await user.click(emailSwitch);
 
@@ -147,27 +167,37 @@ describe('NotificationsSettingsPage', () => {
       const { rerender } = render(<NotificationsSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Notification Preferences')).toBeInTheDocument();
+        expect(
+          screen.getByText('Notification Preferences')
+        ).toBeInTheDocument();
       });
 
       const user = userEvent.setup();
-      const batchSwitch = screen.getByRole('switch', { name: /batch notifications/i });
+      const batchSwitch = screen.getByRole('switch', {
+        name: /batch notifications/i,
+      });
 
       await user.click(batchSwitch);
 
       // Digest should remain unchecked
-      const digestSwitch = screen.getByRole('switch', { name: /daily digest/i });
+      const digestSwitch = screen.getByRole('switch', {
+        name: /daily digest/i,
+      });
       expect(digestSwitch).not.toBeChecked();
     });
 
     it('should disable batch when digest is enabled', async () => {
       const user = userEvent.setup();
-      const digestSwitch = screen.getByRole('switch', { name: /daily digest/i });
+      const digestSwitch = screen.getByRole('switch', {
+        name: /daily digest/i,
+      });
 
       await user.click(digestSwitch);
 
       // Batch should be disabled
-      const batchSwitch = screen.getByRole('switch', { name: /batch notifications/i });
+      const batchSwitch = screen.getByRole('switch', {
+        name: /batch notifications/i,
+      });
       expect(batchSwitch).not.toBeChecked();
     });
   });
@@ -186,7 +216,9 @@ describe('NotificationsSettingsPage', () => {
       render(<NotificationsSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Notification Preferences')).toBeInTheDocument();
+        expect(
+          screen.getByText('Notification Preferences')
+        ).toBeInTheDocument();
       });
 
       // Clear the initial fetch call
@@ -217,7 +249,9 @@ describe('NotificationsSettingsPage', () => {
         );
       });
 
-      expect(toast.success).toHaveBeenCalledWith('Notification preferences updated');
+      expect(toast.success).toHaveBeenCalledWith(
+        'Notification preferences updated'
+      );
     });
 
     it('should show error toast when save fails', async () => {
@@ -232,7 +266,9 @@ describe('NotificationsSettingsPage', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Failed to save notification preferences');
+        expect(toast.error).toHaveBeenCalledWith(
+          'Failed to save notification preferences'
+        );
       });
 
       consoleErrorSpy.mockRestore();
@@ -263,7 +299,9 @@ describe('NotificationsSettingsPage', () => {
       expect(saveButton).toBeDisabled();
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('Notification preferences updated');
+        expect(toast.success).toHaveBeenCalledWith(
+          'Notification preferences updated'
+        );
       });
     });
   });
@@ -282,7 +320,9 @@ describe('NotificationsSettingsPage', () => {
       render(<NotificationsSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Notification Preferences')).toBeInTheDocument();
+        expect(
+          screen.getByText('Notification Preferences')
+        ).toBeInTheDocument();
       });
     });
 
@@ -294,17 +334,23 @@ describe('NotificationsSettingsPage', () => {
 
     it('should render description text', () => {
       expect(
-        screen.getByText('Manage how you receive notifications about new messages')
+        screen.getByText(
+          'Manage how you receive notifications about new messages'
+        )
       ).toBeInTheDocument();
     });
 
     it('should render save button', () => {
-      expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /save changes/i })
+      ).toBeInTheDocument();
     });
 
     it('should render help text about mutual exclusivity', () => {
       expect(
-        screen.getByText(/batch notifications and daily digest are mutually exclusive/i)
+        screen.getByText(
+          /batch notifications and daily digest are mutually exclusive/i
+        )
       ).toBeInTheDocument();
     });
   });

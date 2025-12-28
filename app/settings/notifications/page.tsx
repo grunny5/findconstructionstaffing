@@ -117,7 +117,9 @@ export default function NotificationsSettingsPage() {
       email_enabled: checked,
       // Disable batch and digest if email is disabled
       email_batch_enabled: checked ? prev.email_batch_enabled : false,
-      email_daily_digest_enabled: checked ? prev.email_daily_digest_enabled : false,
+      email_daily_digest_enabled: checked
+        ? prev.email_daily_digest_enabled
+        : false,
     }));
   };
 
@@ -126,7 +128,9 @@ export default function NotificationsSettingsPage() {
       ...prev,
       email_batch_enabled: checked,
       // Disable digest if batch is enabled
-      email_daily_digest_enabled: checked ? false : prev.email_daily_digest_enabled,
+      email_daily_digest_enabled: checked
+        ? false
+        : prev.email_daily_digest_enabled,
     }));
   };
 
@@ -235,7 +239,8 @@ export default function NotificationsSettingsPage() {
               <p
                 className={`text-sm ${!preferences.email_enabled ? 'text-gray-400' : 'text-gray-600'}`}
               >
-                Receive a summary email at 8:00 AM instead of real-time notifications
+                Receive a summary email at 8:00 AM instead of real-time
+                notifications
               </p>
             </div>
             <Switch
@@ -266,8 +271,9 @@ export default function NotificationsSettingsPage() {
         {/* Help Text */}
         <div className="rounded-md bg-blue-50 p-4">
           <p className="text-sm text-blue-800">
-            <strong>Note:</strong> Batch notifications and daily digest are mutually exclusive.
-            Enabling one will automatically disable the other.
+            <strong>Note:</strong> Batch notifications and daily digest are
+            mutually exclusive. Enabling one will automatically disable the
+            other.
           </p>
         </div>
       </div>
