@@ -684,14 +684,14 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 
 ---
 
-### Task 4.2: Create ProfileHeader Component with Bebas Neue Styling
+### Task 4.2: Create ProfileHeader Component with Bebas Neue Styling ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Build reusable profile header component for agency profile pages
 - **Context:** Profile header displays firm name, location, and key stats prominently
 - **Key Files to Create:**
-  - `components/ProfileHeader.tsx`
-  - `components/__tests__/ProfileHeader.test.tsx`
+  - `components/ProfileHeader.tsx` (created)
+  - `components/__tests__/ProfileHeader.test.tsx` (created)
 - **Key Files to Reference:**
   - `docs/features/active/010-industrial-design-system.md` (Typography specs)
 - **Key Patterns to Follow:**
@@ -699,19 +699,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Metadata in smaller Barlow text
   - Optional category color accent bar
 - **Acceptance Criteria (for this task):**
-  - [ ] Firm name: Bebas Neue, clamp(2rem, 5vw, 3rem), uppercase
-  - [ ] Location/metadata: Barlow, 0.875rem, graphite-400
-  - [ ] Stats row displays key numbers (employees, projects, years)
-  - [ ] Optional 6px gradient band (use sparingly per FSD)
-  - [ ] Responsive: stacks on mobile
-  - [ ] Component props: firmName, location, stats, category
-  - [ ] Component tests cover all prop combinations
+  - [x] Firm name: Bebas Neue, clamp(2rem, 5vw, 3rem), uppercase (font-display + inline style)
+  - [x] Location/metadata: Barlow, 0.875rem, graphite-400 (font-body text-sm)
+  - [x] Stats row displays key numbers (employees, projects, years) with icons
+  - [x] Optional 6px gradient band (h-1.5 with category-based gradients)
+  - [x] Responsive: stacks on mobile (flex-col lg:flex-row, grid-cols-2 sm:3 lg:4)
+  - [x] Component props: firmName, location, stats, category, showAccentBand, logoUrl, description
+  - [x] Component tests cover all prop combinations (47 tests)
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Reusable across profile pages
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage (47 tests passing)
+  - [x] Reusable across profile pages
   - [ ] PR submitted with component examples
-  - [ ] **Final Check:** Follows component API standards
+  - [x] **Final Check:** Follows component API standards
 
 **Estimated Effort:** 4 hours
 
