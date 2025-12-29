@@ -70,7 +70,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      'inline-flex h-8 shrink-0 items-center justify-center rounded-industrial-sharp border-2 border-industrial-graphite-300 bg-transparent px-3 font-body text-sm font-medium transition-colors hover:bg-industrial-graphite-100 focus:outline-none focus:border-industrial-orange disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-industrial-orange/40 group-[.destructive]:hover:border-industrial-orange group-[.destructive]:hover:bg-industrial-orange group-[.destructive]:hover:text-white group-[.destructive]:focus:border-industrial-orange',
+      'inline-flex h-8 shrink-0 items-center justify-center rounded-industrial-sharp border-2 border-industrial-graphite-300 bg-transparent px-3 font-body text-sm font-medium transition-colors hover:bg-industrial-graphite-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-industrial-orange/40 group-[.destructive]:hover:border-industrial-orange group-[.destructive]:hover:bg-industrial-orange group-[.destructive]:hover:text-white group-[.destructive]:focus-visible:ring-industrial-orange',
       className
     )}
     {...props}
@@ -85,7 +85,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      'absolute right-2 top-2 rounded-industrial-sharp p-1 text-industrial-graphite-400 opacity-0 transition-opacity hover:text-industrial-graphite-600 focus:opacity-100 focus:outline-none focus:border-industrial-orange group-hover:opacity-100 group-[.destructive]:text-industrial-orange group-[.destructive]:hover:text-industrial-orange-600 group-[.destructive]:focus:border-industrial-orange',
+      'absolute right-2 top-2 rounded-industrial-sharp p-1 text-industrial-graphite-400 opacity-0 transition-opacity hover:text-industrial-graphite-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange focus-visible:ring-offset-2 group-hover:opacity-100 group-[.destructive]:text-industrial-orange group-[.destructive]:hover:text-industrial-orange-600 group-[.destructive]:focus-visible:ring-industrial-orange',
       className
     )}
     toast-close=""

@@ -38,12 +38,13 @@ const FormWrapper = ({
       defaultValues,
     });
 
-    // Manually set errors for testing
+    // Manually set errors for testing (runs once on mount)
     React.useEffect(() => {
       Object.entries(errors).forEach(([field, error]) => {
         methods.setError(field as never, error);
       });
-    }, [methods]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return <FormProvider {...methods}>{children}</FormProvider>;
   };
@@ -312,7 +313,10 @@ describe('Alert Component Styling', () => {
  */
 describe('Toast Component Styling (Source Verification)', () => {
   // Read the toast.tsx source to verify industrial styling is present
-  // This is a structural verification rather than render test
+  // Source-based verification is intentional here because:
+  // 1. Toast components require Radix portal rendering which is complex to mock
+  // 2. We're verifying styling tokens exist, not runtime behavior
+  // 3. Render tests for Toast are covered in integration/e2e tests
   const fs = require('fs');
   const path = require('path');
   const toastSource = fs.readFileSync(
