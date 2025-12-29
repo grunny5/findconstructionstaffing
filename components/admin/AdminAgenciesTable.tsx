@@ -64,9 +64,10 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
       if (page > 1) params.set('page', page.toString());
 
       const queryString = params.toString();
-      router.push(queryString ? `?${queryString}` : '/admin/agencies', {
-        scroll: false,
-      });
+      router.push(
+        queryString ? `/admin/agencies?${queryString}` : '/admin/agencies',
+        { scroll: false }
+      );
     },
     [router]
   );

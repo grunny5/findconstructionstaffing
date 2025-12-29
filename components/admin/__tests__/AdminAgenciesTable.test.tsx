@@ -402,7 +402,7 @@ describe('AdminAgenciesTable', () => {
       fireEvent.change(searchInput, { target: { value: 'Alpha' } });
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('?search=Alpha', {
+        expect(mockPush).toHaveBeenCalledWith('/admin/agencies?search=Alpha', {
           scroll: false,
         });
       });
@@ -417,7 +417,7 @@ describe('AdminAgenciesTable', () => {
       fireEvent.click(activeOption);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('?status=active', {
+        expect(mockPush).toHaveBeenCalledWith('/admin/agencies?status=active', {
           scroll: false,
         });
       });
@@ -432,7 +432,7 @@ describe('AdminAgenciesTable', () => {
       fireEvent.click(claimedOption);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('?claimed=yes', {
+        expect(mockPush).toHaveBeenCalledWith('/admin/agencies?claimed=yes', {
           scroll: false,
         });
       });
@@ -452,9 +452,10 @@ describe('AdminAgenciesTable', () => {
       fireEvent.click(activeOption);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('?search=Test&status=active', {
-          scroll: false,
-        });
+        expect(mockPush).toHaveBeenCalledWith(
+          '/admin/agencies?search=Test&status=active',
+          { scroll: false }
+        );
       });
     });
 
@@ -604,7 +605,9 @@ describe('AdminAgenciesTable', () => {
       fireEvent.click(nextButton);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('?page=2', { scroll: false });
+        expect(mockPush).toHaveBeenCalledWith('/admin/agencies?page=2', {
+          scroll: false,
+        });
       });
     });
 
