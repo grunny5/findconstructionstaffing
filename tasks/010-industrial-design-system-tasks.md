@@ -717,14 +717,14 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 
 ---
 
-### Task 4.3: Create ProfileStats Component with Barcode Decoration
+### Task 4.3: Create ProfileStats Component with Barcode Decoration ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Build stats display component with optional barcode decorative element
 - **Context:** Stats provide quick credibility signals - industrial styling adds to authenticity
 - **Key Files to Create:**
-  - `components/ProfileStats.tsx`
-  - `components/__tests__/ProfileStats.test.tsx`
+  - `components/ProfileStats.tsx` (created)
+  - `components/__tests__/ProfileStats.test.tsx` (created)
 - **Key Files to Reference:**
   - `docs/features/active/ui-update.md` (Barcode decorative elements section)
 - **Key Patterns to Follow:**
@@ -732,18 +732,18 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Labels in small uppercase Barlow
   - Optional barcode decoration using Libre Barcode font
 - **Acceptance Criteria (for this task):**
-  - [ ] Stat numbers: Bebas Neue or Barlow 700, 2rem+
-  - [ ] Stat labels: Barlow, 0.75rem, uppercase, 600 weight, graphite-400
-  - [ ] Grid layout: 3-4 stats per row on desktop, 2 on tablet, 1 on mobile
-  - [ ] Optional barcode decoration: Libre Barcode font, 1.5rem, graphite-300
-  - [ ] Component props: stats array with { value, label } objects
-  - [ ] Component tests cover different stat counts
+  - [x] Stat numbers: Bebas Neue (font-display), text-2xl lg:text-3xl
+  - [x] Stat labels: Barlow (font-body), text-xs, uppercase, font-semibold, graphite-400
+  - [x] Grid layout: 1 on mobile, 2 on tablet (sm), 3 on desktop (lg), 4 on xl
+  - [x] Optional barcode decoration: font-barcode, text-2xl, graphite-300, select-none
+  - [x] Component props: stats array with { value, label, icon }, showBarcode, barcodeText, variant
+  - [x] Component tests cover different stat counts (47 tests)
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Barcode decoration is tasteful (not overused)
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage (47 tests)
+  - [x] Barcode decoration is tasteful (optional, aria-hidden, right-aligned)
   - [ ] PR submitted with stat variations
-  - [ ] **Final Check:** Barcode element enhances, doesn't distract
+  - [x] **Final Check:** Barcode element enhances, doesn't distract
 
 **Estimated Effort:** 3 hours
 
