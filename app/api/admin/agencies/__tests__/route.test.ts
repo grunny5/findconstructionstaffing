@@ -5,9 +5,10 @@
  */
 
 import { NextRequest } from 'next/server';
-import { GET } from '../route';
+import { GET, POST } from '../route';
 import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
+import { createSlug } from '@/lib/utils/formatting';
 
 jest.mock('@/lib/supabase/server');
 
@@ -703,6 +704,832 @@ describe('GET /api/admin/agencies', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
       expect(data.error.message).toBe('Failed to fetch owner profiles');
+    });
+  });
+});
+
+// ============================================================================
+// POST /api/admin/agencies TESTS
+// ============================================================================
+
+describe('POST /api/admin/agencies', () => {
+  let mockSupabaseClient: {
+    auth: { getUser: jest.Mock };
+    from: jest.Mock;
+  };
+
+  const validAgencyData = {
+    name: 'New Staffing Agency',
+    description: 'A great staffing agency',
+    website: 'https://newstaffing.com',
+    phone: '+12345678900',
+    email: 'contact@newstaffing.com',
+    headquarters: 'Houston, TX',
+    founded_year: '2010',
+    employee_count: '51-100',
+    company_size: 'Medium',
+    offers_per_diem: true,
+    is_union: false,
+  };
+
+  const createdAgency = {
+    id: 'new-agency-id',
+    name: 'New Staffing Agency',
+    slug: 'new-staffing-agency',
+    description: 'A great staffing agency',
+    website: 'https://newstaffing.com',
+    phone: '+12345678900',
+    email: 'contact@newstaffing.com',
+    headquarters: 'Houston, TX',
+    founded_year: 2010,
+    employee_count: '51-100',
+    company_size: 'Medium',
+    offers_per_diem: true,
+    is_union: false,
+    is_active: true,
+    is_claimed: false,
+    profile_completion_percentage: 0,
+    created_at: '2024-01-01T00:00:00Z',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockSupabaseClient = {
+      auth: {
+        getUser: jest.fn(),
+      },
+      from: jest.fn(),
+    };
+
+    mockedCreateClient.mockResolvedValue(mockSupabaseClient as never);
+  });
+
+  const createPostRequest = (body: unknown) => {
+    return new NextRequest('http://localhost/api/admin/agencies', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  // ========================================================================
+  // AUTHENTICATION TESTS
+  // ========================================================================
+
+  describe('Authentication', () => {
+    it('should return 401 if user is not authenticated', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(data.error.message).toBe(
+        'You must be logged in to access this endpoint'
+      );
+    });
+
+    it('should return 401 if auth check fails', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Auth failed'),
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+    });
+  });
+
+  // ========================================================================
+  // ADMIN ROLE VERIFICATION TESTS
+  // ========================================================================
+
+  describe('Admin Role Verification', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: {
+          user: { id: 'user-123', email: 'user@example.com' },
+        },
+        error: null,
+      });
+    });
+
+    it('should return 403 if user is not an admin', async () => {
+      mockSupabaseClient.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'user' },
+          error: null,
+        }),
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Forbidden: Admin access required');
+    });
+
+    it('should return 403 if profile does not exist', async () => {
+      mockSupabaseClient.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+    });
+  });
+
+  // ========================================================================
+  // VALIDATION TESTS
+  // ========================================================================
+
+  describe('Validation', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: {
+          user: { id: 'admin-123', email: 'admin@example.com' },
+        },
+        error: null,
+      });
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: createdAgency,
+            error: null,
+          }),
+        };
+      });
+    });
+
+    it('should return 400 for invalid JSON body', async () => {
+      const request = new NextRequest('http://localhost/api/admin/agencies', {
+        method: 'POST',
+        body: 'invalid json',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.INVALID_PARAMS);
+      expect(data.error.message).toBe('Invalid JSON in request body');
+    });
+
+    it('should return 400 when name is missing', async () => {
+      const request = createPostRequest({ description: 'No name provided' });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe('Validation failed');
+    });
+
+    it('should return 400 when name is too short', async () => {
+      const request = createPostRequest({ name: 'A' });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('should return 400 for invalid email format', async () => {
+      const request = createPostRequest({
+        name: 'Valid Name',
+        email: 'not-an-email',
+      });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('should return 400 for invalid website URL', async () => {
+      const request = createPostRequest({
+        name: 'Valid Name',
+        website: 'not-a-url',
+      });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('should return 400 for invalid phone format', async () => {
+      const request = createPostRequest({
+        name: 'Valid Name',
+        phone: 'invalid-phone',
+      });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('should return 400 for invalid founded_year', async () => {
+      const request = createPostRequest({
+        name: 'Valid Name',
+        founded_year: '1700',
+      });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('should return 400 for invalid employee_count enum', async () => {
+      const request = createPostRequest({
+        name: 'Valid Name',
+        employee_count: 'invalid-range',
+      });
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+  });
+
+  // ========================================================================
+  // SLUG GENERATION TESTS
+  // ========================================================================
+
+  describe('Slug Generation', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: {
+          user: { id: 'admin-123', email: 'admin@example.com' },
+        },
+        error: null,
+      });
+    });
+
+    it('should generate slug from agency name', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest({
+        name: 'Test Staffing Company',
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(capturedInsertData?.slug).toBe('test-staffing-company');
+    });
+
+    it('should handle special characters in name for slug generation', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest({
+        name: "Bob's #1 Staffing & Recruiting!",
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      // Apostrophe becomes a hyphen, resulting in "bob-s-..."
+      expect(capturedInsertData?.slug).toBe('bob-s-1-staffing-recruiting');
+    });
+  });
+
+  // ========================================================================
+  // DUPLICATE HANDLING TESTS
+  // ========================================================================
+
+  describe('Duplicate Handling', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: {
+          user: { id: 'admin-123', email: 'admin@example.com' },
+        },
+        error: null,
+      });
+    });
+
+    it('should return 409 if agency name already exists', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: {
+              id: 'existing-id',
+              name: 'New Staffing Agency',
+              slug: 'new-staffing-agency',
+            },
+            error: null,
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CONFLICT);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe(
+        'An agency with this name already exists'
+      );
+    });
+
+    it('should return 409 if slug already exists (different name)', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: {
+              id: 'existing-id',
+              name: 'Different Name',
+              slug: 'new-staffing-agency',
+            },
+            error: null,
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CONFLICT);
+      expect(data.error.message).toContain('slug conflict');
+    });
+
+    it('should handle unique constraint violation during insert', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: '23505', message: 'Unique constraint violation' },
+            }),
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CONFLICT);
+      expect(data.error.message).toBe(
+        'An agency with this name or slug already exists'
+      );
+    });
+  });
+
+  // ========================================================================
+  // SUCCESS TESTS
+  // ========================================================================
+
+  describe('Success Responses', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: {
+          user: { id: 'admin-123', email: 'admin@example.com' },
+        },
+        error: null,
+      });
+    });
+
+    it('should create agency and return 201', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: createdAgency,
+              error: null,
+            }),
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(data.data).toMatchObject({
+        name: 'New Staffing Agency',
+        slug: 'new-staffing-agency',
+        is_active: true,
+        is_claimed: false,
+      });
+      expect(data.message).toBe('Agency created successfully');
+    });
+
+    it('should create agency with minimal data (only name)', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest({ name: 'Minimal Agency' });
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(capturedInsertData).toMatchObject({
+        name: 'Minimal Agency',
+        slug: 'minimal-agency',
+        is_active: true,
+        is_claimed: false,
+        offers_per_diem: false,
+        is_union: false,
+        description: null,
+        website: null,
+        phone: null,
+        email: null,
+      });
+    });
+
+    it('should set defaults for is_active and is_claimed', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(capturedInsertData?.is_active).toBe(true);
+      expect(capturedInsertData?.is_claimed).toBe(false);
+    });
+
+    it('should convert founded_year string to integer', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest({
+        name: 'Test Agency',
+        founded_year: '2015',
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(capturedInsertData?.founded_year).toBe(2015);
+      expect(typeof capturedInsertData?.founded_year).toBe('number');
+    });
+  });
+
+  // ========================================================================
+  // ERROR HANDLING TESTS
+  // ========================================================================
+
+  describe('Error Handling', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: {
+          user: { id: 'admin-123', email: 'admin@example.com' },
+        },
+        error: null,
+      });
+    });
+
+    it('should return 500 if duplicate check fails', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: new Error('Database error'),
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+      expect(data.error.message).toBe('Failed to check for existing agency');
+    });
+
+    it('should return 500 if insert fails with non-unique error', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: 'PGRST000', message: 'Some database error' },
+            }),
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+      expect(data.error.message).toBe('Failed to create agency');
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedCreateClient.mockRejectedValue(new Error('Unexpected error'));
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.INTERNAL_ERROR);
+      expect(data.error.message).toBe('An unexpected error occurred');
     });
   });
 });

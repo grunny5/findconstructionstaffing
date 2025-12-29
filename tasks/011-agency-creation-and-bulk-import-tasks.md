@@ -189,7 +189,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.2: Create Agency API Endpoint (POST)
+### [x] Task 1.2.2: Create Agency API Endpoint (POST)
 
 - **Role:** Backend Developer
 - **Objective:** Create API endpoint to add a new agency
@@ -205,22 +205,22 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Atomic database operations
   - Proper error responses
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies` creates new agency
-  - [ ] Slug auto-generated from name using createSlug()
-  - [ ] Validates name is unique (returns 409 if duplicate)
-  - [ ] Validates URL format for website field
-  - [ ] Validates email format for email field
-  - [ ] Validates phone format for phone field
-  - [ ] Sets is_active=true, is_claimed=false by default
-  - [ ] Returns created agency with 201 status
-  - [ ] Returns 401/403 for auth errors
-  - [ ] Returns 400 for validation errors with details
+  - [x] `POST /api/admin/agencies` creates new agency
+  - [x] Slug auto-generated from name using createSlug()
+  - [x] Validates name is unique (returns 409 if duplicate)
+  - [x] Validates URL format for website field
+  - [x] Validates email format for email field
+  - [x] Validates phone format for phone field
+  - [x] Sets is_active=true, is_claimed=false by default
+  - [x] Returns created agency with 201 status
+  - [x] Returns 401/403 for auth errors
+  - [x] Returns 400 for validation errors with details
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests cover all validation scenarios
-  - [ ] Tests cover duplicate name handling
-  - [ ] 85%+ test coverage
-  - [ ] **Final Check:** Follows existing admin API patterns
+  - [x] Endpoint functional
+  - [x] Unit tests cover all validation scenarios
+  - [x] Tests cover duplicate name handling
+  - [x] 85%+ test coverage (94.56%)
+  - [x] **Final Check:** Follows existing admin API patterns
 
 **Estimated Effort:** 3 hours
 
