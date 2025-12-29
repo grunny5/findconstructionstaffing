@@ -10,7 +10,9 @@ describe('Button Component', () => {
   describe('Basic Rendering', () => {
     it('should render button with text', () => {
       render(<Button>Click me</Button>);
-      expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Click me' })
+      ).toBeInTheDocument();
     });
 
     it('should render as child component when asChild is true', () => {
@@ -19,7 +21,9 @@ describe('Button Component', () => {
           <a href="/test">Link Button</a>
         </Button>
       );
-      expect(screen.getByRole('link', { name: 'Link Button' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('link', { name: 'Link Button' })
+      ).toBeInTheDocument();
     });
 
     it('should forward ref to button element', () => {
@@ -151,7 +155,11 @@ describe('Button Component', () => {
 
     it('should not be clickable when disabled', async () => {
       const handleClick = jest.fn();
-      render(<Button disabled onClick={handleClick}>Disabled</Button>);
+      render(
+        <Button disabled onClick={handleClick}>
+          Disabled
+        </Button>
+      );
 
       const button = screen.getByRole('button');
       await userEvent.click(button);

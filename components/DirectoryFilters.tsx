@@ -353,9 +353,24 @@ export default function DirectoryFilters({
               <SelectValue placeholder="Per Diem" />
             </SelectTrigger>
             <SelectContent className="border-2 border-industrial-graphite-200 rounded-industrial-base">
-              <SelectItem value="any" className="font-body text-sm text-industrial-graphite-500">Any Per Diem</SelectItem>
-              <SelectItem value="true" className="font-body text-sm text-industrial-graphite-500">Offers Per Diem</SelectItem>
-              <SelectItem value="false" className="font-body text-sm text-industrial-graphite-500">No Per Diem</SelectItem>
+              <SelectItem
+                value="any"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Any Per Diem
+              </SelectItem>
+              <SelectItem
+                value="true"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Offers Per Diem
+              </SelectItem>
+              <SelectItem
+                value="false"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                No Per Diem
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -373,9 +388,24 @@ export default function DirectoryFilters({
               <SelectValue placeholder="Union Status" />
             </SelectTrigger>
             <SelectContent className="border-2 border-industrial-graphite-200 rounded-industrial-base">
-              <SelectItem value="any" className="font-body text-sm text-industrial-graphite-500">Any Union Status</SelectItem>
-              <SelectItem value="true" className="font-body text-sm text-industrial-graphite-500">Union Partner</SelectItem>
-              <SelectItem value="false" className="font-body text-sm text-industrial-graphite-500">Non-Union</SelectItem>
+              <SelectItem
+                value="any"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Any Union Status
+              </SelectItem>
+              <SelectItem
+                value="true"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Union Partner
+              </SelectItem>
+              <SelectItem
+                value="false"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Non-Union
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -415,7 +445,9 @@ export default function DirectoryFilters({
                   <div className="animate-pulse h-1 w-1 bg-industrial-graphite-400 rounded-full [animation-delay:150ms]"></div>
                   <div className="animate-pulse h-1 w-1 bg-industrial-graphite-400 rounded-full [animation-delay:300ms]"></div>
                 </div>
-                <span className="font-body text-xs text-industrial-graphite-400">Updating...</span>
+                <span className="font-body text-xs text-industrial-graphite-400">
+                  Updating...
+                </span>
               </div>
             )}
           </div>
