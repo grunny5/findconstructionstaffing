@@ -16,10 +16,22 @@ jest.mock('@/lib/auth/auth-context', () => ({
   ),
 }));
 
-// Mock next/font/google to return consistent class name
+// Mock next/font/google to return consistent class names
 jest.mock('next/font/google', () => ({
   Inter: () => ({
-    className: '__Inter_abc123', // Simulates the actual generated class pattern
+    className: '__Inter_abc123',
+  }),
+  Bebas_Neue: () => ({
+    className: '__Bebas_Neue_def456',
+    variable: '--font-bebas-neue',
+  }),
+  Barlow: () => ({
+    className: '__Barlow_ghi789',
+    variable: '--font-barlow',
+  }),
+  Libre_Barcode_39_Text: () => ({
+    className: '__Libre_Barcode_jkl012',
+    variable: '--font-libre-barcode',
   }),
 }));
 
@@ -40,10 +52,13 @@ describe('RootLayout', () => {
     expect(layout.type).toBe('html');
     expect(layout.props.lang).toBe('en');
 
-    // Check body element
+    // Check body element with combined font classes
     const body = layout.props.children;
     expect(body.type).toBe('body');
-    expect(body.props.className).toBe('__Inter_abc123');
+    // Body now includes Inter className + font variables for industrial fonts
+    expect(body.props.className).toBe(
+      '__Inter_abc123 --font-bebas-neue --font-barlow --font-libre-barcode'
+    );
 
     // AuthProvider wraps the children, so we need to look inside it
     const authProvider = body.props.children;

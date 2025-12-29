@@ -11,12 +11,12 @@ This document records baseline metrics for the Industrial Design System rollout 
 
 ### Target Improvements (from FSD)
 
-| Metric | Current Baseline | Target Change | Target Value |
-|--------|-----------------|---------------|--------------|
-| Lead form conversion rate | TBD | +15-25% | TBD |
-| Agency claim requests | TBD | +20% | TBD |
-| Time on site | TBD | +30% | TBD |
-| Pages per session | TBD | +20% | TBD |
+| Metric                    | Current Baseline | Target Change | Target Value |
+| ------------------------- | ---------------- | ------------- | ------------ |
+| Lead form conversion rate | TBD              | +15-25%       | TBD          |
+| Agency claim requests     | TBD              | +20%          | TBD          |
+| Time on site              | TBD              | +30%          | TBD          |
+| Pages per session         | TBD              | +20%          | TBD          |
 
 ---
 
@@ -27,13 +27,14 @@ This document records baseline metrics for the Industrial Design System rollout 
 **Source:** Google Analytics 4 / Database
 **Definition:** Number of lead form submissions / Number of unique visitors to lead form page
 
-| Week | Unique Visitors | Form Submissions | Conversion Rate |
-|------|-----------------|------------------|-----------------|
-| Week 1 | - | - | -% |
-| Week 2 | - | - | -% |
-| **2-Week Total** | - | - | **-% baseline** |
+| Week             | Unique Visitors | Form Submissions | Conversion Rate |
+| ---------------- | --------------- | ---------------- | --------------- |
+| Week 1           | -               | -                | -%              |
+| Week 2           | -               | -                | -%              |
+| **2-Week Total** | -               | -                | **-% baseline** |
 
 **Database Query:**
+
 ```sql
 -- Lead form submissions (last 2 weeks)
 SELECT
@@ -50,13 +51,14 @@ ORDER BY date;
 **Source:** Database
 **Definition:** Number of agency claim requests submitted
 
-| Week | Claim Requests | Approved | Pending |
-|------|---------------|----------|---------|
-| Week 1 | - | - | - |
-| Week 2 | - | - | - |
-| **2-Week Total** | - | - | - |
+| Week             | Claim Requests | Approved | Pending |
+| ---------------- | -------------- | -------- | ------- |
+| Week 1           | -              | -        | -       |
+| Week 2           | -              | -        | -       |
+| **2-Week Total** | -              | -        | -       |
 
 **Database Query:**
+
 ```sql
 -- Agency claim requests (last 2 weeks)
 SELECT
@@ -78,33 +80,33 @@ ORDER BY date;
 **Source:** Google Analytics 4
 **GA4 Path:** Reports > Engagement > Overview
 
-| Week | Avg Session Duration | Sessions |
-|------|---------------------|----------|
-| Week 1 | - | - |
-| Week 2 | - | - |
-| **2-Week Average** | **- baseline** | - |
+| Week               | Avg Session Duration | Sessions |
+| ------------------ | -------------------- | -------- |
+| Week 1             | -                    | -        |
+| Week 2             | -                    | -        |
+| **2-Week Average** | **- baseline**       | -        |
 
 ### 2.2 Pages Per Session
 
 **Source:** Google Analytics 4
 **GA4 Path:** Reports > Engagement > Overview
 
-| Week | Pages/Session | Total Pageviews |
-|------|--------------|-----------------|
-| Week 1 | - | - |
-| Week 2 | - | - |
-| **2-Week Average** | **- baseline** | - |
+| Week               | Pages/Session  | Total Pageviews |
+| ------------------ | -------------- | --------------- |
+| Week 1             | -              | -               |
+| Week 2             | -              | -               |
+| **2-Week Average** | **- baseline** | -               |
 
 ### 2.3 Bounce Rate
 
 **Source:** Google Analytics 4
 **GA4 Path:** Reports > Engagement > Overview
 
-| Week | Bounce Rate | Entry Pages |
-|------|-------------|-------------|
-| Week 1 | -% | - |
-| Week 2 | -% | - |
-| **2-Week Average** | **-% baseline** | - |
+| Week               | Bounce Rate     | Entry Pages |
+| ------------------ | --------------- | ----------- |
+| Week 1             | -%              | -           |
+| Week 2             | -%              | -           |
+| **2-Week Average** | **-% baseline** | -           |
 
 ---
 
@@ -115,19 +117,19 @@ ORDER BY date;
 **Source:** Google Analytics 4
 **GA4 Path:** Reports > Tech > Tech Details > Device Category
 
-| Device | Sessions | Avg Duration | Pages/Session | Bounce Rate |
-|--------|----------|--------------|---------------|-------------|
-| Desktop | - | - | - | -% |
-| Mobile | - | - | - | -% |
-| Tablet | - | - | - | -% |
+| Device  | Sessions | Avg Duration | Pages/Session | Bounce Rate |
+| ------- | -------- | ------------ | ------------- | ----------- |
+| Desktop | -        | -            | -             | -%          |
+| Mobile  | -        | -            | -             | -%          |
+| Tablet  | -        | -            | -             | -%          |
 
 ### 3.2 Mobile-Specific Metrics
 
-| Metric | Value |
-|--------|-------|
-| Mobile Traffic % | -% |
-| Mobile Conversion Rate | -% |
-| Mobile Bounce Rate | -% |
+| Metric                 | Value |
+| ---------------------- | ----- |
+| Mobile Traffic %       | -%    |
+| Mobile Conversion Rate | -%    |
+| Mobile Bounce Rate     | -%    |
 
 ---
 
@@ -135,31 +137,31 @@ ORDER BY date;
 
 ### 4.1 Homepage Performance
 
-| Metric | Value |
-|--------|-------|
-| Pageviews | - |
-| Avg Time on Page | - |
-| Exit Rate | -% |
-| Scroll Depth (50%) | -% |
-| Scroll Depth (90%) | -% |
+| Metric             | Value |
+| ------------------ | ----- |
+| Pageviews          | -     |
+| Avg Time on Page   | -     |
+| Exit Rate          | -%    |
+| Scroll Depth (50%) | -%    |
+| Scroll Depth (90%) | -%    |
 
 ### 4.2 Directory Page Performance
 
-| Metric | Value |
-|--------|-------|
-| Pageviews | - |
-| Avg Time on Page | - |
-| Filter Usage Rate | -% |
-| Search Usage Rate | -% |
+| Metric            | Value |
+| ----------------- | ----- |
+| Pageviews         | -     |
+| Avg Time on Page  | -     |
+| Filter Usage Rate | -%    |
+| Search Usage Rate | -%    |
 
 ### 4.3 Agency Profile Performance
 
-| Metric | Value |
-|--------|-------|
-| Avg Pageviews | - |
-| Avg Time on Page | - |
-| Contact CTA Click Rate | -% |
-| Claim Listing Click Rate | -% |
+| Metric                   | Value |
+| ------------------------ | ----- |
+| Avg Pageviews            | -     |
+| Avg Time on Page         | -     |
+| Contact CTA Click Rate   | -%    |
+| Claim Listing Click Rate | -%    |
 
 ---
 
@@ -169,20 +171,20 @@ ORDER BY date;
 
 **Test Conditions:** Simulated 3G, Mobile device
 
-| Metric | Homepage | Directory | Profile |
-|--------|----------|-----------|---------|
-| LCP (Largest Contentful Paint) | - | - | - |
-| FID (First Input Delay) | - | - | - |
-| CLS (Cumulative Layout Shift) | - | - | - |
-| Performance Score | - | - | - |
+| Metric                         | Homepage | Directory | Profile |
+| ------------------------------ | -------- | --------- | ------- |
+| LCP (Largest Contentful Paint) | -        | -         | -       |
+| FID (First Input Delay)        | -        | -         | -       |
+| CLS (Cumulative Layout Shift)  | -        | -         | -       |
+| Performance Score              | -        | -         | -       |
 
 ### 5.2 Font Loading Performance
 
-| Metric | Value |
-|--------|-------|
-| Total Font Payload | - KB |
-| Font Load Time (3G) | - ms |
-| FOUT Occurrences | - |
+| Metric              | Value |
+| ------------------- | ----- |
+| Total Font Payload  | - KB  |
+| Font Load Time (3G) | - ms  |
+| FOUT Occurrences    | -     |
 
 ---
 
@@ -208,12 +210,12 @@ ORDER BY date;
 
 ### Data Collection Schedule
 
-| Date | Task | Status |
-|------|------|--------|
-| [START_DATE] | Begin baseline period | Pending |
-| [START_DATE + 7] | Week 1 data snapshot | Pending |
-| [END_DATE] | Week 2 data snapshot & final baseline | Pending |
-| [END_DATE + 1] | Compile baseline report | Pending |
+| Date             | Task                                  | Status  |
+| ---------------- | ------------------------------------- | ------- |
+| [START_DATE]     | Begin baseline period                 | Pending |
+| [START_DATE + 7] | Week 1 data snapshot                  | Pending |
+| [END_DATE]       | Week 2 data snapshot & final baseline | Pending |
+| [END_DATE + 1]   | Compile baseline report               | Pending |
 
 ### Statistical Considerations
 
@@ -249,26 +251,27 @@ _Document any data quality concerns:_
 
 After the design system launches, copy the baseline values and compare:
 
-| Metric | Baseline | Post-Launch | Change | Target Met? |
-|--------|----------|-------------|--------|-------------|
-| Lead conversion rate | -% | -% | -% | |
-| Claim requests | - | - | -% | |
-| Session duration | - | - | -% | |
-| Pages/session | - | - | -% | |
-| Bounce rate | -% | -% | -% | |
+| Metric               | Baseline | Post-Launch | Change | Target Met? |
+| -------------------- | -------- | ----------- | ------ | ----------- |
+| Lead conversion rate | -%       | -%          | -%     |             |
+| Claim requests       | -        | -           | -%     |             |
+| Session duration     | -        | -           | -%     |             |
+| Pages/session        | -        | -           | -%     |             |
+| Bounce rate          | -%       | -%          | -%     |             |
 
 ---
 
 ## Stakeholder Sign-off
 
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Product Manager | | | |
-| Developer Lead | | | |
-| Design Lead | | | |
+| Role            | Name | Date | Signature |
+| --------------- | ---- | ---- | --------- |
+| Product Manager |      |      |           |
+| Developer Lead  |      |      |           |
+| Design Lead     |      |      |           |
 
 ---
 
 **Document History:**
+
 - Created: [DATE] - Initial baseline template
 - Updated: [DATE] - [Description of update]
