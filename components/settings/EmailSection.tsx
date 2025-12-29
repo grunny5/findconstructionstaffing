@@ -64,8 +64,8 @@ export function EmailSection() {
     <>
       <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
-            Email Address
+          <CardTitle className="font-display text-xl tracking-wide text-industrial-graphite-600">
+            EMAIL ADDRESS
           </CardTitle>
           <CardDescription className="font-body text-industrial-graphite-400">
             Manage your email address. Changing your email requires
@@ -75,8 +75,8 @@ export function EmailSection() {
         <CardContent className="space-y-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
-                Current Email
+              <label className="block font-body text-xs font-semibold text-industrial-graphite-400 tracking-wide">
+                CURRENT EMAIL
               </label>
               <p className="mt-1 font-body text-sm text-industrial-graphite-600">
                 {profile.email}

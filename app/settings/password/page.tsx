@@ -21,8 +21,8 @@ export default function SettingsPasswordPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
-          Password Settings
+        <h2 className="font-display text-2xl tracking-wide text-industrial-graphite-600">
+          PASSWORD SETTINGS
         </h2>
         <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           Change your password and manage security
@@ -31,8 +31,8 @@ export default function SettingsPasswordPage() {
 
       <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
-            Change Password
+          <CardTitle className="font-display text-xl tracking-wide text-industrial-graphite-600">
+            CHANGE PASSWORD
           </CardTitle>
           <CardDescription className="font-body text-industrial-graphite-400">
             Update your password to keep your account secure

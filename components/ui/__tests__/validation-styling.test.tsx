@@ -22,6 +22,15 @@ import {
 } from '../form';
 import { Alert, AlertTitle, AlertDescription } from '../alert';
 import { Input } from '../input';
+import {
+  ToastProvider,
+  ToastViewport,
+  Toast,
+  ToastTitle,
+  ToastDescription,
+  ToastAction,
+  ToastClose,
+} from '../toast';
 
 // Mock FormProvider wrapper for testing form components
 const FormWrapper = ({
@@ -307,84 +316,129 @@ describe('Alert Component Styling', () => {
 /**
  * Toast Component Styling Tests
  *
- * Note: Toast components require portal rendering which is complex to test.
- * These tests verify the styling exists in the component source.
- * Visual/integration tests should verify actual rendering.
+ * Tests use ToastProvider and open={true} to render Toast components
+ * without requiring user interaction or complex portal mocking.
  */
-describe('Toast Component Styling (Source Verification)', () => {
-  // Read the toast.tsx source to verify industrial styling is present
-  // Source-based verification is intentional here because:
-  // 1. Toast components require Radix portal rendering which is complex to mock
-  // 2. We're verifying styling tokens exist, not runtime behavior
-  // 3. Render tests for Toast are covered in integration/e2e tests
-  const fs = require('fs');
-  const path = require('path');
-  const toastSource = fs.readFileSync(
-    path.join(__dirname, '../toast.tsx'),
-    'utf8'
-  );
+describe('Toast Component Styling', () => {
+  /**
+   * Helper to render Toast with required providers
+   */
+  const renderToast = (props: {
+    variant?: 'default' | 'destructive';
+    children?: React.ReactNode;
+  }) => {
+    return render(
+      <ToastProvider>
+        <Toast open={true} variant={props.variant}>
+          {props.children}
+        </Toast>
+        <ToastViewport />
+      </ToastProvider>
+    );
+  };
 
   describe('Industrial Design Tokens', () => {
-    it('should have 2px border styling in source', () => {
-      expect(toastSource).toContain('border-2');
+    it('should have 2px border styling', () => {
+      renderToast({});
+      const toast = document.querySelector('[data-state="open"]');
+      expect(toast).toHaveClass('border-2');
     });
 
-    it('should have sharp corners in source', () => {
-      expect(toastSource).toContain('rounded-industrial-sharp');
+    it('should have sharp corners', () => {
+      renderToast({});
+      const toast = document.querySelector('[data-state="open"]');
+      expect(toast).toHaveClass('rounded-industrial-sharp');
     });
   });
 
   describe('Default Variant', () => {
     it('should use industrial graphite styling', () => {
-      expect(toastSource).toContain('border-industrial-graphite-300');
-      expect(toastSource).toContain('bg-industrial-bg-card');
-      expect(toastSource).toContain('text-industrial-graphite-600');
+      renderToast({ variant: 'default' });
+      const toast = document.querySelector('[data-state="open"]');
+      expect(toast).toHaveClass('border-industrial-graphite-300');
+      expect(toast).toHaveClass('bg-industrial-bg-card');
+      expect(toast).toHaveClass('text-industrial-graphite-600');
     });
   });
 
   describe('Destructive Variant', () => {
-    it('should use industrial orange instead of red', () => {
-      expect(toastSource).toContain('border-industrial-orange');
-      expect(toastSource).toContain('bg-industrial-orange-100');
+    it('should use industrial orange styling', () => {
+      renderToast({ variant: 'destructive' });
+      const toast = document.querySelector('[data-state="open"]');
+      expect(toast).toHaveClass('border-industrial-orange');
+      expect(toast).toHaveClass('bg-industrial-orange-100');
     });
 
     it('should NOT use bright red colors', () => {
-      // Verify no direct red colors for destructive
-      expect(toastSource).not.toMatch(/bg-red-\d+/);
-      expect(toastSource).not.toMatch(/border-red-\d+/);
-    });
-  });
-
-  describe('ToastAction', () => {
-    it('should use industrial styling', () => {
-      expect(toastSource).toContain('border-industrial-graphite-300');
-      expect(toastSource).toContain('font-body');
-    });
-  });
-
-  describe('ToastClose', () => {
-    it('should use industrial graphite color', () => {
-      expect(toastSource).toContain('text-industrial-graphite-400');
-    });
-
-    it('should NOT use red hover colors', () => {
-      // Old pattern: group-[.destructive]:text-red-300
-      expect(toastSource).not.toContain('text-red-300');
-      expect(toastSource).not.toContain('hover:text-red-50');
+      renderToast({ variant: 'destructive' });
+      const toast = document.querySelector('[data-state="open"]');
+      // Verify no red classes are applied
+      expect(toast?.className).not.toMatch(/bg-red-\d+/);
+      expect(toast?.className).not.toMatch(/border-red-\d+/);
     });
   });
 
   describe('ToastTitle', () => {
-    it('should use Barlow font', () => {
-      expect(toastSource).toContain('font-body');
-      expect(toastSource).toContain('font-semibold');
+    it('should use Barlow font and semibold weight', () => {
+      render(
+        <ToastProvider>
+          <Toast open={true}>
+            <ToastTitle>Test Title</ToastTitle>
+          </Toast>
+          <ToastViewport />
+        </ToastProvider>
+      );
+      const title = screen.getByText('Test Title');
+      expect(title).toHaveClass('font-body');
+      expect(title).toHaveClass('font-semibold');
     });
   });
 
   describe('ToastDescription', () => {
     it('should use Barlow font and text-sm', () => {
-      expect(toastSource).toContain('font-body');
-      expect(toastSource).toContain('text-sm');
+      render(
+        <ToastProvider>
+          <Toast open={true}>
+            <ToastDescription>Test Description</ToastDescription>
+          </Toast>
+          <ToastViewport />
+        </ToastProvider>
+      );
+      const description = screen.getByText('Test Description');
+      expect(description).toHaveClass('font-body');
+      expect(description).toHaveClass('text-sm');
+    });
+  });
+
+  describe('ToastAction', () => {
+    it('should use industrial styling', () => {
+      render(
+        <ToastProvider>
+          <Toast open={true}>
+            <ToastAction altText="Test action">Action</ToastAction>
+          </Toast>
+          <ToastViewport />
+        </ToastProvider>
+      );
+      const action = screen.getByRole('button', { name: 'Action' });
+      expect(action).toHaveClass('border-industrial-graphite-300');
+      expect(action).toHaveClass('font-body');
+      expect(action).toHaveClass('rounded-industrial-sharp');
+    });
+  });
+
+  describe('ToastClose', () => {
+    it('should use industrial graphite color', () => {
+      render(
+        <ToastProvider>
+          <Toast open={true}>
+            <ToastClose />
+          </Toast>
+          <ToastViewport />
+        </ToastProvider>
+      );
+      const closeButton = document.querySelector('[toast-close]');
+      expect(closeButton).toHaveClass('text-industrial-graphite-400');
     });
   });
 });

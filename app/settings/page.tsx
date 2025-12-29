@@ -19,8 +19,8 @@ export default function SettingsProfilePage() {
     <div className="p-6 space-y-6">
       {/* Section header with Bebas Neue */}
       <div>
-        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
-          Profile
+        <h2 className="font-display text-2xl tracking-wide text-industrial-graphite-600">
+          PROFILE
         </h2>
         <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           View and manage your personal information and email address

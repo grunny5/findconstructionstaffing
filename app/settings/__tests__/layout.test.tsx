@@ -67,7 +67,7 @@ describe('SettingsLayout', () => {
     );
 
     expect(screen.getByText('Loading...')).toBeInTheDocument();
-    expect(screen.queryByText('Account Settings')).not.toBeInTheDocument();
+    expect(screen.queryByText('ACCOUNT SETTINGS')).not.toBeInTheDocument();
   });
 
   it('should redirect to login when user is not authenticated', async () => {
@@ -123,7 +123,7 @@ describe('SettingsLayout', () => {
       </SettingsLayout>
     );
 
-    expect(screen.getByText('Account Settings')).toBeInTheDocument();
+    expect(screen.getByText('ACCOUNT SETTINGS')).toBeInTheDocument();
     expect(screen.getAllByText('Settings Content').length).toBeGreaterThan(0);
   });
 
@@ -155,7 +155,7 @@ describe('SettingsLayout', () => {
       </SettingsLayout>
     );
 
-    expect(screen.getByText('Account Settings')).toBeInTheDocument();
+    expect(screen.getByText('ACCOUNT SETTINGS')).toBeInTheDocument();
     expect(
       screen.getByText('Manage your account settings and preferences')
     ).toBeInTheDocument();

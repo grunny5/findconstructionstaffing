@@ -87,8 +87,7 @@ describe('EmailSection', () => {
 
       render(<EmailSection />);
 
-      const emailAddressElements = screen.getAllByText('Email Address');
-      expect(emailAddressElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('EMAIL ADDRESS')).toBeInTheDocument();
       expect(screen.getByText('test@example.com')).toBeInTheDocument();
     });
 
@@ -153,8 +152,7 @@ describe('EmailSection', () => {
 
       render(<EmailSection />);
 
-      const emailAddressElements = screen.getAllByText('Email Address');
-      expect(emailAddressElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('EMAIL ADDRESS')).toBeInTheDocument();
       expect(
         screen.getByText(
           /Manage your email address. Changing your email requires verification./i

@@ -21,8 +21,8 @@ export default function SettingsAccountPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
-          Account Settings
+        <h2 className="font-display text-2xl tracking-wide text-industrial-graphite-600">
+          ACCOUNT SETTINGS
         </h2>
         <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           Manage your account and danger zone actions
@@ -31,8 +31,8 @@ export default function SettingsAccountPage() {
 
       <Card className="border-2 border-industrial-orange rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-orange">
-            Danger Zone
+          <CardTitle className="font-display text-xl tracking-wide text-industrial-orange">
+            DANGER ZONE
           </CardTitle>
           <CardDescription className="font-body text-industrial-graphite-400">
             Irreversible actions that affect your account

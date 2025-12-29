@@ -157,8 +157,8 @@ export default function NotificationsSettingsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
-            Notification Preferences
+          <h2 className="font-display text-2xl tracking-wide text-industrial-graphite-600">
+            NOTIFICATION PREFERENCES
           </h2>
           <p className="mt-1 font-body text-sm text-industrial-graphite-400">
             Manage how you receive notifications about new messages
