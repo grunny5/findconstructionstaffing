@@ -1063,14 +1063,14 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 
 ---
 
-### Task 6.2: Update Dashboard Pages (if different from public)
+### Task 6.2: Update Dashboard Pages (if different from public) ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Update agency dashboard pages to use industrial design
 - **Context:** If dashboard exists separately from public profile, update styling
 - **Key Files to Modify:**
-  - `app/dashboard/` page files
-  - Dashboard components
+  - `app/(app)/dashboard/agency/[slug]/` page files
+  - Dashboard components in `components/dashboard/`
 - **Key Files to Reference:**
   - `docs/features/active/010-industrial-design-system.md`
 - **Key Patterns to Follow:**
@@ -1078,18 +1078,18 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Data tables with clean borders
   - Stats displays with Bebas Neue numbers
 - **Acceptance Criteria (for this task):**
-  - [ ] Dashboard navigation uses industrial styling
-  - [ ] Stats cards use industrial design
-  - [ ] Data tables have clean graphite borders
-  - [ ] Charts/graphs maintain industrial color palette
-  - [ ] Mobile: dashboard is functional on all devices
-  - [ ] Dashboard tests updated and passing
+  - [x] Dashboard navigation uses industrial styling
+  - [x] Stats cards use industrial design
+  - [x] Data tables have clean graphite borders
+  - [x] Charts/graphs maintain industrial color palette
+  - [x] Mobile: dashboard is functional on all devices
+  - [x] Dashboard tests updated and passing
 - **Definition of Done:**
-  - [ ] All dashboard pages updated
-  - [ ] Tests passing
-  - [ ] Responsive verified
+  - [x] All dashboard pages updated
+  - [x] Tests passing (394 dashboard tests)
+  - [x] Responsive verified
   - [ ] PR submitted
-  - [ ] **Final Check:** Dashboard UX maintained
+  - [x] **Final Check:** Dashboard UX maintained
 
 **Estimated Effort:** 6 hours (or skip if no separate dashboard)
 

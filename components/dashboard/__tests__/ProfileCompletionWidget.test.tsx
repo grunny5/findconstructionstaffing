@@ -111,14 +111,14 @@ describe('ProfileCompletionWidget', () => {
       expect(screen.getByText('Profile Complete')).toBeInTheDocument();
     });
 
-    it('should show completion badge with correct styling', () => {
+    it('should show completion badge with correct industrial styling', () => {
       const { container } = render(
         <ProfileCompletionWidget percentage={100} />
       );
 
       const badge = screen.getByText('Profile Complete').closest('div');
-      expect(badge).toHaveClass('bg-green-50');
-      expect(badge).toHaveClass('border-green-200');
+      expect(badge).toHaveClass('bg-industrial-orange-100');
+      expect(badge).toHaveClass('border-industrial-orange');
     });
 
     it('should show checkmark icon in completion badge', () => {
@@ -156,10 +156,12 @@ describe('ProfileCompletionWidget', () => {
       expect(title.tagName).toBe('H3');
     });
 
-    it('should be contained within a card structure', () => {
+    it('should be contained within a card structure with industrial styling', () => {
       const { container } = render(<ProfileCompletionWidget percentage={50} />);
 
-      const card = container.querySelector('.rounded-lg.border');
+      const card = container.querySelector(
+        '.border-2.border-industrial-graphite-200'
+      );
       expect(card).toBeInTheDocument();
     });
   });

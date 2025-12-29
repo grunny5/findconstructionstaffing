@@ -1,3 +1,9 @@
+/**
+ * DashboardOverview Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.2 - Update Dashboard Pages
+ */
+
 import Link from 'next/link';
 import {
   Eye,
@@ -82,23 +88,27 @@ export function DashboardOverview({
 
         {/* Quick Actions - spans 2 columns */}
         <div className="md:col-span-2">
-          <Card>
+          <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+                Quick Actions
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2">
               <Link href={`/dashboard/agency/${agency.slug}/profile`}>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full justify-start h-auto py-3 rounded-industrial-sharp border-2 border-industrial-graphite-200 hover:border-industrial-orange hover:bg-industrial-orange-100"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <CheckCircle className="h-4 w-4 text-primary" />
+                    <div className="p-2 rounded-industrial-sharp bg-industrial-orange-100">
+                      <CheckCircle className="h-4 w-4 text-industrial-orange" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium">Edit Profile</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="font-body font-semibold text-industrial-graphite-600">
+                        Edit Profile
+                      </div>
+                      <div className="font-body text-xs text-industrial-graphite-400">
                         Update company details
                       </div>
                     </div>
@@ -109,17 +119,17 @@ export function DashboardOverview({
               <Link href={`/dashboard/agency/${agency.slug}/profile#logo`}>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full justify-start h-auto py-3 rounded-industrial-sharp border-2 border-industrial-graphite-200 hover:border-industrial-orange hover:bg-industrial-orange-100"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <ImageIcon className="h-4 w-4 text-primary" />
+                    <div className="p-2 rounded-industrial-sharp bg-industrial-orange-100">
+                      <ImageIcon className="h-4 w-4 text-industrial-orange" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium">
+                      <div className="font-body font-semibold text-industrial-graphite-600">
                         {agency.logo_url ? 'Update Logo' : 'Add Logo'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="font-body text-xs text-industrial-graphite-400">
                         {agency.logo_url
                           ? 'Change company logo'
                           : 'Upload company logo'}
@@ -132,15 +142,17 @@ export function DashboardOverview({
               <Link href={`/dashboard/agency/${agency.slug}/services`}>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full justify-start h-auto py-3 rounded-industrial-sharp border-2 border-industrial-graphite-200 hover:border-industrial-orange hover:bg-industrial-orange-100"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <MapPin className="h-4 w-4 text-primary" />
+                    <div className="p-2 rounded-industrial-sharp bg-industrial-orange-100">
+                      <MapPin className="h-4 w-4 text-industrial-orange" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium">Update Services</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="font-body font-semibold text-industrial-graphite-600">
+                        Update Services
+                      </div>
+                      <div className="font-body text-xs text-industrial-graphite-400">
                         Trades & regions
                       </div>
                     </div>
@@ -151,15 +163,17 @@ export function DashboardOverview({
               <Link href={`/recruiters/${agency.slug}`} target="_blank">
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto py-3"
+                  className="w-full justify-start h-auto py-3 rounded-industrial-sharp border-2 border-industrial-graphite-200 hover:border-industrial-orange hover:bg-industrial-orange-100"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <ExternalLink className="h-4 w-4 text-primary" />
+                    <div className="p-2 rounded-industrial-sharp bg-industrial-orange-100">
+                      <ExternalLink className="h-4 w-4 text-industrial-orange" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium">View Public Profile</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="font-body font-semibold text-industrial-graphite-600">
+                        View Public Profile
+                      </div>
+                      <div className="font-body text-xs text-industrial-graphite-400">
                         See how clients see you
                       </div>
                     </div>
@@ -174,20 +188,24 @@ export function DashboardOverview({
       {/* Recent Activity and Help Row */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Recent Activity */}
-        <Card>
+        <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+              Recent Activity
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {agency.last_edited_at ? (
               <div className="space-y-3">
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="p-2 rounded-full bg-muted">
-                    <CheckCircle className="h-3 w-3" />
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-industrial-sharp bg-industrial-graphite-100">
+                    <CheckCircle className="h-3 w-3 text-industrial-graphite-500" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium">Profile updated</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-body font-semibold text-sm text-industrial-graphite-600">
+                      Profile updated
+                    </p>
+                    <p className="font-body text-xs text-industrial-graphite-400">
                       {new Date(agency.last_edited_at).toLocaleDateString(
                         'en-US',
                         {
@@ -201,7 +219,7 @@ export function DashboardOverview({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="font-body text-sm text-industrial-graphite-400">
                 No recent activity to display
               </p>
             )}
@@ -209,26 +227,32 @@ export function DashboardOverview({
         </Card>
 
         {/* Need Help */}
-        <Card>
+        <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+              <HelpCircle className="h-5 w-5 text-industrial-orange" />
               Need Help?
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="font-body text-sm text-industrial-graphite-400">
               Get support with your profile or have questions about our
               platform.
             </p>
             <Link href="/help">
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full rounded-industrial-sharp border-2 border-industrial-graphite-200"
+              >
                 Visit Help Center
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full rounded-industrial-sharp border-2 border-industrial-graphite-200"
+              >
                 Contact Support
                 <Mail className="ml-2 h-4 w-4" />
               </Button>
@@ -246,7 +270,10 @@ function DashboardOverviewSkeleton() {
       {/* Stats Cards Skeleton */}
       <div className="grid gap-4 md:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
+          <Card
+            key={i}
+            className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card"
+          >
             <CardHeader className="pb-2">
               <Skeleton className="h-4 w-24" />
             </CardHeader>
@@ -260,7 +287,7 @@ function DashboardOverviewSkeleton() {
 
       {/* Profile Completion and Quick Actions Skeleton */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
           <CardHeader>
             <Skeleton className="h-6 w-32" />
           </CardHeader>
@@ -271,13 +298,16 @@ function DashboardOverviewSkeleton() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2 border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
           <CardHeader>
             <Skeleton className="h-6 w-24" />
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
+              <Skeleton
+                key={i}
+                className="h-16 w-full rounded-industrial-sharp"
+              />
             ))}
           </CardContent>
         </Card>
@@ -286,12 +316,15 @@ function DashboardOverviewSkeleton() {
       {/* Recent Activity and Help Skeleton */}
       <div className="grid gap-4 md:grid-cols-2">
         {[1, 2].map((i) => (
-          <Card key={i}>
+          <Card
+            key={i}
+            className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card"
+          >
             <CardHeader>
               <Skeleton className="h-6 w-32" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full rounded-industrial-sharp" />
             </CardContent>
           </Card>
         ))}

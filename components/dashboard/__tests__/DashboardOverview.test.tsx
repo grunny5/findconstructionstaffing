@@ -338,9 +338,11 @@ describe('DashboardOverviewSkeleton', () => {
   it('should render skeleton for stats cards', () => {
     const { container } = render(<DashboardOverviewSkeleton />);
 
-    // Should have 3 skeleton cards in first grid
+    // Should have 3 skeleton cards in first grid with industrial styling
     const firstGrid = container.querySelector('.grid.md\\:grid-cols-3');
-    const cards = firstGrid?.querySelectorAll('.rounded-lg.border');
+    const cards = firstGrid?.querySelectorAll(
+      '.border-2.border-industrial-graphite-200'
+    );
     expect(cards?.length).toBe(3);
   });
 

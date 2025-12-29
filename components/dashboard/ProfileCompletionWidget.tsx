@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * ProfileCompletionWidget Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.2 - Update Dashboard Pages
+ */
+
 import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -30,9 +36,9 @@ export function ProfileCompletionWidget({
 
   const getCompletionColor = () => {
     if (percentage === 100) return 'text-green-600';
-    if (percentage >= 80) return 'text-blue-600';
-    if (percentage >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (percentage >= 80) return 'text-industrial-navy-400';
+    if (percentage >= 50) return 'text-industrial-orange';
+    return 'text-industrial-orange-600';
   };
 
   // Celebrate with confetti when profile reaches 100%
@@ -48,14 +54,14 @@ export function ProfileCompletionWidget({
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: ['#22c55e', '#16a34a', '#15803d'],
+          colors: ['#E07B00', '#FF9F1C', '#B85C00'], // Industrial orange palette
         });
         confetti({
           particleCount: 2,
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: ['#22c55e', '#16a34a', '#15803d'],
+          colors: ['#E07B00', '#FF9F1C', '#B85C00'],
         });
 
         if (Date.now() < end) {
@@ -74,9 +80,11 @@ export function ProfileCompletionWidget({
   }, [percentage]);
 
   return (
-    <Card>
+    <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
       <CardHeader>
-        <CardTitle>Profile Completion</CardTitle>
+        <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+          Profile Completion
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Circular Progress Display */}
@@ -91,7 +99,7 @@ export function ProfileCompletionWidget({
                 stroke="currentColor"
                 strokeWidth="8"
                 fill="none"
-                className="text-muted"
+                className="text-industrial-graphite-200"
               />
               {/* Progress Circle */}
               <circle
@@ -110,8 +118,10 @@ export function ProfileCompletionWidget({
             {/* Percentage Text */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-3xl font-bold">{percentage}%</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="font-display text-3xl text-industrial-graphite-600">
+                  {percentage}%
+                </div>
+                <div className="font-body text-xs text-industrial-graphite-400">
                   {getCompletionStatus()}
                 </div>
               </div>
@@ -122,7 +132,7 @@ export function ProfileCompletionWidget({
         {/* Linear Progress Bar (Alternative) */}
         <div className="space-y-2">
           <Progress value={percentage} className="h-2" />
-          <p className="text-sm text-center text-muted-foreground">
+          <p className="font-body text-sm text-center text-industrial-graphite-400">
             {percentage === 100
               ? 'Your profile is complete!'
               : `${100 - percentage}% to go`}
@@ -131,7 +141,7 @@ export function ProfileCompletionWidget({
 
         {/* Completion Checklist */}
         {checklistItems.length > 0 && (
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t-2 border-industrial-graphite-200">
             <CompletionChecklist items={checklistItems} />
           </div>
         )}
@@ -147,9 +157,9 @@ export function ProfileCompletionWidget({
 
         {/* Completion Badge */}
         {percentage === 100 && (
-          <div className="flex items-center justify-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium text-green-700">
+          <div className="flex items-center justify-center gap-2 p-3 bg-industrial-orange-100 rounded-industrial-sharp border-2 border-industrial-orange">
+            <CheckCircle2 className="h-5 w-5 text-industrial-orange" />
+            <span className="font-body text-sm font-semibold text-industrial-orange-600">
               Profile Complete
             </span>
           </div>

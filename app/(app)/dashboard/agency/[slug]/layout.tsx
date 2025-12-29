@@ -1,3 +1,9 @@
+/**
+ * Dashboard Layout - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.2 - Update Dashboard Pages
+ */
+
 import { createClient } from '@/lib/supabase/server';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { notFound } from 'next/navigation';
@@ -25,7 +31,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-industrial-bg">
       <DashboardSidebar agencySlug={agency.slug} agencyName={agency.name} />
       <main className="lg:pl-64">
         <div className="p-6 lg:p-8">{children}</div>

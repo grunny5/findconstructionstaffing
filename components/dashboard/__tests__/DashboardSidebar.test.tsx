@@ -81,7 +81,7 @@ describe('DashboardSidebar', () => {
 
       const overviewLinks = screen.getAllByRole('link', { name: /overview/i });
       expect(overviewLinks[0]).toHaveAttribute('aria-current', 'page');
-      expect(overviewLinks[0]).toHaveClass('bg-primary');
+      expect(overviewLinks[0]).toHaveClass('bg-industrial-orange');
     });
 
     it('should highlight Profile as active when on profile page', () => {
@@ -90,7 +90,7 @@ describe('DashboardSidebar', () => {
 
       const profileLinks = screen.getAllByRole('link', { name: /profile/i });
       expect(profileLinks[0]).toHaveAttribute('aria-current', 'page');
-      expect(profileLinks[0]).toHaveClass('bg-primary');
+      expect(profileLinks[0]).toHaveClass('bg-industrial-orange');
     });
 
     it('should highlight Services as active when on services page', () => {
@@ -99,7 +99,7 @@ describe('DashboardSidebar', () => {
 
       const servicesLinks = screen.getAllByRole('link', { name: /services/i });
       expect(servicesLinks[0]).toHaveAttribute('aria-current', 'page');
-      expect(servicesLinks[0]).toHaveClass('bg-primary');
+      expect(servicesLinks[0]).toHaveClass('bg-industrial-orange');
     });
 
     it('should not highlight Overview when on Profile page', () => {
@@ -108,7 +108,7 @@ describe('DashboardSidebar', () => {
 
       const overviewLinks = screen.getAllByRole('link', { name: /overview/i });
       expect(overviewLinks[0]).not.toHaveAttribute('aria-current', 'page');
-      expect(overviewLinks[0]).not.toHaveClass('bg-primary');
+      expect(overviewLinks[0]).not.toHaveClass('bg-industrial-orange');
     });
 
     it('should use exact match for Overview page', () => {
@@ -218,13 +218,13 @@ describe('DashboardSidebar', () => {
       expect(analyticsLinks[0]).toHaveClass('cursor-not-allowed');
     });
 
-    it('should have reduced opacity for disabled items', () => {
+    it('should have muted text color for disabled items', () => {
       render(<DashboardSidebar {...defaultProps} />);
 
       const analyticsLinks = screen.getAllByRole('link', {
         name: /analytics/i,
       });
-      expect(analyticsLinks[0]).toHaveClass('opacity-50');
+      expect(analyticsLinks[0]).toHaveClass('text-industrial-graphite-300');
     });
   });
 
@@ -294,8 +294,8 @@ describe('DashboardSidebar', () => {
       render(<DashboardSidebar {...defaultProps} />);
 
       const overviewLinks = screen.getAllByRole('link', { name: /overview/i });
-      expect(overviewLinks[0]).toHaveClass('bg-primary');
-      expect(overviewLinks[0]).toHaveClass('text-primary-foreground');
+      expect(overviewLinks[0]).toHaveClass('bg-industrial-orange');
+      expect(overviewLinks[0]).toHaveClass('text-white');
     });
 
     it('should apply hover styles to inactive enabled items', () => {
@@ -303,8 +303,8 @@ describe('DashboardSidebar', () => {
       render(<DashboardSidebar {...defaultProps} />);
 
       const profileLinks = screen.getAllByRole('link', { name: /profile/i });
-      expect(profileLinks[0]).toHaveClass('hover:bg-muted');
-      expect(profileLinks[0]).toHaveClass('hover:text-foreground');
+      expect(profileLinks[0]).toHaveClass('hover:bg-industrial-graphite-100');
+      expect(profileLinks[0]).toHaveClass('hover:text-industrial-graphite-600');
     });
 
     it('should not apply hover styles to disabled items', () => {
@@ -313,7 +313,9 @@ describe('DashboardSidebar', () => {
       const analyticsLinks = screen.getAllByRole('link', {
         name: /analytics/i,
       });
-      expect(analyticsLinks[0]).not.toHaveClass('hover:bg-muted');
+      expect(analyticsLinks[0]).not.toHaveClass(
+        'hover:bg-industrial-graphite-100'
+      );
     });
   });
 
