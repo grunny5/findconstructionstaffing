@@ -351,18 +351,18 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Cards remain white (--bg-card)
   - Test all pages for background consistency
 - **Acceptance Criteria (for this task):**
-  - [ ] Body background set to --bg-primary (#FAF7F2)
-  - [ ] All pages inherit cream background (homepage, directory, profiles, forms)
-  - [ ] Card components remain white for contrast
-  - [ ] Footer remains dark (--bg-dark)
-  - [ ] No visual bugs or background conflicts
-  - [ ] Verified in Chrome, Firefox, Safari
+  - [x] Body background set to --bg-primary (#FAF7F2)
+  - [x] All pages inherit cream background (homepage, directory, profiles, forms)
+  - [x] Card components remain white for contrast
+  - [x] Footer remains dark (--bg-dark)
+  - [x] No visual bugs or background conflicts
+  - [x] Verified in Chrome, Firefox, Safari
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] All pages visually verified
-  - [ ] Cross-browser testing passed
+  - [x] Code complete and committed
+  - [x] All pages visually verified
+  - [x] Cross-browser testing passed
   - [ ] PR submitted with full-page screenshots
-  - [ ] **Final Check:** Consistent across all routes
+  - [x] **Final Check:** Consistent across all routes
 
 **Estimated Effort:** 2 hours
 
