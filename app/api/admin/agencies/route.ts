@@ -17,6 +17,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { z } from 'zod';
 import { createSlug } from '@/lib/utils/formatting';
+import { sanitizeSearchInput } from '@/lib/validation/agencies-query';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 // Force dynamic rendering for authenticated routes
@@ -299,9 +300,10 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_claimed', false);
     }
 
-    // Apply search filter
-    if (search) {
-      query = query.ilike('name', `%${search}%`);
+    // Apply search filter (sanitize to prevent wildcard injection)
+    const sanitizedSearch = search ? sanitizeSearchInput(search) : undefined;
+    if (sanitizedSearch) {
+      query = query.ilike('name', `%${sanitizedSearch}%`);
     }
 
     // Apply pagination
