@@ -4,7 +4,7 @@
 **Project Foundation:** [`PROJECT_KICKSTART_V2.md`](../PROJECT_KICKSTART_V2.md)
 **Design Specifications:** [`docs/features/active/ui-update.md`](../docs/features/active/ui-update.md)
 
-This document breaks down Feature 010 into sprint-ready engineering tasks following a 6-week gradual rollout plan. All tasks must adhere to the standards defined in the PKD: TypeScript strict mode, 85%+ test coverage, WCAG 2.1 AA compliance, mobile-first responsive design.
+This document breaks down Feature 010 into sprint-ready engineering tasks following a 7-week gradual rollout plan. All tasks must adhere to the standards defined in the PKD: TypeScript strict mode, 85%+ test coverage, WCAG 2.1 AA compliance, mobile-first responsive design.
 
 ---
 
@@ -19,7 +19,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 - Time on site: +30%
 - Engagement: +20% pages/session
 
-**Rollout Strategy:** Gradual deployment over 6 weeks, validating each phase before proceeding.
+**Rollout Strategy:** Gradual deployment over 7 weeks, validating each phase before proceeding.
 
 ---
 
