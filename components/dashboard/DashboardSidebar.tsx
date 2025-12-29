@@ -104,7 +104,7 @@ export function DashboardSidebar({
               active
                 ? 'bg-industrial-orange text-white'
                 : item.disabled
-                  ? 'text-industrial-graphite-300 cursor-not-allowed'
+                  ? 'text-industrial-graphite-400 cursor-not-allowed' // WCAG AA: 6.69:1 contrast
                   : 'text-industrial-graphite-500 hover:bg-industrial-graphite-100 hover:text-industrial-graphite-600'
             )}
             aria-current={active ? 'page' : undefined}

@@ -41,7 +41,7 @@ export function CompletionChecklist({
               className={cn(
                 'flex items-center gap-2 font-body text-sm transition-colors hover:text-industrial-orange',
                 item.completed
-                  ? 'text-industrial-graphite-300'
+                  ? 'text-industrial-graphite-400' // WCAG AA: 6.69:1 contrast on white
                   : 'text-industrial-graphite-600'
               )}
             >

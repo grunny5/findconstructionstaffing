@@ -224,7 +224,7 @@ describe('DashboardSidebar', () => {
       const analyticsLinks = screen.getAllByRole('link', {
         name: /analytics/i,
       });
-      expect(analyticsLinks[0]).toHaveClass('text-industrial-graphite-300');
+      expect(analyticsLinks[0]).toHaveClass('text-industrial-graphite-400');
     });
   });
 

@@ -108,9 +108,9 @@ export default function ClaimListingPage() {
               ownership.
             </p>
             <div className="bg-industrial-bg-card rounded-industrial-sharp p-6 border border-industrial-graphite-200">
-              <h3 className="font-display text-xl uppercase text-industrial-graphite-600 mb-4">
+              <h2 className="font-display text-xl uppercase text-industrial-graphite-600 mb-4">
                 What happens next?
-              </h3>
+              </h2>
               <div className="text-left space-y-3">
                 <div className="flex items-start space-x-3">
                   <div className="bg-industrial-orange-100 w-6 h-6 rounded-industrial-sharp flex items-center justify-center flex-shrink-0 mt-0.5">
