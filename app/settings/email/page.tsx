@@ -6,16 +6,11 @@
  * Task: 6.1 - Redesign Settings Pages
  */
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
+import { EmailSection } from '@/components/settings/EmailSection';
 
 /**
- * Email settings page component (placeholder).
+ * Email settings page component.
+ * Uses EmailSection for email display and change management.
  */
 export default function SettingsEmailPage() {
   return (
@@ -29,23 +24,7 @@ export default function SettingsEmailPage() {
         </p>
       </div>
 
-      <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
-        <CardHeader>
-          <CardTitle className="font-display text-xl tracking-wide text-industrial-graphite-600">
-            EMAIL ADDRESS
-          </CardTitle>
-          <CardDescription className="font-body text-industrial-graphite-400">
-            Update your email address and email preferences
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-industrial-sharp bg-industrial-graphite-100 p-4">
-            <p className="font-body text-sm text-industrial-graphite-500">
-              Email management features will be implemented in a future update.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <EmailSection />
     </div>
   );
 }
