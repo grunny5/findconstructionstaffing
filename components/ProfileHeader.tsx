@@ -13,7 +13,7 @@ import {
  * - welding: Orange accent (--industrial-orange)
  * - electrical: Navy accent (--industrial-navy)
  * - mechanical: Graphite accent (--industrial-graphite)
- * - general: No accent band
+ * - general: Light graphite accent (--industrial-graphite-300)
  */
 export type ProfileCategory =
   | 'welding'
