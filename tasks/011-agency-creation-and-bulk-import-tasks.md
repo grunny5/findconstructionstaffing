@@ -366,7 +366,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.1: Create Bulk Import Modal Component
+### [x] Task 2.2.1: Create Bulk Import Modal Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build modal with file upload zone and import preview
@@ -381,18 +381,18 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Drag-and-drop file upload zone
   - Multi-step wizard pattern
 - **Acceptance Criteria (for this task):**
-  - [ ] Modal opens when "Bulk Import" button clicked
-  - [ ] Step 1: Drag-and-drop file upload zone
-  - [ ] Accepts .csv and .xlsx files only
-  - [ ] Shows file name and size after selection
-  - [ ] "Remove" button to clear selected file
-  - [ ] "Next" button to proceed to preview
-  - [ ] Cancel button closes modal
+  - [x] Modal opens when "Bulk Import" button clicked
+  - [x] Step 1: Drag-and-drop file upload zone
+  - [x] Accepts .csv and .xlsx files only
+  - [x] Shows file name and size after selection
+  - [x] "Remove" button to clear selected file
+  - [x] "Next" button to proceed to preview
+  - [x] Cancel button closes modal
 - **Definition of Done:**
-  - [ ] File upload UI complete
-  - [ ] Tests verify file selection
-  - [ ] Tests verify file type validation
-  - [ ] **Final Check:** Drag-and-drop works
+  - [x] File upload UI complete
+  - [x] Tests verify file selection
+  - [x] Tests verify file type validation
+  - [x] **Final Check:** Drag-and-drop works
 
 **Estimated Effort:** 3 hours
 

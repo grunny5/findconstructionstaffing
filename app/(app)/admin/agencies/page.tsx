@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Download, Plus, Upload } from 'lucide-react';
-import Link from 'next/link';
 import { AdminAgenciesTable } from '@/components/admin/AdminAgenciesTable';
+import { AdminAgenciesActions } from '@/components/admin/AdminAgenciesActions';
 
 export interface AdminAgency {
   id: string;
@@ -114,26 +112,7 @@ export default async function AdminAgenciesPage() {
     <div className="container mx-auto p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Agency Management</h1>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            asChild
-            data-testid="download-template-button"
-          >
-            <Link href="/api/admin/agencies/template" download>
-              <Download className="h-4 w-4 mr-2" />
-              Download Template
-            </Link>
-          </Button>
-          <Button variant="outline" disabled>
-            <Upload className="h-4 w-4 mr-2" />
-            Bulk Import
-          </Button>
-          <Button disabled>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Agency
-          </Button>
-        </div>
+        <AdminAgenciesActions />
       </div>
       <AdminAgenciesTable agencies={agenciesWithOwners} />
     </div>
