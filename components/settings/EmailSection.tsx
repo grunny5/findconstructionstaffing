@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * EmailSection Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ */
+
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import {
@@ -11,9 +17,12 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Mail, Pencil, AlertCircle } from 'lucide-react';
+import { Pencil, AlertCircle } from 'lucide-react';
 import { EmailChangeForm } from './EmailChangeForm';
 
+/**
+ * Email address management section with edit capability.
+ */
 export function EmailSection() {
   const { user, profile, loading } = useAuth();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -34,53 +43,59 @@ export function EmailSection() {
 
   if (!user || !profile) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-5 w-5" />
-            Unable to load email
-          </CardTitle>
-          <CardDescription>
-            Please try refreshing the page. If the problem persists, contact
-            support.
-          </CardDescription>
-        </CardHeader>
+      <Card className="border-2 border-industrial-orange rounded-industrial-sharp">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-industrial-graphite-600">
+            <AlertCircle className="h-5 w-5 flex-shrink-0 text-industrial-orange" />
+            <div>
+              <p className="font-body font-medium">Unable to load email</p>
+              <p className="font-body text-sm text-industrial-graphite-400 mt-1">
+                Please try refreshing the page. If the problem persists, contact
+                support.
+              </p>
+            </div>
+          </div>
+        </CardContent>
       </Card>
     );
   }
 
   return (
     <>
-      <Card>
+      <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle>Email Address</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+            Email Address
+          </CardTitle>
+          <CardDescription className="font-body text-industrial-graphite-400">
             Manage your email address. Changing your email requires
             verification.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                Email Address
-              </div>
-              <div className="text-base font-medium">{profile.email}</div>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
+                Current Email
+              </label>
+              <p className="mt-1 font-body text-sm text-industrial-graphite-600">
+                {profile.email}
+              </p>
             </div>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setIsEditorOpen(true)}
+              className="mt-0 -mr-2 text-industrial-orange hover:text-industrial-orange-600 hover:bg-industrial-orange-100"
               aria-label="Change email address"
             >
-              <Pencil className="h-4 w-4 mr-2" />
-              Change Email
+              <Pencil className="h-4 w-4 mr-1" />
+              Change
             </Button>
           </div>
 
-          <div className="p-4 border border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800 rounded-lg">
-            <p className="text-sm text-blue-900 dark:text-blue-100">
+          <div className="rounded-industrial-sharp border-2 border-industrial-graphite-200 bg-industrial-graphite-100 p-4">
+            <p className="font-body text-sm text-industrial-graphite-600">
               <strong>Note:</strong> When you change your email, we&apos;ll send
               verification links to both your current and new email addresses.
               You must click the link in your new email to complete the change.

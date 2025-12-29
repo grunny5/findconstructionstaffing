@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Account Settings Page - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ */
+
 import {
   Card,
   CardHeader,
@@ -10,41 +16,31 @@ import {
 
 /**
  * Account settings page component (placeholder) - Danger Zone.
- *
- * Future implementation will include destructive actions:
- * - Delete account permanently
- * - Export user data
- * - Deactivate account temporarily
- * - Revoke all active sessions
- *
- * This page should include strong warnings and confirmation dialogs
- * for all destructive actions.
- *
- * Currently displays a placeholder message with danger zone styling
- * to indicate the critical nature of these actions.
- *
- * @returns Account settings placeholder page with danger zone indication
  */
 export default function SettingsAccountPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Account Settings</h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+          Account Settings
+        </h2>
+        <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           Manage your account and danger zone actions
         </p>
       </div>
 
-      <Card className="border-red-200">
+      <Card className="border-2 border-industrial-orange rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-orange">
+            Danger Zone
+          </CardTitle>
+          <CardDescription className="font-body text-industrial-graphite-400">
             Irreversible actions that affect your account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg bg-red-50 p-4">
-            <p className="text-sm text-red-800">
+          <div className="rounded-industrial-sharp bg-industrial-orange-100 p-4">
+            <p className="font-body text-sm text-industrial-graphite-600">
               Account deletion and other critical actions will be implemented in
               a future update.
             </p>

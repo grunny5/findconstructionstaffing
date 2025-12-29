@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Password Settings Page - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ */
+
 import {
   Card,
   CardHeader,
@@ -10,38 +16,31 @@ import {
 
 /**
  * Password settings page component (placeholder).
- *
- * Future implementation will allow users to:
- * - Change their current password
- * - View password strength requirements
- * - Enable two-factor authentication
- * - View active sessions and security logs
- *
- * Currently displays a placeholder message indicating the feature
- * is not yet implemented.
- *
- * @returns Password settings placeholder page
  */
 export default function SettingsPasswordPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Password Settings</h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+          Password Settings
+        </h2>
+        <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           Change your password and manage security
         </p>
       </div>
 
-      <Card>
+      <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+            Change Password
+          </CardTitle>
+          <CardDescription className="font-body text-industrial-graphite-400">
             Update your password to keep your account secure
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg bg-gray-50 p-4">
-            <p className="text-sm text-gray-600">
+          <div className="rounded-industrial-sharp bg-industrial-graphite-100 p-4">
+            <p className="font-body text-sm text-industrial-graphite-500">
               Password change functionality will be implemented in a future
               update.
             </p>

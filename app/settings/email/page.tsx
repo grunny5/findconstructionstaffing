@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Email Settings Page - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ */
+
 import {
   Card,
   CardHeader,
@@ -10,37 +16,31 @@ import {
 
 /**
  * Email settings page component (placeholder).
- *
- * Future implementation will allow users to:
- * - Update their email address
- * - Manage email preferences and notifications
- * - Configure email verification settings
- *
- * Currently displays a placeholder message indicating the feature
- * is not yet implemented.
- *
- * @returns Email settings placeholder page
  */
 export default function SettingsEmailPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Email Settings</h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+          Email Settings
+        </h2>
+        <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           Manage your email address and preferences
         </p>
       </div>
 
-      <Card>
+      <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle>Email Address</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+            Email Address
+          </CardTitle>
+          <CardDescription className="font-body text-industrial-graphite-400">
             Update your email address and email preferences
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg bg-gray-50 p-4">
-            <p className="text-sm text-gray-600">
+          <div className="rounded-industrial-sharp bg-industrial-graphite-100 p-4">
+            <p className="font-body text-sm text-industrial-graphite-500">
               Email management features will be implemented in a future update.
             </p>
           </div>
