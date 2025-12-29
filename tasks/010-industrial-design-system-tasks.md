@@ -1046,18 +1046,18 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Form elements use updated components
   - Consistent typography hierarchy
 - **Acceptance Criteria (for this task):**
-  - [ ] Settings sidebar uses industrial navigation styling
-  - [ ] All setting form inputs use industrial styling
-  - [ ] Section headers use Bebas Neue
-  - [ ] Save buttons use primary orange styling
-  - [ ] Mobile: sidebar collapses or stacks appropriately
-  - [ ] Settings tests updated and passing
+  - [x] Settings sidebar uses industrial navigation styling
+  - [x] All setting form inputs use industrial styling
+  - [x] Section headers use Bebas Neue
+  - [x] Save buttons use primary orange styling
+  - [x] Mobile: sidebar collapses or stacks appropriately
+  - [x] Settings tests updated and passing
 - **Definition of Done:**
-  - [ ] All settings pages updated
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Mobile responsive verified
+  - [x] All settings pages updated
+  - [x] Tests passing with 85%+ coverage
+  - [x] Mobile responsive verified
   - [ ] PR submitted with settings screenshots
-  - [ ] **Final Check:** Settings flow tested end-to-end
+  - [x] **Final Check:** Settings flow tested end-to-end
 
 **Estimated Effort:** 6 hours
 
