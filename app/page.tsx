@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { createSlug } from '@/lib/utils/formatting';
+import { allStates, allTrades } from '@/lib/mock-data';
 import {
   Building2,
   Users,
@@ -303,14 +304,13 @@ function HomePageContent() {
                   <SelectTrigger className="font-body w-full lg:w-56 h-14 border-2 border-industrial-graphite-300 rounded-industrial-sharp">
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="CO">Colorado</SelectItem>
-                    <SelectItem value="TX">Texas</SelectItem>
-                    <SelectItem value="AZ">Arizona</SelectItem>
-                    <SelectItem value="WA">Washington</SelectItem>
-                    <SelectItem value="GA">Georgia</SelectItem>
-                    <SelectItem value="IL">Illinois</SelectItem>
+                    {allStates.map((state) => (
+                      <SelectItem key={state.code} value={state.code}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select
@@ -327,14 +327,13 @@ function HomePageContent() {
                   <SelectTrigger className="font-body w-full lg:w-56 h-14 border-2 border-industrial-graphite-300 rounded-industrial-sharp">
                     <SelectValue placeholder="Specialty" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     <SelectItem value="all">All Specialties</SelectItem>
-                    <SelectItem value="general">General Labor</SelectItem>
-                    <SelectItem value="electrical">Electrical</SelectItem>
-                    <SelectItem value="plumbing">Plumbing</SelectItem>
-                    <SelectItem value="hvac">HVAC</SelectItem>
-                    <SelectItem value="welding">Welding</SelectItem>
-                    <SelectItem value="carpentry">Carpentry</SelectItem>
+                    {[...allTrades].sort().map((trade) => (
+                      <SelectItem key={trade} value={trade}>
+                        {trade}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Button
