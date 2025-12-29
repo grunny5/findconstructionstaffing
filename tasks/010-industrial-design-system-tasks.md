@@ -589,19 +589,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Sharp 2px border-radius
   - Uppercase text, small size
 - **Acceptance Criteria (for this task):**
-  - [ ] Border-radius: 2px (sharp)
-  - [ ] Text: Barlow, 0.75rem, uppercase, 600 weight
-  - [ ] Variants: orange, navy, graphite (matching category colors)
-  - [ ] Each variant uses single color family (monochromatic)
-  - [ ] Padding: 0.25rem 0.5rem
-  - [ ] Maintain existing badge API
-  - [ ] Component tests cover all color variants
+  - [x] Border-radius: 2px (sharp)
+  - [x] Text: Barlow, 0.75rem, uppercase, 600 weight
+  - [x] Variants: orange, navy, graphite (matching category colors)
+  - [x] Each variant uses single color family (monochromatic)
+  - [x] Padding: 0.25rem 0.5rem
+  - [x] Maintain existing badge API
+  - [x] Component tests cover all color variants
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Color variants visually verified
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Color variants visually verified
   - [ ] PR submitted with badge variant examples
-  - [ ] **Final Check:** Monochromatic color usage confirmed
+  - [x] **Final Check:** Monochromatic color usage confirmed
 
 **Estimated Effort:** 2 hours
 

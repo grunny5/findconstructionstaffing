@@ -4,17 +4,31 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  // Industrial Design System: Badge base styles
+  'inline-flex items-center font-body text-xs font-semibold uppercase tracking-wide rounded-industrial-sharp px-2 py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2',
   {
     variants: {
       variant: {
+        // Industrial Primary: Graphite (default) - monochromatic
         default:
-          'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+          'bg-industrial-graphite-600 text-white hover:bg-industrial-graphite-500',
+        // Industrial Secondary: Light graphite background
         secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'bg-industrial-graphite-100 text-industrial-graphite-600 hover:bg-industrial-graphite-200',
+        // Industrial Orange: Welding/Fabrication category - monochromatic
+        orange:
+          'bg-industrial-orange text-white hover:bg-industrial-orange-500',
+        // Industrial Navy: Electrical category - monochromatic
+        navy: 'bg-industrial-navy text-white hover:bg-industrial-navy-500',
+        // Industrial Graphite: Mechanical/General category - monochromatic
+        graphite:
+          'bg-industrial-graphite-600 text-white hover:bg-industrial-graphite-500',
+        // Destructive: Maintains warning semantic
         destructive:
-          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
-        outline: 'text-foreground',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/80',
+        // Outline: Industrial border styling
+        outline:
+          'border-2 border-industrial-graphite-300 bg-transparent text-industrial-graphite-500 hover:border-industrial-graphite-400',
       },
     },
     defaultVariants: {
