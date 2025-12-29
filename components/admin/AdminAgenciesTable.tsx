@@ -112,7 +112,10 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
   // Calculate pagination
   const totalFiltered = filteredAgencies.length;
   const totalPages = Math.ceil(totalFiltered / AGENCIES_PER_PAGE);
-  const validCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+  const validCurrentPage = Math.min(
+    Math.max(1, currentPage),
+    Math.max(1, totalPages)
+  );
   const startIndex = (validCurrentPage - 1) * AGENCIES_PER_PAGE;
   const endIndex = Math.min(startIndex + AGENCIES_PER_PAGE, totalFiltered);
   const paginatedAgencies = filteredAgencies.slice(startIndex, endIndex);
@@ -300,7 +303,10 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
             : `Showing ${startIndex + 1}-${endIndex} of ${totalFiltered} agencies`}
         </span>
         {totalPages > 1 && (
-          <div className="flex items-center gap-2" data-testid="pagination-controls">
+          <div
+            className="flex items-center gap-2"
+            data-testid="pagination-controls"
+          >
             <Button
               variant="outline"
               size="sm"
