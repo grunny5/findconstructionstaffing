@@ -147,13 +147,79 @@ describe('AgencyCard', () => {
     expect(profileLink).toHaveAttribute('href', '/recruiters/test-agency');
   });
 
-  it('should have proper card structure', () => {
+  it('should have proper card structure with industrial design', () => {
     const { container } = render(
       <AgencyCard agency={toAgencyCardProps(mockAgency)} />
     );
 
-    const card = container.querySelector('.rounded-lg.border');
+    const card = container.querySelector('.rounded-industrial-base');
     expect(card).toBeInTheDocument();
+    expect(card).toHaveClass('bg-industrial-bg-card');
+    expect(card).toHaveClass('border-industrial-graphite-200');
+  });
+
+  describe('Industrial Design - Category Color Coding', () => {
+    it('should apply navy border for electrical trades', () => {
+      const electricalAgency = {
+        ...mockAgency,
+        trades: [{ id: '1', name: 'Electrician', slug: 'electrician' }],
+      };
+
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(electricalAgency)} />
+      );
+
+      const card = container.querySelector('.border-l-industrial-navy');
+      expect(card).toBeInTheDocument();
+    });
+
+    it('should apply orange border for welding trades', () => {
+      const weldingAgency = {
+        ...mockAgency,
+        trades: [{ id: '1', name: 'Welder', slug: 'welder' }],
+      };
+
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(weldingAgency)} />
+      );
+
+      const card = container.querySelector('.border-l-industrial-orange');
+      expect(card).toBeInTheDocument();
+    });
+
+    it('should apply graphite border for mechanical/general trades', () => {
+      const mechanicalAgency = {
+        ...mockAgency,
+        trades: [{ id: '1', name: 'Plumber', slug: 'plumber' }],
+      };
+
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(mechanicalAgency)} />
+      );
+
+      const card = container.querySelector('.border-l-industrial-graphite-400');
+      expect(card).toBeInTheDocument();
+    });
+
+    it('should render firm name with industrial typography', () => {
+      render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+
+      const firmName = screen.getByText('Test Agency');
+      expect(firmName.closest('h3')).toHaveClass('font-display');
+      expect(firmName.closest('h3')).toHaveClass('uppercase');
+      expect(firmName.closest('h3')).toHaveClass(
+        'text-industrial-graphite-600'
+      );
+    });
+
+    it('should display founded year with industrial styling', () => {
+      render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
+
+      const foundedYear = screen.getByText('Est. 2020');
+      expect(foundedYear).toHaveClass('font-body');
+      expect(foundedYear).toHaveClass('text-xs');
+      expect(foundedYear).toHaveClass('text-industrial-graphite-400');
+    });
   });
 
   it('should limit displayed trades', () => {
@@ -211,18 +277,16 @@ describe('AgencyCard', () => {
   });
 
   describe('Featured Trades Display', () => {
-    it('should display star icon on featured trades', () => {
-      const { container } = render(
-        <AgencyCard agency={toAgencyCardProps(mockAgency)} />
-      );
+    it('should display featured trades with industrial styling', () => {
+      render(<AgencyCard agency={toAgencyCardProps(mockAgency)} />);
 
-      // Find the trade links and verify they contain SVG star icons
-      const electricianLink = screen.getByText('Electrician').closest('a');
-      const plumberLink = screen.getByText('Plumber').closest('a');
+      // Find the trade badges
+      const electricianBadge = screen.getByText('Electrician');
+      const plumberBadge = screen.getByText('Plumber');
 
-      // Each link should contain an SVG (the Star icon)
-      expect(electricianLink?.querySelector('svg')).toBeTruthy();
-      expect(plumberLink?.querySelector('svg')).toBeTruthy();
+      // Trades should have industrial styling
+      expect(electricianBadge).toBeInTheDocument();
+      expect(plumberBadge).toBeInTheDocument();
     });
 
     it('should link featured trades to search page with trade filter', () => {

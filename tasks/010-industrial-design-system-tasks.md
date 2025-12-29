@@ -431,27 +431,27 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Sharp 3px border-radius
   - Subtle box-shadow, enhanced on hover
 - **Acceptance Criteria (for this task):**
-  - [ ] Card has 1px border (graphite-200) + 4px left border (category color)
-  - [ ] Firm name uses Bebas Neue, 1.5rem, uppercase, tight line-height
-  - [ ] Founded year displays in small text (0.8rem, graphite-400)
-  - [ ] Trades list uses Barlow, 0.875rem, graphite-400
-  - [ ] Footer has graphite-100 background with metadata
-  - [ ] Border-radius: 3px (sharp corners)
-  - [ ] Box-shadow: 0 1px 3px rgba(0,0,0,0.06)
-  - [ ] Hover: translateY(-2px) + box-shadow: 0 4px 12px rgba(0,0,0,0.08)
-  - [ ] Category color determined by primary trade:
+  - [x] Card has 1px border (graphite-200) + 4px left border (category color)
+  - [x] Firm name uses Bebas Neue, 1.5rem, uppercase, tight line-height
+  - [x] Founded year displays in small text (0.8rem, graphite-400)
+  - [x] Trades list uses Barlow, 0.875rem, graphite-400
+  - [x] Footer has graphite-100 background with metadata
+  - [x] Border-radius: 3px (sharp corners)
+  - [x] Box-shadow: 0 1px 3px rgba(0,0,0,0.06)
+  - [x] Hover: translateY(-2px) + box-shadow: 0 4px 12px rgba(0,0,0,0.08)
+  - [x] Category color determined by primary trade:
     - Welding/Fabrication → orange-400
     - Electrical → navy-400
     - Mechanical/Maintenance → graphite-400
-  - [ ] Component tests updated with new styling assertions
-  - [ ] Responsive: card stacks vertically on mobile with 24px spacing
+  - [x] Component tests updated with new styling assertions
+  - [x] Responsive: card stacks vertically on mobile with 24px spacing
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Category color logic tested for all trade types
-  - [ ] Mobile, tablet, desktop verified
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Category color logic tested for all trade types
+  - [x] Mobile, tablet, desktop verified
   - [ ] PR submitted with screenshots of different card variants
-  - [ ] **Final Check:** Matches FSD specifications exactly
+  - [x] **Final Check:** Matches FSD specifications exactly
 
 **Estimated Effort:** 6 hours
 
