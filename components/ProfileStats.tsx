@@ -36,7 +36,7 @@ const statIcons = {
  * ProfileStats Component
  *
  * Industrial Design System stats display with:
- * - Large numbers in Bebas Neue (font-display) or bold Barlow
+ * - Large numbers in Bebas Neue (font-display)
  * - Labels in small uppercase Barlow
  * - Responsive grid: 3-4 on desktop, 2 on tablet, 1 on mobile
  * - Optional barcode decoration using Libre Barcode font
