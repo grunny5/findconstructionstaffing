@@ -184,10 +184,28 @@ export async function GET(request: NextRequest) {
     > = {};
 
     if (claimedByIds.length > 0) {
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, full_name')
         .in('id', claimedByIds);
+
+      if (profilesError) {
+        console.error('Error fetching owner profiles:', {
+          message: profilesError.message,
+          code: profilesError.code,
+          details: profilesError.details,
+          claimedByIds,
+        });
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.DATABASE_ERROR,
+              message: 'Failed to fetch owner profiles',
+            },
+          },
+          { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
+      }
 
       if (profiles) {
         ownerProfiles = profiles.reduce(

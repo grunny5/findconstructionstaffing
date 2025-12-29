@@ -651,5 +651,58 @@ describe('GET /api/admin/agencies', () => {
       expect(data.data).toEqual([]);
       expect(data.pagination.total).toBe(0);
     });
+
+    it('should return 500 if owner profiles query fails', async () => {
+      let profileQueryCount = 0;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          profileQueryCount++;
+          if (profileQueryCount === 1) {
+            // First call: admin role check
+            return {
+              select: jest.fn().mockReturnThis(),
+              eq: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { role: 'admin' },
+                error: null,
+              }),
+            };
+          } else {
+            // Second call: owner profiles - return error
+            return {
+              select: jest.fn().mockReturnThis(),
+              in: jest.fn().mockResolvedValue({
+                data: null,
+                error: {
+                  message: 'Database error',
+                  code: 'PGRST000',
+                  details: null,
+                },
+              }),
+            };
+          }
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          range: jest.fn().mockResolvedValue({
+            data: mockAgencies,
+            count: mockAgencies.length,
+            error: null,
+          }),
+        };
+      });
+
+      const request = new NextRequest('http://localhost/api/admin/agencies');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+      expect(data.error.message).toBe('Failed to fetch owner profiles');
+    });
   });
 });

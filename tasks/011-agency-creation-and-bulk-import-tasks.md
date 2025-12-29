@@ -91,7 +91,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.3: Implement Agency Search and Filtering
+### [x] Task 1.1.3: Implement Agency Search and Filtering
 
 - **Role:** Frontend Developer
 - **Objective:** Add search box and filter dropdowns to admin agencies page
@@ -106,17 +106,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Debounced search input (use existing useDebounce hook)
   - URL query param state management
 - **Acceptance Criteria (for this task):**
-  - [ ] Search box filters agencies by name (debounced, 300ms)
-  - [ ] Status filter dropdown with options: All, Active, Inactive
-  - [ ] Claimed filter dropdown with options: All, Claimed, Unclaimed
-  - [ ] Filters update URL query params for shareable links
-  - [ ] Clear filters button resets all filters
-  - [ ] Table updates when filters change
+  - [x] Search box filters agencies by name (debounced, 300ms)
+  - [x] Status filter dropdown with options: All, Active, Inactive
+  - [x] Claimed filter dropdown with options: All, Claimed, Unclaimed
+  - [x] Filters update URL query params for shareable links
+  - [x] Clear filters button resets all filters
+  - [x] Table updates when filters change
 - **Definition of Done:**
-  - [ ] Search and filters functional
-  - [ ] Tests verify filter interactions
-  - [ ] Tests verify URL param updates
-  - [ ] **Final Check:** Follows DirectoryFilters component patterns
+  - [x] Search and filters functional
+  - [x] Tests verify filter interactions
+  - [x] Tests verify URL param updates
+  - [x] **Final Check:** Follows DirectoryFilters component patterns
 
 **Estimated Effort:** 3 hours
 
