@@ -119,19 +119,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Map CSS custom properties to Tailwind utilities
   - Create semantic color names that match industrial palette
 - **Acceptance Criteria (for this task):**
-  - [ ] Font families extended: `font-display`, `font-body`, `font-barcode`
-  - [ ] Colors extended with industrial palette mapped to CSS variables
-  - [ ] Spacing scale preserved and documented
-  - [ ] Border radius extended with industrial values (2px, 3px)
-  - [ ] Tailwind IntelliSense recognizes new utilities
-  - [ ] Build succeeds without errors (`npm run build`)
-  - [ ] No regression in existing component styling
+  - [x] Font families extended: `font-display`, `font-body`, `font-barcode`
+  - [x] Colors extended with industrial palette mapped to CSS variables
+  - [x] Spacing scale preserved and documented
+  - [x] Border radius extended with industrial values (2px, 3px)
+  - [x] Tailwind IntelliSense recognizes new utilities
+  - [x] Build succeeds without errors (`npm run build`)
+  - [x] No regression in existing component styling
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Type definitions regenerated for IntelliSense
-  - [ ] Configuration documented in code comments
+  - [x] Code complete and committed
+  - [x] Type definitions regenerated for IntelliSense
+  - [x] Configuration documented in code comments
   - [ ] PR submitted with example usage
-  - [ ] **Final Check:** TypeScript strict mode compliant
+  - [x] **Final Check:** TypeScript strict mode compliant
 
 **Estimated Effort:** 3 hours
 
