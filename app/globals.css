@@ -147,10 +147,10 @@
   --industrial-border-thick: 3px;
   --industrial-border-category: 4px; /* Left border on cards */
 
-  /* Typography Scale - Will be paired with font loading in layout.tsx */
-  --industrial-font-display: 'Bebas Neue', sans-serif;
-  --industrial-font-body: 'Barlow', sans-serif;
-  --industrial-font-barcode: 'Libre Barcode 39 Text', cursive;
+  /* Typography Scale - References font variables from layout.tsx */
+  --industrial-font-display: var(--font-bebas-neue), sans-serif;
+  --industrial-font-body: var(--font-barlow), sans-serif;
+  --industrial-font-barcode: var(--font-libre-barcode), cursive;
 
   /* Transitions - Crisp, not playful */
   --industrial-transition-fast: 0.2s ease;

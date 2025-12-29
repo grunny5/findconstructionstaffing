@@ -19,42 +19,42 @@ describe('Industrial Design System - CSS Custom Properties', () => {
   describe('Color Palette Variables', () => {
     describe('Industrial Orange Palette', () => {
       it('should define all orange palette shades', () => {
-        expect(globalsCss).toContain('--industrial-orange-100: #FFF4E6');
-        expect(globalsCss).toContain('--industrial-orange-200: #FFD699');
-        expect(globalsCss).toContain('--industrial-orange-300: #FF9F1C');
-        expect(globalsCss).toContain('--industrial-orange-400: #E07B00');
-        expect(globalsCss).toContain('--industrial-orange-500: #B85C00');
-        expect(globalsCss).toContain('--industrial-orange-600: #8A4400');
+        expect(globalsCss).toContain('--industrial-orange-100: #fff4e6');
+        expect(globalsCss).toContain('--industrial-orange-200: #ffd699');
+        expect(globalsCss).toContain('--industrial-orange-300: #ff9f1c');
+        expect(globalsCss).toContain('--industrial-orange-400: #e07b00');
+        expect(globalsCss).toContain('--industrial-orange-500: #b85c00');
+        expect(globalsCss).toContain('--industrial-orange-600: #8a4400');
       });
     });
 
     describe('Industrial Graphite Palette', () => {
       it('should define all graphite palette shades', () => {
-        expect(globalsCss).toContain('--industrial-graphite-100: #F5F5F5');
-        expect(globalsCss).toContain('--industrial-graphite-200: #D4D4D4');
-        expect(globalsCss).toContain('--industrial-graphite-300: #9A9A9A');
-        expect(globalsCss).toContain('--industrial-graphite-400: #5C5C5C');
+        expect(globalsCss).toContain('--industrial-graphite-100: #f5f5f5');
+        expect(globalsCss).toContain('--industrial-graphite-200: #d4d4d4');
+        expect(globalsCss).toContain('--industrial-graphite-300: #9a9a9a');
+        expect(globalsCss).toContain('--industrial-graphite-400: #5c5c5c');
         expect(globalsCss).toContain('--industrial-graphite-500: #333333');
-        expect(globalsCss).toContain('--industrial-graphite-600: #1A1A1A');
+        expect(globalsCss).toContain('--industrial-graphite-600: #1a1a1a');
       });
     });
 
     describe('Industrial Navy Palette', () => {
       it('should define all navy palette shades', () => {
-        expect(globalsCss).toContain('--industrial-navy-100: #E8EDF2');
-        expect(globalsCss).toContain('--industrial-navy-200: #B8C9D9');
-        expect(globalsCss).toContain('--industrial-navy-300: #4A6B8A');
-        expect(globalsCss).toContain('--industrial-navy-400: #2D4A63');
-        expect(globalsCss).toContain('--industrial-navy-500: #1B3A4F');
-        expect(globalsCss).toContain('--industrial-navy-600: #0F2535');
+        expect(globalsCss).toContain('--industrial-navy-100: #e8edf2');
+        expect(globalsCss).toContain('--industrial-navy-200: #b8c9d9');
+        expect(globalsCss).toContain('--industrial-navy-300: #4a6b8a');
+        expect(globalsCss).toContain('--industrial-navy-400: #2d4a63');
+        expect(globalsCss).toContain('--industrial-navy-500: #1b3a4f');
+        expect(globalsCss).toContain('--industrial-navy-600: #0f2535');
       });
     });
 
     describe('Background Colors', () => {
       it('should define background color variables', () => {
-        expect(globalsCss).toContain('--industrial-bg-primary: #FAF7F2');
-        expect(globalsCss).toContain('--industrial-bg-card: #FFFFFF');
-        expect(globalsCss).toContain('--industrial-bg-dark: #1A1A1A');
+        expect(globalsCss).toContain('--industrial-bg-primary: #faf7f2');
+        expect(globalsCss).toContain('--industrial-bg-card: #ffffff');
+        expect(globalsCss).toContain('--industrial-bg-dark: #1a1a1a');
       });
     });
   });
@@ -90,11 +90,15 @@ describe('Industrial Design System - CSS Custom Properties', () => {
   });
 
   describe('Typography Variables', () => {
-    it('should define font family variables', () => {
-      expect(globalsCss).toContain("--industrial-font-display: 'Bebas Neue'");
-      expect(globalsCss).toContain("--industrial-font-body: 'Barlow'");
+    it('should define font family variables referencing layout.tsx vars', () => {
       expect(globalsCss).toContain(
-        "--industrial-font-barcode: 'Libre Barcode 39 Text'"
+        '--industrial-font-display: var(--font-bebas-neue)'
+      );
+      expect(globalsCss).toContain(
+        '--industrial-font-body: var(--font-barlow)'
+      );
+      expect(globalsCss).toContain(
+        '--industrial-font-barcode: var(--font-libre-barcode)'
       );
     });
   });
