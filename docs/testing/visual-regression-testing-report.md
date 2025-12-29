@@ -489,7 +489,7 @@ Screenshots should be captured and stored in:
 
 ### Recommended Directory Structure
 
-```
+```plaintext
 screenshots/
 ├── industrial-design-baseline/
 │   ├── homepage/
