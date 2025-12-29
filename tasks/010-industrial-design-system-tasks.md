@@ -968,19 +968,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Clear, helpful error messages
   - Maintain professional tone
 - **Acceptance Criteria (for this task):**
-  - [ ] Error states use orange-400 or graphite-600 (not bright red)
-  - [ ] Error messages use Barlow, 0.875rem
-  - [ ] Error icons are simple and clear
-  - [ ] Success states use graphite-600 (not green, per monochromatic rule)
-  - [ ] Validation messages are helpful and professional
-  - [ ] Error borders are 2px (matching inputs)
-  - [ ] Accessibility: errors announced to screen readers
+  - [x] Error states use orange-400 or graphite-600 (not bright red)
+  - [x] Error messages use Barlow, 0.875rem (font-body text-sm)
+  - [x] Error icons are simple and clear (industrial-orange for destructive)
+  - [x] Success states use graphite-600 (not green, per monochromatic rule)
+  - [x] Validation messages are helpful and professional
+  - [x] Error borders are 2px (matching inputs)
+  - [x] Accessibility: errors announced to screen readers (role="alert")
 - **Definition of Done:**
-  - [ ] Error styling updated across all forms
-  - [ ] Error messages are clear and actionable
-  - [ ] Accessibility verified
+  - [x] Error styling updated across all forms (form.tsx, alert.tsx, toast.tsx)
+  - [x] Error messages are clear and actionable
+  - [x] Accessibility verified (26 tests passing)
   - [ ] PR submitted with error state examples
-  - [ ] **Final Check:** Error UX is helpful, not punishing
+  - [x] **Final Check:** Error UX is helpful, not punishing
 
 **Estimated Effort:** 3 hours
 

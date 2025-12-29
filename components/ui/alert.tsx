@@ -3,19 +3,29 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Industrial Design System - Alert Component
+ *
+ * Uses industrial color palette for error/success states:
+ * - destructive/error: industrial-orange (not bright red)
+ * - success: industrial-graphite-600 (monochromatic, not green)
+ * - info: industrial-navy
+ * - warning: industrial-orange-200 background
+ */
 const alertVariants = cva(
-  'relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground',
+  'relative w-full font-body border-2 rounded-industrial-sharp p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4',
   {
     variants: {
       variant: {
-        default: 'bg-background text-foreground',
+        default:
+          'bg-industrial-bg-card border-industrial-graphite-300 text-industrial-graphite-600 [&>svg]:text-industrial-graphite-400',
         destructive:
-          'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
+          'bg-industrial-orange-100 border-industrial-orange text-industrial-graphite-600 [&>svg]:text-industrial-orange',
         warning:
-          'border-yellow-500/50 bg-yellow-50 text-yellow-900 dark:border-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-200 [&>svg]:text-yellow-600 dark:[&>svg]:text-yellow-400',
-        info: 'border-blue-500/50 bg-blue-50 text-blue-900 dark:border-blue-500 dark:bg-blue-900/20 dark:text-blue-200 [&>svg]:text-blue-600 dark:[&>svg]:text-blue-400',
+          'bg-industrial-orange-100 border-industrial-orange-300 text-industrial-graphite-600 [&>svg]:text-industrial-orange-400',
+        info: 'bg-industrial-navy-100 border-industrial-navy-300 text-industrial-graphite-600 [&>svg]:text-industrial-navy',
         success:
-          'border-green-500/50 bg-green-50 text-green-900 dark:border-green-500 dark:bg-green-900/20 dark:text-green-200 [&>svg]:text-green-600 dark:[&>svg]:text-green-400',
+          'bg-industrial-graphite-100 border-industrial-graphite-400 text-industrial-graphite-600 [&>svg]:text-industrial-graphite-600',
       },
     },
     defaultVariants: {
@@ -43,7 +53,10 @@ const AlertTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn('mb-1 font-medium leading-none tracking-tight', className)}
+    className={cn(
+      'mb-1 font-body font-semibold leading-none tracking-tight',
+      className
+    )}
     {...props}
   />
 ));
@@ -55,7 +68,7 @@ const AlertDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('text-sm [&_p]:leading-relaxed', className)}
+    className={cn('font-body text-sm [&_p]:leading-relaxed', className)}
     {...props}
   />
 ));
