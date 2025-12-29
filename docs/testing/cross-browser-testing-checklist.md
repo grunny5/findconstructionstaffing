@@ -5,8 +5,8 @@
 ## Task: 6.3 - Final Cross-Browser and Cross-Device Testing
 
 **Date:** 2025-12-29
-**Tester:** ******\_\_\_******
-**Build Version:** ******\_\_\_******
+**Tester:** **\*\***\_\_\_**\*\***
+**Build Version:** **\*\***\_\_\_**\*\***
 
 ---
 

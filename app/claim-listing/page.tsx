@@ -23,15 +23,8 @@ import {
 import { mockAgencies } from '@/lib/mock-data';
 import { toast } from 'sonner';
 
-// Utility function for creating slugs
-const createSlug = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-};
+// Type for mock agency data
+type MockAgency = (typeof mockAgencies)[number];
 
 const claimSchema = z.object({
   agencyName: z.string().min(2, 'Agency name must be at least 2 characters'),
@@ -47,7 +40,7 @@ type ClaimFormData = z.infer<typeof claimSchema>;
 
 export default function ClaimListingPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAgency, setSelectedAgency] = useState<any>(null);
+  const [selectedAgency, setSelectedAgency] = useState<MockAgency | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -67,7 +60,7 @@ export default function ClaimListingPage() {
     )
     .slice(0, 10);
 
-  const selectAgency = (agency: any) => {
+  const selectAgency = (agency: MockAgency) => {
     setSelectedAgency(agency);
     setValue('agencyName', agency.name);
   };
