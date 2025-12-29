@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Building2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks/use-debounce';
-import type { AdminAgency } from '@/app/(app)/admin/agencies/page';
+import type { AdminAgency } from '@/types/admin';
 
 const AGENCIES_PER_PAGE = 20;
 

@@ -250,7 +250,7 @@ describe('BulkImportModal', () => {
     });
 
     it('clears selected file when cancel is clicked', async () => {
-      render(<BulkImportModal {...defaultProps} />);
+      const { rerender } = render(<BulkImportModal {...defaultProps} />);
 
       const file = new File(['content'], 'test.csv', { type: 'text/csv' });
       const fileInput = screen.getByTestId('file-input');
@@ -260,8 +260,8 @@ describe('BulkImportModal', () => {
 
       await userEvent.click(screen.getByTestId('cancel-button'));
 
-      // Re-open modal to verify state was reset
-      render(<BulkImportModal {...defaultProps} />);
+      // Re-open the same modal instance to verify state was reset
+      rerender(<BulkImportModal {...defaultProps} isOpen={true} />);
       expect(
         screen.queryByTestId('selected-file-name')
       ).not.toBeInTheDocument();

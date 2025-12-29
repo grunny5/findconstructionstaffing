@@ -429,7 +429,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.3: Create Bulk Import Preview API Endpoint
+### [x] Task 2.2.3: Create Bulk Import Preview API Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Validate parsed data and return preview with per-row status
@@ -443,19 +443,19 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Check for duplicate names (existing + within batch)
   - Resolve trades and regions to IDs
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies/bulk-import/preview` accepts array of agency objects
-  - [ ] Returns validation result for each row: valid, errors[], warnings[]
-  - [ ] Checks name uniqueness against database
-  - [ ] Checks name uniqueness within upload batch
-  - [ ] Validates trade names against trades table, returns warnings for unknown
-  - [ ] Validates region codes against regions table, returns warnings for unknown
-  - [ ] Returns summary: total, valid, invalid, warnings
-  - [ ] Does NOT create any agencies (preview only)
+  - [x] `POST /api/admin/agencies/bulk-import/preview` accepts array of agency objects
+  - [x] Returns validation result for each row: valid, errors[], warnings[]
+  - [x] Checks name uniqueness against database
+  - [x] Checks name uniqueness within upload batch
+  - [x] Validates trade names against trades table, returns warnings for unknown
+  - [x] Validates region codes against regions table, returns warnings for unknown
+  - [x] Returns summary: total, valid, invalid, warnings
+  - [x] Does NOT create any agencies (preview only)
 - **Definition of Done:**
-  - [ ] Preview endpoint functional
-  - [ ] Tests cover all validation scenarios
-  - [ ] Tests verify no data is created
-  - [ ] **Final Check:** Handles large batches (500+ rows)
+  - [x] Preview endpoint functional
+  - [x] Tests cover all validation scenarios (80 tests)
+  - [x] Tests verify no data is created
+  - [x] **Final Check:** Handles large batches (tested with 100 rows)
 
 **Estimated Effort:** 4 hours
 
@@ -851,9 +851,9 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 | Phase                          | Tasks        | Estimated Hours |
 | ------------------------------ | ------------ | --------------- |
 | Phase 1: Admin List & Creation | 8 tasks      | 23 hours        |
-| Phase 2: Bulk Import           | 10 tasks     | 31 hours        |
+| Phase 2: Bulk Import           | 10 tasks     | 30 hours        |
 | Phase 3: Management Features   | 6 tasks      | 15 hours        |
-| **Total**                      | **24 tasks** | **69 hours**    |
+| **Total**                      | **24 tasks** | **68 hours**    |
 
 ### Dependencies Graph
 

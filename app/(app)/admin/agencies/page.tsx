@@ -2,21 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AdminAgenciesTable } from '@/components/admin/AdminAgenciesTable';
 import { AdminAgenciesActions } from '@/components/admin/AdminAgenciesActions';
-
-export interface AdminAgency {
-  id: string;
-  name: string;
-  slug: string;
-  is_active: boolean;
-  is_claimed: boolean;
-  claimed_by: string | null;
-  created_at: string;
-  profile_completion_percentage: number | null;
-  owner_profile?: {
-    email: string | null;
-    full_name: string | null;
-  } | null;
-}
+import type { AdminAgency } from '@/types/admin';
 
 export default async function AdminAgenciesPage() {
   const supabase = await createClient();

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdminAgenciesTable } from '../AdminAgenciesTable';
-import type { AdminAgency } from '@/app/(app)/admin/agencies/page';
+import type { AdminAgency } from '@/types/admin';
 
 // Mock next/navigation
 const mockPush = jest.fn();

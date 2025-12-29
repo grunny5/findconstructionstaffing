@@ -291,6 +291,18 @@ export function parseCSV(content: string): ParseResult {
       }
 
       const normalized = normalizeRow(rawRow, rowNumber);
+
+      // Validate required field: name
+      if (!normalized.name || normalized.name.trim() === '') {
+        errors.push({
+          type: 'row',
+          row: rowNumber,
+          message: 'Missing required field: name',
+        });
+        rowNumber++;
+        continue;
+      }
+
       data.push(normalized);
       rowNumber++;
     }
@@ -389,6 +401,17 @@ export function parseXLSX(buffer: ArrayBuffer): ParseResult {
       }
 
       const normalized = normalizeRow(rawRow, rowNumber);
+
+      // Validate required field: name
+      if (!normalized.name || normalized.name.trim() === '') {
+        errors.push({
+          type: 'row',
+          row: rowNumber,
+          message: 'Missing required field: name',
+        });
+        continue;
+      }
+
       data.push(normalized);
     }
 
