@@ -933,20 +933,20 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Uppercase labels
   - Adequate touch targets (44px minimum)
 - **Acceptance Criteria (for this task):**
-  - [ ] Checkbox: 2px border, sharp corners, orange-400 when checked
-  - [ ] Radio: 2px border, sharp corners, orange-400 when selected
-  - [ ] Select: 2px border, sharp corners, orange-400 focus, dropdown styled
-  - [ ] Textarea: matches input styling, resizable
-  - [ ] Label: Barlow, 0.75rem, uppercase, 600 weight, graphite-400
-  - [ ] All components maintain existing API
-  - [ ] Component tests updated for all variants
-  - [ ] Accessibility verified (keyboard nav, screen reader)
+  - [x] Checkbox: 2px border, sharp corners, orange-400 when checked
+  - [x] Radio: 2px border, sharp corners, orange-400 when selected
+  - [x] Select: 2px border, sharp corners, orange-400 focus, dropdown styled
+  - [x] Textarea: matches input styling, resizable
+  - [x] Label: Barlow, 0.75rem, uppercase, 600 weight, graphite-400 (with industrial variant)
+  - [x] All components maintain existing API
+  - [x] Component tests updated for all variants (33 new tests)
+  - [x] Accessibility verified (keyboard nav, screen reader)
 - **Definition of Done:**
-  - [ ] All 5 components updated
-  - [ ] Tests passing with 85%+ coverage
+  - [x] All 5 components updated
+  - [x] Tests passing with 85%+ coverage (33 tests passing)
   - [ ] Component showcase page created for reference
   - [ ] PR submitted with component examples
-  - [ ] **Final Check:** Consistent industrial styling across all form controls
+  - [x] **Final Check:** Consistent industrial styling across all form controls
 
 **Estimated Effort:** 6 hours
 

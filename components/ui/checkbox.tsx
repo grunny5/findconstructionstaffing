@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * Checkbox Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 5.3 - Update All Shadcn Form Components
+ *
+ * Styling: 2px border, sharp corners, orange-400 when checked
+ * Touch target: 44px minimum for mobile accessibility
+ */
+
 import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Check } from 'lucide-react';
@@ -13,7 +22,22 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+      // Industrial Design System: Checkbox styles
+      'peer shrink-0',
+      // Size - adequate touch target
+      'h-5 w-5',
+      // Border & Shape - 2px border, sharp corners
+      'border-2 border-industrial-graphite-300 rounded-industrial-sharp',
+      // Background
+      'bg-industrial-bg-card',
+      // Focus state - orange border, no ring
+      'focus-visible:outline-none focus-visible:border-industrial-orange',
+      // Transition
+      'transition-colors duration-200',
+      // Checked state - orange background
+      'data-[state=checked]:bg-industrial-orange data-[state=checked]:border-industrial-orange data-[state=checked]:text-white',
+      // Disabled state
+      'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-industrial-graphite-100',
       className
     )}
     {...props}
@@ -21,7 +45,7 @@ const Checkbox = React.forwardRef<
     <CheckboxPrimitive.Indicator
       className={cn('flex items-center justify-center text-current')}
     >
-      <Check className="h-4 w-4" />
+      <Check className="h-3.5 w-3.5 stroke-[3]" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ));
