@@ -42,7 +42,7 @@ _To be completed after 30-day data collection period._
 
 #### Trend Visualization
 
-```
+```text
 Lead Form Conversion Rate Trend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     |
@@ -75,7 +75,7 @@ Lead Form Conversion Rate Trend
 
 **Calculation Method:**
 
-```
+```text
 Z = (p1 - p2) / sqrt(p_pooled * (1 - p_pooled) * (1/n1 + 1/n2))
 
 Where:
@@ -139,7 +139,7 @@ ORDER BY week;
 
 #### Trend Visualization
 
-```
+```text
 Average Session Duration (seconds)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      |
