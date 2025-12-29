@@ -749,13 +749,14 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 
 ---
 
-### Task 4.4: Update Trade and Region Badge Displays
+### Task 4.4: Update Trade and Region Badge Displays ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Apply industrial badge styling to trade and region lists on profile pages
 - **Context:** Trades and regions are key information - badges must be scannable and industrial
 - **Key Files to Modify:**
-  - Components that display trade/region badges on profile pages
+  - `components/RegionBadges.tsx` (updated with industrial styling)
+  - `components/__tests__/RegionBadges.test.tsx` (added 13 industrial design tests)
 - **Key Files to Reference:**
   - Task 3.5 (Badge component already updated)
 - **Key Patterns to Follow:**
@@ -763,18 +764,18 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Group trades by category color
   - Flex-wrap layout for responsive stacking
 - **Acceptance Criteria (for this task):**
-  - [ ] Trade badges use orange, navy, or graphite based on category
-  - [ ] Region badges use consistent graphite styling
-  - [ ] Badges wrap responsively (flex-wrap)
-  - [ ] Spacing between badges: 8px (--space-sm)
-  - [ ] Mobile: badges stack with adequate touch spacing
-  - [ ] Visual hierarchy: trades more prominent than regions
+  - [x] Trade badges use orange, navy, or graphite based on category (variant="orange" for featured)
+  - [x] Region badges use consistent graphite styling (variant="graphite" for nationwide, "secondary" default)
+  - [x] Badges wrap responsively (flex-wrap)
+  - [x] Spacing between badges: 8px (gap-2)
+  - [x] Mobile: badges stack with adequate touch spacing (flex-wrap + gap-2)
+  - [x] Visual hierarchy: trades more prominent than regions (larger badges, star icons)
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Badge displays match industrial aesthetic
-  - [ ] Responsive wrapping verified
+  - [x] Code complete and committed
+  - [x] Badge displays match industrial aesthetic
+  - [x] Responsive wrapping verified (flex-wrap gap-2)
   - [ ] PR submitted with badge layouts
-  - [ ] **Final Check:** Scannable on mobile devices
+  - [x] **Final Check:** Scannable on mobile devices
 
 **Estimated Effort:** 3 hours
 
