@@ -226,7 +226,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.3: Create Zod Validation Schema for Agency Creation
+### [x] Task 1.2.3: Create Zod Validation Schema for Agency Creation
 
 - **Role:** Backend Developer
 - **Objective:** Create comprehensive validation schema for agency data
@@ -242,20 +242,20 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Reusable field validators
   - Clear error messages
 - **Acceptance Criteria (for this task):**
-  - [ ] Schema validates all agency fields
-  - [ ] name: required, 2-200 characters, trimmed
-  - [ ] description: optional, max 5000 characters
-  - [ ] website: optional, valid URL format
-  - [ ] phone: optional, valid phone format
-  - [ ] email: optional, valid email format
-  - [ ] founded_year: optional, integer 1800-current year
-  - [ ] offers_per_diem, is_union: optional booleans
-  - [ ] Error messages are user-friendly
+  - [x] Schema validates all agency fields
+  - [x] name: required, 2-200 characters, trimmed
+  - [x] description: optional, max 5000 characters
+  - [x] website: optional, valid URL format
+  - [x] phone: optional, valid phone format
+  - [x] email: optional, valid email format
+  - [x] founded_year: optional, integer 1800-current year
+  - [x] offers_per_diem, is_union: optional booleans
+  - [x] Error messages are user-friendly
 - **Definition of Done:**
-  - [ ] Schema complete and exported
-  - [ ] Unit tests cover all validation rules
-  - [ ] Tests verify error message format
-  - [ ] **Final Check:** Consistent with existing validation patterns
+  - [x] Schema complete and exported
+  - [x] Unit tests cover all validation rules (110 tests)
+  - [x] Tests verify error message format
+  - [x] **Final Check:** Consistent with existing validation patterns
 
 **Estimated Effort:** 2 hours
 

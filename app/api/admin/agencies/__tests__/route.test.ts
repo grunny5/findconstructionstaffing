@@ -1057,7 +1057,8 @@ describe('POST /api/admin/agencies', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(HTTP_STATUS.CREATED);
-      expect(capturedInsertData?.slug).toBe('test-staffing-company');
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.slug).toBe('test-staffing-company');
     });
 
     it('should handle special characters in name for slug generation', async () => {
@@ -1102,7 +1103,8 @@ describe('POST /api/admin/agencies', () => {
 
       expect(response.status).toBe(HTTP_STATUS.CREATED);
       // Apostrophe becomes a hyphen, resulting in "bob-s-..."
-      expect(capturedInsertData?.slug).toBe('bob-s-1-staffing-recruiting');
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.slug).toBe('bob-s-1-staffing-recruiting');
     });
   });
 
@@ -1384,8 +1386,9 @@ describe('POST /api/admin/agencies', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(HTTP_STATUS.CREATED);
-      expect(capturedInsertData?.is_active).toBe(true);
-      expect(capturedInsertData?.is_claimed).toBe(false);
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.is_active).toBe(true);
+      expect(capturedInsertData!.is_claimed).toBe(false);
     });
 
     it('should convert founded_year string to integer', async () => {
@@ -1430,8 +1433,9 @@ describe('POST /api/admin/agencies', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(HTTP_STATUS.CREATED);
-      expect(capturedInsertData?.founded_year).toBe(2015);
-      expect(typeof capturedInsertData?.founded_year).toBe('number');
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.founded_year).toBe(2015);
+      expect(typeof capturedInsertData!.founded_year).toBe('number');
     });
   });
 
