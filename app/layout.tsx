@@ -1,6 +1,11 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Bebas_Neue, Barlow, Libre_Barcode_39_Text } from 'next/font/google';
+import {
+  Inter,
+  Bebas_Neue,
+  Barlow,
+  Libre_Barcode_39_Text,
+} from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/lib/auth/auth-context';
 

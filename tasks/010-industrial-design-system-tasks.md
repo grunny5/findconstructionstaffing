@@ -13,6 +13,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 **Goal:** Redesign the platform with an industrial brutalist aesthetic to build trust and authenticity with construction industry professionals.
 
 **Target Metrics:**
+
 - Lead form conversion rate: +15-25%
 - Agency claim requests: +20%
 - Time on site: +30%
@@ -1422,6 +1423,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 **Total Estimated Effort:** ~200 hours (approximately 1 developer for 7 weeks)
 
 **Weekly Breakdown:**
+
 - Week 1: 5 tasks, ~12 hours (Foundation)
 - Week 2: 5 tasks, ~18 hours (Homepage & Navigation)
 - Week 3: 6 tasks, ~25 hours (Directory & Listings)
@@ -1431,6 +1433,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 - Week 7: 5 tasks, ~20 hours + 30-day wait (Monitoring & Iteration)
 
 **Success Criteria:**
+
 - All 5 user stories' acceptance criteria met
 - WCAG 2.1 AA compliance verified (Lighthouse ≥ 95)
 - Performance maintained (LCP < 2.5s, Lighthouse ≥ 90)
@@ -1441,9 +1444,11 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 - Positive user sentiment achieved
 
 **Dependencies:**
+
 - None - This is a self-contained frontend update
 
 **Risk Mitigation:**
+
 - Gradual rollout (10% → 50% → 100%) reduces blast radius
 - Comprehensive testing (cross-browser, accessibility, performance) before each phase
 - Rollback capability at each deployment step
@@ -1479,6 +1484,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 ### Deployment Gates
 
 Each weekly deployment requires:
+
 - [ ] All tests passing (unit, integration, e2e)
 - [ ] Lighthouse scores maintained (Performance ≥90, Accessibility ≥95)
 - [ ] Cross-browser testing passed

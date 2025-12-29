@@ -93,7 +93,9 @@ describe('Industrial Design System - CSS Custom Properties', () => {
     it('should define font family variables', () => {
       expect(globalsCss).toContain("--industrial-font-display: 'Bebas Neue'");
       expect(globalsCss).toContain("--industrial-font-body: 'Barlow'");
-      expect(globalsCss).toContain("--industrial-font-barcode: 'Libre Barcode 39 Text'");
+      expect(globalsCss).toContain(
+        "--industrial-font-barcode: 'Libre Barcode 39 Text'"
+      );
     });
   });
 
