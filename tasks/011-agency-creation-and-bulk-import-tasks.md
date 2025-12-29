@@ -157,7 +157,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.1: Create Agency Form Modal Component
+### [x] Task 1.2.1: Create Agency Form Modal Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build reusable form component for creating/editing agencies
@@ -173,17 +173,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - React Hook Form with Zod validation
   - Controlled form state
 - **Acceptance Criteria (for this task):**
-  - [ ] Modal opens when "Create Agency" button clicked
-  - [ ] Form includes fields: name (required), description, website, phone, email, headquarters, founded_year, employee_count, company_size, offers_per_diem, is_union
-  - [ ] Real-time validation with error messages
-  - [ ] Submit button disabled until form is valid
-  - [ ] Cancel button closes modal without saving
-  - [ ] Success closes modal and refreshes agencies list
+  - [x] Modal opens when "Create Agency" button clicked
+  - [x] Form includes fields: name (required), description, website, phone, email, headquarters, founded_year, employee_count, company_size, offers_per_diem, is_union
+  - [x] Real-time validation with error messages
+  - [x] Submit button disabled until form is valid
+  - [x] Cancel button closes modal without saving
+  - [x] Success closes modal and refreshes agencies list
 - **Definition of Done:**
-  - [ ] Modal component complete
-  - [ ] Tests verify form validation
-  - [ ] Tests verify submit/cancel behaviors
-  - [ ] **Final Check:** Follows existing modal patterns
+  - [x] Modal component complete
+  - [x] Tests verify form validation
+  - [x] Tests verify submit/cancel behaviors
+  - [x] **Final Check:** Follows existing modal patterns
 
 **Estimated Effort:** 4 hours
 
