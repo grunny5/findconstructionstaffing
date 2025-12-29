@@ -132,7 +132,7 @@ describe('ConversationListItem', () => {
       const recentConversation = {
         ...mockConversation,
         last_message: {
-          ...mockConversation.last_message,
+          content: mockConversation.last_message!.content,
           created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
         },
       };
