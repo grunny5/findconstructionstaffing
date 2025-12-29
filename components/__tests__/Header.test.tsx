@@ -139,8 +139,8 @@ describe('Header', () => {
     render(<Header />);
 
     // There are multiple instances of these texts (desktop and mobile)
-    expect(screen.getAllByText('Construction')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('Recruiter Directory')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Find Construction')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Staffing')[0]).toBeInTheDocument();
   });
 
   it('should render desktop navigation links', () => {
@@ -174,11 +174,14 @@ describe('Header', () => {
     expect(signUpLinks.length).toBeGreaterThan(0);
   });
 
-  it('should have proper header styling', () => {
+  it('should have proper header styling with industrial design', () => {
     render(<Header />);
 
     const header = screen.getByRole('banner');
-    expect(header).toHaveClass('glass-header');
+    // Industrial design: white card background with 3px graphite bottom border
+    expect(header).toHaveClass('bg-industrial-bg-card');
+    expect(header).toHaveClass('border-b-[3px]');
+    expect(header).toHaveClass('border-industrial-graphite-600');
     expect(header).toHaveClass('sticky');
     expect(header).toHaveClass('top-0');
     expect(header).toHaveClass('z-50');
@@ -239,9 +242,48 @@ describe('Header', () => {
     render(<Header />);
 
     const container = screen
-      .getAllByText('Construction')[0]
+      .getAllByText('Find Construction')[0]
       .closest('.max-w-7xl');
     expect(container).toHaveClass('mx-auto');
+  });
+
+  describe('Industrial Design Styling', () => {
+    it('should render logo with Bebas Neue (font-display) styling', () => {
+      render(<Header />);
+
+      const logoText = screen.getAllByText('Find Construction')[0];
+      expect(logoText).toHaveClass('font-display');
+      expect(logoText).toHaveClass('uppercase');
+      expect(logoText).toHaveClass('text-2xl');
+      expect(logoText).toHaveClass('text-industrial-graphite-600');
+    });
+
+    it('should render navigation links with industrial styling', () => {
+      render(<Header />);
+
+      // The navigation element has the industrial styling
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveClass('gap-8');
+
+      // Navigation links are rendered with font-body styling via the Link component
+      // Due to the mock, we verify navigation structure exists
+      const browseLinks = screen.getAllByRole('link', {
+        name: /browse directory/i,
+      });
+      expect(browseLinks[0]).toHaveAttribute('href', '/');
+    });
+
+    it('should have sharp-cornered logo icon container', () => {
+      render(<Header />);
+
+      // Find the logo icon container
+      const logoContainer = screen
+        .getAllByText('Find Construction')[0]
+        .closest('a')
+        ?.querySelector('.rounded-industrial-sharp');
+      expect(logoContainer).toBeInTheDocument();
+      expect(logoContainer).toHaveClass('bg-industrial-graphite-600');
+    });
   });
 
   describe('Agency Dashboard Link', () => {

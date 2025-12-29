@@ -21,6 +21,7 @@ describe('SettingsSidebar', () => {
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('Email')).toBeInTheDocument();
     expect(screen.getByText('Password')).toBeInTheDocument();
+    expect(screen.getByText('Notifications')).toBeInTheDocument();
     expect(screen.getByText('Account')).toBeInTheDocument();
   });
 
@@ -59,19 +60,23 @@ describe('SettingsSidebar', () => {
       'href',
       '/settings/password'
     );
+    expect(
+      screen.getByRole('link', { name: /notifications/i })
+    ).toHaveAttribute('href', '/settings/notifications');
     expect(screen.getByRole('link', { name: /account/i })).toHaveAttribute(
       'href',
       '/settings/account'
     );
   });
 
-  it('should apply danger styling to Account section', () => {
+  it('should apply industrial danger styling to Account section', () => {
     mockedUsePathname.mockReturnValue('/settings');
 
     render(<SettingsSidebar />);
 
     const accountLink = screen.getByRole('link', { name: /account/i });
-    expect(accountLink).toHaveClass('text-red-600');
+    // Industrial Design System: Danger zone uses industrial-orange instead of red
+    expect(accountLink).toHaveClass('text-industrial-orange');
   });
 
   it('should have accessible navigation label', () => {

@@ -1,3 +1,9 @@
+/**
+ * CompletionChecklist Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.2 - Update Dashboard Pages
+ */
+
 import Link from 'next/link';
 import { CheckCircle2, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,23 +30,25 @@ export function CompletionChecklist({
 
   return (
     <div className={cn('space-y-2', className)}>
-      <p className="text-sm font-medium">Complete your profile:</p>
+      <p className="font-body text-sm font-semibold text-industrial-graphite-600">
+        Complete your profile:
+      </p>
       <ul className="space-y-2">
         {items.map((item) => (
           <li key={item.id}>
             <Link
               href={item.link}
               className={cn(
-                'flex items-center gap-2 text-sm transition-colors hover:text-primary',
+                'flex items-center gap-2 font-body text-sm transition-colors hover:text-industrial-orange',
                 item.completed
-                  ? 'text-muted-foreground opacity-50'
-                  : 'text-foreground'
+                  ? 'text-industrial-graphite-400' // WCAG AA: 6.69:1 contrast on white
+                  : 'text-industrial-graphite-600'
               )}
             >
               {item.completed ? (
                 <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
               ) : (
-                <Circle className="h-4 w-4 flex-shrink-0" />
+                <Circle className="h-4 w-4 text-industrial-orange flex-shrink-0" />
               )}
               <span className={item.completed ? 'line-through' : ''}>
                 {item.label}

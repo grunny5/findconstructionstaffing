@@ -29,7 +29,7 @@ describe('SettingsProfilePage', () => {
 
     render(<SettingsProfilePage />);
 
-    // Page header is always rendered
+    // Page header is always rendered (CSS uppercase for accessibility)
     expect(screen.getByText('Profile')).toBeInTheDocument();
     // ProfileSection shows skeleton while loading
     const skeletons = document.querySelectorAll('.animate-pulse');

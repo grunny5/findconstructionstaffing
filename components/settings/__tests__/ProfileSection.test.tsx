@@ -10,9 +10,23 @@ jest.mock('@/lib/auth/auth-context', () => ({
   useAuth: jest.fn(),
 }));
 
-// Mock ProfileEditor to avoid integration test complexity
+// Track ProfileEditor props for testing optimistic updates
+let capturedOnSuccess: ((name: string) => void) | undefined;
+
+// Mock ProfileEditor to capture onSuccess callback
 jest.mock('../ProfileEditor', () => ({
-  ProfileEditor: () => null,
+  ProfileEditor: ({
+    onSuccess,
+  }: {
+    userId: string;
+    currentName: string | null;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSuccess?: (name: string) => void;
+  }) => {
+    capturedOnSuccess = onSuccess;
+    return null;
+  },
 }));
 
 const mockedUseAuth = jest.mocked(useAuth);
@@ -20,6 +34,7 @@ const mockedUseAuth = jest.mocked(useAuth);
 describe('ProfileSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    capturedOnSuccess = undefined;
   });
 
   describe('Loading State', () => {
@@ -393,6 +408,153 @@ describe('ProfileSection', () => {
         name: /edit full name/i,
       });
       expect(editButton).toHaveAttribute('aria-label', 'Edit full name');
+    });
+  });
+
+  describe('Optimistic Updates', () => {
+    it('should display optimistic name immediately after edit success', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as never,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+          last_password_change: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        agencySlug: null,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      const { rerender } = render(<ProfileSection />);
+
+      // Initially shows the profile name
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+
+      // Simulate successful name edit via onSuccess callback
+      expect(capturedOnSuccess).toBeDefined();
+      capturedOnSuccess!('Jane Smith');
+
+      // Rerender to see optimistic update
+      rerender(<ProfileSection />);
+
+      // Should now show the optimistic name
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+      expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+    });
+
+    it('should reset optimistic name when profile.full_name changes from server', () => {
+      const mockAuth = {
+        user: { id: '1', email: 'test@example.com' } as never,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user' as const,
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+          last_password_change: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        agencySlug: null,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      };
+
+      mockedUseAuth.mockReturnValue(mockAuth);
+
+      const { rerender } = render(<ProfileSection />);
+
+      // Set optimistic name
+      expect(capturedOnSuccess).toBeDefined();
+      capturedOnSuccess!('Optimistic Name');
+      rerender(<ProfileSection />);
+      expect(screen.getByText('Optimistic Name')).toBeInTheDocument();
+
+      // Simulate server refresh with new name
+      mockedUseAuth.mockReturnValue({
+        ...mockAuth,
+        profile: {
+          ...mockAuth.profile,
+          full_name: 'Server Updated Name',
+        },
+      });
+
+      rerender(<ProfileSection />);
+
+      // Should show server name (optimistic name should be reset)
+      expect(screen.getByText('Server Updated Name')).toBeInTheDocument();
+      expect(screen.queryByText('Optimistic Name')).not.toBeInTheDocument();
+    });
+
+    it('should show profile name when optimistic name is null', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as never,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'Original Name',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+          last_password_change: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        agencySlug: null,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<ProfileSection />);
+
+      // displayName = optimisticName ?? profile.full_name
+      // When optimisticName is null, should show profile.full_name
+      expect(screen.getByText('Original Name')).toBeInTheDocument();
+    });
+
+    it('should pass onSuccess callback to ProfileEditor', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: '1', email: 'test@example.com' } as never,
+        profile: {
+          id: '1',
+          email: 'test@example.com',
+          full_name: 'John Doe',
+          role: 'user',
+          created_at: '2023-01-15T10:00:00Z',
+          updated_at: '2023-01-15T10:00:00Z',
+          last_password_change: '2023-01-15T10:00:00Z',
+        },
+        loading: false,
+        agencySlug: null,
+        signIn: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+        refreshProfile: jest.fn(),
+        isAdmin: false,
+        isAgencyOwner: false,
+      });
+
+      render(<ProfileSection />);
+
+      // Verify ProfileEditor receives onSuccess callback
+      expect(capturedOnSuccess).toBeDefined();
+      expect(typeof capturedOnSuccess).toBe('function');
     });
   });
 });

@@ -381,8 +381,9 @@ describe('HomePage Integration Tests', () => {
       const endTime = performance.now();
       const renderTime = endTime - startTime;
 
-      // Initial render should be fast (< 100ms for unit test)
-      expect(renderTime).toBeLessThan(100);
+      // Initial render should be fast (< 150ms for CI, < 100ms locally)
+      const threshold = process.env.CI ? 150 : 100;
+      expect(renderTime).toBeLessThan(threshold);
     });
 
     it('should show content progressively while loading', async () => {

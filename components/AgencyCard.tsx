@@ -63,6 +63,35 @@ const gradientColors = [
   'from-amber-500 to-orange-500',
 ];
 
+// Industrial Design: Category color mapping based on primary trade
+const getCategoryBorderColor = (trades?: string[]): string => {
+  if (!trades || trades.length === 0) return 'border-l-industrial-graphite-400';
+
+  const primaryTrade = trades[0].toLowerCase();
+
+  // Welding/Fabrication trades → Orange
+  if (
+    primaryTrade.includes('weld') ||
+    primaryTrade.includes('fabricat') ||
+    primaryTrade.includes('steel') ||
+    primaryTrade.includes('iron')
+  ) {
+    return 'border-l-industrial-orange';
+  }
+
+  // Electrical trades → Navy
+  if (
+    primaryTrade.includes('electric') ||
+    primaryTrade.includes('power') ||
+    primaryTrade.includes('lineman')
+  ) {
+    return 'border-l-industrial-navy';
+  }
+
+  // Mechanical/Maintenance/General → Graphite
+  return 'border-l-industrial-graphite-400';
+};
+
 export default function AgencyCard({ agency }: AgencyCardProps) {
   const [imageError, setImageError] = useState(false);
 
@@ -93,8 +122,13 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
     agency.profile_completion_percentage < 100;
   const showFeaturedBadge = agency.profile_completion_percentage === 100;
 
+  // Get category border color based on primary trade
+  const categoryBorderColor = getCategoryBorderColor(agency.trades);
+
   return (
-    <Card className="group hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm hover:-translate-y-1 relative">
+    <Card
+      className={`group bg-industrial-bg-card border border-industrial-graphite-200 border-l-[4px] ${categoryBorderColor} rounded-industrial-base shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 relative`}
+    >
       {/* Completion Badges - Top Right */}
       {(showVerifiedBadge || showFeaturedBadge) && (
         <div className="absolute top-4 right-4 z-10">
@@ -135,10 +169,10 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
 
       <CardContent className="p-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Modern Logo */}
+          {/* Industrial Logo */}
           <div className="flex-shrink-0">
             {agency.logo_url && !imageError ? (
-              <div className="w-20 h-20 relative rounded-3xl overflow-hidden shadow-lg shadow-slate-900/20 group-hover:scale-105 transition-transform duration-300">
+              <div className="w-16 h-16 relative rounded-industrial-base overflow-hidden border-2 border-industrial-graphite-200">
                 <Image
                   src={agency.logo_url}
                   alt={`${agency.name} logo`}
@@ -149,7 +183,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
               </div>
             ) : (
               <div
-                className={`w-20 h-20 bg-gradient-to-br ${gradientClass} rounded-3xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-slate-900/20 group-hover:scale-105 transition-transform duration-300`}
+                className={`w-16 h-16 bg-industrial-graphite-600 rounded-industrial-base flex items-center justify-center text-white font-display text-xl uppercase`}
               >
                 {getInitials(agency.name)}
               </div>
@@ -160,32 +194,40 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
               <div className="flex-1">
-                {/* Header with name, verification, and rating */}
-                <div className="flex items-center gap-4 mb-4 flex-wrap">
-                  <h3 className="text-2xl font-bold text-slate-900 group-hover:text-slate-700 transition-colors">
+                {/* Header with name and founded year */}
+                <div className="mb-4">
+                  <h3 className="font-display text-2xl uppercase tracking-wide leading-tight text-industrial-graphite-600">
                     <Link
                       href={`/recruiters/${agency.slug}`}
-                      className="hover:text-blue-600 transition-colors"
+                      className="hover:text-industrial-orange transition-colors duration-200"
                       prefetch={true}
                       aria-label={`View ${agency.name} profile`}
                     >
                       {agency.name}
                     </Link>
                   </h3>
+                  {agency.founded_year && (
+                    <p className="font-body text-xs text-industrial-graphite-400 mt-1">
+                      Est. {agency.founded_year}
+                    </p>
+                  )}
+                </div>
 
+                {/* Badges Row */}
+                <div className="flex items-center gap-3 mb-4 flex-wrap">
                   {/* Verification Badge */}
                   {agency.verified && (
-                    <div className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <div className="inline-flex items-center gap-1.5 bg-industrial-graphite-100 text-industrial-graphite-600 px-2.5 py-1 rounded-industrial-sharp text-xs font-body font-semibold uppercase tracking-wide">
+                      <div className="w-1.5 h-1.5 bg-industrial-orange rounded-full"></div>
                       Verified
                     </div>
                   )}
 
                   {/* Rating Badge */}
                   {agency.rating && (
-                    <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full">
-                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      <span className="text-sm font-semibold">
+                    <div className="flex items-center gap-1 bg-industrial-graphite-100 text-industrial-graphite-600 px-2.5 py-1 rounded-industrial-sharp">
+                      <Star className="h-3.5 w-3.5 fill-industrial-orange text-industrial-orange" />
+                      <span className="text-xs font-body font-semibold">
                         {agency.rating.toFixed(1)}
                       </span>
                     </div>
@@ -194,49 +236,55 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
 
                 {/* Description */}
                 {agency.description && (
-                  <p className="text-slate-600 mb-6 text-lg leading-relaxed">
+                  <p className="font-body text-sm text-industrial-graphite-500 mb-6 leading-relaxed">
                     {agency.description}
                   </p>
                 )}
 
-                {/* Company Stats Grid - Simplified */}
+                {/* Company Stats Grid - Industrial */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   {agency.headquarters && (
-                    <div className="flex items-center gap-2 text-slate-600">
-                      <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="h-4 w-4" />
+                    <div className="flex items-center gap-2 text-industrial-graphite-500">
+                      <div className="w-8 h-8 bg-industrial-graphite-100 rounded-industrial-sharp flex items-center justify-center">
+                        <MapPin className="h-4 w-4 text-industrial-graphite-400" />
                       </div>
-                      <span className="font-medium">{agency.headquarters}</span>
+                      <span className="font-body text-sm font-medium">
+                        {agency.headquarters}
+                      </span>
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                      <Users className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-industrial-graphite-500">
+                    <div className="w-8 h-8 bg-industrial-graphite-100 rounded-industrial-sharp flex items-center justify-center">
+                      <Users className="h-4 w-4 text-industrial-graphite-400" />
                     </div>
-                    <span className="font-medium">
+                    <span className="font-body text-sm font-medium">
                       {agency.employee_count || '500+'}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                      <Phone className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-industrial-graphite-500">
+                    <div className="w-8 h-8 bg-industrial-graphite-100 rounded-industrial-sharp flex items-center justify-center">
+                      <Phone className="h-4 w-4 text-industrial-graphite-400" />
                     </div>
-                    <span className="font-medium">{displayPhone}</span>
+                    <span className="font-body text-sm font-medium">
+                      {displayPhone}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                      <Mail className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-industrial-graphite-500">
+                    <div className="w-8 h-8 bg-industrial-graphite-100 rounded-industrial-sharp flex items-center justify-center">
+                      <Mail className="h-4 w-4 text-industrial-graphite-400" />
                     </div>
-                    <span className="font-medium truncate">{displayEmail}</span>
+                    <span className="font-body text-sm font-medium truncate">
+                      {displayEmail}
+                    </span>
                   </div>
                 </div>
 
                 {/* Specialties - Featured Trades Display */}
                 {agency.trades && agency.trades.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {agency.trades.slice(0, 3).map((trade, index) => (
                       <Link
                         key={index}
@@ -245,9 +293,8 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                       >
                         <Badge
                           variant="default"
-                          className="bg-gradient-to-r from-slate-900 to-slate-700 text-white hover:from-slate-800 hover:to-slate-600 px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer"
+                          className="font-body text-xs font-semibold uppercase tracking-wide bg-industrial-graphite-600 text-white hover:bg-industrial-graphite-500 px-2.5 py-1 rounded-industrial-sharp transition-colors duration-200 cursor-pointer"
                         >
-                          <Star className="h-3 w-3 mr-1.5 fill-current inline-block" />
                           {trade}
                         </Badge>
                       </Link>
@@ -255,7 +302,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                     {agency.trades.length > 3 && (
                       <Badge
                         variant="secondary"
-                        className="bg-slate-100 text-slate-700 px-3 py-1 rounded-lg font-medium"
+                        className="font-body text-xs font-semibold bg-industrial-graphite-100 text-industrial-graphite-500 px-2.5 py-1 rounded-industrial-sharp"
                       >
                         +{agency.trades.length - 3} more
                       </Badge>
@@ -266,7 +313,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                 {/* Service Regions */}
                 {agency.regions && agency.regions.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <span className="text-sm text-muted-foreground">
+                    <span className="font-body text-xs uppercase tracking-wide text-industrial-graphite-400">
                       Serves:
                     </span>
                     <RegionBadges
@@ -279,11 +326,11 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                 )}
               </div>
 
-              {/* Modern Action Buttons */}
+              {/* Industrial Action Buttons */}
               <div className="flex flex-col gap-3 lg:flex-shrink-0">
                 <Button
                   variant="outline"
-                  className="bg-white/80 text-slate-700 border-slate-300/60 hover:bg-white backdrop-blur-sm rounded-xl w-full lg:w-40 group"
+                  className="font-body text-xs font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp w-full lg:w-36 transition-all duration-200"
                   asChild
                 >
                   <Link
@@ -292,11 +339,11 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                     aria-label={`View ${agency.name} full profile`}
                   >
                     View Profile
-                    <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ArrowUpRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white rounded-xl w-full lg:w-40 shadow-lg shadow-slate-900/25"
+                  className="font-body text-xs font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 rounded-industrial-sharp w-full lg:w-36 transition-all duration-200"
                   asChild
                 >
                   <Link href={`/request-labor?agency=${agency.slug}`}>

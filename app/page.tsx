@@ -19,17 +19,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { createSlug } from '@/lib/utils/formatting';
+import { allStates, allTrades } from '@/lib/mock-data';
 import {
   Building2,
   Users,
-  Target,
-  Clock,
   ArrowRight,
   Filter,
   Search,
   MapPin,
-  Star,
-  TrendingUp,
   Award,
   Briefcase,
   Zap,
@@ -239,7 +236,7 @@ function HomePageContent() {
   };
 
   return (
-    <div className="min-h-screen modern-gradient-bg">
+    <div className="min-h-screen bg-industrial-bg-primary">
       <Header />
 
       {/* Claim Status Banner */}
@@ -247,38 +244,35 @@ function HomePageContent() {
         <ClaimStatusBanner />
       </div>
 
-      {/* Modern Hero Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="modern-hero-bg absolute inset-0"></div>
-        <div className="hero-decoration"></div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Industrial Hero Section */}
+      <section className="relative py-24 bg-industrial-bg-primary border-b-[3px] border-industrial-graphite-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Trust Indicator */}
-          <div className="trust-indicator mb-8 mx-auto w-fit">
-            <Zap className="h-4 w-4 text-yellow-400" />
-            <span className="text-sm font-medium text-white">
+          <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 bg-industrial-graphite-100 border-2 border-industrial-graphite-200 rounded-industrial-sharp">
+            <Zap className="h-4 w-4 text-industrial-orange" />
+            <span className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-500">
               Trusted by 10,000+ construction professionals
             </span>
           </div>
 
           {/* Hero Title */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text-hero leading-tight">
+          <h1 className="font-display text-[clamp(3rem,8vw,6rem)] uppercase tracking-wide leading-[0.9] mb-6 text-industrial-graphite-600">
             Find Elite Construction
             <br />
-            <span className="gradient-text-accent">Staffing Partners</span>
+            <span className="text-industrial-orange">Staffing Partners</span>
           </h1>
 
-          <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="font-body text-xl text-industrial-graphite-500 mb-12 max-w-2xl mx-auto leading-relaxed">
             Connect with premium staffing agencies specializing in construction
             trades and skilled labor across North America
           </p>
 
-          {/* Modern Search Bar */}
+          {/* Industrial Search Bar */}
           <div className="max-w-4xl mx-auto">
-            <div className="modern-search-container">
+            <div className="bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-base p-4 shadow-sm">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
+                  <Search className="absolute left-4 top-4 h-5 w-5 text-industrial-graphite-400" />
                   <Input
                     placeholder="Search companies, specialties, or locations..."
                     value={filters.search}
@@ -288,12 +282,12 @@ function HomePageContent() {
                         search: e.target.value,
                       }))
                     }
-                    className="modern-input pl-12 pr-12 h-14 text-lg"
+                    className="font-body pl-12 pr-12 h-14 text-base border-2 border-industrial-graphite-300 rounded-industrial-sharp focus:border-industrial-orange focus:ring-0"
                   />
                   {/* Loading indicator for search */}
                   {(isSearching || isValidating) && (
                     <div className="absolute right-4 top-4">
-                      <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
+                      <Loader2 className="h-5 w-5 text-industrial-graphite-400 animate-spin" />
                       <span className="sr-only">Searching agencies</span>
                     </div>
                   )}
@@ -307,17 +301,16 @@ function HomePageContent() {
                     }
                   }}
                 >
-                  <SelectTrigger className="modern-select w-full lg:w-56 h-14">
+                  <SelectTrigger className="font-body w-full lg:w-56 h-14 border-2 border-industrial-graphite-300 rounded-industrial-sharp">
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="CO">Colorado</SelectItem>
-                    <SelectItem value="TX">Texas</SelectItem>
-                    <SelectItem value="AZ">Arizona</SelectItem>
-                    <SelectItem value="WA">Washington</SelectItem>
-                    <SelectItem value="GA">Georgia</SelectItem>
-                    <SelectItem value="IL">Illinois</SelectItem>
+                    {allStates.map((state) => (
+                      <SelectItem key={state.code} value={state.code}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select
@@ -331,21 +324,20 @@ function HomePageContent() {
                     }
                   }}
                 >
-                  <SelectTrigger className="modern-select w-full lg:w-56 h-14">
+                  <SelectTrigger className="font-body w-full lg:w-56 h-14 border-2 border-industrial-graphite-300 rounded-industrial-sharp">
                     <SelectValue placeholder="Specialty" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     <SelectItem value="all">All Specialties</SelectItem>
-                    <SelectItem value="general">General Labor</SelectItem>
-                    <SelectItem value="electrical">Electrical</SelectItem>
-                    <SelectItem value="plumbing">Plumbing</SelectItem>
-                    <SelectItem value="hvac">HVAC</SelectItem>
-                    <SelectItem value="welding">Welding</SelectItem>
-                    <SelectItem value="carpentry">Carpentry</SelectItem>
+                    {[...allTrades].sort().map((trade) => (
+                      <SelectItem key={trade} value={trade}>
+                        {trade}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Button
-                  className="modern-button-primary h-14 px-8 font-semibold"
+                  className="font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 h-14 px-8 rounded-industrial-sharp transition-all duration-200"
                   onClick={() => {
                     // Scroll to results section
                     const resultsSection =
@@ -365,7 +357,7 @@ function HomePageContent() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 mb-16">
             <Button
               size="lg"
-              className="modern-button-primary h-14 px-10 text-lg"
+              className="font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 h-14 px-10 rounded-industrial-sharp transition-all duration-200"
               asChild
             >
               <Link href="/request-labor">
@@ -375,7 +367,8 @@ function HomePageContent() {
             </Button>
             <Button
               size="lg"
-              className="modern-button-secondary h-14 px-10 text-lg"
+              variant="outline"
+              className="font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-400 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 h-14 px-10 rounded-industrial-sharp transition-all duration-200"
               asChild
             >
               <Link href="/claim-listing">Claim Your Listing</Link>
@@ -383,24 +376,38 @@ function HomePageContent() {
           </div>
 
           {/* Stats */}
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-number">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-12 border-t-2 border-industrial-graphite-200">
+            <div className="text-center">
+              <div className="font-display text-4xl md:text-5xl text-industrial-graphite-600">
                 {isLoading ? '...' : agencies.length + '+'}
               </div>
-              <div className="stat-label">Verified Agencies</div>
+              <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400 mt-2">
+                Verified Agencies
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">45+</div>
-              <div className="stat-label">Trade Specialties</div>
+            <div className="text-center">
+              <div className="font-display text-4xl md:text-5xl text-industrial-graphite-600">
+                45+
+              </div>
+              <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400 mt-2">
+                Trade Specialties
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">50</div>
-              <div className="stat-label">States Covered</div>
+            <div className="text-center">
+              <div className="font-display text-4xl md:text-5xl text-industrial-graphite-600">
+                50
+              </div>
+              <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400 mt-2">
+                States Covered
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">24h</div>
-              <div className="stat-label">Avg Response Time</div>
+            <div className="text-center">
+              <div className="font-display text-4xl md:text-5xl text-industrial-orange">
+                24h
+              </div>
+              <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400 mt-2">
+                Avg Response Time
+              </div>
             </div>
           </div>
         </div>
@@ -414,10 +421,10 @@ function HomePageContent() {
         {/* Results Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">
+            <h2 className="font-display text-4xl uppercase tracking-wide text-industrial-graphite-600 mb-3">
               Premium Staffing Partners
             </h2>
-            <p className="text-slate-600 text-lg">
+            <p className="font-body text-industrial-graphite-500 text-base">
               {filteredAgencies.length} verified companies
               {activeFilterCount > 0 &&
                 ` • ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied`}
@@ -561,69 +568,6 @@ function HomePageContent() {
         )}
       </section>
 
-      {/* Trust Indicators Section */}
-      <section className="py-20 bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-6">
-              Why Construction Leaders Trust Our Directory
-            </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              We&apos;ve helped thousands of projects connect with the right
-              staffing partners across all major construction sectors
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/25">
-                <Target className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">
-                Verified Specialists
-              </h3>
-              <p className="text-slate-600">
-                Every agency is vetted for construction and industrial expertise
-                with proven track records
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/25">
-                <Clock className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">Fast Response</h3>
-              <p className="text-slate-600">
-                Verified agencies respond to requests within 24 hours with
-                qualified candidates
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-500/25">
-                <Star className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">Quality Matches</h3>
-              <p className="text-slate-600">
-                Advanced filtering ensures perfect recruiting partnerships for
-                your specific needs
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/25">
-                <TrendingUp className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">Proven Results</h3>
-              <p className="text-slate-600">
-                Track record of successful placements across all trades and
-                project types
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-16 modern-hero-bg text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -665,17 +609,15 @@ function HomePageContent() {
 // Loading fallback component
 function HomePageLoading() {
   return (
-    <div className="min-h-screen modern-gradient-bg">
+    <div className="min-h-screen bg-industrial-bg-primary">
       <Header />
-      <section className="relative py-24 overflow-hidden">
-        <div className="modern-hero-bg absolute inset-0"></div>
-        <div className="hero-decoration"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative py-24 bg-industrial-bg-primary border-b-[3px] border-industrial-graphite-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-pulse">
-            <div className="h-8 w-64 bg-slate-700 rounded mx-auto mb-8"></div>
-            <div className="h-16 w-96 bg-slate-700 rounded mx-auto mb-4"></div>
-            <div className="h-16 w-80 bg-slate-700 rounded mx-auto mb-12"></div>
-            <div className="h-14 w-full max-w-4xl bg-slate-700 rounded-lg mx-auto"></div>
+            <div className="h-8 w-64 bg-industrial-graphite-200 rounded-industrial-sharp mx-auto mb-8"></div>
+            <div className="h-16 w-96 bg-industrial-graphite-200 rounded-industrial-sharp mx-auto mb-4"></div>
+            <div className="h-16 w-80 bg-industrial-graphite-200 rounded-industrial-sharp mx-auto mb-12"></div>
+            <div className="h-14 w-full max-w-4xl bg-industrial-graphite-200 rounded-industrial-base mx-auto"></div>
           </div>
         </div>
       </section>

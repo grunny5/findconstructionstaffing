@@ -1,3 +1,9 @@
+/**
+ * Dashboard Page - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.2 - Update Dashboard Pages
+ */
+
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -85,14 +91,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             alt={`${agency.name} logo`}
             width={80}
             height={80}
-            className="rounded-lg object-contain border"
+            className="rounded-industrial-sharp object-contain border-2 border-industrial-graphite-200"
           />
         )}
         <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{agency.name}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-display text-3xl uppercase tracking-wide text-industrial-graphite-600">
+              {agency.name}
+            </h1>
             {agency.verified && (
-              <Badge variant="default" className="gap-1">
+              <Badge variant="orange" className="gap-1">
                 Verified
               </Badge>
             )}
@@ -103,7 +111,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             )}
           </div>
           {agency.description && (
-            <p className="text-muted-foreground mt-2">{agency.description}</p>
+            <p className="font-body text-industrial-graphite-400 mt-2">
+              {agency.description}
+            </p>
           )}
         </div>
       </div>

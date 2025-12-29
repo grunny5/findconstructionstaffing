@@ -77,8 +77,84 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    /* Industrial Design System: Warm cream background (#FAF7F2) */
+    @apply bg-industrial-bg-primary text-foreground;
   }
+}
+
+/**
+ * ==========================================================================
+ * INDUSTRIAL DESIGN SYSTEM - COLOR PALETTE
+ * ==========================================================================
+ * Industrial Brutalist design tokens for construction industry aesthetic.
+ * All variables prefixed with --industrial- to avoid conflicts.
+ *
+ * Design Philosophy: Bold typography, warm backgrounds, sharp corners,
+ * monochromatic color coding. Inspired by 1970s industrial equipment
+ * manuals and Swiss Brutalist design.
+ *
+ * Feature: 010-industrial-design-system
+ * Reference: docs/features/active/ui-update.md
+ */
+
+:root {
+  /* Industrial Orange - Primary accent, welding/fabrication category */
+  --industrial-orange-100: #fff4e6;
+  --industrial-orange-200: #ffd699;
+  --industrial-orange-300: #ff9f1c;
+  --industrial-orange-400: #e07b00; /* Primary accent */
+  --industrial-orange-500: #b85c00; /* Hover states */
+  --industrial-orange-600: #8a4400;
+
+  /* Graphite - Primary neutral, text, borders, mechanical category */
+  --industrial-graphite-100: #f5f5f5;
+  --industrial-graphite-200: #d4d4d4;
+  --industrial-graphite-300: #9a9a9a;
+  --industrial-graphite-400: #5c5c5c;
+  --industrial-graphite-500: #333333;
+  --industrial-graphite-600: #1a1a1a; /* Primary text */
+
+  /* Navy - Secondary accent, electrical category */
+  --industrial-navy-100: #e8edf2;
+  --industrial-navy-200: #b8c9d9;
+  --industrial-navy-300: #4a6b8a;
+  --industrial-navy-400: #2d4a63; /* Category accent */
+  --industrial-navy-500: #1b3a4f;
+  --industrial-navy-600: #0f2535;
+
+  /* Background Colors */
+  --industrial-bg-primary: #faf7f2; /* Warm cream - main page background */
+  --industrial-bg-card: #ffffff; /* White - cards only */
+  --industrial-bg-dark: #1a1a1a; /* Footer, inverse sections */
+
+  /* Spacing Scale - Consistent vertical rhythm */
+  --industrial-space-xs: 4px;
+  --industrial-space-sm: 8px;
+  --industrial-space-md: 12px;
+  --industrial-space-base: 16px;
+  --industrial-space-lg: 24px;
+  --industrial-space-xl: 32px;
+  --industrial-space-2xl: 48px;
+  --industrial-space-3xl: 64px;
+  --industrial-space-4xl: 96px;
+
+  /* Border Radius - Sharp corners (2-3px max) */
+  --industrial-radius-sharp: 2px;
+  --industrial-radius-base: 3px;
+
+  /* Border Widths */
+  --industrial-border-thin: 1px;
+  --industrial-border-base: 2px;
+  --industrial-border-thick: 3px;
+  --industrial-border-category: 4px; /* Left border on cards */
+
+  /* Typography Scale - References font variables from layout.tsx */
+  --industrial-font-display: var(--font-bebas-neue), sans-serif;
+  --industrial-font-body: var(--font-barlow), sans-serif;
+  --industrial-font-barcode: var(--font-libre-barcode), cursive;
+
+  /* Transitions - Crisp, not playful */
+  --industrial-transition-fast: 0.2s ease;
 }
 
 /**

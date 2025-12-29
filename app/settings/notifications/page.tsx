@@ -1,12 +1,18 @@
 'use client';
 
+/**
+ * Notification Settings Page - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ */
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Bell, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 /**
  * Notification preferences interface
@@ -18,22 +24,7 @@ interface NotificationPreferences {
 }
 
 /**
- * Settings Page: Notification Preferences
- *
- * Allows users to manage their email notification preferences:
- * - Enable/disable email notifications for new messages
- * - Enable/disable batch mode (wait 5 minutes before sending)
- * - Enable/disable daily digest (send summary at 8:00 AM)
- *
- * Features:
- * - Fetches current preferences from API
- * - Displays loading state while fetching
- * - Shows error message if fetch fails
- * - Validates and saves preferences to API
- * - Shows success/error toast notifications
- * - Disables batch/digest toggles when email is disabled
- *
- * @returns Notification preferences settings page component
+ * Notification preferences settings page with industrial styling.
  */
 export default function NotificationsSettingsPage() {
   const [preferences, setPreferences] = useState<NotificationPreferences>({
@@ -151,7 +142,7 @@ export default function NotificationsSettingsPage() {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-industrial-orange" />
         </div>
       </div>
     );
@@ -166,13 +157,10 @@ export default function NotificationsSettingsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-gray-700" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Notification Preferences
-            </h2>
-          </div>
-          <p className="mt-1 text-sm text-gray-600">
+          <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+            Notification Preferences
+          </h2>
+          <p className="mt-1 font-body text-sm text-industrial-graphite-400">
             Manage how you receive notifications about new messages
           </p>
         </div>
@@ -181,8 +169,8 @@ export default function NotificationsSettingsPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="rounded-industrial-sharp border-2 border-industrial-orange bg-industrial-orange-100 p-4">
+            <p className="font-body text-sm text-industrial-orange">{error}</p>
           </div>
         )}
 
@@ -190,10 +178,13 @@ export default function NotificationsSettingsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <Label htmlFor="email-enabled" className="text-base font-medium">
+              <Label
+                htmlFor="email-enabled"
+                className="font-body text-base font-medium text-industrial-graphite-600"
+              >
                 Email notifications
               </Label>
-              <p className="text-sm text-gray-600">
+              <p className="font-body text-sm text-industrial-graphite-400">
                 Receive email notifications for new messages
               </p>
             </div>
@@ -205,16 +196,16 @@ export default function NotificationsSettingsPage() {
           </div>
 
           {/* Batch Mode Toggle */}
-          <div className="flex items-center justify-between opacity-100 data-[disabled=true]:opacity-50">
+          <div className="flex items-center justify-between">
             <div className="flex-1">
               <Label
                 htmlFor="batch-enabled"
-                className={`text-base font-medium ${!preferences.email_enabled ? 'text-gray-400' : ''}`}
+                className={`font-body text-base font-medium ${!preferences.email_enabled ? 'text-industrial-graphite-300' : 'text-industrial-graphite-600'}`}
               >
                 Batch notifications
               </Label>
               <p
-                className={`text-sm ${!preferences.email_enabled ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`font-body text-sm ${!preferences.email_enabled ? 'text-industrial-graphite-300' : 'text-industrial-graphite-400'}`}
               >
                 Wait 5 minutes before sending email (reduces email volume)
               </p>
@@ -228,16 +219,16 @@ export default function NotificationsSettingsPage() {
           </div>
 
           {/* Daily Digest Toggle */}
-          <div className="flex items-center justify-between opacity-100 data-[disabled=true]:opacity-50">
+          <div className="flex items-center justify-between">
             <div className="flex-1">
               <Label
                 htmlFor="digest-enabled"
-                className={`text-base font-medium ${!preferences.email_enabled ? 'text-gray-400' : ''}`}
+                className={`font-body text-base font-medium ${!preferences.email_enabled ? 'text-industrial-graphite-300' : 'text-industrial-graphite-600'}`}
               >
                 Daily digest
               </Label>
               <p
-                className={`text-sm ${!preferences.email_enabled ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`font-body text-sm ${!preferences.email_enabled ? 'text-industrial-graphite-300' : 'text-industrial-graphite-400'}`}
               >
                 Receive a summary email at 8:00 AM instead of real-time
                 notifications
@@ -269,8 +260,8 @@ export default function NotificationsSettingsPage() {
         </div>
 
         {/* Help Text */}
-        <div className="rounded-md bg-blue-50 p-4">
-          <p className="text-sm text-blue-800">
+        <div className="rounded-industrial-sharp border-2 border-industrial-graphite-200 bg-industrial-graphite-100 p-4">
+          <p className="font-body text-sm text-industrial-graphite-600">
             <strong>Note:</strong> Batch notifications and daily digest are
             mutually exclusive. Enabling one will automatically disable the
             other.

@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * DashboardSidebar Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.2 - Update Dashboard Pages
+ */
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -9,7 +15,6 @@ import {
   Settings,
   BarChart3,
   Menu,
-  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -95,12 +100,12 @@ export function DashboardSidebar({
               }
             }}
             className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              'flex items-center gap-3 px-3 py-2.5 rounded-industrial-sharp font-body text-sm font-medium uppercase tracking-wide transition-colors',
               active
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-industrial-orange text-white'
                 : item.disabled
-                  ? 'text-muted-foreground cursor-not-allowed opacity-50'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'text-industrial-graphite-400 cursor-not-allowed' // WCAG AA: 6.69:1 contrast
+                  : 'text-industrial-graphite-500 hover:bg-industrial-graphite-100 hover:text-industrial-graphite-600'
             )}
             aria-current={active ? 'page' : undefined}
             aria-disabled={item.disabled}
@@ -108,7 +113,7 @@ export function DashboardSidebar({
             <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
             <span>{item.name}</span>
             {item.disabled && (
-              <span className="ml-auto text-xs">(Coming Soon)</span>
+              <span className="ml-auto text-xs normal-case">(Coming Soon)</span>
             )}
           </Link>
         );
@@ -125,15 +130,20 @@ export function DashboardSidebar({
             <Button
               variant="outline"
               size="icon"
-              className="fixed top-4 left-4 z-40"
+              className="fixed top-4 left-4 z-40 rounded-industrial-sharp border-2 border-industrial-graphite-300"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64">
+          <SheetContent
+            side="left"
+            className="w-64 bg-industrial-bg-card border-r-2 border-industrial-graphite-200"
+          >
             <SheetHeader>
-              <SheetTitle>{agencyName}</SheetTitle>
+              <SheetTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+                {agencyName}
+              </SheetTitle>
             </SheetHeader>
             <div className="mt-6">
               <NavLinks isMobile />
@@ -144,14 +154,16 @@ export function DashboardSidebar({
 
       {/* Desktop Sidebar */}
       <aside
-        className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r lg:bg-background"
+        className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r-2 lg:border-industrial-graphite-200 lg:bg-industrial-bg-card"
         aria-label="Sidebar"
       >
         <div className="flex flex-col flex-1 min-h-0 pt-5 pb-4 overflow-y-auto">
-          <div className="flex items-center flex-shrink-0 px-4">
-            <h2 className="text-lg font-semibold">{agencyName}</h2>
+          <div className="flex items-center flex-shrink-0 px-4 border-b-2 border-industrial-graphite-200 pb-4">
+            <h2 className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+              {agencyName}
+            </h2>
           </div>
-          <div className="mt-8 flex-1 px-3">
+          <div className="mt-6 flex-1 px-3">
             <NavLinks />
           </div>
         </div>

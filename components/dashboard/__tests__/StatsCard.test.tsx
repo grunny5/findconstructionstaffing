@@ -55,7 +55,7 @@ describe('StatsCard', () => {
       expect(icon).toBeInTheDocument();
       expect(icon).toHaveClass('h-4');
       expect(icon).toHaveClass('w-4');
-      expect(icon).toHaveClass('text-muted-foreground');
+      expect(icon).toHaveClass('text-industrial-orange');
     });
 
     it('should not render icon when not provided', () => {
@@ -86,7 +86,7 @@ describe('StatsCard', () => {
       expect(screen.getByText('from last month')).toBeInTheDocument();
     });
 
-    it('should render negative trend with red color', () => {
+    it('should render negative trend with orange color', () => {
       render(
         <StatsCard
           title="Sales"
@@ -101,7 +101,7 @@ describe('StatsCard', () => {
 
       const trendValue = screen.getByText('-5%');
       expect(trendValue).toBeInTheDocument();
-      expect(trendValue).toHaveClass('text-red-600');
+      expect(trendValue).toHaveClass('text-industrial-orange-600');
       expect(screen.getByText('from last month')).toBeInTheDocument();
     });
 
@@ -176,16 +176,17 @@ describe('StatsCard', () => {
       render(<StatsCard title="Test Title" value={100} />);
 
       const title = screen.getByText('Test Title');
-      expect(title).toHaveClass('text-sm');
-      expect(title).toHaveClass('font-medium');
+      expect(title).toHaveClass('text-xs');
+      expect(title).toHaveClass('uppercase');
+      expect(title).toHaveClass('font-semibold');
     });
 
     it('should apply correct text styles to value', () => {
       render(<StatsCard title="Test" value={100} />);
 
       const value = screen.getByText('100');
-      expect(value).toHaveClass('text-2xl');
-      expect(value).toHaveClass('font-bold');
+      expect(value).toHaveClass('text-3xl');
+      expect(value).toHaveClass('font-display');
     });
 
     it('should apply correct text styles to description', () => {
@@ -195,7 +196,7 @@ describe('StatsCard', () => {
 
       const description = screen.getByText('Test description');
       expect(description).toHaveClass('text-xs');
-      expect(description).toHaveClass('text-muted-foreground');
+      expect(description).toHaveClass('text-industrial-graphite-400');
     });
   });
 
@@ -207,10 +208,12 @@ describe('StatsCard', () => {
       expect(title.tagName).toBe('H3');
     });
 
-    it('should be contained within a card structure', () => {
+    it('should be contained within a card structure with industrial styling', () => {
       const { container } = render(<StatsCard title="Test" value={100} />);
 
-      const card = container.querySelector('.rounded-lg.border');
+      const card = container.querySelector(
+        '.border-2.border-industrial-graphite-200'
+      );
       expect(card).toBeInTheDocument();
     });
   });

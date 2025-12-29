@@ -51,20 +51,20 @@ export default function Header() {
   };
 
   return (
-    <header className="glass-header sticky top-0 z-50">
+    <header className="sticky top-0 z-50 bg-industrial-bg-card border-b-[3px] border-industrial-graphite-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Modern Logo */}
+          {/* Industrial Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-700 rounded-2xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-industrial-graphite-600 rounded-industrial-sharp flex items-center justify-center">
               <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <span className="text-xl font-bold gradient-text-primary">
-                Construction
+              <span className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+                Find Construction
               </span>
-              <div className="text-xs text-slate-500 font-medium">
-                Recruiter Directory
+              <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400">
+                Staffing
               </div>
             </div>
           </Link>
@@ -75,7 +75,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-500 border-b-2 border-transparent hover:border-industrial-orange-400 hover:text-industrial-graphite-600 transition-all duration-200 pb-1"
               >
                 {item.label}
               </Link>
@@ -90,7 +90,7 @@ export default function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="glass-button"
+                  className="font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
                   asChild
                 >
                   <Link href="/claim-listing">Claim Listing</Link>
@@ -99,9 +99,9 @@ export default function Header() {
                   variant="outline"
                   size="sm"
                   className={cn(
-                    'glass-button relative',
+                    'font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200 relative',
                     pathname?.startsWith('/messages') &&
-                      'bg-slate-100 text-slate-900'
+                      'bg-industrial-graphite-100 border-industrial-graphite-600 text-industrial-graphite-600'
                   )}
                   asChild
                 >
@@ -117,7 +117,7 @@ export default function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       size="sm"
-                      className="modern-button-primary h-9 px-4"
+                      className="font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 rounded-industrial-sharp h-9 px-4 transition-all duration-200"
                     >
                       <User className="h-4 w-4 mr-2" />
                       {profile?.full_name ||
@@ -170,14 +170,14 @@ export default function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="glass-button"
+                  className="font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
                   asChild
                 >
                   <Link href="/login">Sign In</Link>
                 </Button>
                 <Button
                   size="sm"
-                  className="modern-button-primary h-9 px-4"
+                  className="font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 rounded-industrial-sharp h-9 px-4 transition-all duration-200"
                   asChild
                 >
                   <Link href="/signup">Sign Up</Link>
@@ -189,22 +189,26 @@ export default function Header() {
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-industrial-graphite-600 hover:text-industrial-graphite-600 hover:bg-industrial-graphite-100"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col space-y-6 mt-8">
-                <div className="flex items-center space-x-3 pb-4 border-b">
-                  <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-700 rounded-2xl flex items-center justify-center">
+                <div className="flex items-center space-x-3 pb-4 border-b-2 border-industrial-graphite-200">
+                  <div className="w-10 h-10 bg-industrial-graphite-600 rounded-industrial-sharp flex items-center justify-center">
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <span className="font-bold gradient-text-primary">
-                      Construction
+                    <span className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+                      Find Construction
                     </span>
-                    <div className="text-xs text-slate-500 font-medium">
-                      Recruiter Directory
+                    <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400">
+                      Staffing
                     </div>
                   </div>
                 </div>
@@ -214,20 +218,20 @@ export default function Header() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-lg font-medium text-slate-700 hover:text-slate-900 transition-colors"
+                    className="flex items-center space-x-3 font-body text-base font-semibold uppercase tracking-wide text-industrial-graphite-500 hover:text-industrial-graphite-600 transition-colors"
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.label}</span>
                   </Link>
                 ))}
 
-                <div className="border-t pt-6 space-y-3">
+                <div className="border-t-2 border-industrial-graphite-200 pt-6 space-y-3">
                   {user ? (
                     // Logged in - show user-specific actions
                     <>
                       <Button
                         variant="outline"
-                        className="w-full glass-button"
+                        className="w-full font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
                         asChild
                       >
                         <Link
@@ -240,9 +244,9 @@ export default function Header() {
                       <Button
                         variant="outline"
                         className={cn(
-                          'w-full glass-button relative',
+                          'w-full font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200 relative',
                           pathname?.startsWith('/messages') &&
-                            'bg-slate-100 text-slate-900'
+                            'bg-industrial-graphite-100 border-industrial-graphite-600 text-industrial-graphite-600'
                         )}
                         asChild
                       >
@@ -261,7 +265,7 @@ export default function Header() {
                       {profile?.role === 'admin' &&
                         isFeatureEnabled('adminDashboard') && (
                           <Button
-                            className="w-full modern-button-primary"
+                            className="w-full font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 rounded-industrial-sharp transition-all duration-200"
                             asChild
                           >
                             <Link
@@ -274,7 +278,7 @@ export default function Header() {
                         )}
                       {profile?.role === 'agency_owner' && agencySlug && (
                         <Button
-                          className="w-full modern-button-primary"
+                          className="w-full font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 rounded-industrial-sharp transition-all duration-200"
                           asChild
                         >
                           <Link
@@ -287,7 +291,11 @@ export default function Header() {
                         </Button>
                       )}
                       {isFeatureEnabled('accountSettings') && (
-                        <Button variant="outline" className="w-full" asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
+                          asChild
+                        >
                           <Link
                             href="/account"
                             onClick={() => setIsOpen(false)}
@@ -299,7 +307,7 @@ export default function Header() {
                       )}
                       <Button
                         variant="outline"
-                        className="w-full"
+                        className="w-full font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
                         onClick={() => {
                           handleSignOut();
                           setIsOpen(false);
@@ -314,14 +322,17 @@ export default function Header() {
                     <>
                       <Button
                         variant="outline"
-                        className="w-full glass-button"
+                        className="w-full font-body text-sm font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
                         asChild
                       >
                         <Link href="/login" onClick={() => setIsOpen(false)}>
                           Sign In
                         </Link>
                       </Button>
-                      <Button className="w-full modern-button-primary" asChild>
+                      <Button
+                        className="w-full font-body text-sm font-semibold uppercase tracking-wide bg-industrial-orange text-white hover:bg-industrial-orange-500 rounded-industrial-sharp transition-all duration-200"
+                        asChild
+                      >
                         <Link href="/signup" onClick={() => setIsOpen(false)}>
                           Sign Up
                         </Link>

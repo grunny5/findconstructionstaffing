@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * SettingsSidebar Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ *
+ * Navigation sidebar with industrial styling for settings section.
+ */
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -93,13 +101,15 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
             key={section.href}
             href={section.href}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+              // Industrial Design System: Navigation link
+              'flex items-center gap-3 rounded-industrial-sharp px-3 py-3 font-body text-sm font-medium transition-colors',
+              'border-l-4 border-transparent',
+              'hover:bg-industrial-graphite-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange focus-visible:ring-offset-2',
               isActive
-                ? 'bg-blue-50 text-blue-700'
+                ? 'bg-industrial-orange-100 border-l-industrial-orange text-industrial-graphite-600'
                 : section.danger
-                  ? 'text-red-600 hover:bg-red-50'
-                  : 'text-gray-700 hover:text-gray-900'
+                  ? 'text-industrial-orange hover:bg-industrial-orange-100'
+                  : 'text-industrial-graphite-500 hover:text-industrial-graphite-600'
             )}
             aria-current={isActive ? 'page' : undefined}
           >
@@ -107,18 +117,22 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
               className={cn(
                 'h-5 w-5 flex-shrink-0',
                 isActive
-                  ? 'text-blue-700'
+                  ? 'text-industrial-orange'
                   : section.danger
-                    ? 'text-red-600'
-                    : 'text-gray-400'
+                    ? 'text-industrial-orange'
+                    : 'text-industrial-graphite-400'
               )}
               aria-hidden="true"
             />
             <div className="flex-1">
-              <div className={cn(section.danger && 'text-red-600')}>
+              <div
+                className={cn(
+                  section.danger && !isActive && 'text-industrial-orange'
+                )}
+              >
                 {section.name}
               </div>
-              <div className="text-xs text-gray-500 hidden lg:block">
+              <div className="text-xs text-industrial-graphite-400 hidden lg:block">
                 {section.description}
               </div>
             </div>

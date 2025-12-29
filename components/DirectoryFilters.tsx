@@ -165,43 +165,51 @@ export default function DirectoryFilters({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="h-10 border-gray-300 hover:border-gray-400"
+          className="h-10 font-body text-xs font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 hover:border-industrial-graphite-600 hover:text-industrial-graphite-600 rounded-industrial-sharp transition-all duration-200"
           disabled={isLoading}
         >
           <Icon className="h-4 w-4 mr-2" />
           {trigger}
           {activeCount > 0 && (
-            <Badge variant="secondary" className="ml-2 text-xs">
+            <Badge
+              variant="secondary"
+              className="ml-2 text-xs bg-industrial-orange text-white rounded-industrial-sharp"
+            >
               {activeCount}
             </Badge>
           )}
           <ChevronDown className="h-4 w-4 ml-2" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
-        <div className="p-4 border-b">
-          <h4 className="font-semibold text-sm flex items-center">
-            <Icon className="h-4 w-4 mr-2" />
+      <PopoverContent
+        className="w-80 p-0 border-2 border-industrial-graphite-200 rounded-industrial-base"
+        align="start"
+      >
+        <div className="p-4 border-b-2 border-industrial-graphite-200 bg-industrial-graphite-100">
+          <h4 className="font-body text-xs font-semibold uppercase tracking-wide text-industrial-graphite-600 flex items-center">
+            <Icon className="h-4 w-4 mr-2 text-industrial-graphite-400" />
             {title}
           </h4>
         </div>
-        <div className="p-4 max-h-80 overflow-y-auto">{children}</div>
+        <div className="p-4 max-h-80 overflow-y-auto bg-industrial-bg-card">
+          {children}
+        </div>
       </PopoverContent>
     </Popover>
   );
   return (
     <div className="space-y-6">
       {/* Main Filter Bar */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+      <div className="bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-base p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-industrial-graphite-400" />
             <Input
               placeholder="Search agencies by name..."
               value={filters.search}
               onChange={(e) => updateFilters({ search: e.target.value })}
-              className="pl-10"
+              className="pl-10 font-body text-base border-2 border-industrial-graphite-300 rounded-industrial-sharp focus:border-industrial-orange focus:ring-0"
               disabled={isLoading}
             />
           </div>
@@ -237,10 +245,11 @@ export default function DirectoryFilters({
                           });
                         }
                       }}
+                      className="border-2 border-industrial-graphite-300 data-[state=checked]:bg-industrial-orange data-[state=checked]:border-industrial-orange rounded-industrial-sharp"
                     />
                     <Label
                       htmlFor={`trade-${tradeSlug}`}
-                      className="text-sm font-normal cursor-pointer flex-1"
+                      className="font-body text-sm text-industrial-graphite-500 cursor-pointer flex-1"
                     >
                       {trade}
                     </Label>
@@ -276,10 +285,11 @@ export default function DirectoryFilters({
                         });
                       }
                     }}
+                    className="border-2 border-industrial-graphite-300 data-[state=checked]:bg-industrial-orange data-[state=checked]:border-industrial-orange rounded-industrial-sharp"
                   />
                   <Label
                     htmlFor={`state-${state.code}`}
-                    className="text-sm font-normal cursor-pointer flex-1"
+                    className="font-body text-sm text-industrial-graphite-500 cursor-pointer flex-1"
                   >
                     {state.name}
                   </Label>
@@ -314,10 +324,11 @@ export default function DirectoryFilters({
                         });
                       }
                     }}
+                    className="border-2 border-industrial-graphite-300 data-[state=checked]:bg-industrial-orange data-[state=checked]:border-industrial-orange rounded-industrial-sharp"
                   />
                   <Label
                     htmlFor={`size-${size}`}
-                    className="text-sm font-normal cursor-pointer flex-1"
+                    className="font-body text-sm text-industrial-graphite-500 cursor-pointer flex-1"
                   >
                     {size}
                   </Label>
@@ -337,14 +348,29 @@ export default function DirectoryFilters({
               });
             }}
           >
-            <SelectTrigger className="w-48 h-10">
-              <DollarSign className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-48 h-10 font-body text-xs font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 rounded-industrial-sharp focus:border-industrial-orange focus:ring-0">
+              <DollarSign className="h-4 w-4 mr-2 text-industrial-graphite-400" />
               <SelectValue placeholder="Per Diem" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any Per Diem</SelectItem>
-              <SelectItem value="true">Offers Per Diem</SelectItem>
-              <SelectItem value="false">No Per Diem</SelectItem>
+            <SelectContent className="border-2 border-industrial-graphite-200 rounded-industrial-base">
+              <SelectItem
+                value="any"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Any Per Diem
+              </SelectItem>
+              <SelectItem
+                value="true"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Offers Per Diem
+              </SelectItem>
+              <SelectItem
+                value="false"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                No Per Diem
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -357,31 +383,47 @@ export default function DirectoryFilters({
               });
             }}
           >
-            <SelectTrigger className="w-48 h-10">
-              <Users className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-48 h-10 font-body text-xs font-semibold uppercase tracking-wide border-2 border-industrial-graphite-300 text-industrial-graphite-500 rounded-industrial-sharp focus:border-industrial-orange focus:ring-0">
+              <Users className="h-4 w-4 mr-2 text-industrial-graphite-400" />
               <SelectValue placeholder="Union Status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any Union Status</SelectItem>
-              <SelectItem value="true">Union Partner</SelectItem>
-              <SelectItem value="false">Non-Union</SelectItem>
+            <SelectContent className="border-2 border-industrial-graphite-200 rounded-industrial-base">
+              <SelectItem
+                value="any"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Any Union Status
+              </SelectItem>
+              <SelectItem
+                value="true"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Union Partner
+              </SelectItem>
+              <SelectItem
+                value="false"
+                className="font-body text-sm text-industrial-graphite-500"
+              >
+                Non-Union
+              </SelectItem>
             </SelectContent>
           </Select>
 
           {/* Verification Status */}
-          <div className="flex items-center space-x-3 px-3 py-2 border border-gray-300 rounded-md">
+          <div className="flex items-center space-x-3 px-3 py-2 border-2 border-industrial-graphite-300 rounded-industrial-sharp">
             <Checkbox
               id="claimed-only"
               checked={filters.claimedOnly}
               onCheckedChange={(checked) =>
                 updateFilters({ claimedOnly: checked as boolean })
               }
+              className="border-2 border-industrial-graphite-300 data-[state=checked]:bg-industrial-orange data-[state=checked]:border-industrial-orange rounded-industrial-sharp"
             />
             <Label
               htmlFor="claimed-only"
-              className="text-sm font-normal cursor-pointer flex items-center"
+              className="font-body text-xs font-semibold uppercase tracking-wide text-industrial-graphite-500 cursor-pointer flex items-center"
             >
-              <Award className="h-4 w-4 mr-2 text-green-600" />
+              <Award className="h-4 w-4 mr-2 text-industrial-orange" />
               Verified Only
             </Label>
           </div>
@@ -389,21 +431,23 @@ export default function DirectoryFilters({
 
         {/* Results Count and Clear Filters */}
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600 flex items-center gap-2">
+          <div className="font-body text-sm text-industrial-graphite-400 flex items-center gap-2">
             <span className={isLoading ? 'opacity-60' : ''}>
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-industrial-graphite-600">
                 {totalResults}
               </span>{' '}
               {totalResults === 1 ? 'agency' : 'agencies'} found
             </span>
             {isLoading && (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 text-gray-500">
-                  <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full"></div>
-                  <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:150ms]"></div>
-                  <div className="animate-pulse h-1 w-1 bg-gray-500 rounded-full [animation-delay:300ms]"></div>
+                <div className="flex items-center gap-1 text-industrial-graphite-400">
+                  <div className="animate-pulse h-1 w-1 bg-industrial-graphite-400 rounded-full"></div>
+                  <div className="animate-pulse h-1 w-1 bg-industrial-graphite-400 rounded-full [animation-delay:150ms]"></div>
+                  <div className="animate-pulse h-1 w-1 bg-industrial-graphite-400 rounded-full [animation-delay:300ms]"></div>
                 </div>
-                <span className="text-xs text-gray-500">Updating...</span>
+                <span className="font-body text-xs text-industrial-graphite-400">
+                  Updating...
+                </span>
               </div>
             )}
           </div>
@@ -412,7 +456,7 @@ export default function DirectoryFilters({
               variant="ghost"
               size="sm"
               onClick={clearAllFilters}
-              className="text-blue-600 hover:text-blue-700"
+              className="font-body text-xs font-semibold uppercase tracking-wide text-industrial-orange hover:text-industrial-orange-500 hover:bg-industrial-orange-100"
             >
               Clear All Filters
             </Button>
@@ -422,9 +466,9 @@ export default function DirectoryFilters({
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-industrial-graphite-100 border-2 border-industrial-graphite-200 rounded-industrial-base p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-900 text-sm">
+            <h3 className="font-body text-xs font-semibold uppercase tracking-wide text-industrial-graphite-600">
               Active Filters
             </h3>
           </div>
@@ -432,12 +476,12 @@ export default function DirectoryFilters({
             {filters.search && (
               <Badge
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 px-3 py-1"
+                className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
                 Search: &quot;{filters.search}&quot;
                 <button
                   onClick={() => removeFilter('search')}
-                  className="ml-2 hover:text-blue-900"
+                  className="ml-2 hover:text-industrial-graphite-200"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -452,12 +496,12 @@ export default function DirectoryFilters({
                 <Badge
                   key={tradeSlug}
                   variant="secondary"
-                  className="bg-blue-100 text-blue-800 px-3 py-1"
+                  className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
                 >
                   {tradeName}
                   <button
                     onClick={() => removeFilter('trade', tradeSlug)}
-                    className="ml-2 hover:text-blue-900"
+                    className="ml-2 hover:text-industrial-graphite-200"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -467,7 +511,7 @@ export default function DirectoryFilters({
             {filters.trades.length > 3 && (
               <Badge
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 px-3 py-1"
+                className="bg-industrial-graphite-400 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
                 +{filters.trades.length - 3} more trades
               </Badge>
@@ -480,12 +524,12 @@ export default function DirectoryFilters({
                 <Badge
                   key={stateCode}
                   variant="secondary"
-                  className="bg-blue-100 text-blue-800 px-3 py-1"
+                  className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
                 >
                   {stateName}
                   <button
                     onClick={() => removeFilter('state', stateCode)}
-                    className="ml-2 hover:text-blue-900"
+                    className="ml-2 hover:text-industrial-graphite-200"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -495,7 +539,7 @@ export default function DirectoryFilters({
             {filters.states.length > 2 && (
               <Badge
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 px-3 py-1"
+                className="bg-industrial-graphite-400 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
                 +{filters.states.length - 2} more states
               </Badge>
@@ -503,12 +547,12 @@ export default function DirectoryFilters({
             {filters.perDiem !== null && (
               <Badge
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 px-3 py-1"
+                className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
                 {filters.perDiem ? 'Offers Per Diem' : 'No Per Diem'}
                 <button
                   onClick={() => removeFilter('perDiem')}
-                  className="ml-2 hover:text-blue-900"
+                  className="ml-2 hover:text-industrial-graphite-200"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -517,12 +561,12 @@ export default function DirectoryFilters({
             {filters.union !== null && (
               <Badge
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 px-3 py-1"
+                className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
                 {filters.union ? 'Union Partner' : 'Non-Union'}
                 <button
                   onClick={() => removeFilter('union')}
-                  className="ml-2 hover:text-blue-900"
+                  className="ml-2 hover:text-industrial-graphite-200"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -531,12 +575,12 @@ export default function DirectoryFilters({
             {filters.claimedOnly && (
               <Badge
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 px-3 py-1"
+                className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
                 Verified Only
                 <button
                   onClick={() => removeFilter('claimed')}
-                  className="ml-2 hover:text-blue-900"
+                  className="ml-2 hover:text-industrial-graphite-200"
                 >
                   <X className="h-3 w-3" />
                 </button>

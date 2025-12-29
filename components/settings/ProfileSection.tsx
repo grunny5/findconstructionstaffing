@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * ProfileSection Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 6.1 - Redesign Settings Pages
+ */
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import {
@@ -49,13 +55,13 @@ export function ProfileSection() {
 
   if (!user || !profile) {
     return (
-      <Card className="border-red-200">
+      <Card className="border-2 border-industrial-orange rounded-industrial-sharp">
         <CardContent className="p-6">
-          <div className="flex items-center gap-3 text-red-800">
-            <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <div className="flex items-center gap-3 text-industrial-graphite-600">
+            <AlertCircle className="h-5 w-5 flex-shrink-0 text-industrial-orange" />
             <div>
-              <p className="font-medium">Unable to load profile</p>
-              <p className="text-sm text-red-700 mt-1">
+              <p className="font-body font-medium">Unable to load profile</p>
+              <p className="font-body text-sm text-industrial-graphite-400 mt-1">
                 Please try refreshing the page. If the problem persists, contact
                 support.
               </p>
@@ -74,20 +80,22 @@ export function ProfileSection() {
 
   return (
     <>
-      <Card>
+      <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+            Personal Information
+          </CardTitle>
+          <CardDescription className="font-body text-industrial-graphite-400">
             Your profile information is displayed below
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
                 Full Name
               </label>
-              <p className="mt-1 text-sm text-gray-900">
+              <p className="mt-1 font-body text-sm text-industrial-graphite-600">
                 {displayName || 'Not set'}
               </p>
             </div>
@@ -95,7 +103,7 @@ export function ProfileSection() {
               variant="ghost"
               size="sm"
               onClick={() => setIsEditorOpen(true)}
-              className="mt-0 -mr-2"
+              className="mt-0 -mr-2 text-industrial-orange hover:text-industrial-orange-600 hover:bg-industrial-orange-100"
               aria-label="Edit full name"
             >
               <Pencil className="h-4 w-4 mr-1" />
@@ -104,17 +112,19 @@ export function ProfileSection() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
               Email Address
             </label>
-            <p className="mt-1 text-sm text-gray-900">{user.email}</p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 font-body text-sm text-industrial-graphite-600">
+              {user.email}
+            </p>
+            <p className="mt-1 font-body text-xs text-industrial-graphite-400">
               Email changes are managed in the Email section
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
               Role
             </label>
             <div className="mt-1">
@@ -137,10 +147,10 @@ export function ProfileSection() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
               Account Created
             </label>
-            <p className="mt-1 text-sm text-gray-900">
+            <p className="mt-1 font-body text-sm text-industrial-graphite-600">
               {profile.created_at
                 ? new Date(profile.created_at).toLocaleDateString('en-US', {
                     year: 'numeric',

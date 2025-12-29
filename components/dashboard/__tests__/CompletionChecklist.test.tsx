@@ -92,7 +92,7 @@ describe('CompletionChecklist', () => {
       expect(checkmarkIcon).toBeInTheDocument();
     });
 
-    it('should show faded/opacity styling for completed items', () => {
+    it('should show accessible muted styling for completed items', () => {
       const items: ChecklistItem[] = [
         {
           id: 'logo',
@@ -105,7 +105,7 @@ describe('CompletionChecklist', () => {
       const { container } = render(<CompletionChecklist items={items} />);
 
       const link = screen.getByText('Add Logo').closest('a');
-      expect(link).toHaveClass('opacity-50');
+      expect(link).toHaveClass('text-industrial-graphite-400');
     });
   });
 

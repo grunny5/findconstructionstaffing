@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * RadioGroup Component - Industrial Design System
+ * Feature: 010-industrial-design-system
+ * Task: 5.3 - Update All Shadcn Form Components
+ *
+ * Styling: 2px border, rounded (for radio), orange-400 when selected
+ * Touch target: Extended via associated <label> element (standard form pattern)
+ */
+
 import * as React from 'react';
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import { Circle } from 'lucide-react';
@@ -12,7 +21,7 @@ const RadioGroup = React.forwardRef<
 >(({ className, ...props }, ref) => {
   return (
     <RadioGroupPrimitive.Root
-      className={cn('grid gap-2', className)}
+      className={cn('grid gap-3', className)}
       {...props}
       ref={ref}
     />
@@ -28,13 +37,28 @@ const RadioGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
-        'aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        // Industrial Design System: Radio styles
+        'aspect-square shrink-0',
+        // Size - 20px visual, touch target extended via label
+        'h-5 w-5',
+        // Border & Shape - 2px border, rounded for radio
+        'border-2 border-industrial-graphite-300 rounded-full',
+        // Background
+        'bg-industrial-bg-card',
+        // Focus state - orange border
+        'focus:outline-none focus-visible:border-industrial-orange',
+        // Transition
+        'transition-colors duration-200',
+        // Selected state - orange border
+        'data-[state=checked]:border-industrial-orange',
+        // Disabled state
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-industrial-graphite-100',
         className
       )}
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <Circle className="h-2.5 w-2.5 fill-current text-current" />
+        <Circle className="h-2.5 w-2.5 fill-industrial-orange text-industrial-orange" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   );
