@@ -6,7 +6,7 @@
  * Task: 5.3 - Update All Shadcn Form Components
  *
  * Styling: 2px border, sharp corners, orange-400 when checked
- * Touch target: 44px minimum for mobile accessibility
+ * Touch target: Extended via associated <label> element (standard form pattern)
  */
 
 import * as React from 'react';
@@ -24,7 +24,7 @@ const Checkbox = React.forwardRef<
     className={cn(
       // Industrial Design System: Checkbox styles
       'peer shrink-0',
-      // Size - adequate touch target
+      // Size - 20px visual, touch target extended via label
       'h-5 w-5',
       // Border & Shape - 2px border, sharp corners
       'border-2 border-industrial-graphite-300 rounded-industrial-sharp',

@@ -6,7 +6,7 @@
  * Task: 5.3 - Update All Shadcn Form Components
  *
  * Styling: 2px border, rounded (for radio), orange-400 when selected
- * Touch target: 44px minimum for mobile accessibility
+ * Touch target: Extended via associated <label> element (standard form pattern)
  */
 
 import * as React from 'react';
@@ -39,7 +39,7 @@ const RadioGroupItem = React.forwardRef<
       className={cn(
         // Industrial Design System: Radio styles
         'aspect-square shrink-0',
-        // Size - adequate touch target
+        // Size - 20px visual, touch target extended via label
         'h-5 w-5',
         // Border & Shape - 2px border, rounded for radio
         'border-2 border-industrial-graphite-300 rounded-full',
