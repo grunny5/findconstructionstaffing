@@ -1162,6 +1162,138 @@ describe('POST /api/admin/agencies', () => {
       );
     });
 
+    it('should escape SQL wildcards in name when checking for duplicates (% character)', async () => {
+      // Test that a name with % doesn't match other agencies via pattern matching
+      let capturedIlikeName: string | null = null;
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          ilike: jest
+            .fn()
+            .mockImplementation((field: string, value: string) => {
+              if (field === 'name') {
+                capturedIlikeName = value;
+              }
+              return {
+                limit: jest.fn().mockReturnThis(),
+                maybeSingle: jest.fn().mockResolvedValue({
+                  data: null, // No duplicate found
+                  error: null,
+                }),
+              };
+            }),
+          eq: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null, // Slug doesn't exist
+            error: null,
+          }),
+          insert: jest
+            .fn()
+            .mockImplementation((data: Record<string, unknown>) => {
+              capturedInsertData = data;
+              return {
+                select: jest.fn().mockReturnThis(),
+                single: jest.fn().mockResolvedValue({
+                  data: { id: 'new-id', ...data },
+                  error: null,
+                }),
+              };
+            }),
+        };
+      });
+
+      const request = createPostRequest({
+        ...validAgencyData,
+        name: '100% Staffing Solutions',
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      // Verify the % was escaped to \% for literal matching
+      expect(capturedIlikeName).toBe('100\\% Staffing Solutions');
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.name).toBe('100% Staffing Solutions');
+    });
+
+    it('should escape SQL wildcards in name when checking for duplicates (_ character)', async () => {
+      // Test that a name with _ doesn't match other agencies via pattern matching
+      let capturedIlikeName: string | null = null;
+      let capturedInsertData: Record<string, unknown> | null = null;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          ilike: jest
+            .fn()
+            .mockImplementation((field: string, value: string) => {
+              if (field === 'name') {
+                capturedIlikeName = value;
+              }
+              return {
+                limit: jest.fn().mockReturnThis(),
+                maybeSingle: jest.fn().mockResolvedValue({
+                  data: null, // No duplicate found
+                  error: null,
+                }),
+              };
+            }),
+          eq: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null, // Slug doesn't exist
+            error: null,
+          }),
+          insert: jest
+            .fn()
+            .mockImplementation((data: Record<string, unknown>) => {
+              capturedInsertData = data;
+              return {
+                select: jest.fn().mockReturnThis(),
+                single: jest.fn().mockResolvedValue({
+                  data: { id: 'new-id', ...data },
+                  error: null,
+                }),
+              };
+            }),
+        };
+      });
+
+      const request = createPostRequest({
+        ...validAgencyData,
+        name: 'A_B Staffing',
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      // Verify the _ was escaped to \_ for literal matching
+      expect(capturedIlikeName).toBe('A\\_B Staffing');
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.name).toBe('A_B Staffing');
+    });
+
     it('should generate unique slug with -2 suffix when base slug exists', async () => {
       let capturedInsertData: Record<string, unknown> | null = null;
       let slugCheckCount = 0;

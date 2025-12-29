@@ -26,6 +26,20 @@ export const dynamic = 'force-dynamic';
 // Maximum attempts to find a unique slug before failing
 const MAX_SLUG_ATTEMPTS = 5;
 
+/**
+ * Escapes SQL LIKE/ILIKE wildcard characters for literal matching.
+ * PostgreSQL uses backslash as the default escape character.
+ * @param input - The string to escape
+ * @returns The escaped string safe for use in LIKE/ILIKE patterns
+ */
+function escapeLikeWildcards(input: string): string {
+  return input
+    .trim()
+    .replace(/\\/g, '\\\\') // Escape backslashes first
+    .replace(/%/g, '\\%') // Escape percent signs
+    .replace(/_/g, '\\_'); // Escape underscores
+}
+
 // Query parameter validation schema
 const adminAgenciesQuerySchema = z.object({
   search: z.string().optional(),
@@ -542,10 +556,12 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     // 5. CHECK FOR DUPLICATE NAME
     // ========================================================================
+    // Escape wildcards for literal matching (prevents % and _ from acting as patterns)
+    const escapedName = escapeLikeWildcards(data.name);
     const { data: existingAgency, error: checkError } = await supabase
       .from('agencies')
       .select('id, name')
-      .ilike('name', data.name)
+      .ilike('name', escapedName)
       .limit(1)
       .maybeSingle();
 

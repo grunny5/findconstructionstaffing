@@ -115,7 +115,11 @@ export default async function AdminAgenciesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Agency Management</h1>
         <div className="flex gap-2">
-          <Button variant="outline" asChild data-testid="download-template-button">
+          <Button
+            variant="outline"
+            asChild
+            data-testid="download-template-button"
+          >
             <Link href="/api/admin/agencies/template" download>
               <Download className="h-4 w-4 mr-2" />
               Download Template
