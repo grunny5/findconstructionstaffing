@@ -82,8 +82,8 @@ export function ProfileSection() {
     <>
       <Card className="border-2 border-industrial-graphite-200 rounded-industrial-sharp bg-industrial-bg-card">
         <CardHeader>
-          <CardTitle className="font-display text-xl tracking-wide text-industrial-graphite-600">
-            PERSONAL INFORMATION
+          <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
+            Personal Information
           </CardTitle>
           <CardDescription className="font-body text-industrial-graphite-400">
             Your profile information is displayed below
@@ -92,8 +92,8 @@ export function ProfileSection() {
         <CardContent className="space-y-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <label className="block font-body text-xs font-semibold text-industrial-graphite-400 tracking-wide">
-                FULL NAME
+              <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
+                Full Name
               </label>
               <p className="mt-1 font-body text-sm text-industrial-graphite-600">
                 {displayName || 'Not set'}
@@ -112,8 +112,8 @@ export function ProfileSection() {
           </div>
 
           <div>
-            <label className="block font-body text-xs font-semibold text-industrial-graphite-400 tracking-wide">
-              EMAIL ADDRESS
+            <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
+              Email Address
             </label>
             <p className="mt-1 font-body text-sm text-industrial-graphite-600">
               {user.email}
@@ -124,8 +124,8 @@ export function ProfileSection() {
           </div>
 
           <div>
-            <label className="block font-body text-xs font-semibold text-industrial-graphite-400 tracking-wide">
-              ROLE
+            <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
+              Role
             </label>
             <div className="mt-1">
               <Badge
@@ -147,8 +147,8 @@ export function ProfileSection() {
           </div>
 
           <div>
-            <label className="block font-body text-xs font-semibold text-industrial-graphite-400 tracking-wide">
-              ACCOUNT CREATED
+            <label className="block font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
+              Account Created
             </label>
             <p className="mt-1 font-body text-sm text-industrial-graphite-600">
               {profile.created_at

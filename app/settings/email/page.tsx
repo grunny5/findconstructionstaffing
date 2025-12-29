@@ -16,8 +16,8 @@ export default function SettingsEmailPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="font-display text-2xl tracking-wide text-industrial-graphite-600">
-          EMAIL SETTINGS
+        <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+          Email Settings
         </h2>
         <p className="mt-1 font-body text-sm text-industrial-graphite-400">
           Manage your email address and preferences

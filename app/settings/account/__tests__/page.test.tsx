@@ -8,7 +8,7 @@ describe('SettingsAccountPage', () => {
   it('should render page header with industrial styling', () => {
     render(<SettingsAccountPage />);
 
-    const header = screen.getByText('ACCOUNT SETTINGS');
+    const header = screen.getByText('Account Settings');
     expect(header).toBeInTheDocument();
     expect(header).toHaveClass('font-display');
     expect(header).toHaveClass('text-2xl');
@@ -26,8 +26,8 @@ describe('SettingsAccountPage', () => {
   it('should render Danger Zone card with industrial orange styling', () => {
     const { container } = render(<SettingsAccountPage />);
 
-    // Check for the danger zone title
-    const dangerZoneTitle = screen.getByText('DANGER ZONE');
+    // Check for the danger zone title (CSS uppercase)
+    const dangerZoneTitle = screen.getByText('Danger Zone');
     expect(dangerZoneTitle).toBeInTheDocument();
     expect(dangerZoneTitle).toHaveClass('font-display');
     expect(dangerZoneTitle).toHaveClass('text-industrial-orange');

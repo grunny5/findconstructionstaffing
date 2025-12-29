@@ -45,7 +45,7 @@ describe('SettingsEmailPage', () => {
 
     render(<SettingsEmailPage />);
 
-    expect(screen.getByText('EMAIL SETTINGS')).toBeInTheDocument();
+    expect(screen.getByText('Email Settings')).toBeInTheDocument();
     expect(
       screen.getByText('Manage your email address and preferences')
     ).toBeInTheDocument();
@@ -75,8 +75,8 @@ describe('SettingsEmailPage', () => {
 
     render(<SettingsEmailPage />);
 
-    // EmailSection renders email address section
-    expect(screen.getByText('EMAIL ADDRESS')).toBeInTheDocument();
+    // EmailSection renders email address section (CSS uppercase)
+    expect(screen.getByText('Email Address')).toBeInTheDocument();
     expect(screen.getByText('test@example.com')).toBeInTheDocument();
   });
 
@@ -96,8 +96,8 @@ describe('SettingsEmailPage', () => {
 
     render(<SettingsEmailPage />);
 
-    // Page header is always rendered
-    expect(screen.getByText('EMAIL SETTINGS')).toBeInTheDocument();
+    // Page header is always rendered (CSS uppercase)
+    expect(screen.getByText('Email Settings')).toBeInTheDocument();
     // EmailSection shows skeleton while loading
     const skeletons = document.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);

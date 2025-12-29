@@ -29,8 +29,8 @@ describe('SettingsProfilePage', () => {
 
     render(<SettingsProfilePage />);
 
-    // Page header is always rendered (uppercase for accessibility)
-    expect(screen.getByText('PROFILE')).toBeInTheDocument();
+    // Page header is always rendered (CSS uppercase for accessibility)
+    expect(screen.getByText('Profile')).toBeInTheDocument();
     // ProfileSection shows skeleton while loading
     const skeletons = document.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
@@ -60,7 +60,7 @@ describe('SettingsProfilePage', () => {
 
     render(<SettingsProfilePage />);
 
-    expect(screen.getByText('PROFILE')).toBeInTheDocument();
+    expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     const emailElements = screen.getAllByText('test@example.com');
     expect(emailElements.length).toBeGreaterThan(0);
@@ -173,7 +173,7 @@ describe('SettingsProfilePage', () => {
 
     render(<SettingsProfilePage />);
 
-    const emailAddressElements = screen.getAllByText('EMAIL ADDRESS');
+    const emailAddressElements = screen.getAllByText('Email Address');
     expect(emailAddressElements.length).toBeGreaterThan(0);
     expect(
       screen.getByText(

@@ -63,7 +63,7 @@ describe('NotificationsSettingsPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('NOTIFICATION PREFERENCES')
+          screen.getByText('Notification Preferences')
         ).toBeInTheDocument();
       });
 
@@ -120,7 +120,7 @@ describe('NotificationsSettingsPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('NOTIFICATION PREFERENCES')
+          screen.getByText('Notification Preferences')
         ).toBeInTheDocument();
       });
 
@@ -168,7 +168,7 @@ describe('NotificationsSettingsPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('NOTIFICATION PREFERENCES')
+          screen.getByText('Notification Preferences')
         ).toBeInTheDocument();
       });
 
@@ -217,7 +217,7 @@ describe('NotificationsSettingsPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('NOTIFICATION PREFERENCES')
+          screen.getByText('Notification Preferences')
         ).toBeInTheDocument();
       });
 
@@ -321,7 +321,7 @@ describe('NotificationsSettingsPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('NOTIFICATION PREFERENCES')
+          screen.getByText('Notification Preferences')
         ).toBeInTheDocument();
       });
     });

@@ -128,7 +128,7 @@ describe('ProfileSection', () => {
 
       render(<ProfileSection />);
 
-      expect(screen.getByText('PERSONAL INFORMATION')).toBeInTheDocument();
+      expect(screen.getByText('Personal Information')).toBeInTheDocument();
       expect(screen.getByText('John Doe')).toBeInTheDocument();
       expect(screen.getByText('test@example.com')).toBeInTheDocument();
       expect(screen.getByText('User')).toBeInTheDocument();
@@ -399,10 +399,10 @@ describe('ProfileSection', () => {
 
       render(<ProfileSection />);
 
-      expect(screen.getByText('FULL NAME')).toBeInTheDocument();
-      expect(screen.getByText('EMAIL ADDRESS')).toBeInTheDocument();
-      expect(screen.getByText('ROLE')).toBeInTheDocument();
-      expect(screen.getByText('ACCOUNT CREATED')).toBeInTheDocument();
+      expect(screen.getByText('Full Name')).toBeInTheDocument();
+      expect(screen.getByText('Email Address')).toBeInTheDocument();
+      expect(screen.getByText('Role')).toBeInTheDocument();
+      expect(screen.getByText('Account Created')).toBeInTheDocument();
 
       const editButton = screen.getByRole('button', {
         name: /edit full name/i,
