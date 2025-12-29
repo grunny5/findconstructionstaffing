@@ -58,11 +58,11 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   const agency = data.data;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-industrial-bg-primary">
       <Header />
 
-      {/* Hero Section */}
-      <section className="bg-white border-b">
+      {/* Hero Section - Industrial Design System */}
+      <section className="bg-industrial-bg-card border-b border-industrial-graphite-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Logo and Basic Info */}
@@ -73,31 +73,32 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                   alt={`${agency.name} logo`}
                   width={128}
                   height={128}
-                  className="rounded-lg object-cover"
+                  className="rounded-industrial-sharp object-cover border-2 border-industrial-graphite-200"
                 />
               ) : (
-                <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-12 w-12 text-gray-400" />
+                <div className="w-32 h-32 bg-industrial-graphite-100 rounded-industrial-sharp flex items-center justify-center border-2 border-industrial-graphite-200">
+                  <Building2 className="h-12 w-12 text-industrial-graphite-400" />
                 </div>
               )}
             </div>
 
             {/* Agency Details */}
             <div className="flex-1">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {/* Industrial Typography: Bebas Neue, 2.5rem+, uppercase */}
+                  <h1 className="font-display text-4xl lg:text-5xl text-industrial-graphite-600 uppercase tracking-wide mb-3">
                     {agency.name}
                   </h1>
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
                     {agency.verified && (
-                      <Badge variant="default" className="bg-green-600">
+                      <Badge variant="graphite">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Verified
                       </Badge>
                     )}
                     {agency.featured && (
-                      <Badge variant="default" className="bg-orange-600">
+                      <Badge variant="orange">
                         <Award className="h-3 w-3 mr-1" />
                         Featured
                       </Badge>
@@ -109,7 +110,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-gray-600 text-lg max-w-3xl">
+                  <p className="font-body text-industrial-graphite-400 text-lg max-w-3xl">
                     {agency.description ||
                       'Professional construction staffing services.'}
                   </p>
@@ -154,41 +155,49 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 </div>
               </div>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+              {/* Quick Stats - Industrial styling */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8 pt-8 border-t border-industrial-graphite-200">
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                     <Calendar className="h-4 w-4" />
-                    <span className="text-sm">Established</span>
+                    <span className="font-body text-sm uppercase tracking-wide">
+                      Established
+                    </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-display text-3xl text-industrial-graphite-600">
                     {agency.founded_year || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm">Company Size</span>
+                    <span className="font-body text-sm uppercase tracking-wide">
+                      Company Size
+                    </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-display text-3xl text-industrial-graphite-600">
                     {agency.employee_count || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                     <Star className="h-4 w-4" />
-                    <span className="text-sm">Rating</span>
+                    <span className="font-body text-sm uppercase tracking-wide">
+                      Rating
+                    </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-display text-3xl text-industrial-graphite-600">
                     {agency.rating ? `${agency.rating}/5` : 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                     <Briefcase className="h-4 w-4" />
-                    <span className="text-sm">Projects</span>
+                    <span className="font-body text-sm uppercase tracking-wide">
+                      Projects
+                    </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-display text-3xl text-industrial-graphite-600">
                     {agency.project_count || 0}+
                   </p>
                 </div>
@@ -198,39 +207,57 @@ export default async function AgencyProfilePage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* Main Content - Industrial Design System */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-8">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="trades">Trade Specialties</TabsTrigger>
-                <TabsTrigger value="regions">Service Areas</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 bg-industrial-graphite-100 rounded-industrial-sharp p-1">
+                <TabsTrigger
+                  value="overview"
+                  className="font-body uppercase tracking-wide text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger
+                  value="trades"
+                  className="font-body uppercase tracking-wide text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
+                >
+                  Trade Specialties
+                </TabsTrigger>
+                <TabsTrigger
+                  value="regions"
+                  className="font-body uppercase tracking-wide text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
+                >
+                  Service Areas
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">
-                <Card>
+                <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">
+                    {/* Section header: Bebas Neue, 2rem, uppercase */}
+                    <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                       About {agency.name}
                     </h2>
-                    <p className="text-gray-600 mb-6">
+                    <p className="font-body text-industrial-graphite-500 mb-6">
                       {agency.description ||
                         'Professional construction staffing services specializing in skilled trades placement.'}
                     </p>
 
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <MapPin className="h-5 w-5 text-gray-400" />
-                        <span>{agency.headquarters || 'United States'}</span>
+                        <MapPin className="h-5 w-5 text-industrial-graphite-400" />
+                        <span className="font-body text-industrial-graphite-600">
+                          {agency.headquarters || 'United States'}
+                        </span>
                       </div>
 
                       {agency.offers_per_diem !== null && (
                         <div className="flex items-center gap-3">
-                          <DollarSign className="h-5 w-5 text-gray-400" />
-                          <span>
+                          <DollarSign className="h-5 w-5 text-industrial-graphite-400" />
+                          <span className="font-body text-industrial-graphite-600">
                             {agency.offers_per_diem
                               ? 'Offers Per Diem'
                               : 'No Per Diem'}
@@ -240,8 +267,8 @@ export default async function AgencyProfilePage({ params }: PageProps) {
 
                       {agency.is_union !== null && (
                         <div className="flex items-center gap-3">
-                          <Users className="h-5 w-5 text-gray-400" />
-                          <span>
+                          <Users className="h-5 w-5 text-industrial-graphite-400" />
+                          <span className="font-body text-industrial-graphite-600">
                             {agency.is_union ? 'Union Partner' : 'Non-Union'}
                           </span>
                         </div>
@@ -252,16 +279,16 @@ export default async function AgencyProfilePage({ params }: PageProps) {
               </TabsContent>
 
               <TabsContent value="trades" className="mt-6">
-                <Card>
+                <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">
+                    <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                       Specializations
                     </h2>
                     {agency.trades && agency.trades.length > 0 ? (
                       <div className="space-y-6">
                         {/* Featured Trades (Top 3) */}
                         <div>
-                          <h3 className="text-sm font-medium text-gray-600 mb-3">
+                          <h3 className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-400 mb-3">
                             Featured Specialties
                           </h3>
                           <div className="flex flex-wrap gap-3">
@@ -272,8 +299,8 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                                 className="inline-block"
                               >
                                 <Badge
-                                  variant="default"
-                                  className="text-base px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+                                  variant="orange"
+                                  className="text-base px-4 py-2 cursor-pointer"
                                 >
                                   <Star className="h-4 w-4 mr-2 fill-current" />
                                   {trade.name}
@@ -286,7 +313,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         {/* Additional Trades (if more than 3) */}
                         {agency.trades.length > 3 && (
                           <div>
-                            <h3 className="text-sm font-medium text-gray-600 mb-3">
+                            <h3 className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-400 mb-3">
                               Additional Specialties
                             </h3>
                             <div className="flex flex-wrap gap-2">
@@ -298,7 +325,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                                 >
                                   <Badge
                                     variant="secondary"
-                                    className="text-sm hover:bg-secondary/80 transition-colors cursor-pointer"
+                                    className="cursor-pointer"
                                   >
                                     {trade.name}
                                   </Badge>
@@ -309,7 +336,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         )}
                       </div>
                     ) : (
-                      <p className="text-gray-500">
+                      <p className="font-body text-industrial-graphite-400">
                         No trade specialties listed.
                       </p>
                     )}
@@ -318,9 +345,9 @@ export default async function AgencyProfilePage({ params }: PageProps) {
               </TabsContent>
 
               <TabsContent value="regions" className="mt-6">
-                <Card>
+                <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">
+                    <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                       Service Areas
                     </h2>
                     {agency.regions && agency.regions.length > 0 ? (
@@ -331,7 +358,9 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         showViewAll={true}
                       />
                     ) : (
-                      <p className="text-gray-500">No service areas listed.</p>
+                      <p className="font-body text-industrial-graphite-400">
+                        No service areas listed.
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -341,21 +370,23 @@ export default async function AgencyProfilePage({ params }: PageProps) {
 
           {/* Right Column - Contact Info */}
           <div className="space-y-6">
-            <Card>
+            <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">
+                <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                   Contact Information
                 </h2>
                 <div className="space-y-4">
                   {agency.phone && (
                     <div>
-                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                      <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                         <Phone className="h-4 w-4" />
-                        <span className="text-sm">Phone</span>
+                        <span className="font-body text-sm uppercase tracking-wide">
+                          Phone
+                        </span>
                       </div>
                       <a
                         href={`tel:${agency.phone}`}
-                        className="text-blue-600 hover:underline"
+                        className="font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors"
                       >
                         {agency.phone}
                       </a>
@@ -364,13 +395,15 @@ export default async function AgencyProfilePage({ params }: PageProps) {
 
                   {agency.email && (
                     <div>
-                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                      <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                         <Mail className="h-4 w-4" />
-                        <span className="text-sm">Email</span>
+                        <span className="font-body text-sm uppercase tracking-wide">
+                          Email
+                        </span>
                       </div>
                       <a
                         href={`mailto:${agency.email}`}
-                        className="text-blue-600 hover:underline"
+                        className="font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors"
                       >
                         {agency.email}
                       </a>
@@ -379,15 +412,17 @@ export default async function AgencyProfilePage({ params }: PageProps) {
 
                   {agency.website && (
                     <div>
-                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                      <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                         <Globe className="h-4 w-4" />
-                        <span className="text-sm">Website</span>
+                        <span className="font-body text-sm uppercase tracking-wide">
+                          Website
+                        </span>
                       </div>
                       <a
                         href={agency.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center gap-1"
+                        className="font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors flex items-center gap-1"
                       >
                         Visit Website
                         <ExternalLink className="h-3 w-3" />
@@ -396,7 +431,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                   )}
                 </div>
 
-                <div className="mt-6 pt-6 border-t">
+                <div className="mt-6 pt-6 border-t border-industrial-graphite-200">
                   <Button className="w-full" size="lg">
                     Request Workers
                   </Button>
@@ -405,11 +440,11 @@ export default async function AgencyProfilePage({ params }: PageProps) {
             </Card>
 
             {/* Back to Directory */}
-            <Card>
+            <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
               <CardContent className="p-6">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                  className="flex items-center gap-2 font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors"
                 >
                   ← Back to Directory
                 </Link>
