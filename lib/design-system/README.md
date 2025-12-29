@@ -375,12 +375,12 @@ Heavy borders for structural emphasis.
 
 ## File Structure
 
-```
+```plaintext
 lib/design-system/
 ├── README.md          # This documentation
 ├── colors.ts          # Color palette constants
 ├── typography.ts      # Typography constants
-└── index.ts           # Re-exports (coming soon)
+└── index.ts           # Central re-exports
 ```
 
 ---
