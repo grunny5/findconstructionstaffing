@@ -241,20 +241,20 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Orange bottom border on hover
   - Maintain existing responsive behavior (hamburger on mobile <768px)
 - **Acceptance Criteria (for this task):**
-  - [ ] Logo text uses Bebas Neue font, 1.5rem, uppercase
-  - [ ] Navigation has 3px bottom border in graphite-600
-  - [ ] Nav links use Barlow, 0.875rem, uppercase, 600 weight, graphite-500 color
-  - [ ] Hover state shows 2px orange-400 bottom border
-  - [ ] Mobile hamburger menu maintained (unchanged functionality)
-  - [ ] Component tests updated and passing
-  - [ ] No accessibility regressions (keyboard nav, screen reader)
+  - [x] Logo text uses Bebas Neue font, 1.5rem, uppercase
+  - [x] Navigation has 3px bottom border in graphite-600
+  - [x] Nav links use Barlow, 0.875rem, uppercase, 600 weight, graphite-500 color
+  - [x] Hover state shows 2px orange-400 bottom border
+  - [x] Mobile hamburger menu maintained (unchanged functionality)
+  - [x] Component tests updated and passing
+  - [x] No accessibility regressions (keyboard nav, screen reader)
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Responsive behavior verified on mobile, tablet, desktop
-  - [ ] Accessibility audit passed (Lighthouse ≥95)
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Responsive behavior verified on mobile, tablet, desktop
+  - [x] Accessibility audit passed (Lighthouse ≥95)
   - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Follows PKD component standards
+  - [x] **Final Check:** Follows PKD component standards
 
 **Estimated Effort:** 4 hours
 
@@ -277,19 +277,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Logo and copyright on left
   - Optional: Barcode decoration on right using Libre Barcode font
 - **Acceptance Criteria (for this task):**
-  - [ ] Footer background uses --bg-dark (#1A1A1A)
-  - [ ] Text color is white or graphite-100 for contrast
-  - [ ] Logo maintains Bebas Neue styling
-  - [ ] Copyright text uses Barlow
-  - [ ] Optional barcode decoration implemented tastefully
-  - [ ] Color contrast meets WCAG AA (4.5:1 minimum)
-  - [ ] Component tests updated and passing
+  - [x] Footer background uses --bg-dark (#1A1A1A)
+  - [x] Text color is white or graphite-100 for contrast
+  - [x] Logo maintains Bebas Neue styling
+  - [x] Copyright text uses Barlow
+  - [x] Optional barcode decoration implemented tastefully
+  - [x] Color contrast meets WCAG AA (4.5:1 minimum)
+  - [x] Component tests updated and passing
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Contrast verified with WebAIM checker
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Contrast verified with WebAIM checker
   - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Meets WCAG 2.1 AA standards
+  - [x] **Final Check:** Meets WCAG 2.1 AA standards
 
 **Estimated Effort:** 3 hours
 
@@ -315,22 +315,22 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - NO gradient bands
   - Headlines use Bebas Neue with clamp() for responsive sizing
 - **Acceptance Criteria (for this task):**
-  - [ ] Two-column layout (flex or grid) that stacks on mobile (<768px)
-  - [ ] Main headline uses Bebas Neue with clamp(3.5rem, 10vw, 7rem)
-  - [ ] One word in headline has orange-400 color accent
-  - [ ] Label text uses uppercase Barlow (small, 600 weight)
-  - [ ] CTA buttons use industrial button styles (2px border-radius, sharp)
-  - [ ] Stats row displays key numbers prominently
-  - [ ] 1px bottom border separator (graphite-200)
-  - [ ] Mobile responsive with clean stacking
-  - [ ] Component tests cover responsive behavior
+  - [x] Two-column layout (flex or grid) that stacks on mobile (<768px)
+  - [x] Main headline uses Bebas Neue with clamp(3.5rem, 10vw, 7rem)
+  - [x] One word in headline has orange-400 color accent
+  - [x] Label text uses uppercase Barlow (small, 600 weight)
+  - [x] CTA buttons use industrial button styles (2px border-radius, sharp)
+  - [x] Stats row displays key numbers prominently
+  - [x] 1px bottom border separator (graphite-200)
+  - [x] Mobile responsive with clean stacking
+  - [x] Component tests cover responsive behavior
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Mobile, tablet, desktop layouts verified
-  - [ ] Accessibility verified (heading hierarchy, focus states)
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Mobile, tablet, desktop layouts verified
+  - [x] Accessibility verified (heading hierarchy, focus states)
   - [ ] PR submitted with responsive screenshots
-  - [ ] **Final Check:** Typography follows FSD specifications exactly
+  - [x] **Final Check:** Typography follows FSD specifications exactly
 
 **Estimated Effort:** 5 hours
 
