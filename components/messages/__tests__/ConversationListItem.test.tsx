@@ -128,15 +128,24 @@ describe('ConversationListItem', () => {
     });
 
     it('should render timestamp', () => {
+      // Use a timestamp that's definitely "recent" (30 minutes ago)
+      const recentConversation = {
+        ...mockConversation,
+        last_message: {
+          ...mockConversation.last_message,
+          created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+        },
+      };
+
       render(
         <ConversationListItem
-          conversation={mockConversation}
+          conversation={recentConversation}
           currentUserId="user-1"
           onClick={jest.fn()}
         />
       );
 
-      // Should show "2 hours ago" or similar
+      // Should show "30 minutes ago" or similar relative time
       expect(screen.getByText(/ago/i)).toBeInTheDocument();
     });
 
