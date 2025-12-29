@@ -99,8 +99,8 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 - **Key Files to Modify:**
   - `app/(app)/admin/agencies/page.tsx`
 - **Key Files to Create:**
-  - `components/admin/AgenciesTable.tsx`
-  - `components/admin/__tests__/AgenciesTable.test.tsx`
+  - `components/admin/AdminAgenciesTable.tsx`
+  - `components/admin/__tests__/AdminAgenciesTable.test.tsx`
 - **Key Patterns to Follow:**
   - Shadcn/ui Input, Select components
   - Debounced search input (use existing useDebounce hook)
@@ -304,7 +304,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.1.1: Create CSV Template Download Endpoint
+### [x] Task 2.1.1: Create CSV Template Download Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create API endpoint that returns downloadable CSV template
@@ -317,17 +317,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Include header row and 2 example rows
   - UTF-8 encoding for international characters
 - **Acceptance Criteria (for this task):**
-  - [ ] `GET /api/admin/agencies/template` returns CSV file
-  - [ ] File includes headers: name, description, website, phone, email, headquarters, founded_year, employee_count, company_size, offers_per_diem, is_union, trades, regions
-  - [ ] File includes 2 example rows with valid data
-  - [ ] Content-Type is text/csv
-  - [ ] Content-Disposition triggers download as "agency-import-template.csv"
-  - [ ] Returns 401/403 for unauthorized users
+  - [x] `GET /api/admin/agencies/template` returns CSV file
+  - [x] File includes headers: name, description, website, phone, email, headquarters, founded_year, employee_count, company_size, offers_per_diem, is_union, trades, regions
+  - [x] File includes 2 example rows with valid data
+  - [x] Content-Type is text/csv
+  - [x] Content-Disposition triggers download as "agency-import-template.csv"
+  - [x] Returns 401/403 for unauthorized users
 - **Definition of Done:**
-  - [ ] Endpoint returns valid CSV
-  - [ ] Tests verify headers and content
-  - [ ] Tests verify auth requirements
-  - [ ] **Final Check:** CSV opens correctly in Excel/Google Sheets
+  - [x] Endpoint returns valid CSV
+  - [x] Tests verify headers and content
+  - [x] Tests verify auth requirements
+  - [x] **Final Check:** CSV opens correctly in Excel/Google Sheets
 
 **Estimated Effort:** 2 hours
 
@@ -826,7 +826,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 - **Objective:** Show visual status indicator in agencies list
 - **Context:** Admin can quickly see which agencies are active/inactive
 - **Key Files to Modify:**
-  - `components/admin/AgenciesTable.tsx`
+  - `components/admin/AdminAgenciesTable.tsx`
 - **Key Patterns to Follow:**
   - Shadcn/ui Badge component
   - Color coding: green=active, gray=inactive
@@ -857,7 +857,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ### Dependencies Graph
 
-```
+```text
 Phase 1 (Week 1)
 ├── 1.1.1 Admin List Page
 ├── 1.1.2 Admin List API ──────────┐
@@ -908,7 +908,7 @@ Phase 3 (Week 3)
 
 **Components:**
 
-- `components/admin/AgenciesTable.tsx`
+- `components/admin/AdminAgenciesTable.tsx`
 - `components/admin/AgencyFormModal.tsx`
 - `components/admin/BulkImportModal.tsx`
 - `components/admin/ImportPreviewTable.tsx`
