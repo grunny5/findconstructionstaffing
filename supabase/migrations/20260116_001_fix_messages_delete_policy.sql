@@ -13,6 +13,7 @@
 -- =============================================================================
 
 -- Combined DELETE policy: own messages OR admin
+DROP POLICY IF EXISTS "Users can delete messages" ON public.messages;
 CREATE POLICY "Users can delete messages"
   ON public.messages FOR DELETE
   USING (
