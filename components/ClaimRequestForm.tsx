@@ -122,30 +122,41 @@ export function ClaimRequestForm({
 
   if (success) {
     return (
-      <Card>
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle2 className="h-10 w-10 text-green-600" />
+      <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
+        <CardHeader className="text-center border-b border-industrial-graphite-200">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-industrial-sharp bg-industrial-orange-100">
+            <CheckCircle2 className="h-10 w-10 text-industrial-orange" />
           </div>
-          <CardTitle className="text-2xl">Claim Request Submitted</CardTitle>
+          <CardTitle className="font-display text-2xl uppercase text-industrial-graphite-600">
+            Claim Request Submitted
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert>
-            <AlertDescription>
-              Your claim request for <strong>{agencyName}</strong> has been
-              successfully submitted. We&apos;ll review it within 2 business
-              days.
+        <CardContent className="space-y-4 pt-6">
+          <Alert className="border-industrial-graphite-200 bg-industrial-graphite-100">
+            <AlertDescription className="font-body text-industrial-graphite-500">
+              Your claim request for{' '}
+              <strong className="text-industrial-graphite-600">
+                {agencyName}
+              </strong>{' '}
+              has been successfully submitted. We&apos;ll review it within 2
+              business days.
             </AlertDescription>
           </Alert>
 
-          <div className="rounded-lg bg-muted p-4">
-            <p className="text-sm text-muted-foreground">Claim ID</p>
-            <p className="font-mono text-sm">{claimId}</p>
+          <div className="rounded-industrial-sharp bg-industrial-graphite-100 p-4 border border-industrial-graphite-200">
+            <p className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
+              Claim ID
+            </p>
+            <p className="font-mono text-sm text-industrial-graphite-600">
+              {claimId}
+            </p>
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">What happens next?</p>
-            <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+            <p className="font-body text-sm font-semibold text-industrial-graphite-600">
+              What happens next?
+            </p>
+            <ul className="list-inside list-disc space-y-1 font-body text-sm text-industrial-graphite-500">
               <li>Our team will verify your information</li>
               <li>You&apos;ll receive an email with the decision</li>
               <li>
@@ -155,7 +166,7 @@ export function ClaimRequestForm({
           </div>
 
           <div className="flex gap-3">
-            <Button variant="outline" asChild className="flex-1">
+            <Button variant="secondary" asChild className="flex-1">
               <a href={`/recruiters/${agencyId}`}>View Agency Profile</a>
             </Button>
             <Button asChild className="flex-1">
@@ -168,15 +179,19 @@ export function ClaimRequestForm({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Claim Request Form</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Submit a claim request for <strong>{agencyName}</strong>. Provide your
-          business contact information to verify you represent this agency.
+    <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
+      <CardHeader className="border-b border-industrial-graphite-200">
+        <CardTitle className="font-display text-xl uppercase text-industrial-graphite-600">
+          Claim Request Form
+        </CardTitle>
+        <p className="font-body text-sm text-industrial-graphite-500">
+          Submit a claim request for{' '}
+          <strong className="text-industrial-graphite-600">{agencyName}</strong>
+          . Provide your business contact information to verify you represent
+          this agency.
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-6"
@@ -187,20 +202,30 @@ export function ClaimRequestForm({
 
           {/* Agency Name (Read-only) */}
           <div className="space-y-2">
-            <Label htmlFor="agency-name">Agency Name</Label>
-            <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{agencyName}</span>
+            <Label
+              htmlFor="agency-name"
+              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+            >
+              Agency Name
+            </Label>
+            <div className="flex items-center gap-2 rounded-industrial-sharp border-2 border-industrial-graphite-200 bg-industrial-graphite-100 px-3 py-2">
+              <Building2 className="h-4 w-4 text-industrial-graphite-400" />
+              <span className="font-body text-sm text-industrial-graphite-600">
+                {agencyName}
+              </span>
             </div>
           </div>
 
           {/* Business Email */}
           <div className="space-y-2">
-            <Label htmlFor="business_email">
-              Business Email <span className="text-destructive">*</span>
+            <Label
+              htmlFor="business_email"
+              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+            >
+              Business Email <span className="text-industrial-orange">*</span>
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-industrial-graphite-400" />
               <Input
                 id="business_email"
                 type="email"
@@ -222,16 +247,19 @@ export function ClaimRequestForm({
             {errors.business_email && (
               <p
                 id="business-email-error"
-                className="text-sm text-destructive"
+                className="font-body text-sm text-industrial-orange"
                 role="alert"
               >
                 {errors.business_email.message}
               </p>
             )}
             {!errors.business_email && emailDomainWarning && agencyWebsite && (
-              <Alert id="email-domain-warning" variant="default">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+              <Alert
+                id="email-domain-warning"
+                className="border-industrial-orange-200 bg-industrial-orange-100"
+              >
+                <AlertCircle className="h-4 w-4 text-industrial-orange" />
+                <AlertDescription className="font-body text-industrial-graphite-600">
                   Your email domain doesn&apos;t match the agency website (
                   {agencyWebsite}). This may require additional verification.
                 </AlertDescription>
@@ -241,11 +269,14 @@ export function ClaimRequestForm({
 
           {/* Phone Number */}
           <div className="space-y-2">
-            <Label htmlFor="phone_number">
-              Phone Number <span className="text-destructive">*</span>
+            <Label
+              htmlFor="phone_number"
+              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+            >
+              Phone Number <span className="text-industrial-orange">*</span>
             </Label>
             <div className="relative">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Phone className="absolute left-3 top-3 h-4 w-4 text-industrial-graphite-400" />
               <Input
                 id="phone_number"
                 type="tel"
@@ -263,14 +294,17 @@ export function ClaimRequestForm({
             {errors.phone_number && (
               <p
                 id="phone-error"
-                className="text-sm text-destructive"
+                className="font-body text-sm text-industrial-orange"
                 role="alert"
               >
                 {errors.phone_number.message}
               </p>
             )}
             {!errors.phone_number && (
-              <p id="phone-hint" className="text-sm text-muted-foreground">
+              <p
+                id="phone-hint"
+                className="font-body text-xs text-industrial-graphite-400"
+              >
                 Use international format: +1-555-123-4567
               </p>
             )}
@@ -278,8 +312,11 @@ export function ClaimRequestForm({
 
           {/* Position/Title */}
           <div className="space-y-2">
-            <Label htmlFor="position_title">
-              Position/Title <span className="text-destructive">*</span>
+            <Label
+              htmlFor="position_title"
+              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+            >
+              Position/Title <span className="text-industrial-orange">*</span>
             </Label>
             <Input
               id="position_title"
@@ -296,7 +333,7 @@ export function ClaimRequestForm({
             {errors.position_title && (
               <p
                 id="position-error"
-                className="text-sm text-destructive"
+                className="font-body text-sm text-industrial-orange"
                 role="alert"
               >
                 {errors.position_title.message}
@@ -306,9 +343,9 @@ export function ClaimRequestForm({
 
           {/* Verification Method */}
           <div className="space-y-3">
-            <Label>
+            <Label className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide">
               Preferred Verification Method{' '}
-              <span className="text-destructive">*</span>
+              <span className="text-industrial-orange">*</span>
             </Label>
             <Controller
               name="verification_method"
@@ -319,22 +356,32 @@ export function ClaimRequestForm({
                   onValueChange={field.onChange}
                   aria-label="Verification method"
                   disabled={loading}
+                  className="space-y-2"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="email" id="verify-email" />
-                    <Label htmlFor="verify-email" className="font-normal">
+                    <Label
+                      htmlFor="verify-email"
+                      className="font-body font-normal text-industrial-graphite-600"
+                    >
                       Email Domain Verification
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="phone" id="verify-phone" />
-                    <Label htmlFor="verify-phone" className="font-normal">
+                    <Label
+                      htmlFor="verify-phone"
+                      className="font-body font-normal text-industrial-graphite-600"
+                    >
                       Phone Verification
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="manual" id="verify-manual" />
-                    <Label htmlFor="verify-manual" className="font-normal">
+                    <Label
+                      htmlFor="verify-manual"
+                      className="font-body font-normal text-industrial-graphite-600"
+                    >
                       Manual Review
                     </Label>
                   </div>
@@ -342,7 +389,10 @@ export function ClaimRequestForm({
               )}
             />
             {errors.verification_method && (
-              <p className="text-sm text-destructive" role="alert">
+              <p
+                className="font-body text-sm text-industrial-orange"
+                role="alert"
+              >
                 {errors.verification_method.message}
               </p>
             )}
@@ -350,9 +400,14 @@ export function ClaimRequestForm({
 
           {/* Additional Notes */}
           <div className="space-y-2">
-            <Label htmlFor="additional_notes">
+            <Label
+              htmlFor="additional_notes"
+              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+            >
               Additional Notes{' '}
-              <span className="text-muted-foreground">(Optional)</span>
+              <span className="text-industrial-graphite-400 normal-case">
+                (Optional)
+              </span>
             </Label>
             <Textarea
               id="additional_notes"
@@ -370,14 +425,17 @@ export function ClaimRequestForm({
             {errors.additional_notes && (
               <p
                 id="notes-error"
-                className="text-sm text-destructive"
+                className="font-body text-sm text-industrial-orange"
                 role="alert"
               >
                 {errors.additional_notes.message}
               </p>
             )}
             {!errors.additional_notes && (
-              <p id="notes-hint" className="text-sm text-muted-foreground">
+              <p
+                id="notes-hint"
+                className="font-body text-xs text-industrial-graphite-400"
+              >
                 Max 1000 characters
               </p>
             )}
@@ -385,10 +443,14 @@ export function ClaimRequestForm({
 
           {/* Error Alert */}
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+            <Alert className="border-industrial-orange bg-industrial-orange-100">
+              <AlertCircle className="h-4 w-4 text-industrial-orange" />
+              <AlertTitle className="font-display uppercase text-industrial-graphite-600">
+                Error
+              </AlertTitle>
+              <AlertDescription className="font-body text-industrial-graphite-600">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
 

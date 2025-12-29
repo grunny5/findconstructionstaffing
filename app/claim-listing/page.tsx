@@ -92,53 +92,55 @@ export default function ClaimListingPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-industrial-bg-primary">
         <Header />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-2xl mx-auto text-center">
-            <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="bg-industrial-orange-100 w-16 h-16 rounded-industrial-sharp flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="h-8 w-8 text-industrial-orange" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="font-display text-3xl lg:text-4xl text-industrial-graphite-600 uppercase tracking-wide mb-4">
               Claim Request Submitted!
             </h1>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="font-body text-lg text-industrial-graphite-500 mb-8">
               Your claim request has been received and is under review.
               We&apos;ll contact you within 2 business days to verify your
               ownership.
             </p>
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <h3 className="font-semibold text-lg mb-4">What happens next?</h3>
+            <div className="bg-industrial-bg-card rounded-industrial-sharp p-6 border border-industrial-graphite-200">
+              <h3 className="font-display text-xl uppercase text-industrial-graphite-600 mb-4">
+                What happens next?
+              </h3>
               <div className="text-left space-y-3">
                 <div className="flex items-start space-x-3">
-                  <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">
+                  <div className="bg-industrial-orange-100 w-6 h-6 rounded-industrial-sharp flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sm font-semibold text-industrial-orange">
                       1
                     </span>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="font-body text-industrial-graphite-500">
                     Our team will verify your email domain matches the agency
                     website
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">
+                  <div className="bg-industrial-orange-100 w-6 h-6 rounded-industrial-sharp flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sm font-semibold text-industrial-orange">
                       2
                     </span>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="font-body text-industrial-graphite-500">
                     We&apos;ll contact you via email to confirm your identity
                     and role
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">
+                  <div className="bg-industrial-orange-100 w-6 h-6 rounded-industrial-sharp flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sm font-semibold text-industrial-orange">
                       3
                     </span>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="font-body text-industrial-graphite-500">
                     Once verified, you&apos;ll receive login credentials to
                     manage your listing
                   </p>
@@ -156,17 +158,20 @@ export default function ClaimListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-industrial-bg-primary">
       <Header />
 
-      {/* Hero Section */}
-      <section className="construction-hero py-16 text-white">
+      {/* Hero Section - Industrial Design */}
+      <section className="bg-industrial-graphite-600 py-16 border-b-4 border-industrial-orange">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <h1
+              className="font-display text-white uppercase tracking-wide mb-6"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)' }}
+            >
               Claim Your Agency Listing
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+            <p className="font-body text-xl md:text-2xl text-industrial-graphite-200">
               Take control of your profile and start receiving qualified leads
             </p>
           </div>
@@ -177,27 +182,35 @@ export default function ClaimListingPage() {
       <section className="py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            <Alert className="mb-8">
-              <Building2 className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Free to claim:</strong> All agency listings are free.
-                Once verified, you&apos;ll be able to edit your profile, manage
-                leads, and enhance your visibility to potential clients.
+            <Alert className="mb-8 border-industrial-graphite-200 bg-industrial-bg-card">
+              <Building2 className="h-4 w-4 text-industrial-orange" />
+              <AlertDescription className="font-body text-industrial-graphite-500">
+                <strong className="text-industrial-graphite-600">
+                  Free to claim:
+                </strong>{' '}
+                All agency listings are free. Once verified, you&apos;ll be able
+                to edit your profile, manage leads, and enhance your visibility
+                to potential clients.
               </AlertDescription>
             </Alert>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Agency Search */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Search className="h-5 w-5" />
+              <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
+                <CardHeader className="border-b border-industrial-graphite-200">
+                  <CardTitle className="flex items-center space-x-2 font-display text-xl uppercase text-industrial-graphite-600">
+                    <Search className="h-5 w-5 text-industrial-orange" />
                     <span>Find Your Agency</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-6">
                   <div className="space-y-2">
-                    <Label htmlFor="search">Search for your agency</Label>
+                    <Label
+                      htmlFor="search"
+                      className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                    >
+                      Search for your agency
+                    </Label>
                     <Input
                       id="search"
                       value={searchTerm}
@@ -212,24 +225,26 @@ export default function ClaimListingPage() {
                         filteredAgencies.map((agency, index) => (
                           <div
                             key={index}
-                            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                            className={`p-4 border-2 rounded-industrial-sharp cursor-pointer transition-colors ${
                               selectedAgency?.name === agency.name
-                                ? 'border-primary bg-primary/5'
-                                : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-industrial-orange bg-industrial-orange-100'
+                                : 'border-industrial-graphite-200 hover:border-industrial-graphite-300'
                             }`}
                             onClick={() => selectAgency(agency)}
                           >
                             <div className="flex justify-between items-start">
                               <div>
-                                <h4 className="font-semibold">{agency.name}</h4>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <h4 className="font-display text-lg uppercase text-industrial-graphite-600">
+                                  {agency.name}
+                                </h4>
+                                <p className="font-body text-sm text-industrial-graphite-400 mt-1">
                                   {agency.regions.join(', ')}
                                 </p>
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {agency.trades.slice(0, 3).map((trade, i) => (
                                     <Badge
                                       key={i}
-                                      variant="outline"
+                                      variant="secondary"
                                       className="text-xs"
                                     >
                                       {trade}
@@ -244,12 +259,12 @@ export default function ClaimListingPage() {
                           </div>
                         ))
                       ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <Building2 className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                          <p>
+                        <div className="text-center py-8 text-industrial-graphite-400">
+                          <Building2 className="h-8 w-8 mx-auto mb-2 text-industrial-graphite-300" />
+                          <p className="font-body">
                             No agencies found matching &quot;{searchTerm}&quot;
                           </p>
-                          <p className="text-sm mt-1">
+                          <p className="font-body text-sm mt-1">
                             Can&apos;t find your agency? Contact us to get it
                             added.
                           </p>
@@ -259,71 +274,97 @@ export default function ClaimListingPage() {
                   )}
 
                   {!searchTerm && (
-                    <div className="text-center py-8 text-gray-500">
-                      <Search className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                      <p>Start typing to search for your agency</p>
+                    <div className="text-center py-8 text-industrial-graphite-400">
+                      <Search className="h-8 w-8 mx-auto mb-2 text-industrial-graphite-300" />
+                      <p className="font-body">
+                        Start typing to search for your agency
+                      </p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               {/* Claim Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Mail className="h-5 w-5" />
+              <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
+                <CardHeader className="border-b border-industrial-graphite-200">
+                  <CardTitle className="flex items-center space-x-2 font-display text-xl uppercase text-industrial-graphite-600">
+                    <Mail className="h-5 w-5 text-industrial-orange" />
                     <span>Claim Request</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="agencyName">Agency Name *</Label>
+                      <Label
+                        htmlFor="agencyName"
+                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                      >
+                        Agency Name{' '}
+                        <span className="text-industrial-orange">*</span>
+                      </Label>
                       <Input
                         id="agencyName"
                         {...register('agencyName')}
                         placeholder="Your agency name"
                         readOnly={!!selectedAgency}
-                        className={selectedAgency ? 'bg-gray-50' : ''}
+                        className={
+                          selectedAgency ? 'bg-industrial-graphite-100' : ''
+                        }
                       />
                       {errors.agencyName && (
-                        <p className="text-sm text-red-600">
+                        <p className="font-body text-sm text-industrial-orange">
                           {errors.agencyName.message}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="contactName">Your Name *</Label>
+                      <Label
+                        htmlFor="contactName"
+                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                      >
+                        Your Name{' '}
+                        <span className="text-industrial-orange">*</span>
+                      </Label>
                       <Input
                         id="contactName"
                         {...register('contactName')}
                         placeholder="Your full name"
                       />
                       {errors.contactName && (
-                        <p className="text-sm text-red-600">
+                        <p className="font-body text-sm text-industrial-orange">
                           {errors.contactName.message}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="jobTitle">Job Title *</Label>
+                      <Label
+                        htmlFor="jobTitle"
+                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                      >
+                        Job Title{' '}
+                        <span className="text-industrial-orange">*</span>
+                      </Label>
                       <Input
                         id="jobTitle"
                         {...register('jobTitle')}
                         placeholder="e.g., Owner, President, HR Director"
                       />
                       {errors.jobTitle && (
-                        <p className="text-sm text-red-600">
+                        <p className="font-body text-sm text-industrial-orange">
                           {errors.jobTitle.message}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="contactEmail">
-                        Business Email Address *
+                      <Label
+                        htmlFor="contactEmail"
+                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                      >
+                        Business Email Address{' '}
+                        <span className="text-industrial-orange">*</span>
                       </Label>
                       <Input
                         id="contactEmail"
@@ -332,19 +373,23 @@ export default function ClaimListingPage() {
                         placeholder="your.email@yourcompany.com"
                       />
                       {errors.contactEmail && (
-                        <p className="text-sm text-red-600">
+                        <p className="font-body text-sm text-industrial-orange">
                           {errors.contactEmail.message}
                         </p>
                       )}
-                      <p className="text-xs text-gray-500">
+                      <p className="font-body text-xs text-industrial-graphite-400">
                         Email domain should match your agency website for faster
                         verification
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="verificationDetails">
-                        Verification Details *
+                      <Label
+                        htmlFor="verificationDetails"
+                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                      >
+                        Verification Details{' '}
+                        <span className="text-industrial-orange">*</span>
                       </Label>
                       <Textarea
                         id="verificationDetails"
@@ -353,15 +398,15 @@ export default function ClaimListingPage() {
                         rows={4}
                       />
                       {errors.verificationDetails && (
-                        <p className="text-sm text-red-600">
+                        <p className="font-body text-sm text-industrial-orange">
                           {errors.verificationDetails.message}
                         </p>
                       )}
                     </div>
 
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
+                    <Alert className="border-industrial-graphite-200 bg-industrial-graphite-100">
+                      <AlertCircle className="h-4 w-4 text-industrial-graphite-500" />
+                      <AlertDescription className="font-body text-industrial-graphite-500">
                         We&apos;ll verify your claim within 2 business days. If
                         your email domain matches the agency website,
                         verification will be automatic. Otherwise, we may

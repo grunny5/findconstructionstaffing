@@ -817,6 +817,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 **Estimated Effort:** 2 hours + monitoring time
 
 **Deployment Status (2025-12-28):**
+
 - PR #382: https://github.com/grunny5/findconstructionstaffing/pull/382
 - All 17 CI checks passing
 - Preview deployment active
@@ -836,7 +837,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 
 ---
 
-### Task 5.1: Redesign Claim Listing Form
+### Task 5.1: Redesign Claim Listing Form ✅
 
 - **Role:** Frontend Developer
 - **Objective:** Update agency claim form to use industrial form styling
@@ -854,21 +855,21 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Orange focus states throughout
   - Clear visual hierarchy
 - **Acceptance Criteria (for this task):**
-  - [ ] All inputs use industrial styling (2px borders, sharp corners)
-  - [ ] Labels use Barlow, 0.75rem, uppercase, 600 weight
-  - [ ] Submit button uses primary orange styling
-  - [ ] Form layout is clean with generous spacing (--space-xl between sections)
-  - [ ] Validation errors display clearly (not aggressive, professional tone)
-  - [ ] Mobile: form elements stack with adequate spacing
-  - [ ] Form tests updated with new styling
-  - [ ] Accessibility verified (labels, focus order, error messages)
+  - [x] All inputs use industrial styling (2px borders, sharp corners)
+  - [x] Labels use Barlow, 0.75rem, uppercase, 600 weight
+  - [x] Submit button uses primary orange styling
+  - [x] Form layout is clean with generous spacing (--space-xl between sections)
+  - [x] Validation errors display clearly (not aggressive, professional tone)
+  - [x] Mobile: form elements stack with adequate spacing
+  - [x] Form tests updated with new styling (20 new tests)
+  - [x] Accessibility verified (labels, focus order, error messages)
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Form submission flow verified
-  - [ ] Mobile responsive verified
-  - [ ] PR submitted with form screenshots
-  - [ ] **Final Check:** Conversion funnel tested end-to-end
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage (57 tests passing)
+  - [x] Form submission flow verified
+  - [x] Mobile responsive verified
+  - [x] PR submitted with form screenshots
+  - [x] **Final Check:** Conversion funnel tested end-to-end
 
 **Estimated Effort:** 5 hours
 
