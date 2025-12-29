@@ -552,23 +552,23 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Orange-400 focus state
   - Adequate padding for touch targets
 - **Acceptance Criteria (for this task):**
-  - [ ] Border: 2px solid graphite-300
-  - [ ] Border-radius: 2px
-  - [ ] Padding: 0.875rem 1rem (vertical, horizontal)
-  - [ ] Font: Barlow, 1rem
-  - [ ] Focus: outline none, border-color orange-400
-  - [ ] Background: --bg-card (white)
-  - [ ] Transition: border-color 0.2s ease
-  - [ ] Placeholder text: graphite-400
-  - [ ] Maintain existing input API (types, validation states, etc.)
-  - [ ] Component tests cover focus, blur, and validation states
+  - [x] Border: 2px solid graphite-300
+  - [x] Border-radius: 2px
+  - [x] Padding: 0.875rem 1rem (vertical, horizontal)
+  - [x] Font: Barlow, 1rem
+  - [x] Focus: outline none, border-color orange-400
+  - [x] Background: --bg-card (white)
+  - [x] Transition: border-color 0.2s ease
+  - [x] Placeholder text: graphite-400
+  - [x] Maintain existing input API (types, validation states, etc.)
+  - [x] Component tests cover focus, blur, and validation states
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Accessibility verified (focus indicators, labels)
-  - [ ] All input types verified (text, email, password, etc.)
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Accessibility verified (focus indicators, labels)
+  - [x] All input types verified (text, email, password, etc.)
   - [ ] PR submitted with input state examples
-  - [ ] **Final Check:** Focus states meet WCAG 2.1 AA
+  - [x] **Final Check:** Focus states meet WCAG 2.1 AA
 
 **Estimated Effort:** 3 hours
 
