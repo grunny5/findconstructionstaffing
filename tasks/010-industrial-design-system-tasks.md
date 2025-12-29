@@ -512,24 +512,24 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Secondary: transparent background, 2px graphite-400 border
   - 0.2s ease transitions (no bounce)
 - **Acceptance Criteria (for this task):**
-  - [ ] Border-radius: 2px for all button variants
-  - [ ] Text: Barlow, 0.875rem, uppercase, 600 weight, letter-spacing 0.05em
-  - [ ] Padding: 1rem vertical, 2rem horizontal
-  - [ ] Primary button: orange-400 background, white text
-  - [ ] Primary hover: orange-500 background
-  - [ ] Secondary button: transparent bg, 2px graphite-400 border, graphite-500 text
-  - [ ] Secondary hover: graphite-600 border and text
-  - [ ] Transition: all 0.2s ease
-  - [ ] Disabled state: reduced opacity, no pointer events
-  - [ ] Maintain existing button API (size variants, loading states, etc.)
-  - [ ] Component tests cover all variants and states
+  - [x] Border-radius: 2px for all button variants
+  - [x] Text: Barlow, 0.875rem, uppercase, 600 weight, letter-spacing 0.05em
+  - [x] Padding: 1rem vertical, 2rem horizontal
+  - [x] Primary button: orange-400 background, white text
+  - [x] Primary hover: orange-500 background
+  - [x] Secondary button: transparent bg, 2px graphite-400 border, graphite-500 text
+  - [x] Secondary hover: graphite-600 border and text
+  - [x] Transition: all 0.2s ease
+  - [x] Disabled state: reduced opacity, no pointer events
+  - [x] Maintain existing button API (size variants, loading states, etc.)
+  - [x] Component tests cover all variants and states
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] All button variants verified visually
-  - [ ] No regressions in existing button usage
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] All button variants verified visually
+  - [x] No regressions in existing button usage
   - [ ] PR submitted with button variant showcase
-  - [ ] **Final Check:** Maintains Shadcn component API
+  - [x] **Final Check:** Maintains Shadcn component API
 
 **Estimated Effort:** 4 hours
 
