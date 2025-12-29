@@ -58,7 +58,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.2: Create Admin Agencies API Endpoint (GET)
+### [x] Task 1.1.2: Create Admin Agencies API Endpoint (GET)
 
 - **Role:** Backend Developer
 - **Objective:** Create API endpoint to fetch all agencies with admin-level data
@@ -75,17 +75,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Supabase RLS policies
   - Zod validation for query params
 - **Acceptance Criteria (for this task):**
-  - [ ] `GET /api/admin/agencies` returns all agencies (active and inactive)
-  - [ ] Response includes: id, name, slug, is_active, is_claimed, claimed_by (with profile), created_at, profile_completion_percentage
-  - [ ] Supports query params: search, status (active/inactive/all), claimed (yes/no/all), limit, offset
-  - [ ] Returns 401 if user is not authenticated
-  - [ ] Returns 403 if user is not an admin
-  - [ ] Pagination info included in response
+  - [x] `GET /api/admin/agencies` returns all agencies (active and inactive)
+  - [x] Response includes: id, name, slug, is_active, is_claimed, claimed_by (with profile), created_at, profile_completion_percentage
+  - [x] Supports query params: search, status (active/inactive/all), claimed (yes/no/all), limit, offset
+  - [x] Returns 401 if user is not authenticated
+  - [x] Returns 403 if user is not an admin
+  - [x] Pagination info included in response
 - **Definition of Done:**
-  - [ ] Endpoint functional with all query params
-  - [ ] Unit tests cover success, auth errors, query variations
-  - [ ] 85%+ test coverage for new code
-  - [ ] **Final Check:** Follows existing API patterns
+  - [x] Endpoint functional with all query params
+  - [x] Unit tests cover success, auth errors, query variations
+  - [x] 85%+ test coverage for new code
+  - [x] **Final Check:** Follows existing API patterns
 
 **Estimated Effort:** 3 hours
 
