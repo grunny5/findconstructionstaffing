@@ -493,7 +493,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.5: Create Bulk Import Execution Endpoint
+### [x] Task 2.2.5: Create Bulk Import Execution Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Execute bulk import for validated rows
@@ -507,20 +507,20 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Create trade/region associations
   - Return detailed results
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies/bulk-import` accepts array of validated agency objects
-  - [ ] Creates agencies in database transaction
-  - [ ] Auto-generates unique slugs for each agency
-  - [ ] Creates agency_trades relationships for valid trades
-  - [ ] Creates agency_regions relationships for valid regions
-  - [ ] Skips rows with duplicate names (marks as skipped in results)
-  - [ ] Returns results: created[], skipped[], failed[]
-  - [ ] Rolls back entire transaction on critical error
-  - [ ] Sets is_active=true, is_claimed=false for all created agencies
+  - [x] `POST /api/admin/agencies/bulk-import` accepts array of validated agency objects
+  - [x] Creates agencies in database transaction
+  - [x] Auto-generates unique slugs for each agency
+  - [x] Creates agency_trades relationships for valid trades
+  - [x] Creates agency_regions relationships for valid regions
+  - [x] Skips rows with duplicate names (marks as skipped in results)
+  - [x] Returns results: created[], skipped[], failed[]
+  - [x] Rolls back entire transaction on critical error
+  - [x] Sets is_active=true, is_claimed=false for all created agencies
 - **Definition of Done:**
-  - [ ] Bulk import endpoint functional
-  - [ ] Tests cover success, partial success, rollback scenarios
-  - [ ] Tests verify trade/region associations created
-  - [ ] **Final Check:** Handles 500+ rows in reasonable time (<30s)
+  - [x] Bulk import endpoint functional
+  - [x] Tests cover success, partial success, rollback scenarios
+  - [x] Tests verify trade/region associations created
+  - [x] **Final Check:** Handles 500+ rows in reasonable time (<30s)
 
 **Estimated Effort:** 5 hours
 
