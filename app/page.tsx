@@ -22,14 +22,10 @@ import { createSlug } from '@/lib/utils/formatting';
 import {
   Building2,
   Users,
-  Target,
-  Clock,
   ArrowRight,
   Filter,
   Search,
   MapPin,
-  Star,
-  TrendingUp,
   Award,
   Briefcase,
   Zap,
@@ -571,69 +567,6 @@ function HomePageContent() {
             </Button>
           </div>
         )}
-      </section>
-
-      {/* Trust Indicators Section */}
-      <section className="py-20 bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-6">
-              Why Construction Leaders Trust Our Directory
-            </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              We&apos;ve helped thousands of projects connect with the right
-              staffing partners across all major construction sectors
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/25">
-                <Target className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">
-                Verified Specialists
-              </h3>
-              <p className="text-slate-600">
-                Every agency is vetted for construction and industrial expertise
-                with proven track records
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/25">
-                <Clock className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">Fast Response</h3>
-              <p className="text-slate-600">
-                Verified agencies respond to requests within 24 hours with
-                qualified candidates
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-500/25">
-                <Star className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">Quality Matches</h3>
-              <p className="text-slate-600">
-                Advanced filtering ensures perfect recruiting partnerships for
-                your specific needs
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/25">
-                <TrendingUp className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="font-semibold text-xl mb-3">Proven Results</h3>
-              <p className="text-slate-600">
-                Track record of successful placements across all trades and
-                project types
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* CTA Section */}
