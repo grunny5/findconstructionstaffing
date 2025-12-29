@@ -309,7 +309,10 @@ describe('Tabs Components', () => {
       const content = screen.getByRole('tabpanel');
 
       const controlsId = tab1.getAttribute('aria-controls');
-      expect(content).toHaveAttribute('id', controlsId);
+      expect(controlsId).toBeTruthy();
+      if (controlsId) {
+        expect(content).toHaveAttribute('id', controlsId);
+      }
     });
   });
 
