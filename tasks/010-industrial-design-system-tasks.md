@@ -155,19 +155,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Include do's and don'ts from FSD
   - Link to Figma/design files (or note "CSS specs only")
 - **Acceptance Criteria (for this task):**
-  - [ ] Color palette documented with hex values and use cases
-  - [ ] Typography scale documented with font sizes and line heights
-  - [ ] Spacing scale documented with rem/px equivalents
-  - [ ] Component guidelines documented (buttons, cards, inputs)
-  - [ ] Code examples provided for common patterns
-  - [ ] Do's and Don'ts section copied from FSD Appendix A
-  - [ ] TypeScript constants exported for programmatic use
+  - [x] Color palette documented with hex values and use cases
+  - [x] Typography scale documented with font sizes and line heights
+  - [x] Spacing scale documented with rem/px equivalents
+  - [x] Component guidelines documented (buttons, cards, inputs)
+  - [x] Code examples provided for common patterns
+  - [x] Do's and Don'ts section copied from FSD Appendix A
+  - [x] TypeScript constants exported for programmatic use
 - **Definition of Done:**
-  - [ ] Documentation complete and reviewed
-  - [ ] TypeScript constants pass type checking
-  - [ ] README includes visual examples (code snippets)
+  - [x] Documentation complete and reviewed
+  - [x] TypeScript constants pass type checking
+  - [x] README includes visual examples (code snippets)
   - [ ] PR submitted for team review
-  - [ ] **Final Check:** Documentation follows project standards
+  - [x] **Final Check:** Documentation follows project standards
 
 **Estimated Effort:** 3 hours
 
