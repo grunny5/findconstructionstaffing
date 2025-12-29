@@ -61,10 +61,10 @@ export default function Header() {
             </div>
             <div>
               <span className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
-                Construction
+                Find Construction
               </span>
               <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400">
-                Recruiter Directory
+                Staffing
               </div>
             </div>
           </Link>
@@ -205,10 +205,10 @@ export default function Header() {
                   </div>
                   <div>
                     <span className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
-                      Construction
+                      Find Construction
                     </span>
                     <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-400">
-                      Recruiter Directory
+                      Staffing
                     </div>
                   </div>
                 </div>

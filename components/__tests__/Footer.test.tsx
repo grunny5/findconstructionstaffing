@@ -8,7 +8,7 @@ describe('Footer', () => {
 
     const currentYear = new Date().getFullYear();
     const copyrightText = screen.getByText(
-      new RegExp(`© ${currentYear} Construction Recruiter Directory`, 'i')
+      new RegExp(`© ${currentYear} Find Construction Staffing`, 'i')
     );
     expect(copyrightText).toBeInTheDocument();
   });
@@ -16,8 +16,8 @@ describe('Footer', () => {
   it('should render brand section with logo and description', () => {
     render(<Footer />);
 
-    expect(screen.getByText('Construction')).toBeInTheDocument();
-    expect(screen.getByText('Recruiter Directory')).toBeInTheDocument();
+    expect(screen.getByText('Find Construction')).toBeInTheDocument();
+    expect(screen.getByText('Staffing')).toBeInTheDocument();
     expect(
       screen.getByText(
         /The premier directory connecting construction professionals/i
@@ -71,7 +71,9 @@ describe('Footer', () => {
   it('should have responsive grid layout', () => {
     render(<Footer />);
 
-    const gridContainer = screen.getByText('Construction').closest('.grid');
+    const gridContainer = screen
+      .getByText('Find Construction')
+      .closest('.grid');
     expect(gridContainer).toHaveClass('grid-cols-1');
     expect(gridContainer).toHaveClass('md:grid-cols-4');
   });
@@ -88,7 +90,7 @@ describe('Footer', () => {
     it('should render logo with Bebas Neue (font-display) styling', () => {
       render(<Footer />);
 
-      const logoText = screen.getByText('Construction');
+      const logoText = screen.getByText('Find Construction');
       expect(logoText).toHaveClass('font-display');
       expect(logoText).toHaveClass('uppercase');
       expect(logoText).toHaveClass('text-2xl');
@@ -111,7 +113,7 @@ describe('Footer', () => {
       render(<Footer />);
 
       const logoContainer = screen
-        .getByText('Construction')
+        .getByText('Find Construction')
         .closest('.flex')
         ?.querySelector('.rounded-industrial-sharp');
       expect(logoContainer).toBeInTheDocument();

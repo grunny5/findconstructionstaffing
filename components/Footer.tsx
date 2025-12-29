@@ -14,10 +14,10 @@ export default function Footer() {
               </div>
               <div>
                 <span className="font-display text-2xl uppercase tracking-wide text-white">
-                  Construction
+                  Find Construction
                 </span>
                 <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-300">
-                  Recruiter Directory
+                  Staffing
                 </div>
               </div>
             </div>
@@ -102,8 +102,8 @@ export default function Footer() {
 
         <div className="border-t-2 border-industrial-graphite-500 mt-16 pt-8 text-center">
           <p className="font-body text-sm text-industrial-graphite-400">
-            &copy; {new Date().getFullYear()} Construction Recruiter Directory.
-            All rights reserved.
+            &copy; {new Date().getFullYear()} Find Construction Staffing. All
+            rights reserved.
           </p>
         </div>
       </div>

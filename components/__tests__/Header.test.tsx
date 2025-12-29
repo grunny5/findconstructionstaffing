@@ -139,8 +139,8 @@ describe('Header', () => {
     render(<Header />);
 
     // There are multiple instances of these texts (desktop and mobile)
-    expect(screen.getAllByText('Construction')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('Recruiter Directory')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Find Construction')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Staffing')[0]).toBeInTheDocument();
   });
 
   it('should render desktop navigation links', () => {
@@ -242,7 +242,7 @@ describe('Header', () => {
     render(<Header />);
 
     const container = screen
-      .getAllByText('Construction')[0]
+      .getAllByText('Find Construction')[0]
       .closest('.max-w-7xl');
     expect(container).toHaveClass('mx-auto');
   });
@@ -251,7 +251,7 @@ describe('Header', () => {
     it('should render logo with Bebas Neue (font-display) styling', () => {
       render(<Header />);
 
-      const logoText = screen.getAllByText('Construction')[0];
+      const logoText = screen.getAllByText('Find Construction')[0];
       expect(logoText).toHaveClass('font-display');
       expect(logoText).toHaveClass('uppercase');
       expect(logoText).toHaveClass('text-2xl');
@@ -278,7 +278,7 @@ describe('Header', () => {
 
       // Find the logo icon container
       const logoContainer = screen
-        .getAllByText('Construction')[0]
+        .getAllByText('Find Construction')[0]
         .closest('a')
         ?.querySelector('.rounded-industrial-sharp');
       expect(logoContainer).toBeInTheDocument();
