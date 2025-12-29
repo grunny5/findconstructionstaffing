@@ -890,7 +890,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1032,7 +1033,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1077,7 +1079,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1136,13 +1139,12 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: {
               id: 'existing-id',
               name: 'New Staffing Agency',
-              slug: 'new-staffing-agency',
             },
             error: null,
           }),
@@ -1160,7 +1162,10 @@ describe('POST /api/admin/agencies', () => {
       );
     });
 
-    it('should return 409 if slug already exists (different name)', async () => {
+    it('should generate unique slug with -2 suffix when base slug exists', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+      let slugCheckCount = 0;
+
       mockSupabaseClient.from.mockImplementation((table: string) => {
         if (table === 'profiles') {
           return {
@@ -1174,14 +1179,159 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn((field: string, value: string) => {
+            // Track slug check calls
+            if (field === 'slug') {
+              slugCheckCount++;
+              return {
+                limit: jest.fn().mockReturnThis(),
+                maybeSingle: jest.fn().mockResolvedValue({
+                  // First slug check (base slug) returns existing
+                  // Second slug check (slug-2) returns null
+                  data: slugCheckCount === 1 ? { id: 'existing-id' } : null,
+                  error: null,
+                }),
+              };
+            }
+            return {
+              limit: jest.fn().mockReturnThis(),
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            };
+          }),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
-            data: {
-              id: 'existing-id',
-              name: 'Different Name',
-              slug: 'new-staffing-agency',
-            },
+            data: null, // Name doesn't exist
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.slug).toBe('new-staffing-agency-2');
+    });
+
+    it('should generate unique slug with -3 suffix when -2 also exists', async () => {
+      let capturedInsertData: Record<string, unknown> | null = null;
+      let slugCheckCount = 0;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn((field: string, value: string) => {
+            if (field === 'slug') {
+              slugCheckCount++;
+              return {
+                limit: jest.fn().mockReturnThis(),
+                maybeSingle: jest.fn().mockResolvedValue({
+                  // First two slug checks return existing, third returns null
+                  data: slugCheckCount <= 2 ? { id: 'existing-id' } : null,
+                  error: null,
+                }),
+              };
+            }
+            return {
+              limit: jest.fn().mockReturnThis(),
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            };
+          }),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+          insert: jest.fn((data: Record<string, unknown>) => {
+            capturedInsertData = data;
+            return {
+              select: jest.fn().mockReturnThis(),
+              single: jest.fn().mockResolvedValue({
+                data: { ...createdAgency, ...data },
+                error: null,
+              }),
+            };
+          }),
+        };
+      });
+
+      const request = createPostRequest(validAgencyData);
+      const response = await POST(request);
+
+      expect(response.status).toBe(HTTP_STATUS.CREATED);
+      expect(capturedInsertData).not.toBeNull();
+      expect(capturedInsertData!.slug).toBe('new-staffing-agency-3');
+    });
+
+    it('should return 409 after max slug attempts exhausted', async () => {
+      let slugCheckCount = 0;
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn((field: string) => {
+            if (field === 'slug') {
+              slugCheckCount++;
+              return {
+                limit: jest.fn().mockReturnThis(),
+                maybeSingle: jest.fn().mockResolvedValue({
+                  // All slug checks return existing (simulate all 5 attempts failing)
+                  data: { id: 'existing-id' },
+                  error: null,
+                }),
+              };
+            }
+            return {
+              limit: jest.fn().mockReturnThis(),
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            };
+          }),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: null,
             error: null,
           }),
         };
@@ -1192,7 +1342,8 @@ describe('POST /api/admin/agencies', () => {
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.CONFLICT);
-      expect(data.error.message).toContain('slug conflict');
+      expect(data.error.message).toContain('Unable to generate unique slug');
+      expect(slugCheckCount).toBe(5); // base + -2, -3, -4, -5
     });
 
     it('should handle unique constraint violation during insert', async () => {
@@ -1209,7 +1360,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1264,7 +1416,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1310,7 +1463,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1363,7 +1517,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1407,7 +1562,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1467,7 +1623,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
@@ -1499,7 +1656,8 @@ describe('POST /api/admin/agencies', () => {
         }
         return {
           select: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
+          ilike: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,

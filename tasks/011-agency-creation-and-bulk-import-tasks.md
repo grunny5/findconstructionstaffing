@@ -20,7 +20,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 > As a **Site Administrator**, I want **to view all agencies (claimed and unclaimed) in a management interface**, so that **I can monitor the agency database and take administrative actions**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 1.1:
 
 ---
 
@@ -149,11 +149,11 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 1.2: Admin Creates Individual Agency
+### [x] ➡️ Story 1.2: Admin Creates Individual Agency
 
 > As a **Site Administrator**, I want **to create a new agency through the admin dashboard**, so that **I can add agencies discovered through research or outreach without direct database access**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 1.2:
 
 ---
 
@@ -261,7 +261,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.4: Implement Slug Generation with Uniqueness Check
+### [x] Task 1.2.4: Implement Slug Generation with Uniqueness Check
 
 - **Role:** Backend Developer
 - **Objective:** Ensure generated slugs are unique, appending numbers if needed
@@ -274,15 +274,15 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Atomic slug generation with database check
   - Append incrementing number for duplicates
 - **Acceptance Criteria (for this task):**
-  - [ ] Slug generated from agency name (lowercase, hyphens)
-  - [ ] If slug exists, append "-2", "-3", etc.
-  - [ ] Maximum 5 attempts before failing with error
-  - [ ] Slug stored in database with agency
+  - [x] Slug generated from agency name (lowercase, hyphens)
+  - [x] If slug exists, append "-2", "-3", etc.
+  - [x] Maximum 5 attempts before failing with error
+  - [x] Slug stored in database with agency
 - **Definition of Done:**
-  - [ ] Slug generation with uniqueness check implemented
-  - [ ] Tests verify duplicate handling
-  - [ ] Tests verify edge cases (special characters, long names)
-  - [ ] **Final Check:** Uses existing createSlug utility
+  - [x] Slug generation with uniqueness check implemented
+  - [x] Tests verify duplicate handling
+  - [x] Tests verify edge cases (special characters, long names)
+  - [x] **Final Check:** Uses existing createSlug utility
 
 **Estimated Effort:** 2 hours
 
@@ -300,7 +300,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 > As a **Site Administrator**, I want **to download a CSV template with the correct column headers**, so that **I can prepare bulk import data in the correct format**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 2.1:
 
 ---
 
@@ -362,7 +362,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 > As a **Site Administrator**, I want **to upload a CSV file containing multiple agencies**, so that **I can quickly populate the database with data from external sources**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 2.2:
 
 ---
 
@@ -559,7 +559,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 > As a **Site Administrator**, I want **the bulk import to create trade and region associations**, so that **imported agencies are fully searchable by specialty and location**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 2.3:
 
 ---
 
@@ -630,7 +630,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 > As a **Site Administrator**, I want **to edit any agency's details**, so that **I can correct errors or update information**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 3.1:
 
 ---
 
@@ -730,7 +730,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 > As a **Site Administrator**, I want **to deactivate or reactivate an agency**, so that **I can remove agencies that are no longer in business or restore accidentally deactivated ones**.
 
-### Engineering Tasks for this Story:
+### Engineering Tasks for Story 3.2:
 
 ---
 

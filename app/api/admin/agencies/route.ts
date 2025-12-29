@@ -17,9 +17,13 @@ import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { z } from 'zod';
 import { createSlug } from '@/lib/utils/formatting';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
+
+// Maximum attempts to find a unique slug before failing
+const MAX_SLUG_ATTEMPTS = 5;
 
 // Query parameter validation schema
 const adminAgenciesQuerySchema = z.object({
@@ -118,6 +122,64 @@ const agencyCreationSchema = z.object({
 });
 
 export type AgencyCreationData = z.infer<typeof agencyCreationSchema>;
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Generate a unique slug for an agency by appending incrementing numbers if needed.
+ *
+ * @param baseSlug - The initial slug generated from the agency name
+ * @param supabase - Supabase client for database queries
+ * @returns The unique slug (either baseSlug or baseSlug-N where N is 2-5)
+ * @throws Error if unable to find a unique slug after MAX_SLUG_ATTEMPTS attempts
+ */
+async function generateUniqueSlug(
+  baseSlug: string,
+  supabase: SupabaseClient
+): Promise<string> {
+  // Try the base slug first
+  const { data: existingWithBase, error: baseError } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('slug', baseSlug)
+    .limit(1)
+    .maybeSingle();
+
+  if (baseError) {
+    throw new Error(`Database error checking slug: ${baseError.message}`);
+  }
+
+  if (!existingWithBase) {
+    return baseSlug;
+  }
+
+  // Base slug exists, try appending -2, -3, etc.
+  for (let i = 2; i <= MAX_SLUG_ATTEMPTS; i++) {
+    const candidateSlug = `${baseSlug}-${i}`;
+
+    const { data: existing, error: checkError } = await supabase
+      .from('agencies')
+      .select('id')
+      .eq('slug', candidateSlug)
+      .limit(1)
+      .maybeSingle();
+
+    if (checkError) {
+      throw new Error(`Database error checking slug: ${checkError.message}`);
+    }
+
+    if (!existing) {
+      return candidateSlug;
+    }
+  }
+
+  // All attempts exhausted
+  throw new Error(
+    `Unable to generate unique slug after ${MAX_SLUG_ATTEMPTS} attempts`
+  );
+}
 
 /**
  * GET handler for fetching all agencies (admin-only)
@@ -459,7 +521,7 @@ export async function POST(request: NextRequest) {
     const data = validationResult.data;
 
     // ========================================================================
-    // 4. GENERATE SLUG FROM NAME
+    // 4. GENERATE BASE SLUG FROM NAME
     // ========================================================================
     const baseSlug = createSlug(data.name);
 
@@ -476,12 +538,12 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================================
-    // 5. CHECK FOR DUPLICATE NAME OR SLUG
+    // 5. CHECK FOR DUPLICATE NAME
     // ========================================================================
     const { data: existingAgency, error: checkError } = await supabase
       .from('agencies')
-      .select('id, name, slug')
-      .or(`name.ilike.${data.name},slug.eq.${baseSlug}`)
+      .select('id, name')
+      .ilike('name', data.name)
       .limit(1)
       .maybeSingle();
 
@@ -499,15 +561,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingAgency) {
-      const isDuplicateName =
-        existingAgency.name.toLowerCase() === data.name.toLowerCase();
       return NextResponse.json(
         {
           error: {
             code: ERROR_CODES.VALIDATION_ERROR,
-            message: isDuplicateName
-              ? 'An agency with this name already exists'
-              : 'An agency with a similar name already exists (slug conflict)',
+            message: 'An agency with this name already exists',
           },
         },
         { status: HTTP_STATUS.CONFLICT }
@@ -515,11 +573,33 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================================
-    // 6. PREPARE AGENCY DATA FOR INSERT
+    // 6. GENERATE UNIQUE SLUG (with incrementing suffix if needed)
+    // ========================================================================
+    let uniqueSlug: string;
+    try {
+      uniqueSlug = await generateUniqueSlug(baseSlug, supabase);
+    } catch (error) {
+      console.error('Error generating unique slug:', error);
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Unable to generate unique slug',
+          },
+        },
+        { status: HTTP_STATUS.CONFLICT }
+      );
+    }
+
+    // ========================================================================
+    // 7. PREPARE AGENCY DATA FOR INSERT
     // ========================================================================
     const agencyData = {
       name: data.name,
-      slug: baseSlug,
+      slug: uniqueSlug,
       description: data.description || null,
       website: data.website || null,
       phone: data.phone || null,
@@ -536,7 +616,7 @@ export async function POST(request: NextRequest) {
     };
 
     // ========================================================================
-    // 7. INSERT AGENCY INTO DATABASE
+    // 8. INSERT AGENCY INTO DATABASE
     // ========================================================================
     const { data: createdAgency, error: insertError } = await supabase
       .from('agencies')
@@ -572,7 +652,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================================
-    // 8. RETURN SUCCESS RESPONSE
+    // 9. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {
