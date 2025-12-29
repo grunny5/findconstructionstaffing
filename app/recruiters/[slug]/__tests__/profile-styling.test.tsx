@@ -42,6 +42,7 @@ function ProfilePage({ agency }: { agency: any }) {
             {/* Logo */}
             <div className="flex-shrink-0">
               {agency.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={agency.logo_url}
                   alt={`${agency.name} logo`}
