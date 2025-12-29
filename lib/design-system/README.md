@@ -373,6 +373,167 @@ Heavy borders for structural emphasis.
 
 ---
 
+## Layout Patterns
+
+### Hero Section
+
+Full-width with graphite background and orange accent border.
+
+```tsx
+<section className="bg-industrial-graphite-600 py-16 border-b-4 border-industrial-orange">
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-4xl mx-auto text-center">
+      <h1
+        className="font-display text-white uppercase tracking-wide mb-6"
+        style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)' }}
+      >
+        Page Title Here
+      </h1>
+      <p className="font-body text-xl md:text-2xl text-industrial-graphite-200">
+        Subtitle or description text
+      </p>
+    </div>
+  </div>
+</section>
+```
+
+### Content Section
+
+```tsx
+<section className="py-12 lg:py-16 bg-industrial-bg-primary">
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 className="font-display text-3xl lg:text-4xl text-industrial-graphite-600 uppercase tracking-wide mb-8">
+      Section Title
+    </h2>
+    {/* Content */}
+  </div>
+</section>
+```
+
+### Card Grid
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {items.map((item) => (
+    <Card
+      key={item.id}
+      className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-base"
+    >
+      {/* Card content */}
+    </Card>
+  ))}
+</div>
+```
+
+### Dashboard Layout
+
+```tsx
+<div className="flex min-h-screen">
+  <aside className="hidden lg:block w-64 bg-industrial-bg-card border-r border-industrial-graphite-200">
+    <nav className="p-4 space-y-1">{/* Nav items */}</nav>
+  </aside>
+  <main className="flex-1 bg-industrial-bg-primary">
+    <div className="p-6 lg:p-8">{/* Content */}</div>
+  </main>
+</div>
+```
+
+---
+
+## Accessibility Guidelines
+
+### Color Contrast (WCAG 2.1 AA)
+
+| Foreground               | Background      | Contrast | Status |
+| ------------------------ | --------------- | -------- | ------ |
+| `graphite-600` (#1A1A1A) | cream (#FAF8F5) | 15.8:1   | AAA    |
+| `graphite-500` (#4A4A4A) | cream (#FAF8F5) | 7.2:1    | AAA    |
+| `graphite-400` (#757575) | white (#FFFFFF) | 4.6:1    | AA     |
+| white (#FFFFFF)          | `graphite-600`  | 15.8:1   | AAA    |
+
+**Note:** `graphite-300` fails WCAG AA (2.81:1) — use `graphite-400` for muted text.
+
+### Focus States
+
+All interactive elements must have visible focus indicators:
+
+```tsx
+// Standard focus ring
+className =
+  'focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2';
+
+// Input focus
+className =
+  'focus:border-industrial-orange focus:ring-1 focus:ring-industrial-orange';
+```
+
+### Touch Targets
+
+Minimum touch target size: **44x44 pixels**
+
+```tsx
+<Button className="min-h-[44px] px-6">Submit</Button>
+```
+
+### Screen Reader Support
+
+```tsx
+// Icon buttons need labels
+<button aria-label="Close menu">
+  <X className="h-4 w-4" />
+  <span className="sr-only">Close</span>
+</button>
+```
+
+---
+
+## Mobile-First Responsive Design
+
+### Breakpoints
+
+| Breakpoint | Min Width | Tailwind | Target Devices           |
+| ---------- | --------- | -------- | ------------------------ |
+| Default    | 0px       | (none)   | Mobile phones            |
+| sm         | 640px     | `sm:`    | Large phones (landscape) |
+| md         | 768px     | `md:`    | Tablets                  |
+| lg         | 1024px    | `lg:`    | Small laptops            |
+| xl         | 1280px    | `xl:`    | Laptops, desktops        |
+| 2xl        | 1400px    | `2xl:`   | Large monitors           |
+
+### Mobile-First Approach
+
+Write base styles for mobile, then add larger breakpoint overrides:
+
+```tsx
+// CORRECT: Mobile-first
+<div className="p-4 md:p-6 lg:p-8">
+  <h1 className="text-2xl md:text-3xl lg:text-4xl">Heading</h1>
+</div>
+```
+
+### Responsive Typography
+
+Use `clamp()` for fluid typography:
+
+```tsx
+<h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}>Responsive Heading</h1>
+```
+
+### Responsive Patterns
+
+```tsx
+// Stack on mobile, side-by-side on desktop
+<div className="flex flex-col lg:flex-row gap-6">
+  <div className="w-full lg:w-1/2">Column 1</div>
+  <div className="w-full lg:w-1/2">Column 2</div>
+</div>
+
+// Hide sidebar on mobile
+<aside className="hidden lg:block w-64">{/* Sidebar */}</aside>
+```
+
+---
+
 ## File Structure
 
 ```plaintext
@@ -392,3 +553,4 @@ lib/design-system/
 - **Font Loading:** `app/layout.tsx` (Bebas Neue, Barlow, Libre Barcode)
 - **Design Specs:** `docs/features/active/ui-update.md`
 - **Feature Spec:** `docs/features/active/010-industrial-design-system.md`
+- **Design Guide:** `docs/design-system/industrial-brutalist-guide.md`
