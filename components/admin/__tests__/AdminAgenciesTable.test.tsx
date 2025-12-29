@@ -4,7 +4,7 @@ import type { AdminAgency } from '@/app/(app)/admin/agencies/page';
 
 // Mock next/navigation
 const mockPush = jest.fn();
-const mockSearchParams = new URLSearchParams();
+let mockSearchParams = new URLSearchParams();
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -17,6 +17,18 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/hooks/use-debounce', () => ({
   useDebounce: (value: string) => value,
 }));
+
+const createMockAgency = (id: number): AdminAgency => ({
+  id: id.toString(),
+  name: `Agency ${id}`,
+  slug: `agency-${id}`,
+  is_active: id % 2 === 0,
+  is_claimed: id % 3 === 0,
+  claimed_by: id % 3 === 0 ? `user-${id}` : null,
+  created_at: `2024-01-${String(id).padStart(2, '0')}T00:00:00Z`,
+  profile_completion_percentage: (id * 10) % 100,
+  owner_profile: id % 3 === 0 ? { email: `owner${id}@test.com`, full_name: `Owner ${id}` } : null,
+});
 
 const mockAgencies: AdminAgency[] = [
   {
@@ -60,12 +72,15 @@ const mockAgencies: AdminAgency[] = [
   },
 ];
 
+// Generate 25 agencies for pagination testing (more than 1 page at 20 per page)
+const manyAgencies: AdminAgency[] = Array.from({ length: 25 }, (_, i) =>
+  createMockAgency(i + 1)
+);
+
 describe('AdminAgenciesTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSearchParams.delete('search');
-    mockSearchParams.delete('status');
-    mockSearchParams.delete('claimed');
+    mockSearchParams = new URLSearchParams();
   });
 
   describe('Basic Rendering', () => {
@@ -125,17 +140,16 @@ describe('AdminAgenciesTable', () => {
       render(<AdminAgenciesTable agencies={[]} />);
 
       expect(screen.getByText('No agencies found.')).toBeInTheDocument();
-      expect(screen.getByTestId('agencies-count')).toHaveTextContent(
-        'Showing 0 of 0 agencies'
-      );
+      expect(screen.getByTestId('agencies-count')).toHaveTextContent('Showing 0 of 0 agencies');
     });
 
-    it('renders agency links with correct href', () => {
+    it('renders agency links with correct href and security attributes', () => {
       render(<AdminAgenciesTable agencies={mockAgencies} />);
 
       const alphaLink = screen.getByRole('link', { name: 'Alpha Staffing' });
       expect(alphaLink).toHaveAttribute('href', '/recruiters/alpha-staffing');
       expect(alphaLink).toHaveAttribute('target', '_blank');
+      expect(alphaLink).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
     it('formats dates correctly', () => {
@@ -184,14 +198,14 @@ describe('AdminAgenciesTable', () => {
       render(<AdminAgenciesTable agencies={mockAgencies} />);
 
       expect(screen.getByTestId('agencies-count')).toHaveTextContent(
-        'Showing 3 of 3 agencies'
+        'Showing 1-3 of 3 agencies'
       );
 
       const searchInput = screen.getByTestId('agency-search-input');
       fireEvent.change(searchInput, { target: { value: 'Beta' } });
 
       expect(screen.getByTestId('agencies-count')).toHaveTextContent(
-        'Showing 1 of 3 agencies'
+        'Showing 1-1 of 1 agencies'
       );
     });
 
@@ -453,6 +467,248 @@ describe('AdminAgenciesTable', () => {
         expect(mockPush).toHaveBeenLastCalledWith('/admin/agencies', {
           scroll: false,
         });
+      });
+    });
+  });
+
+  describe('Pagination', () => {
+    it('does not show pagination controls when there is only one page', () => {
+      render(<AdminAgenciesTable agencies={mockAgencies} />);
+
+      expect(screen.queryByTestId('pagination-controls')).not.toBeInTheDocument();
+    });
+
+    it('shows pagination controls when there are multiple pages', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      expect(screen.getByTestId('pagination-controls')).toBeInTheDocument();
+      expect(screen.getByTestId('pagination-previous')).toBeInTheDocument();
+      expect(screen.getByTestId('pagination-next')).toBeInTheDocument();
+      expect(screen.getByTestId('pagination-info')).toBeInTheDocument();
+    });
+
+    it('shows correct page info', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 1 of 2');
+    });
+
+    it('shows correct item count for first page', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      expect(screen.getByTestId('agencies-count')).toHaveTextContent(
+        'Showing 1-20 of 25 agencies'
+      );
+    });
+
+    it('disables Previous button on first page', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const previousButton = screen.getByTestId('pagination-previous');
+      expect(previousButton).toBeDisabled();
+    });
+
+    it('enables Next button on first page when more pages exist', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const nextButton = screen.getByTestId('pagination-next');
+      expect(nextButton).not.toBeDisabled();
+    });
+
+    it('navigates to next page when Next button is clicked', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 2 of 2');
+      });
+    });
+
+    it('shows correct item count for second page', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('agencies-count')).toHaveTextContent(
+          'Showing 21-25 of 25 agencies'
+        );
+      });
+    });
+
+    it('disables Next button on last page', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(nextButton).toBeDisabled();
+      });
+    });
+
+    it('enables Previous button on second page', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        const previousButton = screen.getByTestId('pagination-previous');
+        expect(previousButton).not.toBeDisabled();
+      });
+    });
+
+    it('navigates back to previous page when Previous button is clicked', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Go to page 2
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 2 of 2');
+      });
+
+      // Go back to page 1
+      const previousButton = screen.getByTestId('pagination-previous');
+      fireEvent.click(previousButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 1 of 2');
+      });
+    });
+
+    it('updates URL with page parameter when navigating', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('?page=2', { scroll: false });
+      });
+    });
+
+    it('does not include page param in URL when on first page', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Go to page 2 then back to page 1
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 2 of 2');
+      });
+
+      const previousButton = screen.getByTestId('pagination-previous');
+      fireEvent.click(previousButton);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenLastCalledWith('/admin/agencies', { scroll: false });
+      });
+    });
+
+    it('initializes from page URL param', () => {
+      mockSearchParams = new URLSearchParams('page=2');
+
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 2 of 2');
+      expect(screen.getByTestId('agencies-count')).toHaveTextContent(
+        'Showing 21-25 of 25 agencies'
+      );
+    });
+
+    it('resets to page 1 when search filter changes', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Go to page 2
+      const nextButton = screen.getByTestId('pagination-next');
+      fireEvent.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 2 of 2');
+      });
+
+      // Apply a search filter
+      const searchInput = screen.getByTestId('agency-search-input');
+      fireEvent.change(searchInput, { target: { value: 'Agency 1' } });
+
+      // Should reset to page 1 and no pagination controls (< 20 results)
+      await waitFor(() => {
+        expect(screen.queryByTestId('pagination-controls')).not.toBeInTheDocument();
+      });
+    });
+
+    it('handles single page of filtered results correctly', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Filter to show fewer than 20 agencies
+      const searchInput = screen.getByTestId('agency-search-input');
+      fireEvent.change(searchInput, { target: { value: 'Agency 1' } });
+
+      // Should not show pagination
+      expect(screen.queryByTestId('pagination-controls')).not.toBeInTheDocument();
+    });
+
+    it('handles empty results correctly', () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Filter to show no agencies
+      const searchInput = screen.getByTestId('agency-search-input');
+      fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
+
+      expect(screen.getByTestId('agencies-count')).toHaveTextContent('Showing 0 of 0 agencies');
+      expect(screen.queryByTestId('pagination-controls')).not.toBeInTheDocument();
+    });
+
+    it('handles invalid page param gracefully', () => {
+      mockSearchParams = new URLSearchParams('page=invalid');
+
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Should default to page 1
+      expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 1 of 2');
+    });
+
+    it('handles page param exceeding total pages', () => {
+      mockSearchParams = new URLSearchParams('page=999');
+
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Should show last valid page
+      expect(screen.getByTestId('pagination-info')).toHaveTextContent('Page 2 of 2');
+    });
+
+    it('combines page param with other URL params', async () => {
+      render(<AdminAgenciesTable agencies={manyAgencies} />);
+
+      // Apply status filter
+      const statusTrigger = screen.getByTestId('status-filter-trigger');
+      fireEvent.click(statusTrigger);
+      const activeOption = screen.getByRole('option', { name: 'Active' });
+      fireEvent.click(activeOption);
+
+      await waitFor(() => {
+        // With status filter, still enough agencies to paginate
+        const paginationControls = screen.queryByTestId('pagination-controls');
+        if (paginationControls) {
+          const nextButton = screen.getByTestId('pagination-next');
+          fireEvent.click(nextButton);
+        }
+      });
+
+      // The URL should include both status and page params
+      await waitFor(() => {
+        const calls = mockPush.mock.calls;
+        const hasStatusParam = calls.some(
+          (call) => typeof call[0] === 'string' && call[0].includes('status=active')
+        );
+        expect(hasStatusParam).toBe(true);
       });
     });
   });

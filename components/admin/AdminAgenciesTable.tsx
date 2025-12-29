@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2, X } from 'lucide-react';
+import { Search, Building2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks/use-debounce';
 import type { AdminAgency } from '@/app/(app)/admin/agencies/page';
+
+const AGENCIES_PER_PAGE = 20;
 
 interface AdminAgenciesTableProps {
   agencies: AdminAgency[];
@@ -43,17 +45,23 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
   const [claimedFilter, setClaimedFilter] = useState(
     searchParams.get('claimed') || 'all'
   );
+  const [currentPage, setCurrentPage] = useState(() => {
+    const pageParam = searchParams.get('page');
+    const parsed = pageParam ? parseInt(pageParam, 10) : 1;
+    return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+  });
 
   // Debounce search term
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   // Update URL when filters change
   const updateURL = useCallback(
-    (search: string, status: string, claimed: string) => {
+    (search: string, status: string, claimed: string, page: number) => {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (status !== 'all') params.set('status', status);
       if (claimed !== 'all') params.set('claimed', claimed);
+      if (page > 1) params.set('page', page.toString());
 
       const queryString = params.toString();
       router.push(queryString ? `?${queryString}` : '/admin/agencies', {
@@ -63,10 +71,22 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
     [router]
   );
 
+  // Track if this is the initial mount to avoid resetting page on first render
+  const isInitialMount = useRef(true);
+
   // Update URL when debounced search changes
   useEffect(() => {
-    updateURL(debouncedSearch, statusFilter, claimedFilter);
-  }, [debouncedSearch, statusFilter, claimedFilter, updateURL]);
+    updateURL(debouncedSearch, statusFilter, claimedFilter, currentPage);
+  }, [debouncedSearch, statusFilter, claimedFilter, currentPage, updateURL]);
+
+  // Reset to page 1 when filters change (but not on initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter, claimedFilter]);
 
   // Filter agencies based on current filters
   const filteredAgencies = agencies.filter((agency) => {
@@ -89,8 +109,24 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
     return true;
   });
 
+  // Calculate pagination
+  const totalFiltered = filteredAgencies.length;
+  const totalPages = Math.ceil(totalFiltered / AGENCIES_PER_PAGE);
+  const validCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+  const startIndex = (validCurrentPage - 1) * AGENCIES_PER_PAGE;
+  const endIndex = Math.min(startIndex + AGENCIES_PER_PAGE, totalFiltered);
+  const paginatedAgencies = filteredAgencies.slice(startIndex, endIndex);
+
   const hasActiveFilters =
     searchTerm !== '' || statusFilter !== 'all' || claimedFilter !== 'all';
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -99,7 +135,7 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -184,7 +220,7 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAgencies.length === 0 ? (
+          {paginatedAgencies.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
                 <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -196,13 +232,14 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
               </TableCell>
             </TableRow>
           ) : (
-            filteredAgencies.map((agency) => (
+            paginatedAgencies.map((agency) => (
               <TableRow key={agency.id} data-testid={`agency-row-${agency.id}`}>
                 <TableCell className="font-medium">
                   <Link
                     href={`/recruiters/${agency.slug}`}
                     className="hover:underline text-primary"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {agency.name}
                   </Link>
@@ -258,8 +295,37 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
 
       <div className="border-t p-4 flex items-center justify-between text-sm text-muted-foreground">
         <span data-testid="agencies-count">
-          Showing {filteredAgencies.length} of {agencies.length} agencies
+          {totalFiltered === 0
+            ? 'Showing 0 of 0 agencies'
+            : `Showing ${startIndex + 1}-${endIndex} of ${totalFiltered} agencies`}
         </span>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2" data-testid="pagination-controls">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={validCurrentPage === 1}
+              data-testid="pagination-previous"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <span className="text-sm" data-testid="pagination-info">
+              Page {validCurrentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={validCurrentPage === totalPages}
+              data-testid="pagination-next"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

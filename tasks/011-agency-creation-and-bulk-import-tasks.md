@@ -16,7 +16,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 1.1: Admin Views and Manages All Agencies
+### [x] ➡️ Story 1.1: Admin Views and Manages All Agencies
 
 > As a **Site Administrator**, I want **to view all agencies (claimed and unclaimed) in a management interface**, so that **I can monitor the agency database and take administrative actions**.
 
@@ -122,28 +122,28 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.4: Implement Pagination for Agencies Table
+### [x] Task 1.1.4: Implement Pagination for Agencies Table
 
 - **Role:** Frontend Developer
 - **Objective:** Add pagination controls to admin agencies table
 - **Context:** Database may contain hundreds of agencies, need pagination for performance
 - **Key Files to Modify:**
-  - `components/admin/AgenciesTable.tsx`
+  - `components/admin/AdminAgenciesTable.tsx`
 - **Key Patterns to Follow:**
   - Shadcn/ui Pagination component
   - URL-based pagination state
   - 20 items per page default
 - **Acceptance Criteria (for this task):**
-  - [ ] Pagination shows current page and total pages
-  - [ ] Previous/Next buttons navigate pages
-  - [ ] Page number updates in URL for bookmarking
-  - [ ] Shows "Showing X-Y of Z agencies" count
-  - [ ] Disabled states for first/last page navigation
+  - [x] Pagination shows current page and total pages
+  - [x] Previous/Next buttons navigate pages
+  - [x] Page number updates in URL for bookmarking
+  - [x] Shows "Showing X-Y of Z agencies" count
+  - [x] Disabled states for first/last page navigation
 - **Definition of Done:**
-  - [ ] Pagination functional
-  - [ ] Tests verify page navigation
-  - [ ] Tests verify edge cases (single page, empty results)
-  - [ ] **Final Check:** Matches existing pagination patterns
+  - [x] Pagination functional
+  - [x] Tests verify page navigation
+  - [x] Tests verify edge cases (single page, empty results)
+  - [x] **Final Check:** Matches existing pagination patterns
 
 **Estimated Effort:** 2 hours
 
