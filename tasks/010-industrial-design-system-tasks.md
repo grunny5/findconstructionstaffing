@@ -187,19 +187,19 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Use database queries for conversion metrics
   - Document collection methodology for reproducibility
 - **Acceptance Criteria (for this task):**
-  - [ ] Lead form conversion rate baseline documented (from GA4 or database)
-  - [ ] Agency claim request count baseline documented (database query)
-  - [ ] Average session duration baseline documented (GA4)
-  - [ ] Pages per session baseline documented (GA4)
-  - [ ] Bounce rate baseline documented (GA4)
-  - [ ] Mobile vs desktop engagement baseline documented (GA4)
-  - [ ] Baseline data covers 2-week period for statistical validity
-  - [ ] Methodology documented for future comparison
+  - [ ] Lead form conversion rate baseline documented (from GA4 or database) - PENDING: 2-week collection
+  - [ ] Agency claim request count baseline documented (database query) - PENDING: 2-week collection
+  - [ ] Average session duration baseline documented (GA4) - PENDING: 2-week collection
+  - [ ] Pages per session baseline documented (GA4) - PENDING: 2-week collection
+  - [ ] Bounce rate baseline documented (GA4) - PENDING: 2-week collection
+  - [ ] Mobile vs desktop engagement baseline documented (GA4) - PENDING: 2-week collection
+  - [ ] Baseline data covers 2-week period for statistical validity - PENDING: 2-week collection
+  - [x] Methodology documented for future comparison
 - **Definition of Done:**
-  - [ ] Baseline metrics documented in markdown file
-  - [ ] Data collection queries/scripts saved
+  - [x] Baseline metrics documented in markdown file (template created)
+  - [x] Data collection queries/scripts saved
   - [ ] Stakeholders notified of baseline period
-  - [ ] **Final Check:** Metrics align with FSD success criteria
+  - [x] **Final Check:** Metrics align with FSD success criteria
 
 **Estimated Effort:** 2 hours (data collection) + 2 weeks wait time
 
