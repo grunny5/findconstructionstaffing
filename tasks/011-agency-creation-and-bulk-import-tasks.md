@@ -24,7 +24,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.1: Create Admin Agencies List Page Route
+### [x] Task 1.1.1: Create Admin Agencies List Page Route
 
 - **Role:** Frontend Developer
 - **Objective:** Create the admin agencies management page with table layout
@@ -42,17 +42,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Shadcn/ui Table, Input, Select, Button components
   - Admin route protection (existing middleware)
 - **Acceptance Criteria (for this task):**
-  - [ ] Route `/admin/agencies` is accessible to admin users only
-  - [ ] Page displays agencies in a table with columns: Name, Status, Claimed, Owner, Created Date, Profile Completion
-  - [ ] Loading skeleton displays while fetching data
-  - [ ] Non-admin users are redirected to home page
-  - [ ] Page header includes "Create Agency" and "Bulk Import" buttons
+  - [x] Route `/admin/agencies` is accessible to admin users only
+  - [x] Page displays agencies in a table with columns: Name, Status, Claimed, Owner, Created Date, Profile Completion
+  - [x] Loading skeleton displays while fetching data
+  - [x] Non-admin users are redirected to home page
+  - [x] Page header includes "Create Agency" and "Bulk Import" buttons
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests verify admin-only access
-  - [ ] Tests verify table rendering with mock data
-  - [ ] All existing tests still pass
-  - [ ] **Final Check:** Follows existing admin page patterns
+  - [x] Code complete and committed
+  - [x] Tests verify admin-only access
+  - [x] Tests verify table rendering with mock data
+  - [x] All existing tests still pass
+  - [x] **Final Check:** Follows existing admin page patterns
 
 **Estimated Effort:** 4 hours
 
@@ -848,12 +848,12 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ### Total Tasks: 24
 
-| Phase | Tasks | Estimated Hours |
-|-------|-------|-----------------|
-| Phase 1: Admin List & Creation | 8 tasks | 23 hours |
-| Phase 2: Bulk Import | 10 tasks | 31 hours |
-| Phase 3: Management Features | 6 tasks | 15 hours |
-| **Total** | **24 tasks** | **69 hours** |
+| Phase                          | Tasks        | Estimated Hours |
+| ------------------------------ | ------------ | --------------- |
+| Phase 1: Admin List & Creation | 8 tasks      | 23 hours        |
+| Phase 2: Bulk Import           | 10 tasks     | 31 hours        |
+| Phase 3: Management Features   | 6 tasks      | 15 hours        |
+| **Total**                      | **24 tasks** | **69 hours**    |
 
 ### Dependencies Graph
 
@@ -893,6 +893,7 @@ Phase 3 (Week 3)
 ### Key Files to Create
 
 **API Routes:**
+
 - `app/api/admin/agencies/route.ts` (GET, POST)
 - `app/api/admin/agencies/[id]/route.ts` (GET, PATCH)
 - `app/api/admin/agencies/[id]/status/route.ts` (POST)
@@ -901,10 +902,12 @@ Phase 3 (Week 3)
 - `app/api/admin/agencies/bulk-import/preview/route.ts` (POST)
 
 **Pages:**
+
 - `app/(app)/admin/agencies/page.tsx`
 - `app/(app)/admin/agencies/[id]/page.tsx`
 
 **Components:**
+
 - `components/admin/AgenciesTable.tsx`
 - `components/admin/AgencyFormModal.tsx`
 - `components/admin/BulkImportModal.tsx`
@@ -912,5 +915,6 @@ Phase 3 (Week 3)
 - `components/admin/AgencyStatusDialog.tsx`
 
 **Utilities:**
+
 - `lib/validations/agency-creation.ts`
 - `lib/utils/csv-parser.ts`

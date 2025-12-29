@@ -12,23 +12,27 @@
 ### Problem Statement
 
 Currently, there is no way to add new agencies to the FindConstructionStaffing platform other than:
+
 1. Running the seed script (developer-only, uses hardcoded mock data)
 2. Direct database inserts via Supabase dashboard (DBA-only)
 
 The existing **Agency Claim System** (Feature 008) only allows users to claim **existing** agencies in the database. If an agency doesn't exist, there's no self-service or admin workflow to create it.
 
 As the platform grows, **Site Administrators** need the ability to:
+
 - Manually add individual agencies discovered through research or outreach
 - Bulk import hundreds of agencies from spreadsheets/CSV files (e.g., from industry databases, trade association lists, or partner data)
 
 ### Goal & Hypothesis
 
 We believe that by building agency creation and bulk import capabilities for **Site Administrators**, we will:
+
 1. Accelerate agency database growth from 12 to 100+ agencies
 2. Enable rapid onboarding of agency data from external sources
 3. Reduce manual database work and potential for data entry errors
 
 We will know this is true when we see:
+
 - 50+ agencies added via the admin interface within 30 days of launch
 - Successful bulk imports of 20+ agencies per CSV upload
 - Zero data integrity issues from imported agencies
@@ -120,6 +124,7 @@ We will know this is true when we see:
 ### UX/UI Requirements
 
 **Admin Agencies Page (`/admin/agencies`)**
+
 - Agency list table with sorting and filtering
 - "Create Agency" button in header
 - "Bulk Import" button in header
@@ -128,12 +133,14 @@ We will know this is true when we see:
 - Pagination (20 agencies per page)
 
 **Create Agency Modal/Page**
+
 - Form with all agency fields
 - Required field indicators
 - Real-time validation
 - Success/error toast notifications
 
 **Bulk Import Interface**
+
 - Drag-and-drop file upload zone
 - File type validation (.csv, .xlsx)
 - Preview table with validation status per row
@@ -178,14 +185,14 @@ agencies (
 
 #### API Endpoints
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/api/admin/agencies` | List all agencies with filters | Admin |
-| `POST` | `/api/admin/agencies` | Create single agency | Admin |
-| `GET` | `/api/admin/agencies/[id]` | Get agency details | Admin |
-| `PATCH` | `/api/admin/agencies/[id]` | Update agency | Admin |
-| `POST` | `/api/admin/agencies/bulk-import` | Bulk import from CSV | Admin |
-| `GET` | `/api/admin/agencies/template` | Download CSV template | Admin |
+| Method  | Endpoint                          | Description                    | Auth  |
+| ------- | --------------------------------- | ------------------------------ | ----- |
+| `GET`   | `/api/admin/agencies`             | List all agencies with filters | Admin |
+| `POST`  | `/api/admin/agencies`             | Create single agency           | Admin |
+| `GET`   | `/api/admin/agencies/[id]`        | Get agency details             | Admin |
+| `PATCH` | `/api/admin/agencies/[id]`        | Update agency                  | Admin |
+| `POST`  | `/api/admin/agencies/bulk-import` | Bulk import from CSV           | Admin |
+| `GET`   | `/api/admin/agencies/template`    | Download CSV template          | Admin |
 
 #### CSV Template Format
 
@@ -197,9 +204,11 @@ name,description,website,phone,email,headquarters,founded_year,employee_count,co
 #### Validation Rules
 
 **Required Fields:**
+
 - `name` - Must be non-empty, unique
 
 **Optional Fields with Validation:**
+
 - `website` - Valid URL format if provided
 - `phone` - Valid phone format if provided
 - `email` - Valid email format if provided
@@ -265,28 +274,31 @@ name,description,website,phone,email,headquarters,founded_year,employee_count,co
 
 ## 6. Success Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Agencies added via admin UI | 50+ in first 30 days | Database count |
-| Successful bulk imports | 5+ imports of 20+ agencies each | Import logs |
-| Data integrity errors | 0 | Error tracking |
-| Admin task completion time | <5 min for bulk import | User feedback |
-| Validation accuracy | 100% of invalid rows caught | Testing |
+| Metric                      | Target                          | Measurement    |
+| --------------------------- | ------------------------------- | -------------- |
+| Agencies added via admin UI | 50+ in first 30 days            | Database count |
+| Successful bulk imports     | 5+ imports of 20+ agencies each | Import logs    |
+| Data integrity errors       | 0                               | Error tracking |
+| Admin task completion time  | <5 min for bulk import          | User feedback  |
+| Validation accuracy         | 100% of invalid rows caught     | Testing        |
 
 ## 7. Implementation Phases
 
 ### Phase 1: Core Admin UI (Week 1)
+
 - Admin agencies list page
 - Create single agency form
 - Basic search and filtering
 
 ### Phase 2: Bulk Import (Week 2)
+
 - CSV template download
 - File upload and parsing
 - Preview with validation
 - Import execution
 
 ### Phase 3: Management Features (Week 3)
+
 - Agency edit functionality
 - Deactivation/reactivation
 - Trade/region association UI
