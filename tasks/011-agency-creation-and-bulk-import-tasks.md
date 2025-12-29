@@ -398,7 +398,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.2: Implement CSV/XLSX Parsing
+### [x] Task 2.2.2: Implement CSV/XLSX Parsing
 
 - **Role:** Frontend Developer
 - **Objective:** Parse uploaded file and extract agency data
@@ -411,19 +411,19 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Handle missing/extra columns gracefully
   - Normalize boolean values (yes/no, true/false, 1/0)
 - **Acceptance Criteria (for this task):**
-  - [ ] Parses CSV files correctly (including quoted fields, commas in values)
-  - [ ] Parses XLSX files (first sheet only)
-  - [ ] Returns array of agency objects with normalized field names
-  - [ ] Handles missing columns (set to undefined)
-  - [ ] Handles extra columns (ignore)
-  - [ ] Normalizes boolean strings to true/false
-  - [ ] Parses comma-separated trades and regions into arrays
-  - [ ] Returns parsing errors for malformed files
+  - [x] Parses CSV files correctly (including quoted fields, commas in values)
+  - [x] Parses XLSX files (first sheet only)
+  - [x] Returns array of agency objects with normalized field names
+  - [x] Handles missing columns (set to undefined)
+  - [x] Handles extra columns (ignore)
+  - [x] Normalizes boolean strings to true/false
+  - [x] Parses comma-separated trades and regions into arrays
+  - [x] Returns parsing errors for malformed files
 - **Definition of Done:**
-  - [ ] Parser handles CSV and XLSX
-  - [ ] Comprehensive unit tests
-  - [ ] Tests verify edge cases (empty rows, special characters)
-  - [ ] **Final Check:** Handles real-world messy data
+  - [x] Parser handles CSV and XLSX
+  - [x] Comprehensive unit tests (80 tests)
+  - [x] Tests verify edge cases (empty rows, special characters)
+  - [x] **Final Check:** Handles real-world messy data
 
 **Estimated Effort:** 4 hours
 
