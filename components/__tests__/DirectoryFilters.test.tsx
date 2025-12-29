@@ -251,4 +251,118 @@ describe('DirectoryFilters', () => {
       })
     );
   });
+
+  // Industrial Design System Tests
+  describe('Industrial Design Styling', () => {
+    it('should apply industrial styling to main filter container', () => {
+      const { container } = render(
+        <DirectoryFilters onFiltersChange={jest.fn()} totalResults={0} />
+      );
+
+      // Main filter bar should have industrial styling
+      const filterBar = container.querySelector('.bg-industrial-bg-card');
+      expect(filterBar).toBeInTheDocument();
+      expect(filterBar).toHaveClass('border-2');
+      expect(filterBar).toHaveClass('border-industrial-graphite-200');
+      expect(filterBar).toHaveClass('rounded-industrial-base');
+    });
+
+    it('should apply industrial styling to search input', () => {
+      render(<DirectoryFilters onFiltersChange={jest.fn()} totalResults={0} />);
+
+      const searchInput = screen.getByPlaceholderText(/search agencies/i);
+      expect(searchInput).toHaveClass('font-body');
+      expect(searchInput).toHaveClass('border-2');
+      expect(searchInput).toHaveClass('border-industrial-graphite-300');
+      expect(searchInput).toHaveClass('rounded-industrial-sharp');
+    });
+
+    it('should apply industrial styling to filter popover buttons', () => {
+      render(<DirectoryFilters onFiltersChange={jest.fn()} totalResults={0} />);
+
+      const tradeButton = screen.getByRole('button', {
+        name: /trade specialties/i,
+      });
+      expect(tradeButton).toHaveClass('font-body');
+      expect(tradeButton).toHaveClass('text-xs');
+      expect(tradeButton).toHaveClass('font-semibold');
+      expect(tradeButton).toHaveClass('uppercase');
+      expect(tradeButton).toHaveClass('tracking-wide');
+      expect(tradeButton).toHaveClass('border-2');
+      expect(tradeButton).toHaveClass('border-industrial-graphite-300');
+    });
+
+    it('should apply industrial styling to results count', () => {
+      const { container } = render(
+        <DirectoryFilters onFiltersChange={jest.fn()} totalResults={10} />
+      );
+
+      // Check results count styling
+      const resultsCount = container.querySelector(
+        '.text-industrial-graphite-400'
+      );
+      expect(resultsCount).toBeInTheDocument();
+
+      // Check emphasized number styling
+      const countNumber = container.querySelector(
+        '.text-industrial-graphite-600'
+      );
+      expect(countNumber).toBeInTheDocument();
+    });
+
+    it('should apply industrial styling to active filters display', () => {
+      const { container } = render(
+        <DirectoryFilters
+          onFiltersChange={jest.fn()}
+          totalResults={10}
+          initialFilters={{
+            search: 'test',
+            trades: [],
+            states: [],
+          }}
+        />
+      );
+
+      // Active filters container should have industrial styling
+      const activeFilters = container.querySelector(
+        '.bg-industrial-graphite-100'
+      );
+      expect(activeFilters).toBeInTheDocument();
+      expect(activeFilters).toHaveClass('border-2');
+      expect(activeFilters).toHaveClass('border-industrial-graphite-200');
+      expect(activeFilters).toHaveClass('rounded-industrial-base');
+    });
+
+    it('should apply industrial styling to clear all filters button', () => {
+      render(
+        <DirectoryFilters
+          onFiltersChange={jest.fn()}
+          totalResults={10}
+          initialFilters={{
+            search: 'test',
+            trades: [],
+            states: [],
+          }}
+        />
+      );
+
+      const clearButton = screen.getByText(/clear all filters/i);
+      expect(clearButton).toHaveClass('font-body');
+      expect(clearButton).toHaveClass('text-xs');
+      expect(clearButton).toHaveClass('font-semibold');
+      expect(clearButton).toHaveClass('uppercase');
+      expect(clearButton).toHaveClass('text-industrial-orange');
+    });
+
+    it('should apply industrial styling to verified only checkbox', () => {
+      render(<DirectoryFilters onFiltersChange={jest.fn()} totalResults={0} />);
+
+      const verifiedLabel = screen.getByText(/verified only/i);
+      expect(verifiedLabel).toHaveClass('font-body');
+      expect(verifiedLabel).toHaveClass('text-xs');
+      expect(verifiedLabel).toHaveClass('font-semibold');
+      expect(verifiedLabel).toHaveClass('uppercase');
+      expect(verifiedLabel).toHaveClass('text-industrial-graphite-500');
+    });
+  });
 });

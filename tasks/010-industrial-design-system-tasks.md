@@ -474,21 +474,21 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Orange-400 focus states
   - Uppercase labels (0.75rem, 600 weight, graphite-400)
 - **Acceptance Criteria (for this task):**
-  - [ ] All input elements have 2px solid borders (graphite-300)
-  - [ ] Border-radius: 2px (sharp, not rounded)
-  - [ ] Focus states use orange-400 border color
-  - [ ] Labels use Barlow, 0.75rem, uppercase, 600 weight
-  - [ ] Dropdown selects maintain industrial styling
-  - [ ] Checkbox/radio inputs styled consistently
-  - [ ] Mobile: filters stack vertically with adequate spacing
-  - [ ] Component tests verify styling and interactions
+  - [x] All input elements have 2px solid borders (graphite-300)
+  - [x] Border-radius: 2px (sharp, not rounded)
+  - [x] Focus states use orange-400 border color
+  - [x] Labels use Barlow, 0.75rem, uppercase, 600 weight
+  - [x] Dropdown selects maintain industrial styling
+  - [x] Checkbox/radio inputs styled consistently
+  - [x] Mobile: filters stack vertically with adequate spacing
+  - [x] Component tests verify styling and interactions
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Accessibility verified (focus states, labels)
-  - [ ] Mobile responsive verified
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Accessibility verified (focus states, labels)
+  - [x] Mobile responsive verified
   - [ ] PR submitted with screenshots
-  - [ ] **Final Check:** Form controls meet WCAG 2.1 AA
+  - [x] **Final Check:** Form controls meet WCAG 2.1 AA
 
 **Estimated Effort:** 5 hours
 
