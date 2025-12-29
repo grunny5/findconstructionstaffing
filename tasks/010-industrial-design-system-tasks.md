@@ -818,7 +818,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
 
 **Deployment Status (2025-12-28):**
 
-- PR #382: https://github.com/grunny5/findconstructionstaffing/pull/382
+- PR [#382](https://github.com/grunny5/findconstructionstaffing/pull/382)
 - All 17 CI checks passing
 - Preview deployment active
 - Ready for merge to main → staging
@@ -892,21 +892,21 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - Clear section headers
   - Professional, straightforward language
 - **Acceptance Criteria (for this task):**
-  - [ ] All inputs use industrial styling (matching claim form)
-  - [ ] Section headers use Bebas Neue or bold Barlow
-  - [ ] Submit button uses primary orange styling
-  - [ ] Form validation is clear and helpful
-  - [ ] Multi-step flow (if applicable) uses clear progress indicators
-  - [ ] Mobile: form is easy to complete on job site (large touch targets)
-  - [ ] Form tests updated and passing
-  - [ ] Accessibility verified
+  - [x] All inputs use industrial styling (matching claim form)
+  - [x] Section headers use Bebas Neue (font-display uppercase)
+  - [x] Submit button uses primary orange styling
+  - [x] Form validation is clear and helpful (industrial-orange errors)
+  - [x] Multi-step flow (if applicable) uses clear progress indicators
+  - [x] Mobile: form is easy to complete on job site (large touch targets)
+  - [x] Form tests updated and passing (36 tests)
+  - [x] Accessibility verified
 - **Definition of Done:**
-  - [ ] Code complete and committed
-  - [ ] Tests passing with 85%+ coverage
-  - [ ] Form submission tested
-  - [ ] Mobile usability verified (test on real device)
+  - [x] Code complete and committed
+  - [x] Tests passing with 85%+ coverage
+  - [x] Form submission tested
+  - [x] Mobile usability verified (test on real device)
   - [ ] PR submitted with form flow screenshots
-  - [ ] **Final Check:** Lead generation flow tested
+  - [x] **Final Check:** Lead generation flow tested
 
 **Estimated Effort:** 5 hours
 
@@ -1113,7 +1113,7 @@ This document breaks down Feature 010 into sprint-ready engineering tasks follow
   - [ ] Edge (latest 2 versions): All pages render correctly
   - [ ] iOS Safari: Mobile pages render correctly
   - [ ] Android Chrome: Mobile pages render correctly
-  - [ ] Custom fonts load correctly in all browsers
+  - [ ] Custom fonts load in all browsers without errors
   - [ ] No layout shifts or FOUT issues
   - [ ] All critical issues documented and fixed
 - **Definition of Done:**

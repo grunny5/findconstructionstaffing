@@ -158,6 +158,7 @@ describe('ClaimListingPage Industrial Design Styling', () => {
       const { container } = render(<ClaimListingPage />);
 
       const searchInput = container.querySelector('input#search');
+      expect(searchInput).toBeInTheDocument();
       await user.type(searchInput!, 'Test');
 
       // Find the card by looking for border-2 and rounded-industrial-sharp
@@ -172,10 +173,12 @@ describe('ClaimListingPage Industrial Design Styling', () => {
       const { container } = render(<ClaimListingPage />);
 
       const searchInput = container.querySelector('input#search');
+      expect(searchInput).toBeInTheDocument();
       await user.type(searchInput!, 'Test');
 
       // Find the clickable card
       const agencyCard = container.querySelector('.cursor-pointer.border-2');
+      expect(agencyCard).toBeInTheDocument();
       await user.click(agencyCard!);
 
       // After clicking, verify styling changed - check for the orange styling
@@ -188,6 +191,7 @@ describe('ClaimListingPage Industrial Design Styling', () => {
       const { container } = render(<ClaimListingPage />);
 
       const searchInput = container.querySelector('input#search');
+      expect(searchInput).toBeInTheDocument();
       await user.type(searchInput!, 'Test');
 
       // The h4 element should have font-display
