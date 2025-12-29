@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload } from 'lucide-react';
+import { Download, Plus, Upload } from 'lucide-react';
+import Link from 'next/link';
 import { AdminAgenciesTable } from '@/components/admin/AdminAgenciesTable';
 
 export interface AdminAgency {
@@ -114,6 +115,12 @@ export default async function AdminAgenciesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Agency Management</h1>
         <div className="flex gap-2">
+          <Button variant="outline" asChild data-testid="download-template-button">
+            <Link href="/api/admin/agencies/template" download>
+              <Download className="h-4 w-4 mr-2" />
+              Download Template
+            </Link>
+          </Button>
           <Button variant="outline" disabled>
             <Upload className="h-4 w-4 mr-2" />
             Bulk Import

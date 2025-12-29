@@ -231,7 +231,7 @@ describe('AdminAgenciesPage', () => {
       expect(screen.getByText('Agencies count: 2')).toBeInTheDocument();
     });
 
-    it('renders header with Create Agency and Bulk Import buttons', async () => {
+    it('renders header with Create Agency, Bulk Import, and Download Template buttons', async () => {
       mockSupabaseClient.from.mockImplementation((table: string) => {
         if (table === 'profiles') {
           return {
@@ -261,6 +261,43 @@ describe('AdminAgenciesPage', () => {
 
       expect(screen.getByText('Create Agency')).toBeInTheDocument();
       expect(screen.getByText('Bulk Import')).toBeInTheDocument();
+      expect(screen.getByText('Download Template')).toBeInTheDocument();
+    });
+
+    it('renders Download Template button with correct link to template endpoint', async () => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockResolvedValue({
+              data: [],
+              error: null,
+            }),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin' },
+              error: null,
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        };
+      });
+
+      const result = await AdminAgenciesPage();
+      render(result as React.ReactElement);
+
+      const downloadButton = screen.getByTestId('download-template-button');
+      expect(downloadButton).toBeInTheDocument();
+      expect(downloadButton).toHaveAttribute(
+        'href',
+        '/api/admin/agencies/template'
+      );
     });
 
     it('handles empty agencies array', async () => {

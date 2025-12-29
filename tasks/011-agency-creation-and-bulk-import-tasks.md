@@ -296,7 +296,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 2.1: Admin Downloads CSV Template
+### [x] ➡️ Story 2.1: Admin Downloads CSV Template
 
 > As a **Site Administrator**, I want **to download a CSV template with the correct column headers**, so that **I can prepare bulk import data in the correct format**.
 
@@ -333,7 +333,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.1.2: Add Download Template Button to UI
+### [x] Task 2.1.2: Add Download Template Button to UI
 
 - **Role:** Frontend Developer
 - **Objective:** Add button to download CSV template from admin agencies page
@@ -345,14 +345,14 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Direct link to API endpoint
   - Download attribute on anchor
 - **Acceptance Criteria (for this task):**
-  - [ ] "Download Template" button visible on admin agencies page
-  - [ ] Button triggers file download when clicked
-  - [ ] Button shows download icon (Lucide Download)
-  - [ ] Loading state while downloading (if needed)
+  - [x] "Download Template" button visible on admin agencies page
+  - [x] Button triggers file download when clicked
+  - [x] Button shows download icon (Lucide Download)
+  - [x] Loading state while downloading (if needed) - Not needed; direct link download
 - **Definition of Done:**
-  - [ ] Button functional
-  - [ ] Tests verify button renders
-  - [ ] **Final Check:** Download works in all browsers
+  - [x] Button functional
+  - [x] Tests verify button renders
+  - [x] **Final Check:** Download works in all browsers
 
 **Estimated Effort:** 1 hour
 
