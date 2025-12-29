@@ -5,13 +5,19 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Upload, File, X, AlertCircle } from 'lucide-react';
+import { Upload, File, X, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { parseFile } from '@/lib/utils/csv-parser';
+import { ImportPreviewTable } from './ImportPreviewTable';
+import type {
+  RowValidationResult,
+  ValidationSummary,
+} from '@/app/api/admin/agencies/bulk-import/preview/route';
 
 const ACCEPTED_FILE_TYPES = [
   'text/csv',
@@ -61,6 +67,10 @@ export function BulkImportModal({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewRows, setPreviewRows] = useState<RowValidationResult[]>([]);
+  const [previewSummary, setPreviewSummary] =
+    useState<ValidationSummary | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = useCallback((file: File) => {
@@ -138,6 +148,9 @@ export function BulkImportModal({
     setSelectedFile(null);
     setError(null);
     setCurrentStep('upload');
+    setPreviewRows([]);
+    setPreviewSummary(null);
+    setIsLoading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -153,16 +166,61 @@ export function BulkImportModal({
     [handleCancel]
   );
 
-  const handleNext = useCallback(() => {
-    if (selectedFile) {
-      // For now, just move to preview step
-      // Future tasks will implement the actual preview functionality
+  const handleNext = useCallback(async () => {
+    if (!selectedFile) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Parse the file
+      const parseResult = await parseFile(selectedFile);
+
+      if (!parseResult.success && parseResult.data.length === 0) {
+        // Complete failure - can't proceed
+        const errorMessages = parseResult.errors
+          .map((e) => e.message)
+          .join('; ');
+        setError(errorMessages || 'Failed to parse file');
+        setIsLoading(false);
+        return;
+      }
+
+      // Call the preview API for validation
+      const response = await fetch('/api/admin/agencies/bulk-import/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: parseResult.data }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error?.message || `Server error: ${response.status}`
+        );
+      }
+
+      const previewData = await response.json();
+      setPreviewRows(previewData.rows);
+      setPreviewSummary(previewData.summary);
       setCurrentStep('preview');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process file');
+    } finally {
+      setIsLoading(false);
     }
   }, [selectedFile]);
 
   const handleBack = useCallback(() => {
     setCurrentStep('upload');
+    setPreviewRows([]);
+    setPreviewSummary(null);
+  }, []);
+
+  const handleImport = useCallback(() => {
+    // Will be implemented in Task 2.2.5/2.2.6
+    // For now, just a placeholder
+    console.log('Import will be implemented in next task');
   }, []);
 
   const renderUploadStep = () => (
@@ -263,6 +321,7 @@ export function BulkImportModal({
           type="button"
           variant="outline"
           onClick={handleCancel}
+          disabled={isLoading}
           data-testid="cancel-button"
         >
           Cancel
@@ -270,40 +329,47 @@ export function BulkImportModal({
         <Button
           type="button"
           onClick={handleNext}
-          disabled={!selectedFile}
+          disabled={!selectedFile || isLoading}
           data-testid="next-button"
         >
-          Next
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            'Next'
+          )}
         </Button>
       </DialogFooter>
     </>
   );
 
-  const renderPreviewStep = () => (
-    <>
-      <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-        <p>Preview step will be implemented in Task 2.2.2</p>
-      </div>
+  const renderPreviewStep = () => {
+    if (!previewSummary) {
+      return (
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      );
+    }
 
-      <DialogFooter className="gap-2 mt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleBack}
-          data-testid="back-button"
-        >
-          Back
-        </Button>
-        <Button type="button" disabled data-testid="import-button">
-          Import
-        </Button>
-      </DialogFooter>
-    </>
-  );
+    return (
+      <ImportPreviewTable
+        rows={previewRows}
+        summary={previewSummary}
+        onBack={handleBack}
+        onImport={handleImport}
+      />
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-xl" data-testid="bulk-import-modal">
+      <DialogContent
+        className={cn(currentStep === 'preview' ? 'max-w-4xl' : 'max-w-xl')}
+        data-testid="bulk-import-modal"
+      >
         <DialogHeader>
           <DialogTitle data-testid="modal-title">
             Bulk Import Agencies

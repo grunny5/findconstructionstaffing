@@ -461,7 +461,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.4: Build Import Preview Table UI
+### [x] Task 2.2.4: Build Import Preview Table UI
 
 - **Role:** Frontend Developer
 - **Objective:** Display validation results in a reviewable table format
@@ -476,18 +476,18 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Color-coded row status (green=valid, red=invalid, yellow=warning)
   - Expandable error/warning details
 - **Acceptance Criteria (for this task):**
-  - [ ] Table shows all parsed rows with status icon
-  - [ ] Valid rows show green checkmark
-  - [ ] Invalid rows show red X with error message on hover/expand
-  - [ ] Warning rows show yellow triangle with warning on hover/expand
-  - [ ] Summary bar shows: "X valid, Y invalid, Z with warnings"
-  - [ ] "Import Valid Rows" button (disabled if no valid rows)
-  - [ ] "Back" button to return to file selection
+  - [x] Table shows all parsed rows with status icon
+  - [x] Valid rows show green checkmark
+  - [x] Invalid rows show red X with error message on hover/expand
+  - [x] Warning rows show yellow triangle with warning on hover/expand
+  - [x] Summary bar shows: "X valid, Y invalid, Z with warnings"
+  - [x] "Import Valid Rows" button (disabled if no valid rows)
+  - [x] "Back" button to return to file selection
 - **Definition of Done:**
-  - [ ] Preview table complete
-  - [ ] Tests verify status display
-  - [ ] Tests verify summary calculation
-  - [ ] **Final Check:** Handles 500+ rows without performance issues
+  - [x] Preview table complete
+  - [x] Tests verify status display
+  - [x] Tests verify summary calculation
+  - [x] **Final Check:** Handles 500+ rows without performance issues
 
 **Estimated Effort:** 4 hours
 

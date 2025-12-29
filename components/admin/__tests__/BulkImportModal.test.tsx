@@ -1,6 +1,35 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BulkImportModal } from '../BulkImportModal';
+import * as csvParser from '@/lib/utils/csv-parser';
+
+// Mock the csv-parser module
+jest.mock('@/lib/utils/csv-parser', () => ({
+  parseFile: jest.fn(),
+}));
+
+// Mock fetch
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+const mockParseFile = csvParser.parseFile as jest.MockedFunction<
+  typeof csvParser.parseFile
+>;
+
+// Helper to create mock validation response
+const createMockPreviewResponse = (overrides = {}) => ({
+  rows: [
+    {
+      rowNumber: 2,
+      valid: true,
+      errors: [],
+      warnings: [],
+      data: { _rowNumber: 2, name: 'Test Agency' },
+    },
+  ],
+  summary: { total: 1, valid: 1, invalid: 0, withWarnings: 0 },
+  ...overrides,
+});
 
 describe('BulkImportModal', () => {
   const defaultProps = {
@@ -11,6 +40,17 @@ describe('BulkImportModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default mock implementations
+    mockParseFile.mockResolvedValue({
+      success: true,
+      data: [{ _rowNumber: 2, name: 'Test Agency' }],
+      errors: [],
+      warnings: [],
+    });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(createMockPreviewResponse()),
+    });
   });
 
   describe('Rendering', () => {
@@ -280,8 +320,10 @@ describe('BulkImportModal', () => {
 
       await userEvent.click(screen.getByTestId('next-button'));
 
-      // Preview step shows back button
-      expect(screen.getByTestId('back-button')).toBeInTheDocument();
+      // Wait for async operations to complete
+      await waitFor(() => {
+        expect(screen.getByTestId('back-button')).toBeInTheDocument();
+      });
     });
 
     it('shows Back button in preview step', async () => {
@@ -295,7 +337,9 @@ describe('BulkImportModal', () => {
 
       await userEvent.click(screen.getByTestId('next-button'));
 
-      expect(screen.getByTestId('back-button')).toHaveTextContent('Back');
+      await waitFor(() => {
+        expect(screen.getByTestId('back-button')).toHaveTextContent('Back');
+      });
     });
 
     it('returns to upload step when Back is clicked', async () => {
@@ -308,9 +352,106 @@ describe('BulkImportModal', () => {
       await userEvent.upload(fileInput, file);
 
       await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('back-button')).toBeInTheDocument();
+      });
+
       await userEvent.click(screen.getByTestId('back-button'));
 
       expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
+    });
+
+    it('shows loading state while processing file', async () => {
+      // Make parseFile take some time
+      mockParseFile.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  success: true,
+                  data: [{ _rowNumber: 2, name: 'Test' }],
+                  errors: [],
+                  warnings: [],
+                }),
+              100
+            )
+          )
+      );
+
+      render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      // Should show loading state
+      expect(screen.getByTestId('next-button')).toHaveTextContent(
+        'Processing...'
+      );
+    });
+
+    it('shows error when file parsing fails', async () => {
+      mockParseFile.mockResolvedValue({
+        success: false,
+        data: [],
+        errors: [{ type: 'file', message: 'Failed to parse file' }],
+        warnings: [],
+      });
+
+      render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['bad content'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('file-error')).toHaveTextContent(
+          'Failed to parse file'
+        );
+      });
+    });
+
+    it('shows error when preview API fails', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () =>
+          Promise.resolve({ error: { message: 'Server error occurred' } }),
+      });
+
+      render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('file-error')).toHaveTextContent(
+          'Server error occurred'
+        );
+      });
+    });
+
+    it('displays ImportPreviewTable in preview step', async () => {
+      render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
     });
   });
 
