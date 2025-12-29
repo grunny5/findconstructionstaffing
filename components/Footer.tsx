@@ -1,38 +1,48 @@
 import Link from 'next/link';
-import { Building2, Mail, Phone, MapPin } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="modern-footer-bg text-white py-20 mt-24">
+    <footer className="bg-industrial-bg-dark border-t-[3px] border-industrial-orange text-white py-20 mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-300 rounded-2xl flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-slate-900" />
+              <div className="w-10 h-10 bg-industrial-orange rounded-industrial-sharp flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <span className="text-xl font-bold">Construction</span>
-                <div className="text-xs text-slate-400 font-medium">
+                <span className="font-display text-2xl uppercase tracking-wide text-white">
+                  Construction
+                </span>
+                <div className="font-body text-xs uppercase tracking-widest text-industrial-graphite-300">
                   Recruiter Directory
                 </div>
               </div>
             </div>
-            <p className="text-slate-300 text-lg leading-relaxed max-w-md">
+            <p className="font-body text-industrial-graphite-300 text-base leading-relaxed max-w-md">
               The premier directory connecting construction professionals with
               elite staffing firms across North America.
             </p>
+            {/* Barcode decoration */}
+            <div className="mt-6">
+              <span className="font-barcode text-2xl text-industrial-graphite-400">
+                *FCS2025*
+              </span>
+            </div>
           </div>
 
           {/* For Companies */}
           <div>
-            <h3 className="font-semibold mb-6 text-lg">For Companies</h3>
-            <ul className="space-y-3 text-slate-300">
+            <h3 className="font-display text-lg uppercase tracking-wide mb-6">
+              For Companies
+            </h3>
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/claim-listing"
-                  className="hover:text-white transition-colors"
+                  className="font-body text-industrial-graphite-300 hover:text-industrial-orange transition-colors duration-200"
                 >
                   Add Your Listing
                 </Link>
@@ -40,7 +50,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/pricing"
-                  className="hover:text-white transition-colors"
+                  className="font-body text-industrial-graphite-300 hover:text-industrial-orange transition-colors duration-200"
                 >
                   Premium Features
                 </Link>
@@ -48,7 +58,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/success-stories"
-                  className="hover:text-white transition-colors"
+                  className="font-body text-industrial-graphite-300 hover:text-industrial-orange transition-colors duration-200"
                 >
                   Success Stories
                 </Link>
@@ -58,12 +68,14 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="font-semibold mb-6 text-lg">Support</h3>
-            <ul className="space-y-3 text-slate-300">
+            <h3 className="font-display text-lg uppercase tracking-wide mb-6">
+              Support
+            </h3>
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/help"
-                  className="hover:text-white transition-colors"
+                  className="font-body text-industrial-graphite-300 hover:text-industrial-orange transition-colors duration-200"
                 >
                   Help Center
                 </Link>
@@ -71,7 +83,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="hover:text-white transition-colors"
+                  className="font-body text-industrial-graphite-300 hover:text-industrial-orange transition-colors duration-200"
                 >
                   Contact Us
                 </Link>
@@ -79,7 +91,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="hover:text-white transition-colors"
+                  className="font-body text-industrial-graphite-300 hover:text-industrial-orange transition-colors duration-200"
                 >
                   Privacy Policy
                 </Link>
@@ -88,8 +100,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-slate-700 mt-16 pt-8 text-center text-slate-400">
-          <p>
+        <div className="border-t-2 border-industrial-graphite-500 mt-16 pt-8 text-center">
+          <p className="font-body text-sm text-industrial-graphite-400">
             &copy; {new Date().getFullYear()} Construction Recruiter Directory.
             All rights reserved.
           </p>
