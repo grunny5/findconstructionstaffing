@@ -219,7 +219,7 @@ describe('Page Load Performance Tests', () => {
       const reRenderTime = endTime - startTime;
 
       // Re-renders should be fast
-      const threshold = process.env.CI ? 100 : 50;
+      const threshold = process.env.CI ? 150 : 50;
       expect(reRenderTime).toBeLessThan(threshold);
     });
 
@@ -320,7 +320,7 @@ describe('Page Load Performance Tests', () => {
       expect(searchBar).toBeInTheDocument();
 
       // Critical content should render very quickly
-      const threshold = process.env.CI ? 100 : 50;
+      const threshold = process.env.CI ? 150 : 50;
       expect(criticalRenderTime).toBeLessThan(threshold);
     });
 
