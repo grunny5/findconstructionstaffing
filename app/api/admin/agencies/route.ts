@@ -19,12 +19,10 @@ import { z } from 'zod';
 import { createSlug } from '@/lib/utils/formatting';
 import { sanitizeSearchInput } from '@/lib/validation/agencies-query';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { MAX_SLUG_ATTEMPTS } from '@/lib/constants/agency';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
-
-// Maximum attempts to find a unique slug before failing
-const MAX_SLUG_ATTEMPTS = 5;
 
 /**
  * Escapes SQL LIKE/ILIKE wildcard characters for literal matching.

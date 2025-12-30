@@ -147,7 +147,7 @@ export default async function AgencyDetailPage({
             {/* Slug */}
             <div>
               <label className="text-sm font-medium text-gray-500">Slug</label>
-              <p className="mt-1 text-base font-mono text-sm">{agency.slug}</p>
+              <p className="mt-1 font-mono text-sm">{agency.slug}</p>
             </div>
 
             {/* Email */}

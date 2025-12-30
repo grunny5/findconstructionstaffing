@@ -1447,7 +1447,7 @@ describe('POST /api/admin/agencies', () => {
               return {
                 limit: jest.fn().mockReturnThis(),
                 maybeSingle: jest.fn().mockResolvedValue({
-                  // All slug checks return existing (simulate all 5 attempts failing)
+                  // All slug checks return existing (simulate all 10 attempts failing)
                   data: { id: 'existing-id' },
                   error: null,
                 }),
@@ -1475,7 +1475,7 @@ describe('POST /api/admin/agencies', () => {
 
       expect(response.status).toBe(HTTP_STATUS.CONFLICT);
       expect(data.error.message).toContain('Unable to generate unique slug');
-      expect(slugCheckCount).toBe(5); // base + -2, -3, -4, -5
+      expect(slugCheckCount).toBe(10); // base + -2 through -10
     });
 
     it('should handle unique constraint violation during insert', async () => {

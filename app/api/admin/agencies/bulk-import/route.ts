@@ -15,12 +15,10 @@ import { z } from 'zod';
 import { createSlug } from '@/lib/utils/formatting';
 import type { ParsedAgencyRow } from '@/lib/utils/csv-parser';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { MAX_SLUG_ATTEMPTS } from '@/lib/constants/agency';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
-
-// Maximum attempts to find a unique slug before failing
-const MAX_SLUG_ATTEMPTS = 10;
 
 /**
  * Result for a single imported row

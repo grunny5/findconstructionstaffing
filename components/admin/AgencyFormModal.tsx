@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -74,7 +74,7 @@ const agencyCreationSchema = z.object({
     .string()
     .trim()
     .regex(
-      /^\+?[1-9]\d{1,14}$/,
+      /^\+[1-9]\d{1,14}$/,
       'Phone must be in E.164 format (e.g., +12345678900)'
     )
     .optional()
@@ -181,6 +181,26 @@ export function AgencyFormModal({
       is_union: agency?.is_union ?? false,
     },
   });
+
+  useEffect(() => {
+    const mappedValues: AgencyCreationFormData = {
+      name: agency?.name || '',
+      description: agency?.description || '',
+      website: agency?.website || '',
+      phone: agency?.phone || '',
+      email: agency?.email || '',
+      headquarters: agency?.headquarters || '',
+      founded_year: agency?.founded_year?.toString() || '',
+      employee_count:
+        (agency?.employee_count as AgencyCreationFormData['employee_count']) ||
+        '',
+      company_size:
+        (agency?.company_size as AgencyCreationFormData['company_size']) || '',
+      offers_per_diem: agency?.offers_per_diem ?? false,
+      is_union: agency?.is_union ?? false,
+    };
+    form.reset(mappedValues);
+  }, [agency, form]);
 
   const handleSubmit = async (data: AgencyCreationFormData) => {
     setIsSubmitting(true);
