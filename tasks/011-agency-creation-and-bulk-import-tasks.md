@@ -626,7 +626,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 3.1: Admin Edits Agency Details
+### [x] ➡️ Story 3.1: Admin Edits Agency Details
 
 > As a **Site Administrator**, I want **to edit any agency's details**, so that **I can correct errors or update information**.
 
@@ -634,7 +634,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.1.1: Create Admin Agency Detail Page
+### [x] Task 3.1.1: Create Admin Agency Detail Page
 
 - **Role:** Frontend Developer
 - **Objective:** Create page showing full agency details with edit capability
@@ -650,24 +650,24 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Breadcrumb navigation
   - Tabs for different sections (Details, Trades, Regions, History)
 - **Acceptance Criteria (for this task):**
-  - [ ] Route `/admin/agencies/[id]` shows agency details
-  - [ ] Shows all agency fields in organized sections
-  - [ ] Shows claimed status and owner (if claimed)
-  - [ ] Shows created/updated timestamps
-  - [ ] Includes "Edit" button to open edit modal
-  - [ ] Includes "Back to Agencies" navigation
-  - [ ] 404 if agency not found
+  - [x] Route `/admin/agencies/[id]` shows agency details
+  - [x] Shows all agency fields in organized sections
+  - [x] Shows claimed status and owner (if claimed)
+  - [x] Shows created/updated timestamps
+  - [x] Includes "Edit" button to open edit modal
+  - [x] Includes "Back to Agencies" navigation
+  - [x] 404 if agency not found
 - **Definition of Done:**
-  - [ ] Detail page complete
-  - [ ] Tests verify data display
-  - [ ] Tests verify 404 handling
-  - [ ] **Final Check:** Follows existing admin detail page patterns
+  - [x] Detail page complete
+  - [x] Tests verify data display
+  - [x] Tests verify 404 handling
+  - [x] **Final Check:** Follows existing admin detail page patterns
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] Task 3.1.2: Create Admin Agency Update Endpoint (PATCH)
+### [x] Task 3.1.2: Create Admin Agency Update Endpoint (PATCH)
 
 - **Role:** Backend Developer
 - **Objective:** Create API endpoint to update agency details
@@ -681,25 +681,25 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Update last_edited_at, last_edited_by
   - Audit logging
 - **Acceptance Criteria (for this task):**
-  - [ ] `PATCH /api/admin/agencies/[id]` updates agency fields
-  - [ ] Only updates fields provided in request body
-  - [ ] Validates fields using same schema as creation
-  - [ ] Updates last_edited_at to current timestamp
-  - [ ] Updates last_edited_by to admin's user ID
-  - [ ] Returns updated agency with 200 status
-  - [ ] Returns 404 if agency not found
-  - [ ] Returns 401/403 for auth errors
+  - [x] `PATCH /api/admin/agencies/[id]` updates agency fields
+  - [x] Only updates fields provided in request body
+  - [x] Validates fields using same schema as creation
+  - [x] Updates last_edited_at to current timestamp
+  - [x] Updates last_edited_by to admin's user ID
+  - [x] Returns updated agency with 200 status
+  - [x] Returns 404 if agency not found
+  - [x] Returns 401/403 for auth errors
 - **Definition of Done:**
-  - [ ] Update endpoint functional
-  - [ ] Tests cover all scenarios
-  - [ ] Tests verify audit fields updated
-  - [ ] **Final Check:** Consistent with existing admin patterns
+  - [x] Update endpoint functional
+  - [x] Tests cover all scenarios
+  - [x] Tests verify audit fields updated
+  - [x] **Final Check:** Consistent with existing admin patterns
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] Task 3.1.3: Enable Edit Mode in Agency Form Modal
+### [x] Task 3.1.3: Enable Edit Mode in Agency Form Modal
 
 - **Role:** Frontend Developer
 - **Objective:** Reuse AgencyFormModal for editing existing agencies
@@ -711,16 +711,16 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Change submit to PATCH instead of POST
   - Different title: "Edit Agency" vs "Create Agency"
 - **Acceptance Criteria (for this task):**
-  - [ ] Form pre-populates when editing existing agency
-  - [ ] Modal title shows "Edit Agency" in edit mode
-  - [ ] Submit calls PATCH endpoint in edit mode
-  - [ ] Success message shows "Agency updated" vs "Agency created"
-  - [ ] Changes refresh detail page data
+  - [x] Form pre-populates when editing existing agency
+  - [x] Modal title shows "Edit Agency" in edit mode
+  - [x] Submit calls PATCH endpoint in edit mode
+  - [x] Success message shows "Agency updated" vs "Agency created"
+  - [x] Changes refresh detail page data
 - **Definition of Done:**
-  - [ ] Edit mode functional
-  - [ ] Tests verify pre-population
-  - [ ] Tests verify correct API calls
-  - [ ] **Final Check:** No code duplication between create/edit
+  - [x] Edit mode functional
+  - [x] Tests verify pre-population
+  - [x] Tests verify correct API calls
+  - [x] **Final Check:** No code duplication between create/edit
 
 **Estimated Effort:** 2 hours
 
