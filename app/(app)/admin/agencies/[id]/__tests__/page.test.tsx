@@ -214,7 +214,8 @@ describe('AgencyDetailPage', () => {
   });
 
   it('displays back button to agencies list', async () => {
-    let profileCallCount = 0;
+    let profileCallIndex = 0;
+
     mockCreateClient.mockReturnValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
@@ -224,30 +225,20 @@ describe('AgencyDetailPage', () => {
       },
       from: jest.fn((table: string) => {
         if (table === 'profiles') {
-          profileCallCount++;
-          if (profileCallCount === 1) {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: { role: 'admin' },
-                    error: null,
-                  }),
+          const data =
+            profileCallIndex === 0 ? { role: 'admin' } : mockOwnerProfile;
+          profileCallIndex++;
+
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data,
+                  error: null,
                 }),
               }),
-            };
-          } else {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: mockOwnerProfile,
-                    error: null,
-                  }),
-                }),
-              }),
-            };
-          }
+            }),
+          };
         } else if (table === 'agencies') {
           return {
             select: jest.fn().mockReturnValue({
@@ -271,7 +262,8 @@ describe('AgencyDetailPage', () => {
   });
 
   it('displays edit button', async () => {
-    let profileCallCount = 0;
+    let profileCallIndex = 0;
+
     mockCreateClient.mockReturnValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
@@ -281,30 +273,20 @@ describe('AgencyDetailPage', () => {
       },
       from: jest.fn((table: string) => {
         if (table === 'profiles') {
-          profileCallCount++;
-          if (profileCallCount === 1) {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: { role: 'admin' },
-                    error: null,
-                  }),
+          const data =
+            profileCallIndex === 0 ? { role: 'admin' } : mockOwnerProfile;
+          profileCallIndex++;
+
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data,
+                  error: null,
                 }),
               }),
-            };
-          } else {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: mockOwnerProfile,
-                    error: null,
-                  }),
-                }),
-              }),
-            };
-          }
+            }),
+          };
         } else if (table === 'agencies') {
           return {
             select: jest.fn().mockReturnValue({
@@ -328,7 +310,8 @@ describe('AgencyDetailPage', () => {
   });
 
   it('displays owner information for claimed agency', async () => {
-    let profileCallCount = 0;
+    let profileCallIndex = 0;
+
     mockCreateClient.mockReturnValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
@@ -338,30 +321,20 @@ describe('AgencyDetailPage', () => {
       },
       from: jest.fn((table: string) => {
         if (table === 'profiles') {
-          profileCallCount++;
-          if (profileCallCount === 1) {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: { role: 'admin' },
-                    error: null,
-                  }),
+          const data =
+            profileCallIndex === 0 ? { role: 'admin' } : mockOwnerProfile;
+          profileCallIndex++;
+
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data,
+                  error: null,
                 }),
               }),
-            };
-          } else {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: mockOwnerProfile,
-                    error: null,
-                  }),
-                }),
-              }),
-            };
-          }
+            }),
+          };
         } else if (table === 'agencies') {
           return {
             select: jest.fn().mockReturnValue({
@@ -386,7 +359,8 @@ describe('AgencyDetailPage', () => {
   });
 
   it('displays status badges correctly', async () => {
-    let profileCallCount = 0;
+    let profileCallIndex = 0;
+
     mockCreateClient.mockReturnValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
@@ -396,30 +370,20 @@ describe('AgencyDetailPage', () => {
       },
       from: jest.fn((table: string) => {
         if (table === 'profiles') {
-          profileCallCount++;
-          if (profileCallCount === 1) {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: { role: 'admin' },
-                    error: null,
-                  }),
+          const data =
+            profileCallIndex === 0 ? { role: 'admin' } : mockOwnerProfile;
+          profileCallIndex++;
+
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data,
+                  error: null,
                 }),
               }),
-            };
-          } else {
-            return {
-              select: jest.fn().mockReturnValue({
-                eq: jest.fn().mockReturnValue({
-                  single: jest.fn().mockResolvedValue({
-                    data: mockOwnerProfile,
-                    error: null,
-                  }),
-                }),
-              }),
-            };
-          }
+            }),
+          };
         } else if (table === 'agencies') {
           return {
             select: jest.fn().mockReturnValue({

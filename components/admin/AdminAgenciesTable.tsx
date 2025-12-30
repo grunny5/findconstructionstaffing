@@ -27,6 +27,17 @@ import type { AdminAgency } from '@/types/admin';
 
 const AGENCIES_PER_PAGE = 20;
 
+/**
+ * Determines the text color class based on profile completion percentage
+ * @param percentage - Profile completion percentage (0-100)
+ * @returns Tailwind CSS text color class
+ */
+function getProfileCompletionColor(percentage: number): string {
+  if (percentage >= 80) return 'text-green-600';
+  if (percentage >= 50) return 'text-yellow-600';
+  return 'text-muted-foreground';
+}
+
 interface AdminAgenciesTableProps {
   agencies: AdminAgency[];
 }
@@ -280,13 +291,9 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
                 </TableCell>
                 <TableCell className="text-right">
                   <span
-                    className={`text-sm font-medium ${
-                      (agency.profile_completion_percentage ?? 0) >= 80
-                        ? 'text-green-600'
-                        : (agency.profile_completion_percentage ?? 0) >= 50
-                          ? 'text-yellow-600'
-                          : 'text-muted-foreground'
-                    }`}
+                    className={`text-sm font-medium ${getProfileCompletionColor(
+                      agency.profile_completion_percentage ?? 0
+                    )}`}
                   >
                     {agency.profile_completion_percentage ?? 0}%
                   </span>
