@@ -258,13 +258,12 @@ describe('Page Load Performance Tests', () => {
   });
 
   describe('Memory Performance', () => {
-    it('should not leak memory on multiple re-renders', () => {
-      // Skip memory test in CI as it's unreliable without --expose-gc
-      if (process.env.CI) {
-        console.log('Skipping memory test in CI environment');
-        return;
-      }
+    // Use conditional test to skip cleanly in CI
+    const memoryTest = process.env.CI ? it.skip : it;
 
+    memoryTest('should not leak memory on multiple re-renders', () => {
+      // Skip memory test in CI as it's unreliable without --expose-gc
+      // This test requires node --expose-gc flag for manual garbage collection
       const initialMemory = process.memoryUsage().heapUsed;
 
       (useAgencies as jest.Mock).mockReturnValue({

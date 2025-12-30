@@ -1,5 +1,7 @@
+/**
+ * @jest-environment node
+ */
 import { NextRequest } from 'next/server';
-import { PATCH } from '../route';
 import { createClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 
@@ -7,6 +9,21 @@ import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(),
 }));
+
+// Mock NextResponse
+jest.mock('next/server', () => ({
+  ...jest.requireActual('next/server'),
+  NextResponse: {
+    json: jest.fn((data: any, init?: ResponseInit) => ({
+      status: init?.status || 200,
+      json: async () => data,
+      headers: new Headers(init?.headers),
+    })),
+  },
+}));
+
+// Import the route AFTER mocks are set up
+import { PATCH } from '../route';
 
 const mockCreateClient = createClient as jest.MockedFunction<
   typeof createClient
