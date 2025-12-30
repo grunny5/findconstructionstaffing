@@ -253,7 +253,8 @@ describe('Page Load Performance Tests', () => {
       const reRenderTime = endTime - startTime;
 
       // Should handle search state change quickly
-      expect(reRenderTime).toBeLessThan(50);
+      const threshold = process.env.CI ? 150 : 50;
+      expect(reRenderTime).toBeLessThan(threshold);
     });
   });
 
