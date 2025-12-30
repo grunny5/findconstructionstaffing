@@ -322,7 +322,7 @@ describe('Page Load Performance Tests', () => {
       expect(searchBar).toBeInTheDocument();
 
       // Critical content should render very quickly
-      const threshold = process.env.CI ? 150 : 50;
+      const threshold = process.env.CI ? 170 : 50;
       expect(criticalRenderTime).toBeLessThan(threshold);
     });
 

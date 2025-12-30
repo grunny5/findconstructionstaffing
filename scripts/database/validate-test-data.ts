@@ -168,7 +168,12 @@ function validateTestFiles(): ValidationResult {
       // Also allow slugs that match test ID patterns (agency-NNN)
       const isTestIdPattern = /^agency-\d+$/.test(slug);
 
-      if (!isValid && !slug.includes('test') && !slug.includes('mock') && !isTestIdPattern) {
+      if (
+        !isValid &&
+        !slug.includes('test') &&
+        !slug.includes('mock') &&
+        !isTestIdPattern
+      ) {
         result.valid = false;
         result.errors.push(
           `Invalid ${slugType || 'unknown'} slug "${slug}" in ${file}`
