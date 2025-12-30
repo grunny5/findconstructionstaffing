@@ -3,9 +3,10 @@ import { redirect, notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
+import { AgencyEditButton } from '@/components/admin/AgencyEditButton';
 
 interface AgencyDetailPageProps {
   params: {
@@ -124,10 +125,7 @@ export default async function AgencyDetailPage({
             agencyName={agency.name}
             currentStatus={agency.is_active ? 'active' : 'inactive'}
           />
-          <Button>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Agency
-          </Button>
+          <AgencyEditButton agency={agency} />
         </div>
       </div>
 

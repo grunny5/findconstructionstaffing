@@ -99,7 +99,7 @@ describe('AgencyStatusToggle', () => {
       expect(screen.getByText(/Reactivate Test Agency\?/i)).toBeInTheDocument();
     });
 
-    it('closes dialog when cancel button is clicked', () => {
+    it('closes dialog when cancel button is clicked', async () => {
       render(
         <AgencyStatusToggle
           agencyId="agency-123"
@@ -119,7 +119,7 @@ describe('AgencyStatusToggle', () => {
       fireEvent.click(cancelButton);
 
       // Dialog should be closed (not in document)
-      waitFor(() => {
+      await waitFor(() => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       });
     });
