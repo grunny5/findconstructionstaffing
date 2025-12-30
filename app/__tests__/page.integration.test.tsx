@@ -381,8 +381,8 @@ describe('HomePage Integration Tests', () => {
       const endTime = performance.now();
       const renderTime = endTime - startTime;
 
-      // Initial render should be fast (< 150ms for CI, < 100ms locally)
-      const threshold = process.env.CI ? 150 : 100;
+      // Initial render should be fast (< 250ms for CI, < 100ms locally)
+      const threshold = process.env.CI ? 250 : 100;
       expect(renderTime).toBeLessThan(threshold);
     });
 

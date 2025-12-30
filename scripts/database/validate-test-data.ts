@@ -142,14 +142,38 @@ function validateTestFiles(): ValidationResult {
           'mock-agency',
           'example-agency',
           'invalid-slug',
+          // Admin API route endpoints (not slugs)
+          'bulk-import',
+          // Common test fixture ID patterns
+          'agency-123',
+          'agency-456',
+          'agency-789',
+          // Generic test identifiers
+          'description',
+          'template',
+          'route',
+          // Test fixture slugs for specific test scenarios
+          'non-existent',
+          'electricians',
+          'full-agency',
+          'no-relations',
+          'active-agency',
         ].includes(slug)
       ) {
-        // These are okay for testing
+        // These are okay for testing and admin routes
         isValid = true;
         slugType = 'test-mock';
       }
 
-      if (!isValid && !slug.includes('test') && !slug.includes('mock')) {
+      // Also allow slugs that match test ID patterns (agency-NNN)
+      const isTestIdPattern = /^agency-\d+$/.test(slug);
+
+      if (
+        !isValid &&
+        !slug.includes('test') &&
+        !slug.includes('mock') &&
+        !isTestIdPattern
+      ) {
         result.valid = false;
         result.errors.push(
           `Invalid ${slugType || 'unknown'} slug "${slug}" in ${file}`

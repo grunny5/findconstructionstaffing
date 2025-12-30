@@ -2,7 +2,7 @@
 
 ## 📊 Current Status: Phase 2 - Building Industry Features
 
-**Last Updated:** December 23, 2025
+**Last Updated:** December 29, 2025
 **Project Started:** October 2024
 **Current Phase:** Phase 2A - Complete (Feature 008 Delivered)
 **Overall Progress:** ~75% of Phase 1-2 Roadmap Complete
@@ -216,6 +216,10 @@
 
 **Remaining:**
 
+- [ ] Agency management dashboard (Feature 011 - In Progress)
+  - Create individual agencies
+  - Bulk import via CSV/spreadsheet
+  - Agency deactivation/reactivation
 - [ ] Agency verification workflow
 - [ ] Content moderation tools
 - [ ] Platform analytics dashboard
@@ -1251,7 +1255,18 @@
    - Identify any bugs or UX issues
    - Document lessons learned
 
-2. **Feature 009: Direct Messaging System** (Weeks 18-21)
+2. **Feature 011: Agency Creation & Bulk Import** (Weeks 17-19)
+   - **Priority:** HIGH - Enable rapid database growth and admin agency management
+   - Admin agencies management page (`/admin/agencies`)
+   - Create individual agency form with validation
+   - CSV/spreadsheet bulk import with preview and validation
+   - Trade and region association during import
+   - Agency deactivation/reactivation controls
+   - Download CSV template functionality
+   - **Target:** 3-week sprint
+   - **FSD:** `docs/features/active/011-agency-creation-and-bulk-import.md`
+
+3. **Feature 009: Direct Messaging System** (Weeks 20-23)
    - **Priority:** HIGH - Enable direct communication between contractors and agencies
    - Design messaging schema (conversations, messages, participants)
    - Build real-time chat interface with Supabase Realtime
@@ -1261,7 +1276,7 @@
    - Comprehensive test suite for messaging flows
    - **Target:** 4-week sprint, following Feature 008 pattern
 
-3. **Logo/Image Upload for Agencies** (Week 22)
+4. **Logo/Image Upload for Agencies** (Week 24)
    - Implement image upload for agency logos
    - Add image optimization and resizing
    - Update profile completion calculation
@@ -1270,7 +1285,7 @@
 
 ### Short-term Priorities (Next 2-3 Months, Feb-Mar 2026)
 
-4. **Enhanced Lead Generation System** (Weeks 23-26)
+5. **Enhanced Lead Generation System** (Weeks 25-28)
    - Multi-step wizard for labor requests
    - Intelligent agency matching algorithm
    - Lead distribution system based on trades/regions
@@ -1279,7 +1294,7 @@
    - Lead quality scoring
    - **Target:** 4-week sprint
 
-5. **Reviews and Ratings System** (Weeks 27-30)
+6. **Reviews and Ratings System** (Weeks 29-32)
    - Database schema for reviews and ratings
    - Review submission interface
    - Display reviews on agency profiles
