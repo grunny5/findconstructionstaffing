@@ -726,7 +726,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 3.2: Admin Deactivates/Reactivates Agency
+### [x] ➡️ Story 3.2: Admin Deactivates/Reactivates Agency
 
 > As a **Site Administrator**, I want **to deactivate or reactivate an agency**, so that **I can remove agencies that are no longer in business or restore accidentally deactivated ones**.
 
@@ -734,7 +734,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.2.1: Create Deactivation Confirmation Dialog
+### [x] Task 3.2.1: Create Deactivation Confirmation Dialog
 
 - **Role:** Frontend Developer
 - **Objective:** Create confirmation dialog for agency deactivation
@@ -765,7 +765,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.2.2: Implement Status Toggle Endpoint
+### [x] Task 3.2.2: Implement Status Toggle Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to toggle agency active status
@@ -793,7 +793,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.2.3: Add Status Toggle Button to Agency Detail Page
+### [x] Task 3.2.3: Add Status Toggle Button to Agency Detail Page
 
 - **Role:** Frontend Developer
 - **Objective:** Add deactivate/reactivate button to agency detail page
@@ -820,7 +820,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.2.4: Add Status Badge to Agencies Table
+### [x] Task 3.2.4: Add Status Badge to Agencies Table
 
 - **Role:** Frontend Developer
 - **Objective:** Show visual status indicator in agencies list
