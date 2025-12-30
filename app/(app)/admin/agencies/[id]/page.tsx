@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit } from 'lucide-react';
 import Link from 'next/link';
+import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
 
 interface AgencyDetailPageProps {
   params: {
@@ -114,13 +115,20 @@ export default async function AgencyDetailPage({
         </Link>
       </div>
 
-      {/* Page title with edit button */}
+      {/* Page title with action buttons */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Agency Details</h1>
-        <Button>
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Agency
-        </Button>
+        <div className="flex gap-2">
+          <AgencyStatusToggle
+            agencyId={agency.id}
+            agencyName={agency.name}
+            currentStatus={agency.is_active ? 'active' : 'inactive'}
+          />
+          <Button>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Agency
+          </Button>
+        </div>
       </div>
 
       {/* Basic Information Card */}

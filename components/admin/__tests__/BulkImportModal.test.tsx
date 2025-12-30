@@ -14,7 +14,7 @@ global.fetch = mockFetch;
 
 // Mock next/link
 jest.mock('next/link', () => {
-  return ({
+  const MockLink = ({
     children,
     href,
     ...props
@@ -29,6 +29,8 @@ jest.mock('next/link', () => {
       </a>
     );
   };
+  MockLink.displayName = 'Link';
+  return MockLink;
 });
 
 const mockParseFile = csvParser.parseFile as jest.MockedFunction<

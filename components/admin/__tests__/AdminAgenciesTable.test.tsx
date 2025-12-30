@@ -105,6 +105,23 @@ describe('AdminAgenciesTable', () => {
       expect(inactiveBadges).toHaveLength(1);
     });
 
+    it('displays status badges with correct variants', () => {
+      render(<AdminAgenciesTable agencies={mockAgencies} />);
+
+      const activeBadge = screen.getByTestId('status-badge-1');
+      const inactiveBadge = screen.getByTestId('status-badge-2');
+
+      // Active badge should have default variant (darker/more prominent)
+      expect(activeBadge).toHaveTextContent('Active');
+      expect(activeBadge).toHaveClass('bg-industrial-graphite-600');
+      expect(activeBadge).toHaveClass('text-white');
+
+      // Inactive badge should have secondary variant (lighter/muted)
+      expect(inactiveBadge).toHaveTextContent('Inactive');
+      expect(inactiveBadge).toHaveClass('bg-industrial-graphite-100');
+      expect(inactiveBadge).toHaveClass('text-industrial-graphite-600');
+    });
+
     it('displays correct claimed badges', () => {
       render(<AdminAgenciesTable agencies={mockAgencies} />);
 
