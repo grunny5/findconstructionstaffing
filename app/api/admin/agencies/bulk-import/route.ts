@@ -4,7 +4,8 @@
  * POST /api/admin/agencies/bulk-import
  * Executes bulk import of validated agencies.
  * Creates agencies, generates slugs, and establishes trade/region relationships.
- * Uses transaction for atomicity - all or nothing on critical errors.
+ * Processes rows individually allowing partial success.
+ * Errors for individual rows are handled per-row without rolling back the entire import.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -68,17 +69,6 @@ const bulkImportSchema = z.object({
     })
   ),
 });
-
-/**
- * Escapes SQL LIKE/ILIKE wildcard characters for literal matching.
- */
-function escapeLikeWildcards(input: string): string {
-  return input
-    .trim()
-    .replace(/\\/g, '\\\\')
-    .replace(/%/g, '\\%')
-    .replace(/_/g, '\\_');
-}
 
 /**
  * Generate a unique slug for an agency by appending incrementing numbers if needed.
@@ -334,6 +324,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Prepare agency data
+        // Parse and validate founded_year
+        let foundedYear: number | null = null;
+        if (row.founded_year) {
+          const trimmed = row.founded_year.trim();
+          const parsed = parseInt(trimmed, 10);
+          const currentYear = new Date().getFullYear();
+          if (
+            Number.isFinite(parsed) &&
+            Number.isInteger(parsed) &&
+            parsed >= 1800 &&
+            parsed <= currentYear
+          ) {
+            foundedYear = parsed;
+          }
+        }
+
         const agencyData = {
           name: row.name,
           slug: uniqueSlug,
@@ -342,9 +348,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           phone: row.phone || null,
           email: row.email || null,
           headquarters: row.headquarters || null,
-          founded_year: row.founded_year
-            ? parseInt(row.founded_year, 10)
-            : null,
+          founded_year: foundedYear,
           employee_count: row.employee_count || null,
           company_size: row.company_size || null,
           offers_per_diem: row.offers_per_diem ?? false,

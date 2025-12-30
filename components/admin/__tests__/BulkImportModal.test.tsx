@@ -12,6 +12,25 @@ jest.mock('@/lib/utils/csv-parser', () => ({
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
+// Mock next/link
+jest.mock('next/link', () => {
+  return ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => {
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    );
+  };
+});
+
 const mockParseFile = csvParser.parseFile as jest.MockedFunction<
   typeof csvParser.parseFile
 >;
@@ -491,6 +510,380 @@ describe('BulkImportModal', () => {
       await userEvent.click(screen.getByTestId('browse-button'));
 
       expect(clickSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Import Execution and Results', () => {
+    beforeEach(() => {
+      mockParseFile.mockResolvedValue({
+        success: true,
+        data: [
+          { _rowNumber: 2, name: 'Agency A' },
+          { _rowNumber: 3, name: 'Agency B' },
+        ],
+        errors: [],
+        warnings: [],
+      });
+    });
+
+    it('shows results step after successful import', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              rows: [
+                {
+                  rowNumber: 2,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 2, name: 'Agency A' },
+                },
+              ],
+              summary: { total: 1, valid: 1, invalid: 0, withWarnings: 0 },
+            }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              results: [
+                {
+                  rowNumber: 2,
+                  status: 'created',
+                  agencyId: 'agency-1',
+                  agencyName: 'Agency A',
+                },
+              ],
+              summary: { total: 1, created: 1, skipped: 0, failed: 0 },
+            }),
+        });
+
+      const { container } = render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByTestId('import-button');
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-results')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Import Complete')).toBeInTheDocument();
+      expect(screen.getByText(/Created: 1/)).toBeInTheDocument();
+    });
+
+    it('displays skipped agencies in results', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              rows: [
+                {
+                  rowNumber: 2,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 2, name: 'Agency A' },
+                },
+                {
+                  rowNumber: 3,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 3, name: 'Agency B' },
+                },
+              ],
+              summary: { total: 2, valid: 2, invalid: 0, withWarnings: 0 },
+            }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              results: [
+                {
+                  rowNumber: 2,
+                  status: 'created',
+                  agencyId: 'agency-1',
+                  agencyName: 'Agency A',
+                },
+                {
+                  rowNumber: 3,
+                  status: 'skipped',
+                  agencyName: 'Agency B',
+                  reason: 'Agency with this name already exists',
+                },
+              ],
+              summary: { total: 2, created: 1, skipped: 1, failed: 0 },
+            }),
+        });
+
+      const { container } = render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByTestId('import-button');
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-results')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/Skipped Agencies \(1\)/)).toBeInTheDocument();
+      expect(screen.getByTestId('skipped-row-3')).toBeInTheDocument();
+      expect(screen.getByText('Agency B')).toBeInTheDocument();
+      expect(
+        screen.getByText('Agency with this name already exists')
+      ).toBeInTheDocument();
+    });
+
+    it('displays failed agencies in results', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              rows: [
+                {
+                  rowNumber: 2,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 2, name: 'Agency A' },
+                },
+              ],
+              summary: { total: 1, valid: 1, invalid: 0, withWarnings: 0 },
+            }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              results: [
+                {
+                  rowNumber: 2,
+                  status: 'failed',
+                  agencyName: 'Agency A',
+                  reason: 'Failed to create agency',
+                },
+              ],
+              summary: { total: 1, created: 0, skipped: 0, failed: 1 },
+            }),
+        });
+
+      const { container } = render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByTestId('import-button');
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-results')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/Failed Agencies \(1\)/)).toBeInTheDocument();
+      expect(screen.getByTestId('failed-row-2')).toBeInTheDocument();
+      expect(screen.getByText('Agency A')).toBeInTheDocument();
+      expect(screen.getByText('Failed to create agency')).toBeInTheDocument();
+    });
+
+    it('shows action buttons in results step', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              rows: [
+                {
+                  rowNumber: 2,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 2, name: 'Agency A' },
+                },
+              ],
+              summary: { total: 1, valid: 1, invalid: 0, withWarnings: 0 },
+            }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              results: [
+                {
+                  rowNumber: 2,
+                  status: 'created',
+                  agencyId: 'agency-1',
+                  agencyName: 'Agency A',
+                },
+              ],
+              summary: { total: 1, created: 1, skipped: 0, failed: 0 },
+            }),
+        });
+
+      const { container } = render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByTestId('import-button');
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-results')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('close-button')).toBeInTheDocument();
+      expect(screen.getByTestId('import-more-button')).toBeInTheDocument();
+      expect(screen.getByTestId('view-agencies-button')).toBeInTheDocument();
+    });
+
+    it('resets wizard when Import More is clicked', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              rows: [
+                {
+                  rowNumber: 2,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 2, name: 'Agency A' },
+                },
+              ],
+              summary: { total: 1, valid: 1, invalid: 0, withWarnings: 0 },
+            }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              results: [
+                {
+                  rowNumber: 2,
+                  status: 'created',
+                  agencyId: 'agency-1',
+                  agencyName: 'Agency A',
+                },
+              ],
+              summary: { total: 1, created: 1, skipped: 0, failed: 0 },
+            }),
+        });
+
+      const { container } = render(<BulkImportModal {...defaultProps} />);
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByTestId('import-button');
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-results')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('import-more-button'));
+
+      expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
+      expect(screen.queryByTestId('import-results')).not.toBeInTheDocument();
+    });
+
+    it('calls onSuccess callback after successful import', async () => {
+      const onSuccess = jest.fn();
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              rows: [
+                {
+                  rowNumber: 2,
+                  valid: true,
+                  errors: [],
+                  warnings: [],
+                  data: { _rowNumber: 2, name: 'Agency A' },
+                },
+              ],
+              summary: { total: 1, valid: 1, invalid: 0, withWarnings: 0 },
+            }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              results: [
+                {
+                  rowNumber: 2,
+                  status: 'created',
+                  agencyId: 'agency-1',
+                  agencyName: 'Agency A',
+                },
+              ],
+              summary: { total: 1, created: 1, skipped: 0, failed: 0 },
+            }),
+        });
+
+      const { container } = render(
+        <BulkImportModal {...defaultProps} onSuccess={onSuccess} />
+      );
+
+      const file = new File(['name'], 'test.csv', { type: 'text/csv' });
+      const fileInput = screen.getByTestId('file-input');
+      await userEvent.upload(fileInput, file);
+      await userEvent.click(screen.getByTestId('next-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-preview-table')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByTestId('import-button');
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-results')).toBeInTheDocument();
+      });
+
+      expect(onSuccess).toHaveBeenCalled();
     });
   });
 });

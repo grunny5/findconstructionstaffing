@@ -358,7 +358,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### ➡️ Story 2.2: Admin Bulk Imports Agencies via CSV
+### [x] ➡️ Story 2.2: Admin Bulk Imports Agencies via CSV
 
 > As a **Site Administrator**, I want **to upload a CSV file containing multiple agencies**, so that **I can quickly populate the database with data from external sources**.
 
@@ -526,7 +526,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.6: Implement Import Progress and Results UI
+### [x] Task 2.2.6: Implement Import Progress and Results UI
 
 - **Role:** Frontend Developer
 - **Objective:** Show import progress and final results to admin
@@ -538,24 +538,24 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Results summary with success/skip/fail counts
   - Option to view created agencies
 - **Acceptance Criteria (for this task):**
-  - [ ] Shows progress bar during import
-  - [ ] Displays "Importing X of Y agencies..." message
-  - [ ] Shows results summary: "Created: X, Skipped: Y, Failed: Z"
-  - [ ] Lists skipped agencies with reason (e.g., "Already exists")
-  - [ ] Lists failed agencies with error message
-  - [ ] "View Agencies" button links to admin agencies list
-  - [ ] "Import More" button resets wizard
-  - [ ] "Close" button closes modal
+  - [x] Shows progress bar during import
+  - [x] Displays "Importing X of Y agencies..." message
+  - [x] Shows results summary: "Created: X, Skipped: Y, Failed: Z"
+  - [x] Lists skipped agencies with reason (e.g., "Already exists")
+  - [x] Lists failed agencies with error message
+  - [x] "View Agencies" button links to admin agencies list
+  - [x] "Import More" button resets wizard
+  - [x] "Close" button closes modal
 - **Definition of Done:**
-  - [ ] Progress and results UI complete
-  - [ ] Tests verify all states
-  - [ ] **Final Check:** Handles large imports gracefully
+  - [x] Progress and results UI complete
+  - [x] Tests verify all states
+  - [x] **Final Check:** Handles large imports gracefully
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### ➡️ Story 2.3: Bulk Import Handles Trade and Region Associations
+### [x] ➡️ Story 2.3: Bulk Import Handles Trade and Region Associations
 
 > As a **Site Administrator**, I want **the bulk import to create trade and region associations**, so that **imported agencies are fully searchable by specialty and location**.
 
@@ -563,7 +563,7 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.3.1: Implement Trade Name Matching Logic
+### [x] Task 2.3.1: Implement Trade Name Matching Logic
 
 - **Role:** Backend Developer
 - **Objective:** Match trade names from CSV to database trade IDs
@@ -576,22 +576,22 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Fuzzy matching for common variations (optional)
   - Return unmatched trades as warnings
 - **Acceptance Criteria (for this task):**
-  - [ ] Matches trade names case-insensitively
-  - [ ] Handles common variations: "Electrician" = "electrician" = "ELECTRICIAN"
-  - [ ] Handles slug matching: "Electrician" matches trade with slug "electrician"
-  - [ ] Unknown trades added to warnings list (not errors)
-  - [ ] Creates agency_trades records for matched trades
+  - [x] Matches trade names case-insensitively
+  - [x] Handles common variations: "Electrician" = "electrician" = "ELECTRICIAN"
+  - [x] Handles slug matching: "Electrician" matches trade with slug "electrician"
+  - [x] Unknown trades added to warnings list (not errors)
+  - [x] Creates agency_trades records for matched trades
 - **Definition of Done:**
-  - [ ] Trade matching implemented
-  - [ ] Tests verify case-insensitive matching
-  - [ ] Tests verify partial matches don't create false positives
-  - [ ] **Final Check:** Matches all 48 existing trades
+  - [x] Trade matching implemented
+  - [x] Tests verify case-insensitive matching
+  - [x] Tests verify partial matches don't create false positives
+  - [x] **Final Check:** Matches all 48 existing trades
 
 **Estimated Effort:** 2 hours
 
 ---
 
-### [ ] Task 2.3.2: Implement Region Code Matching Logic
+### [x] Task 2.3.2: Implement Region Code Matching Logic
 
 - **Role:** Backend Developer
 - **Objective:** Match region/state codes from CSV to database region IDs
@@ -604,15 +604,15 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Support both code (TX) and name (Texas)
   - Return unmatched regions as warnings
 - **Acceptance Criteria (for this task):**
-  - [ ] Matches state codes case-insensitively (TX = tx = Tx)
-  - [ ] Matches full state names (Texas = TX)
-  - [ ] Unknown regions added to warnings list (not errors)
-  - [ ] Creates agency_regions records for matched regions
+  - [x] Matches state codes case-insensitively (TX = tx = Tx)
+  - [x] Matches full state names (Texas = TX)
+  - [x] Unknown regions added to warnings list (not errors)
+  - [x] Creates agency_regions records for matched regions
 - **Definition of Done:**
-  - [ ] Region matching implemented
-  - [ ] Tests verify code and name matching
-  - [ ] Tests verify all 50 states match
-  - [ ] **Final Check:** Consistent with existing region data
+  - [x] Region matching implemented
+  - [x] Tests verify code and name matching
+  - [x] Tests verify all 50 states match
+  - [x] **Final Check:** Consistent with existing region data
 
 **Estimated Effort:** 2 hours
 
