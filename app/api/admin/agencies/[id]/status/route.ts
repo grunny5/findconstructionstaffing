@@ -26,9 +26,11 @@ export type StatusUpdateData = z.infer<typeof statusUpdateSchema>;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
+    // Await params for Next.js 15 compatibility
+    const { id } = await params;
     const supabase = await createClient();
 
     // ========================================================================
@@ -112,7 +114,7 @@ export async function POST(
     const { data: existingAgency, error: fetchError } = await supabase
       .from('agencies')
       .select('id, name, is_active')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !existingAgency) {
@@ -140,7 +142,7 @@ export async function POST(
     const { data: updatedAgency, error: updateError } = await supabase
       .from('agencies')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 

@@ -111,9 +111,11 @@ export type AgencyUpdateData = z.infer<typeof agencyUpdateSchema>;
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
+    // Await params for Next.js 15 compatibility
+    const { id } = await params;
     const supabase = await createClient();
 
     // ========================================================================
@@ -210,7 +212,7 @@ export async function PATCH(
     const { data: existingAgency, error: fetchError } = await supabase
       .from('agencies')
       .select('id, name')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !existingAgency) {
@@ -252,7 +254,7 @@ export async function PATCH(
     const { data: updatedAgency, error: updateError } = await supabase
       .from('agencies')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
