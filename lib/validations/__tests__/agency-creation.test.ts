@@ -219,13 +219,12 @@ describe('agencyCreationSchema', () => {
       expect(result.phone).toBe('+12345678900');
     });
 
-    it('should reject phone without plus sign', () => {
-      expect(() =>
-        agencyCreationSchema.parse({
-          name: 'Test Agency',
-          phone: '12345678900',
-        })
-      ).toThrow(/Phone must be in E\.164 format/);
+    it('should accept valid phone without plus sign', () => {
+      const result = agencyCreationSchema.parse({
+        name: 'Test Agency',
+        phone: '12345678900',
+      });
+      expect(result.phone).toBe('12345678900');
     });
 
     it('should accept empty phone', () => {
@@ -804,8 +803,8 @@ describe('isValidE164Phone', () => {
     expect(isValidE164Phone('+12345678900')).toBe(true);
   });
 
-  it('should return false for phone without plus', () => {
-    expect(isValidE164Phone('12345678900')).toBe(false);
+  it('should return true for phone without plus', () => {
+    expect(isValidE164Phone('12345678900')).toBe(true);
   });
 
   it('should return true for empty string', () => {

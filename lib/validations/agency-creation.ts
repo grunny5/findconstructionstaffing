@@ -70,7 +70,7 @@ export const FOUNDED_YEAR_OPTIONS = Array.from(
  * - name: Required, 2-200 characters, trimmed
  * - description: Optional, max 5000 characters
  * - website: Optional, valid HTTP/HTTPS URL
- * - phone: Optional, E.164 format (+12345678900)
+ * - phone: Optional, E.164 format (e.g., +12345678900 or 12345678900)
  * - email: Optional, valid email address
  * - headquarters: Optional, max 200 characters
  * - founded_year: Optional, year as string, 1800-current year
@@ -117,8 +117,8 @@ export const agencyCreationSchema = z.object({
     .string()
     .trim()
     .regex(
-      /^\+[1-9]\d{1,14}$/,
-      'Phone must be in E.164 format (e.g., +12345678900)'
+      /^\+?[1-9]\d{1,14}$/,
+      'Phone must be in E.164 format (e.g., +12345678900 or 12345678900)'
     )
     .optional()
     .or(z.literal('')),
@@ -237,11 +237,11 @@ export function isValidAgencyName(name: string): boolean {
 /**
  * Validate E.164 phone format
  * @param phone - Phone number to validate
- * @returns true if valid E.164 format (with required + prefix), false otherwise
+ * @returns true if valid E.164 format (with optional + prefix), false otherwise
  */
 export function isValidE164Phone(phone: string): boolean {
   if (!phone || phone.trim() === '') return true; // Optional field
-  return /^\+[1-9]\d{1,14}$/.test(phone.trim());
+  return /^\+?[1-9]\d{1,14}$/.test(phone.trim());
 }
 
 /**
