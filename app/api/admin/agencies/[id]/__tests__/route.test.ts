@@ -89,7 +89,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
       } as any);
 
       const request = createMockRequest({ name: 'Updated Agency' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
@@ -118,7 +120,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
       } as any);
 
       const request = createMockRequest({ name: 'Updated Agency' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
@@ -165,7 +169,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
         }
       );
 
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -175,7 +181,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('returns 400 if no fields provided to update', async () => {
       const request = createMockRequest({});
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -185,7 +193,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates name length constraints', async () => {
       const request = createMockRequest({ name: 'A' }); // Too short
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -194,7 +204,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates email format', async () => {
       const request = createMockRequest({ email: 'invalid-email' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -203,7 +215,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates website URL format', async () => {
       const request = createMockRequest({ website: 'not-a-url' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -212,7 +226,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates phone E.164 format', async () => {
       const request = createMockRequest({ phone: '123-456-7890' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -221,7 +237,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates founded_year range', async () => {
       const request = createMockRequest({ founded_year: '1700' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -230,7 +248,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates employee_count enum values', async () => {
       const request = createMockRequest({ employee_count: 'invalid' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -239,7 +259,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
     it('validates company_size enum values', async () => {
       const request = createMockRequest({ company_size: 'invalid' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -373,7 +395,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
       } as any);
 
       const request = createMockRequest({ name: 'Updated Agency Name' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -452,7 +476,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
         email: 'new@email.com',
         phone: '+19876543210',
       });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -527,7 +553,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
         description: '',
         website: '',
       });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -595,7 +623,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
       } as any);
 
       const request = createMockRequest({ founded_year: '2020' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -668,7 +698,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
         offers_per_diem: false,
         is_union: true,
       });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -735,7 +767,9 @@ describe('PATCH /api/admin/agencies/[id]', () => {
       } as any);
 
       const request = createMockRequest({ name: 'Updated Name' });
-      const response = await PATCH(request, { params: Promise.resolve({ id: 'agency-456' }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);

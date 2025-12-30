@@ -52,7 +52,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
       });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
@@ -78,7 +80,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
       });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
@@ -104,7 +108,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
       });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
@@ -142,7 +148,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -163,7 +171,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
       });
 
       const request = createMockRequest({});
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -184,7 +194,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
       });
 
       const request = createMockRequest({ active: 'yes' });
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -224,7 +236,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'invalid-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'invalid-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
@@ -291,7 +305,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'agency-123' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -350,7 +366,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         });
 
       const request = createMockRequest({ active: true });
-      const response = await POST(request, { params: Promise.resolve({ id: 'agency-123' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -464,7 +482,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'agency-123' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -522,7 +542,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         });
 
       const request = createMockRequest({ active: true });
-      const response = await POST(request, { params: Promise.resolve({ id: 'agency-123' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -572,7 +594,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
         });
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'agency-123' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
@@ -586,7 +610,9 @@ describe('POST /api/admin/agencies/[id]/status', () => {
       mockCreateClient.mockRejectedValue(new Error('Unexpected error'));
 
       const request = createMockRequest({ active: false });
-      const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'test-id' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
