@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Download, Plus, Upload } from 'lucide-react';
 import { BulkImportModal } from './BulkImportModal';
 
@@ -38,10 +44,25 @@ export function AdminAgenciesActions({ onRefresh }: AdminAgenciesActionsProps) {
           <Upload className="h-4 w-4 mr-2" />
           Bulk Import
         </Button>
-        <Button disabled data-testid="create-agency-button">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Agency
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0}>
+                <Button
+                  disabled
+                  data-testid="create-agency-button"
+                  className="pointer-events-none"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Agency
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Coming soon</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <BulkImportModal

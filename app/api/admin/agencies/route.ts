@@ -20,6 +20,10 @@ import { createSlug } from '@/lib/utils/formatting';
 import { sanitizeSearchInput } from '@/lib/validation/agencies-query';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { MAX_SLUG_ATTEMPTS } from '@/lib/constants/agency';
+import {
+  agencyCreationSchema,
+  type AgencyCreationFormData,
+} from '@/lib/validations/agency-creation';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
@@ -49,92 +53,8 @@ const adminAgenciesQuerySchema = z.object({
 
 export type AdminAgenciesQueryParams = z.infer<typeof adminAgenciesQuerySchema>;
 
-// Agency creation validation schema
-const currentYear = new Date().getFullYear();
-
-const agencyCreationSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, 'Company name must be at least 2 characters')
-    .max(200, 'Company name must be less than 200 characters'),
-
-  description: z
-    .string()
-    .trim()
-    .max(5000, 'Description must be less than 5000 characters')
-    .optional()
-    .or(z.literal('')),
-
-  website: z
-    .string()
-    .trim()
-    .url('Must be a valid URL (http:// or https://)')
-    .regex(/^https?:\/\/.+/, 'Website must start with http:// or https://')
-    .optional()
-    .or(z.literal('')),
-
-  phone: z
-    .string()
-    .trim()
-    .regex(
-      /^\+?[1-9]\d{1,14}$/,
-      'Phone must be in E.164 format (e.g., +12345678900)'
-    )
-    .optional()
-    .or(z.literal('')),
-
-  email: z
-    .string()
-    .trim()
-    .email('Must be a valid email address')
-    .optional()
-    .or(z.literal('')),
-
-  headquarters: z
-    .string()
-    .trim()
-    .max(200, 'Headquarters must be less than 200 characters')
-    .optional()
-    .or(z.literal('')),
-
-  founded_year: z
-    .string()
-    .regex(/^\d{4}$/, 'Must be a valid year')
-    .refine(
-      (year) => {
-        const y = parseInt(year, 10);
-        return y >= 1800 && y <= currentYear;
-      },
-      { message: `Year must be between 1800 and ${currentYear}` }
-    )
-    .optional()
-    .or(z.literal('')),
-
-  employee_count: z
-    .enum([
-      '1-10',
-      '11-50',
-      '51-100',
-      '101-200',
-      '201-500',
-      '501-1000',
-      '1001+',
-    ])
-    .optional()
-    .or(z.literal('')),
-
-  company_size: z
-    .enum(['Small', 'Medium', 'Large', 'Enterprise'])
-    .optional()
-    .or(z.literal('')),
-
-  offers_per_diem: z.boolean().default(false),
-
-  is_union: z.boolean().default(false),
-});
-
-export type AgencyCreationData = z.infer<typeof agencyCreationSchema>;
+// Re-export for backwards compatibility
+export type AgencyCreationData = AgencyCreationFormData;
 
 // =============================================================================
 // HELPER FUNCTIONS

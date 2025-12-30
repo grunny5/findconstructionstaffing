@@ -10,9 +10,8 @@ export const DESCRIPTION_MAX_LENGTH = 5000;
 export const HEADQUARTERS_MAX_LENGTH = 200;
 export const MIN_FOUNDED_YEAR = 1800;
 
-// Current year for validation (calculated once at module load)
-const currentYear = new Date().getFullYear();
-export const MAX_FOUNDED_YEAR = currentYear;
+// Maximum founded year - dynamically calculated when needed
+export const MAX_FOUNDED_YEAR = () => new Date().getFullYear();
 
 // Employee count ranges
 export const EMPLOYEE_COUNT_VALUES = [
@@ -51,13 +50,13 @@ export const COMPANY_SIZE_OPTIONS = [
 ] as const;
 
 // Generate year options from current year down to MIN_FOUNDED_YEAR
-export const FOUNDED_YEAR_OPTIONS = Array.from(
-  { length: currentYear - MIN_FOUNDED_YEAR + 1 },
-  (_, i) => ({
+export function getFoundedYearOptions() {
+  const currentYear = new Date().getFullYear();
+  return Array.from({ length: currentYear - MIN_FOUNDED_YEAR + 1 }, (_, i) => ({
     value: String(currentYear - i),
     label: String(currentYear - i),
-  })
-);
+  }));
+}
 
 // =============================================================================
 // VALIDATION SCHEMA
@@ -145,10 +144,13 @@ export const agencyCreationSchema = z.object({
     .regex(/^\d{4}$/, 'Must be a valid 4-digit year')
     .refine(
       (year) => {
+        const currentYear = new Date().getFullYear();
         const y = parseInt(year, 10);
         return y >= MIN_FOUNDED_YEAR && y <= currentYear;
       },
-      { message: `Year must be between ${MIN_FOUNDED_YEAR} and ${currentYear}` }
+      {
+        message: `Year must be between ${MIN_FOUNDED_YEAR} and ${new Date().getFullYear()}`,
+      }
     )
     .optional()
     .or(z.literal('')),

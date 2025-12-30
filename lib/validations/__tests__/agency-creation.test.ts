@@ -20,7 +20,7 @@ import {
   COMPANY_SIZE_VALUES,
   EMPLOYEE_COUNT_OPTIONS,
   COMPANY_SIZE_OPTIONS,
-  FOUNDED_YEAR_OPTIONS,
+  getFoundedYearOptions,
 } from '../agency-creation';
 
 describe('agencyCreationSchema', () => {
@@ -423,9 +423,9 @@ describe('agencyCreationSchema', () => {
     it('should accept current year', () => {
       const result = agencyCreationSchema.parse({
         name: 'Test Agency',
-        founded_year: String(MAX_FOUNDED_YEAR),
+        founded_year: String(MAX_FOUNDED_YEAR()),
       });
-      expect(result.founded_year).toBe(String(MAX_FOUNDED_YEAR));
+      expect(result.founded_year).toBe(String(MAX_FOUNDED_YEAR()));
     });
 
     it('should accept empty founded_year', () => {
@@ -448,19 +448,19 @@ describe('agencyCreationSchema', () => {
           founded_year: '1799',
         })
       ).toThrow(
-        `Year must be between ${MIN_FOUNDED_YEAR} and ${MAX_FOUNDED_YEAR}`
+        `Year must be between ${MIN_FOUNDED_YEAR} and ${MAX_FOUNDED_YEAR()}`
       );
     });
 
     it('should reject year after current year', () => {
-      const futureYear = String(MAX_FOUNDED_YEAR + 1);
+      const futureYear = String(MAX_FOUNDED_YEAR() + 1);
       expect(() =>
         agencyCreationSchema.parse({
           name: 'Test Agency',
           founded_year: futureYear,
         })
       ).toThrow(
-        `Year must be between ${MIN_FOUNDED_YEAR} and ${MAX_FOUNDED_YEAR}`
+        `Year must be between ${MIN_FOUNDED_YEAR} and ${MAX_FOUNDED_YEAR()}`
       );
     });
 
@@ -858,11 +858,12 @@ describe('constants', () => {
   });
 
   it('should have founded year options from current year to 1800', () => {
-    expect(FOUNDED_YEAR_OPTIONS.length).toBe(
-      MAX_FOUNDED_YEAR - MIN_FOUNDED_YEAR + 1
+    const foundedYearOptions = getFoundedYearOptions();
+    expect(foundedYearOptions.length).toBe(
+      MAX_FOUNDED_YEAR() - MIN_FOUNDED_YEAR + 1
     );
-    expect(FOUNDED_YEAR_OPTIONS[0].value).toBe(String(MAX_FOUNDED_YEAR));
-    expect(FOUNDED_YEAR_OPTIONS[FOUNDED_YEAR_OPTIONS.length - 1].value).toBe(
+    expect(foundedYearOptions[0].value).toBe(String(MAX_FOUNDED_YEAR()));
+    expect(foundedYearOptions[foundedYearOptions.length - 1].value).toBe(
       String(MIN_FOUNDED_YEAR)
     );
   });

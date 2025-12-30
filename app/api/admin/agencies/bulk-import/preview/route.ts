@@ -15,9 +15,6 @@ import type { ParsedAgencyRow } from '@/lib/utils/csv-parser';
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
 
-// Current year for founded_year validation
-const currentYear = new Date().getFullYear();
-
 /**
  * Validation result for a single row
  */
@@ -154,6 +151,7 @@ function validateRow(
   // Validate founded_year
   if (row.founded_year && row.founded_year.trim() !== '') {
     const year = parseInt(row.founded_year.trim(), 10);
+    const currentYear = new Date().getFullYear();
     if (isNaN(year) || !/^\d{4}$/.test(row.founded_year.trim())) {
       errors.push('Founded year must be a valid 4-digit year');
     } else if (year < 1800 || year > currentYear) {

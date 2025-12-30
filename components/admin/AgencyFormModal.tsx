@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -38,7 +38,7 @@ import {
   agencyCreationSchema,
   EMPLOYEE_COUNT_OPTIONS,
   COMPANY_SIZE_OPTIONS,
-  FOUNDED_YEAR_OPTIONS,
+  getFoundedYearOptions,
 } from '@/lib/validations/agency-creation';
 import type { AgencyCreationFormData } from '@/lib/validations/agency-creation';
 
@@ -70,6 +70,7 @@ export function AgencyFormModal({
 }: AgencyFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!agency;
+  const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
   const form = useForm<AgencyCreationFormData>({
     resolver: zodResolver(agencyCreationSchema),
@@ -325,7 +326,7 @@ export function AgencyFormModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[200px]">
-                        {FOUNDED_YEAR_OPTIONS.map((option) => (
+                        {foundedYearOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

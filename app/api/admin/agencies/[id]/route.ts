@@ -15,9 +15,6 @@ import { z } from 'zod';
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
 
-// Current year for validation
-const currentYear = new Date().getFullYear();
-
 // Agency update validation schema (all fields optional for partial updates)
 const agencyUpdateSchema = z.object({
   name: z
@@ -75,10 +72,11 @@ const agencyUpdateSchema = z.object({
     .regex(/^\d{4}$/, 'Must be a valid year')
     .refine(
       (year) => {
+        const currentYear = new Date().getFullYear();
         const y = parseInt(year, 10);
         return y >= 1800 && y <= currentYear;
       },
-      { message: `Year must be between 1800 and ${currentYear}` }
+      { message: `Year must be between 1800 and ${new Date().getFullYear()}` }
     )
     .optional()
     .nullable()

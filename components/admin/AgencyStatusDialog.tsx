@@ -65,10 +65,13 @@ export function AgencyStatusDialog({
           <AlertDialogDescription>
             {isDeactivating ? (
               <>
-                This will deactivate <strong>{agencyName}</strong>. The agency
-                will no longer appear in public listings or search results.
-                {'\n\n'}
-                You can reactivate the agency at any time.
+                <span className="block mb-2">
+                  This will deactivate <strong>{agencyName}</strong>. The agency
+                  will no longer appear in public listings or search results.
+                </span>
+                <span className="block">
+                  You can reactivate the agency at any time.
+                </span>
               </>
             ) : (
               <>
