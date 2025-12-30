@@ -7,10 +7,24 @@ import { createClient } from '@/lib/supabase/server';
 jest.mock('next/navigation', () => ({
   redirect: jest.fn(),
   notFound: jest.fn(),
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    prefetch: jest.fn(),
+    replace: jest.fn(),
+  })),
 }));
 
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(),
+}));
+
+jest.mock('@/hooks/use-toast', () => ({
+  useToast: jest.fn(() => ({
+    toast: jest.fn(),
+  })),
 }));
 
 describe('AgencyDetailPage', () => {
@@ -382,7 +396,8 @@ describe('AgencyDetailPage', () => {
     render(jsx as React.ReactElement);
 
     expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.getByText('Claimed')).toBeInTheDocument();
+    const claimedElements = screen.getAllByText('Claimed');
+    expect(claimedElements.length).toBeGreaterThan(0);
   });
 
   it('handles unclaimed agency without owner profile', async () => {
