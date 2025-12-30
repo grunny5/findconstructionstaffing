@@ -749,17 +749,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Destructive button styling for deactivation
   - Clear explanation of consequences
 - **Acceptance Criteria (for this task):**
-  - [ ] Dialog explains consequences of deactivation
-  - [ ] Shows agency name prominently
-  - [ ] "Deactivate" button has destructive styling
-  - [ ] "Cancel" button closes without action
-  - [ ] "Reactivate" variant has success styling
-  - [ ] Keyboard accessible (Escape to close)
+  - [x] Dialog explains consequences of deactivation
+  - [x] Shows agency name prominently
+  - [x] "Deactivate" button has destructive styling
+  - [x] "Cancel" button closes without action
+  - [x] "Reactivate" variant has success styling
+  - [x] Keyboard accessible (Escape to close)
 - **Definition of Done:**
-  - [ ] Dialog component complete
-  - [ ] Tests verify both variants
-  - [ ] Tests verify keyboard navigation
-  - [ ] **Final Check:** Follows existing confirmation patterns
+  - [x] Dialog component complete
+  - [x] Tests verify both variants
+  - [x] Tests verify keyboard navigation
+  - [x] **Final Check:** Follows existing confirmation patterns
 
 **Estimated Effort:** 2 hours
 
@@ -777,17 +777,17 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Audit logging
   - Consider notifying agency owner if claimed
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies/[id]/status` toggles is_active
-  - [ ] Request body specifies: { active: boolean }
-  - [ ] Updates last_edited_at, last_edited_by
-  - [ ] Returns updated agency
-  - [ ] Logs action in audit trail (optional)
-  - [ ] Returns 401/403 for auth errors
+  - [x] `POST /api/admin/agencies/[id]/status` toggles is_active
+  - [x] Request body specifies: { active: boolean }
+  - [x] Updates last_edited_at, last_edited_by
+  - [x] Returns updated agency
+  - [x] Logs action in audit trail (optional)
+  - [x] Returns 401/403 for auth errors
 - **Definition of Done:**
-  - [ ] Status endpoint functional
-  - [ ] Tests cover activate/deactivate
-  - [ ] Tests verify audit fields
-  - [ ] **Final Check:** Handles edge cases (already active/inactive)
+  - [x] Status endpoint functional
+  - [x] Tests cover activate/deactivate
+  - [x] Tests verify audit fields
+  - [x] **Final Check:** Handles edge cases (already active/inactive)
 
 **Estimated Effort:** 2 hours
 
@@ -805,16 +805,16 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Opens confirmation dialog
   - Refreshes page after status change
 - **Acceptance Criteria (for this task):**
-  - [ ] Shows "Deactivate" button if agency is active
-  - [ ] Shows "Reactivate" button if agency is inactive
-  - [ ] Button click opens confirmation dialog
-  - [ ] Page refreshes after successful status change
-  - [ ] Shows toast notification on success/error
+  - [x] Shows "Deactivate" button if agency is active
+  - [x] Shows "Reactivate" button if agency is inactive
+  - [x] Button click opens confirmation dialog
+  - [x] Page refreshes after successful status change
+  - [x] Shows toast notification on success/error
 - **Definition of Done:**
-  - [ ] Status toggle functional
-  - [ ] Tests verify button states
-  - [ ] Tests verify API integration
-  - [ ] **Final Check:** Consistent with existing admin actions
+  - [x] Status toggle functional
+  - [x] Tests verify button states
+  - [x] Tests verify API integration
+  - [x] **Final Check:** Consistent with existing admin actions
 
 **Estimated Effort:** 2 hours
 
@@ -831,14 +831,14 @@ This document breaks down Feature #011 into sprint-ready engineering tasks. All 
   - Shadcn/ui Badge component
   - Color coding: green=active, gray=inactive
 - **Acceptance Criteria (for this task):**
-  - [ ] Status column shows badge with "Active" or "Inactive"
-  - [ ] Active badge is green
-  - [ ] Inactive badge is gray/muted
-  - [ ] Badge is visually distinct and scannable
+  - [x] Status column shows badge with "Active" or "Inactive"
+  - [x] Active badge is green
+  - [x] Inactive badge is gray/muted
+  - [x] Badge is visually distinct and scannable
 - **Definition of Done:**
-  - [ ] Status badges implemented
-  - [ ] Tests verify badge rendering
-  - [ ] **Final Check:** Accessible color contrast
+  - [x] Status badges implemented
+  - [x] Tests verify badge rendering
+  - [x] **Final Check:** Accessible color contrast
 
 **Estimated Effort:** 1 hour
 
