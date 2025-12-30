@@ -1,4 +1,7 @@
 /**
+ * @jest-environment jsdom
+ */
+/**
  * Tests for CSV/XLSX Parser
  */
 
@@ -572,10 +575,66 @@ Test Agency,https://example.com/path?query=value&other=123`;
   });
 
   describe('parseFile', () => {
+    // Helper to create File-like objects with text() and arrayBuffer() methods
+    // jsdom's File/Blob implementation doesn't include these newer methods
+    function createMockFile(
+      content: BlobPart[],
+      name: string,
+      options: FilePropertyBag
+    ): File {
+      const file = new File(content, name, options);
+
+      // Manually implement text() - reads string content from BlobParts
+      Object.defineProperty(file, 'text', {
+        value: async () => {
+          const textParts: string[] = [];
+          for (const part of content) {
+            if (typeof part === 'string') {
+              textParts.push(part);
+            } else if (part instanceof ArrayBuffer) {
+              textParts.push(new TextDecoder().decode(part));
+            } else if (ArrayBuffer.isView(part)) {
+              textParts.push(new TextDecoder().decode(part));
+            }
+          }
+          return textParts.join('');
+        },
+      });
+
+      // Manually implement arrayBuffer() - converts content to ArrayBuffer
+      Object.defineProperty(file, 'arrayBuffer', {
+        value: async () => {
+          const parts: Uint8Array[] = [];
+          for (const part of content) {
+            if (typeof part === 'string') {
+              parts.push(new TextEncoder().encode(part));
+            } else if (part instanceof ArrayBuffer) {
+              parts.push(new Uint8Array(part));
+            } else if (ArrayBuffer.isView(part)) {
+              parts.push(new Uint8Array(part.buffer));
+            }
+          }
+          // Concatenate all parts
+          const totalLength = parts.reduce((sum, p) => sum + p.length, 0);
+          const result = new Uint8Array(totalLength);
+          let offset = 0;
+          for (const part of parts) {
+            result.set(part, offset);
+            offset += part.length;
+          }
+          return result.buffer;
+        },
+      });
+
+      return file;
+    }
+
     it('parses CSV files based on extension', async () => {
       const csvContent = `name,description
 Test Agency,Test Desc`;
-      const file = new File([csvContent], 'test.csv', { type: 'text/csv' });
+      const file = createMockFile([csvContent], 'test.csv', {
+        type: 'text/csv',
+      });
 
       const result = await parseFile(file);
 
@@ -592,7 +651,7 @@ Test Agency,Test Desc`;
       XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
       const buffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
 
-      const file = new File([buffer], 'test.xlsx', {
+      const file = createMockFile([buffer], 'test.xlsx', {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
 
@@ -603,7 +662,7 @@ Test Agency,Test Desc`;
     });
 
     it('returns error for unsupported file types', async () => {
-      const file = new File(['content'], 'test.pdf', {
+      const file = createMockFile(['content'], 'test.pdf', {
         type: 'application/pdf',
       });
 
