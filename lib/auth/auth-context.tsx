@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types/database';
@@ -33,6 +40,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [agencySlug, setAgencySlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Wrap fetchProfile in useCallback for stable reference
+  const fetchProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+
+        // If user is agency owner, fetch their claimed agency slug
+        if (data?.role === 'agency_owner') {
+          const { data: agency, error: agencyError } = await supabase
+            .from('agencies')
+            .select('slug')
+            .eq('claimed_by', userId)
+            .single();
+
+          if (!agencyError && agency) {
+            setAgencySlug(agency.slug);
+          } else {
+            setAgencySlug(null);
+          }
+        } else {
+          setAgencySlug(null);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+        setAgencySlug(null);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase]
+  );
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -59,43 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-
-      // If user is agency owner, fetch their claimed agency slug
-      if (data?.role === 'agency_owner') {
-        const { data: agency, error: agencyError } = await supabase
-          .from('agencies')
-          .select('slug')
-          .eq('claimed_by', userId)
-          .single();
-
-        if (!agencyError && agency) {
-          setAgencySlug(agency.slug);
-        } else {
-          setAgencySlug(null);
-        }
-      } else {
-        setAgencySlug(null);
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      setProfile(null);
-      setAgencySlug(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [supabase, fetchProfile]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -146,8 +157,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await fetchProfile(user.id);
     }
   };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProfile depends on supabase which is stable
 
   const value = {
     user,
