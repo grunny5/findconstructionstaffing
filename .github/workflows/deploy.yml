@@ -1,10 +1,14 @@
 name: Deploy to Vercel
 
 on:
-  push:
-    branches: [main]
+  # For preview deployments on PRs
   pull_request:
     branches: [main, develop]
+  # For production deployments - trigger after CI completes
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -12,6 +16,7 @@ permissions:
   pull-requests: write
   deployments: write
   checks: read
+  actions: read
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -299,12 +304,17 @@ jobs:
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only run for workflow_run events when CI completed successfully on main
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success'
     needs: [check-ci-status]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -464,10 +474,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            // Get the SHA from the workflow_run event
+            const headSha = context.payload.workflow_run.head_sha;
+
             await github.rest.repos.createDeployment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: context.sha,
+              ref: headSha,
               environment: 'production',
               description: 'Production deployment to Vercel',
               auto_merge: false,
@@ -479,12 +492,13 @@ jobs:
         with:
           script: |
             const deploymentUrl = '${{ steps.deploy.outputs.deployment_url }}';
+            const headSha = context.payload.workflow_run.head_sha;
 
             // Get the deployment we just created
             const { data: deployments } = await github.rest.repos.listDeployments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: context.sha,
+              sha: headSha,
               environment: 'production'
             });
 
@@ -511,9 +525,8 @@ jobs:
           - **Previous Deployment**: ${{ steps.deploy.outputs.previous_deployment }}
 
           ## Commit Information
-          - **SHA**: ${{ github.sha }}
+          - **SHA**: ${{ github.event.workflow_run.head_sha }}
           - **Author**: ${{ github.actor }}
-          - **Message**: ${{ github.event.head_commit.message }}
 
           ## Next Steps
           1. Health checks will run automatically
@@ -531,8 +544,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const commit = context.payload.head_commit;
             const deploymentUrl = '${{ steps.deploy.outputs.deployment_url }}';
+            const headSha = context.payload.workflow_run.head_sha;
 
             // Create a deployment notification issue comment on the latest merged PR
             const { data: prs } = await github.rest.pulls.list({
@@ -544,9 +557,9 @@ jobs:
               per_page: 5
             });
 
-            const recentMergedPR = prs.find(pr => 
-              pr.merged_at && 
-              pr.merge_commit_sha === context.sha
+            const recentMergedPR = prs.find(pr =>
+              pr.merged_at &&
+              pr.merge_commit_sha === headSha
             );
 
             if (recentMergedPR) {
@@ -555,12 +568,12 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: recentMergedPR.number,
                 body: `## 🎉 Deployed to Production!
-                
+
                 Your changes have been successfully deployed to production.
-                
+
                 **Production URL**: https://findconstructionstaffing.com
                 **Deployment URL**: ${deploymentUrl}
-                
+
                 Health checks are running and you'll be notified if any issues are detected.`
               });
             }
@@ -568,45 +581,15 @@ jobs:
   check-ci-status:
     name: Check CI Status
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only run for workflow_run events when CI completed on main
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
-      - name: Check CI workflow status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            // Get the CI workflow ID first
-            const { data: workflows } = await github.rest.actions.listRepoWorkflows({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-
-            const ciWorkflow = workflows.workflows.find(w => w.path === '.github/workflows/ci.yml');
-            if (!ciWorkflow) {
-              core.setFailed('CI workflow not found');
-              return;
-            }
-
-            // Get runs for the specific CI workflow
-            const { data: runs } = await github.rest.actions.listWorkflowRuns({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: ciWorkflow.id,
-              head_sha: context.sha,
-              status: 'completed'
-            });
-
-            if (runs.workflow_runs.length === 0) {
-              core.setFailed('No completed CI workflow found for this commit');
-              return;
-            }
-
-            const latestRun = runs.workflow_runs[0];
-            console.log(`Found CI run: ${latestRun.id}, conclusion: ${latestRun.conclusion}`);
-
-            if (latestRun.conclusion !== 'success') {
-              core.setFailed(`CI workflow failed with conclusion: ${latestRun.conclusion}`);
-              return;
-            }
-
-            console.log('CI workflow passed successfully');
+      - name: Confirm CI passed
+        run: |
+          echo "CI workflow completed successfully"
+          echo "Workflow: ${{ github.event.workflow_run.name }}"
+          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Head SHA: ${{ github.event.workflow_run.head_sha }}"
