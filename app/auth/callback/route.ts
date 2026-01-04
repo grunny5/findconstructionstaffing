@@ -1,53 +1,59 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+/** Maximum allowed length for redirect paths */
+const MAX_REDIRECT_PATH_LENGTH = 2048;
+
 /**
  * Validates a redirect URL to prevent open redirect attacks.
- * Only allows:
- * - Relative paths starting with a single '/' (e.g., '/dashboard')
- * - Absolute URLs matching the app origin
- * Rejects:
- * - Scheme-relative URLs (e.g., '//evil.com')
- * - External URLs
- * - Invalid URLs
+ *
+ * Only allows relative paths that:
+ * - Start with a single '/' (not '//')
+ * - Do not contain ':' before the first '/' in the path (prevents protocol injection)
+ * - Do not contain backslashes (prevents path manipulation)
+ * - Are within a reasonable length limit
  *
  * @param url - The URL to validate
- * @param origin - The app origin to validate against
- * @returns The validated URL path or '/' as a safe default
+ * @returns The validated relative path or '/' as a safe default
  */
-function validateRedirectUrl(url: string | null, origin: string): string {
-  if (!url) {
+function validateRedirectUrl(url: string | null): string {
+  // Default to home for empty/null values
+  if (!url || typeof url !== 'string') {
     return '/';
   }
 
-  // Reject scheme-relative URLs (e.g., '//evil.com')
-  if (url.startsWith('//')) {
+  // Truncate excessively long values
+  const truncated = url.slice(0, MAX_REDIRECT_PATH_LENGTH);
+
+  // Must start with exactly one '/'
+  if (!truncated.startsWith('/') || truncated.startsWith('//')) {
     return '/';
   }
 
-  // Allow relative paths starting with a single '/'
-  if (url.startsWith('/') && !url.startsWith('//')) {
-    // Additional check: ensure it doesn't contain protocol-like patterns
-    if (url.includes('://') || url.includes('\\')) {
-      return '/';
-    }
-    return url;
+  // Reject backslashes (can be used for path manipulation)
+  if (truncated.includes('\\')) {
+    return '/';
   }
 
-  // Try to parse as absolute URL
-  try {
-    const parsedUrl = new URL(url);
-    const parsedOrigin = new URL(origin);
+  // Extract just the path portion (before query string or hash)
+  const queryIndex = truncated.indexOf('?');
+  const hashIndex = truncated.indexOf('#');
+  let pathEndIndex = truncated.length;
+  if (queryIndex !== -1) pathEndIndex = Math.min(pathEndIndex, queryIndex);
+  if (hashIndex !== -1) pathEndIndex = Math.min(pathEndIndex, hashIndex);
+  const pathOnly = truncated.slice(0, pathEndIndex);
 
-    // Only allow if origin matches exactly
-    if (parsedUrl.origin === parsedOrigin.origin) {
-      return parsedUrl.pathname + parsedUrl.search + parsedUrl.hash;
-    }
-  } catch {
-    // Invalid URL, fall through to default
+  // Check for ':' appearing before any '/' in the path (after the leading slash)
+  // This prevents 'javascript:', 'data:', or other protocol-like patterns
+  const pathAfterSlash = pathOnly.slice(1);
+  const colonIndex = pathAfterSlash.indexOf(':');
+  const slashIndex = pathAfterSlash.indexOf('/');
+
+  if (colonIndex !== -1 && (slashIndex === -1 || colonIndex < slashIndex)) {
+    return '/';
   }
 
-  return '/';
+  return truncated;
 }
 
 /**
@@ -65,10 +71,7 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const type = requestUrl.searchParams.get('type');
-  const next = validateRedirectUrl(
-    requestUrl.searchParams.get('next'),
-    requestUrl.origin
-  );
+  const next = validateRedirectUrl(requestUrl.searchParams.get('next'));
 
   if (!code) {
     // No code provided, redirect to home with error

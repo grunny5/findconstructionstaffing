@@ -212,6 +212,16 @@ describe('GET /auth/callback', () => {
       expect(response.headers.get('location')).toBe('http://localhost/');
     });
 
+    it('should reject absolute URLs (even same-origin)', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=http://localhost/profile'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/');
+    });
+
     it('should reject external URLs', async () => {
       const request = new NextRequest(
         'http://localhost/auth/callback?code=valid-code&next=https://evil.com/malicious'
@@ -222,9 +232,9 @@ describe('GET /auth/callback', () => {
       expect(response.headers.get('location')).toBe('http://localhost/');
     });
 
-    it('should reject URLs with embedded protocols', async () => {
+    it('should reject paths with colon before slash (protocol injection)', async () => {
       const request = new NextRequest(
-        'http://localhost/auth/callback?code=valid-code&next=/redirect?url=https://evil.com'
+        'http://localhost/auth/callback?code=valid-code&next=/javascript:alert(1)//'
       );
       const response = await GET(request);
 
@@ -254,17 +264,19 @@ describe('GET /auth/callback', () => {
       );
     });
 
-    it('should allow same-origin absolute URLs', async () => {
+    it('should allow relative paths with query strings containing colons', async () => {
       const request = new NextRequest(
-        'http://localhost/auth/callback?code=valid-code&next=http://localhost/profile'
+        'http://localhost/auth/callback?code=valid-code&next=/search?time=10:30'
       );
       const response = await GET(request);
 
       expect(response.status).toBe(307);
-      expect(response.headers.get('location')).toBe('http://localhost/profile');
+      expect(response.headers.get('location')).toBe(
+        'http://localhost/search?time=10:30'
+      );
     });
 
-    it('should default to / for invalid URLs', async () => {
+    it('should default to / for non-path URLs', async () => {
       const request = new NextRequest(
         'http://localhost/auth/callback?code=valid-code&next=not-a-valid-url'
       );
@@ -272,6 +284,19 @@ describe('GET /auth/callback', () => {
 
       expect(response.status).toBe(307);
       expect(response.headers.get('location')).toBe('http://localhost/');
+    });
+
+    it('should truncate excessively long paths', async () => {
+      const longPath = '/dashboard' + '/a'.repeat(3000);
+      const request = new NextRequest(
+        `http://localhost/auth/callback?code=valid-code&next=${encodeURIComponent(longPath)}`
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      const location = response.headers.get('location');
+      // Should be truncated to 2048 chars max
+      expect(location).toBe('http://localhost' + longPath.slice(0, 2048));
     });
   });
 });
