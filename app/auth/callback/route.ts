@@ -2,6 +2,55 @@ import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
+ * Validates a redirect URL to prevent open redirect attacks.
+ * Only allows:
+ * - Relative paths starting with a single '/' (e.g., '/dashboard')
+ * - Absolute URLs matching the app origin
+ * Rejects:
+ * - Scheme-relative URLs (e.g., '//evil.com')
+ * - External URLs
+ * - Invalid URLs
+ *
+ * @param url - The URL to validate
+ * @param origin - The app origin to validate against
+ * @returns The validated URL path or '/' as a safe default
+ */
+function validateRedirectUrl(url: string | null, origin: string): string {
+  if (!url) {
+    return '/';
+  }
+
+  // Reject scheme-relative URLs (e.g., '//evil.com')
+  if (url.startsWith('//')) {
+    return '/';
+  }
+
+  // Allow relative paths starting with a single '/'
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    // Additional check: ensure it doesn't contain protocol-like patterns
+    if (url.includes('://') || url.includes('\\')) {
+      return '/';
+    }
+    return url;
+  }
+
+  // Try to parse as absolute URL
+  try {
+    const parsedUrl = new URL(url);
+    const parsedOrigin = new URL(origin);
+
+    // Only allow if origin matches exactly
+    if (parsedUrl.origin === parsedOrigin.origin) {
+      return parsedUrl.pathname + parsedUrl.search + parsedUrl.hash;
+    }
+  } catch {
+    // Invalid URL, fall through to default
+  }
+
+  return '/';
+}
+
+/**
  * Auth Callback Route
  *
  * Handles Supabase PKCE auth redirects for:
@@ -16,7 +65,10 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const type = requestUrl.searchParams.get('type');
-  const next = requestUrl.searchParams.get('next') || '/';
+  const next = validateRedirectUrl(
+    requestUrl.searchParams.get('next'),
+    requestUrl.origin
+  );
 
   if (!code) {
     // No code provided, redirect to home with error

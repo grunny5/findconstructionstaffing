@@ -111,7 +111,7 @@ describe('Password Reset Integration Tests', () => {
       expect(mockedSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
         'user@example.com',
         expect.objectContaining({
-          redirectTo: expect.stringContaining('/reset-password'),
+          redirectTo: expect.stringContaining('/auth/callback?type=recovery'),
         })
       );
     });

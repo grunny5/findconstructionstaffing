@@ -13,8 +13,24 @@ jest.mock('@/lib/supabase/server');
 
 const mockedCreateClient = jest.mocked(createClient);
 
+/**
+ * Type for the mocked Supabase client auth methods used in tests
+ */
+interface MockSupabaseAuth {
+  exchangeCodeForSession: jest.Mock<
+    Promise<{
+      data: { session: { user: { id: string } } } | null;
+      error: Error | null;
+    }>
+  >;
+}
+
+interface MockSupabaseClient {
+  auth: MockSupabaseAuth;
+}
+
 describe('GET /auth/callback', () => {
-  let mockSupabaseClient: any;
+  let mockSupabaseClient: MockSupabaseClient;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -25,7 +41,9 @@ describe('GET /auth/callback', () => {
       },
     };
 
-    mockedCreateClient.mockResolvedValue(mockSupabaseClient);
+    mockedCreateClient.mockResolvedValue(
+      mockSupabaseClient as unknown as Awaited<ReturnType<typeof createClient>>
+    );
   });
 
   describe('Missing code parameter', () => {
@@ -173,6 +191,87 @@ describe('GET /auth/callback', () => {
       const location = response.headers.get('location');
       expect(location).toContain('/login?error=');
       expect(location).toContain('unexpected');
+    });
+  });
+
+  describe('Open redirect protection', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.exchangeCodeForSession.mockResolvedValue({
+        data: { session: { user: { id: 'user-123' } } },
+        error: null,
+      });
+    });
+
+    it('should reject scheme-relative URLs (//evil.com)', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=//evil.com/malicious'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/');
+    });
+
+    it('should reject external URLs', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=https://evil.com/malicious'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/');
+    });
+
+    it('should reject URLs with embedded protocols', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=/redirect?url=https://evil.com'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/');
+    });
+
+    it('should reject URLs with backslashes', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=/evil\\path'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/');
+    });
+
+    it('should allow valid relative paths', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=/dashboard/settings'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe(
+        'http://localhost/dashboard/settings'
+      );
+    });
+
+    it('should allow same-origin absolute URLs', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=http://localhost/profile'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/profile');
+    });
+
+    it('should default to / for invalid URLs', async () => {
+      const request = new NextRequest(
+        'http://localhost/auth/callback?code=valid-code&next=not-a-valid-url'
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get('location')).toBe('http://localhost/');
     });
   });
 });
