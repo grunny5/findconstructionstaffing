@@ -201,7 +201,7 @@ describe('ForgotPasswordPage', () => {
         expect(mockedSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
           'test@example.com',
           {
-            redirectTo: expect.stringContaining('/auth/callback?type=recovery'),
+            redirectTo: expect.stringContaining('/reset-password'),
           }
         );
       });
