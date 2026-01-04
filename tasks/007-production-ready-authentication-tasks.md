@@ -1537,6 +1537,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 **Root Cause Documentation:**
 
 When users are deleted via Supabase Dashboard UI, the `auth.identities` table may retain orphaned records. This prevents re-registration with the same email because:
+
 1. Dashboard deletion doesn't always trigger CASCADE properly
 2. `auth.identities` stores email/provider identity records separately
 3. These orphaned records cause "email already exists" errors on signup
@@ -1564,6 +1565,7 @@ curl -X POST https://yoursite.com/api/admin/users/cleanup \
 **Manual Cleanup (Alternative):**
 
 Admins can also run SQL directly in Supabase Dashboard SQL Editor:
+
 ```sql
 DELETE FROM auth.identities WHERE identity_data->>'email' = 'user@example.com';
 DELETE FROM public.profiles WHERE email = 'user@example.com';

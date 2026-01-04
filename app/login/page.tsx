@@ -137,16 +137,14 @@ function LoginForm() {
             </button>
           </div>
 
-          {isFeatureEnabled('passwordReset') && (
-            <div className="text-center">
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          )}
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-blue-600 hover:text-blue-500"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </form>
 
         {isEmailNotVerified &&
