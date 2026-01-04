@@ -6,7 +6,7 @@ on:
     branches: [main, develop]
   # For production deployments - trigger after CI completes
   workflow_run:
-    workflows: ["CI/CD Pipeline"]
+    workflows: ['CI/CD Pipeline']
     types: [completed]
     branches: [main]
 
@@ -309,7 +309,6 @@ jobs:
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.conclusion == 'success'
     needs: [check-ci-status]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
