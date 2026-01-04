@@ -1465,6 +1465,113 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ---
 
+### ➡️ Story 4.4: Admin User Cleanup
+
+> As a **Site Administrator**, I want **to clean up orphaned user records**, so that **users can re-register with an email address after their account was improperly deleted**.
+
+### Engineering Tasks for this Story:
+
+---
+
+### ✅ Task 4.4.1: Create Admin User Cleanup API Endpoint
+
+- **Role:** Backend Developer
+- **Objective:** Create admin-only API endpoint to clean up orphaned user records from auth tables
+- **Context:** When users are deleted via Supabase Dashboard UI, related records in `auth.identities` may not be properly cleaned up, preventing re-registration with the same email. This endpoint allows admins to fully clean up orphaned records.
+- **Key Files Created:**
+  - `app/api/admin/users/cleanup/route.ts`
+  - `app/api/admin/users/cleanup/__tests__/route.test.ts`
+- **Key Patterns Followed:**
+  - Existing admin route pattern from `app/api/admin/claims/route.ts`
+  - Use `createClient` from `@/lib/supabase/server` for auth check
+  - Use service role client for auth schema access
+  - `ERROR_CODES`, `HTTP_STATUS` from `@/types/api`
+- **Acceptance Criteria (for this task):**
+  - [x] POST `/api/admin/users/cleanup` endpoint created
+  - [x] Request body: `{ email: string }`
+  - [x] Admin authentication required (401 if not logged in)
+  - [x] Admin role verification required (403 if not admin)
+  - [x] Email format validation
+  - [x] Deletes from `auth.identities` (where identity_data->>'email' matches)
+  - [x] Deletes from `public.profiles` (where email matches)
+  - [x] Deletes from `auth.users` via admin API (case-insensitive email match)
+  - [x] Returns count of deleted records: `{ deleted: { identities, profiles, users } }`
+  - [x] Logs cleanup action for audit trail
+  - [x] Continues cleanup even if one table delete fails
+  - [x] Returns 500 if Supabase configuration missing
+- **Definition of Done:**
+  - [x] API route implemented
+  - [x] Admin authentication and authorization working
+  - [x] All three tables cleaned up in correct order
+  - [x] Unit tests written (36 tests, all passing)
+  - [x] Tests cover: auth, role verification, validation, cleanup operations, error handling, security
+  - [x] Code formatted with Prettier
+  - [x] TypeScript type-check passing
+  - [ ] PR approved
+  - [x] **Final Check:** Secure admin-only cleanup capability
+
+**Estimated Effort:** 2-3 hours
+**Actual Effort:** 1.5 hours
+**Completion Date:** 2026-01-04
+
+**Implementation Details:**
+
+- **API Route:** `app/api/admin/users/cleanup/route.ts` (250 lines)
+  - POST handler with full authentication flow
+  - Creates admin client with service role key for auth schema access
+  - Deletes from three tables: auth.identities, public.profiles, auth.users
+  - Case-insensitive email matching for auth.users lookup
+  - Comprehensive error handling with graceful continuation
+  - Audit logging of cleanup actions
+
+- **Test Suite:** `app/api/admin/users/cleanup/__tests__/route.test.ts` (600+ lines)
+  - 36 comprehensive tests across 6 test groups:
+    1. Authentication (2 tests)
+    2. Admin Role Verification (3 tests)
+    3. Request Body Validation (5 tests)
+    4. Cleanup Operations (4 tests)
+    5. Error Handling (3 tests)
+    6. Security (1 test)
+  - All tests passing in both node and jsdom environments
+
+**Root Cause Documentation:**
+
+When users are deleted via Supabase Dashboard UI, the `auth.identities` table may retain orphaned records. This prevents re-registration with the same email because:
+1. Dashboard deletion doesn't always trigger CASCADE properly
+2. `auth.identities` stores email/provider identity records separately
+3. These orphaned records cause "email already exists" errors on signup
+
+**Usage:**
+
+```bash
+# Admin can clean up orphaned records via API
+curl -X POST https://yoursite.com/api/admin/users/cleanup \
+  -H "Content-Type: application/json" \
+  -H "Cookie: <auth-cookies>" \
+  -d '{"email": "orphaned@example.com"}'
+
+# Response
+{
+  "message": "Cleanup completed successfully",
+  "deleted": {
+    "identities": 1,
+    "profiles": 0,
+    "users": 1
+  }
+}
+```
+
+**Manual Cleanup (Alternative):**
+
+Admins can also run SQL directly in Supabase Dashboard SQL Editor:
+```sql
+DELETE FROM auth.identities WHERE identity_data->>'email' = 'user@example.com';
+DELETE FROM public.profiles WHERE email = 'user@example.com';
+DELETE FROM auth.users WHERE email = 'user@example.com';
+```
+
+---
+
 ## 📦 Cross-Cutting Tasks (All Phases)
 
 **Goal:** Tasks that span multiple phases or support all features
@@ -1760,7 +1867,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 ## 📊 Summary
 
-### Total Task Count: **45 tasks**
+### Total Task Count: **46 tasks**
 
 #### Phase 1: Email Verification
 
@@ -1779,7 +1886,7 @@ This document breaks down Feature #007 into sprint-ready engineering tasks. All 
 
 #### Phase 4: Role Management
 
-- 10 tasks
+- 11 tasks (including Story 4.4: Admin User Cleanup)
 - Estimated: 3-4 days
 
 #### Cross-Cutting Tasks
