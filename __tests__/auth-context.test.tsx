@@ -4,12 +4,15 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { AuthProvider, useAuth } from '@/lib/auth/auth-context';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/types/database';
 
-// Get typed mock reference for use in tests
-const mockedSupabase = jest.mocked(supabase);
+// Get typed mock reference for use in tests - createClient returns the mocked supabase instance
+const mockedCreateClient = jest.mocked(createClient);
+// Get the underlying mocked supabase client that's returned by createClient
+// We need to call it once to get the mocked instance for test configuration
+const mockedSupabase = mockedCreateClient();
 
 // Mock user data
 const mockUser: User = {
