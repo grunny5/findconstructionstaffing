@@ -8,6 +8,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  * 1. Reads the session from cookies
  * 2. Refreshes the session if it's about to expire
  * 3. Writes the refreshed session back to cookies
+ * 4. Handles errors gracefully to prevent site-wide outages
  *
  * This is required for server-side auth to work properly with Supabase SSR.
  */
@@ -38,12 +39,7 @@ export async function middleware(request: NextRequest) {
           value,
           ...options,
         });
-        // Set the cookie on the response to persist
-        response = NextResponse.next({
-          request: {
-            headers: request.headers,
-          },
-        });
+        // Mutate the existing response to persist the cookie
         response.cookies.set({
           name,
           value,
@@ -57,12 +53,7 @@ export async function middleware(request: NextRequest) {
           value: '',
           ...options,
         });
-        // Remove from response
-        response = NextResponse.next({
-          request: {
-            headers: request.headers,
-          },
-        });
+        // Mutate the existing response to remove the cookie
         response.cookies.set({
           name,
           value: '',
@@ -74,7 +65,13 @@ export async function middleware(request: NextRequest) {
 
   // Refresh the session - this is the key step that keeps auth working
   // The getUser() call will refresh the session if needed
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch (error) {
+    // Log but don't block - let request continue even if session refresh fails
+    // This prevents middleware errors from causing site-wide outages
+    console.error('Error refreshing session in middleware:', error);
+  }
 
   return response;
 }
