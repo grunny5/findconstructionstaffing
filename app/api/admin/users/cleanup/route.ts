@@ -168,11 +168,11 @@ export async function POST(request: NextRequest) {
       users: 0,
     };
 
-    // 5a. Delete from auth.identities
+    // 5a. Delete from auth.identities (case-insensitive)
     const { data: identitiesData, error: identitiesError } = await adminClient
       .from('identities')
       .delete()
-      .filter('identity_data->>email', 'eq', email)
+      .filter('identity_data->>email', 'ilike', email)
       .select('id');
 
     if (identitiesError) {
@@ -186,11 +186,11 @@ export async function POST(request: NextRequest) {
       deleted.identities = identitiesData?.length || 0;
     }
 
-    // 5b. Delete from public.profiles
+    // 5b. Delete from public.profiles (case-insensitive)
     const { data: profilesData, error: profilesError } = await adminClient
       .from('profiles')
       .delete()
-      .eq('email', email)
+      .ilike('email', email)
       .select('id');
 
     if (profilesError) {
@@ -222,12 +222,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================================
-    // 6. LOG CLEANUP ACTION
+    // 6. LOG CLEANUP ACTION (no PII - email not logged)
     // ========================================================================
-    console.log(
-      `[Admin Cleanup] User ${user.id} cleaned up records for email: ${email}`,
-      deleted
-    );
+    console.log(`[Admin Cleanup] Admin ${user.id} performed cleanup`, deleted);
 
     // ========================================================================
     // 7. RETURN SUCCESS RESPONSE

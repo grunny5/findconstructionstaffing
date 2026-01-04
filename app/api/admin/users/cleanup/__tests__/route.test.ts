@@ -346,10 +346,10 @@ describe('POST /api/admin/users/cleanup', () => {
         }),
       };
 
-      // Mock profiles delete
+      // Mock profiles delete (case-insensitive)
       const mockProfilesQuery = {
         delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         select: jest.fn().mockResolvedValue({
           data: [{ id: 'profile-1' }],
           error: null,
@@ -398,7 +398,7 @@ describe('POST /api/admin/users/cleanup', () => {
       expect(data.deleted.users).toBe(1);
     });
 
-    it('should handle case-insensitive email matching via ilike', async () => {
+    it('should use case-insensitive matching (ilike) for all deletions', async () => {
       const mockIdentitiesQuery = {
         delete: jest.fn().mockReturnThis(),
         filter: jest.fn().mockReturnThis(),
@@ -407,7 +407,7 @@ describe('POST /api/admin/users/cleanup', () => {
 
       const mockProfilesQuery = {
         delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         select: jest.fn().mockResolvedValue({ data: [], error: null }),
       };
 
@@ -447,6 +447,17 @@ describe('POST /api/admin/users/cleanup', () => {
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(data.deleted.users).toBe(1);
+
+      // Verify case-insensitive matching (ilike) was used for all tables
+      expect(mockIdentitiesQuery.filter).toHaveBeenCalledWith(
+        'identity_data->>email',
+        'ilike',
+        'test@example.com'
+      );
+      expect(mockProfilesQuery.ilike).toHaveBeenCalledWith(
+        'email',
+        'test@example.com'
+      );
     });
 
     it('should return zeros when no records exist', async () => {
@@ -458,7 +469,7 @@ describe('POST /api/admin/users/cleanup', () => {
 
       const mockProfilesQuery = {
         delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         select: jest.fn().mockResolvedValue({ data: [], error: null }),
       };
 
@@ -510,7 +521,7 @@ describe('POST /api/admin/users/cleanup', () => {
 
       const mockProfilesQuery = {
         delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         select: jest.fn().mockResolvedValue({
           data: [{ id: 'profile-1' }],
           error: null,
@@ -667,7 +678,7 @@ describe('POST /api/admin/users/cleanup', () => {
 
       const mockProfilesQuery = {
         delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
         select: jest.fn().mockResolvedValue({ data: [], error: null }),
       };
 
