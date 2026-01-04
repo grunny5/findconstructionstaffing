@@ -313,6 +313,111 @@ describe('POST /api/admin/users/cleanup', () => {
   });
 
   // ========================================================================
+  // SELF-DELETION GUARD TESTS
+  // ========================================================================
+
+  describe('Self-Deletion Guard', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'admin-123', email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin' },
+          error: null,
+        }),
+      };
+
+      mockSupabaseClient.from.mockReturnValue(mockProfileQuery);
+    });
+
+    it('should return 400 when admin tries to delete their own email', async () => {
+      const request = new NextRequest(
+        'http://localhost/api/admin/users/cleanup',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email: 'admin@example.com' }),
+        }
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe(
+        'Cannot delete your own account using this endpoint'
+      );
+    });
+
+    it('should return 400 for case-insensitive self-deletion attempt', async () => {
+      const request = new NextRequest(
+        'http://localhost/api/admin/users/cleanup',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email: 'ADMIN@EXAMPLE.COM' }),
+        }
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe(
+        'Cannot delete your own account using this endpoint'
+      );
+    });
+
+    it('should allow deletion of a different user email', async () => {
+      const mockIdentitiesQuery = {
+        delete: jest.fn().mockReturnThis(),
+        filter: jest.fn().mockReturnThis(),
+        select: jest.fn().mockResolvedValue({ data: [], error: null }),
+      };
+
+      const mockProfilesQuery = {
+        delete: jest.fn().mockReturnThis(),
+        ilike: jest.fn().mockReturnThis(),
+        select: jest.fn().mockResolvedValue({ data: [], error: null }),
+      };
+
+      mockAdminClient.from
+        .mockReturnValueOnce(mockIdentitiesQuery)
+        .mockReturnValueOnce(mockProfilesQuery);
+
+      const mockAuthUsersQuery = {
+        from: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            ilike: jest.fn().mockReturnValue({
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+      mockAdminClient.schema.mockReturnValue(mockAuthUsersQuery);
+
+      const request = new NextRequest(
+        'http://localhost/api/admin/users/cleanup',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email: 'other@example.com' }),
+        }
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.message).toBe('Cleanup completed successfully');
+    });
+  });
+
+  // ========================================================================
   // CLEANUP OPERATION TESTS
   // ========================================================================
 

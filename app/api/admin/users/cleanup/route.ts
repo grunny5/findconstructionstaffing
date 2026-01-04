@@ -134,6 +134,23 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================================
+    // 3.5 SELF-DELETION GUARD
+    // ========================================================================
+    // Prevent admin from accidentally deleting their own account
+    const adminEmail = user.email;
+    if (adminEmail && adminEmail.toLowerCase() === email.toLowerCase()) {
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: 'Cannot delete your own account using this endpoint',
+          },
+        },
+        { status: HTTP_STATUS.BAD_REQUEST }
+      );
+    }
+
+    // ========================================================================
     // 4. CREATE ADMIN CLIENT WITH SERVICE ROLE KEY
     // ========================================================================
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
