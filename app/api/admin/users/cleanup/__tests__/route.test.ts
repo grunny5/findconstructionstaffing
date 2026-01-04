@@ -47,9 +47,9 @@ describe('POST /api/admin/users/cleanup', () => {
     // Setup admin client mock
     mockAdminClient = {
       from: jest.fn(),
+      schema: jest.fn(),
       auth: {
         admin: {
-          listUsers: jest.fn(),
           deleteUser: jest.fn(),
         },
       },
@@ -360,16 +360,20 @@ describe('POST /api/admin/users/cleanup', () => {
         .mockReturnValueOnce(mockIdentitiesQuery)
         .mockReturnValueOnce(mockProfilesQuery);
 
-      // Mock listUsers to find user
-      mockAdminClient.auth.admin.listUsers.mockResolvedValue({
-        data: {
-          users: [
-            { id: 'user-to-delete', email: 'test@example.com' },
-            { id: 'other-user', email: 'other@example.com' },
-          ],
-        },
-        error: null,
-      });
+      // Mock schema('auth').from('users') query to find user by email
+      const mockAuthUsersQuery = {
+        from: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            ilike: jest.fn().mockReturnValue({
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: { id: 'user-to-delete' },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+      mockAdminClient.schema.mockReturnValue(mockAuthUsersQuery);
 
       // Mock deleteUser
       mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
@@ -394,7 +398,7 @@ describe('POST /api/admin/users/cleanup', () => {
       expect(data.deleted.users).toBe(1);
     });
 
-    it('should handle case-insensitive email matching', async () => {
+    it('should handle case-insensitive email matching via ilike', async () => {
       const mockIdentitiesQuery = {
         delete: jest.fn().mockReturnThis(),
         filter: jest.fn().mockReturnThis(),
@@ -411,12 +415,20 @@ describe('POST /api/admin/users/cleanup', () => {
         .mockReturnValueOnce(mockIdentitiesQuery)
         .mockReturnValueOnce(mockProfilesQuery);
 
-      mockAdminClient.auth.admin.listUsers.mockResolvedValue({
-        data: {
-          users: [{ id: 'user-123', email: 'TEST@EXAMPLE.COM' }],
-        },
-        error: null,
-      });
+      // Mock schema query - ilike handles case-insensitive matching
+      const mockAuthUsersQuery = {
+        from: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            ilike: jest.fn().mockReturnValue({
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: { id: 'user-123' },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+      mockAdminClient.schema.mockReturnValue(mockAuthUsersQuery);
 
       mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
@@ -454,10 +466,20 @@ describe('POST /api/admin/users/cleanup', () => {
         .mockReturnValueOnce(mockIdentitiesQuery)
         .mockReturnValueOnce(mockProfilesQuery);
 
-      mockAdminClient.auth.admin.listUsers.mockResolvedValue({
-        data: { users: [] },
-        error: null,
-      });
+      // Mock schema query - no user found
+      const mockAuthUsersQuery = {
+        from: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            ilike: jest.fn().mockReturnValue({
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+      mockAdminClient.schema.mockReturnValue(mockAuthUsersQuery);
 
       const request = new NextRequest(
         'http://localhost/api/admin/users/cleanup',
@@ -499,10 +521,20 @@ describe('POST /api/admin/users/cleanup', () => {
         .mockReturnValueOnce(mockIdentitiesQuery)
         .mockReturnValueOnce(mockProfilesQuery);
 
-      mockAdminClient.auth.admin.listUsers.mockResolvedValue({
-        data: { users: [{ id: 'user-123', email: 'test@example.com' }] },
-        error: null,
-      });
+      // Mock schema query
+      const mockAuthUsersQuery = {
+        from: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            ilike: jest.fn().mockReturnValue({
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: { id: 'user-123' },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+      mockAdminClient.schema.mockReturnValue(mockAuthUsersQuery);
 
       mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
@@ -643,10 +675,20 @@ describe('POST /api/admin/users/cleanup', () => {
         .mockReturnValueOnce(mockIdentitiesQuery)
         .mockReturnValueOnce(mockProfilesQuery);
 
-      mockAdminClient.auth.admin.listUsers.mockResolvedValue({
-        data: { users: [] },
-        error: null,
-      });
+      // Mock schema query - no user found
+      const mockAuthUsersQuery = {
+        from: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            ilike: jest.fn().mockReturnValue({
+              maybeSingle: jest.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+      mockAdminClient.schema.mockReturnValue(mockAuthUsersQuery);
 
       const request = new NextRequest(
         'http://localhost/api/admin/users/cleanup',

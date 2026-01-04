@@ -200,26 +200,24 @@ export async function POST(request: NextRequest) {
     }
 
     // 5c. Delete from auth.users using admin API
-    // First, find the user by email
-    const { data: usersData, error: listError } =
-      await adminClient.auth.admin.listUsers();
+    // Query auth.users directly by email instead of listing all users
+    const { data: authUser, error: userQueryError } = await adminClient
+      .schema('auth')
+      .from('users')
+      .select('id')
+      .ilike('email', email)
+      .maybeSingle();
 
-    if (listError) {
-      console.error('Error listing users:', listError.message);
-    } else {
-      const targetUser = usersData?.users?.find(
-        (u) => u.email?.toLowerCase() === email.toLowerCase()
+    if (userQueryError) {
+      console.error('Error querying auth.users:', userQueryError.message);
+    } else if (authUser) {
+      const { error: deleteError } = await adminClient.auth.admin.deleteUser(
+        authUser.id
       );
-
-      if (targetUser) {
-        const { error: deleteError } = await adminClient.auth.admin.deleteUser(
-          targetUser.id
-        );
-        if (deleteError) {
-          console.error('Error deleting user:', deleteError.message);
-        } else {
-          deleted.users = 1;
-        }
+      if (deleteError) {
+        console.error('Error deleting user:', deleteError.message);
+      } else {
+        deleted.users = 1;
       }
     }
 
