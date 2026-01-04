@@ -37,40 +37,50 @@ export default function ResetPasswordPage() {
     resolver: zodResolver(resetPasswordSchema),
   });
 
-  // Extract and validate token on mount
+  // Validate session on mount (supports both PKCE callback flow and legacy hash flow)
   useEffect(() => {
-    const checkToken = async () => {
+    const checkSession = async () => {
       try {
-        // Get hash fragment from URL
-        const hashParams = new URLSearchParams(
-          window.location.hash.substring(1)
-        );
-        const accessToken = hashParams.get('access_token');
-
-        if (!accessToken) {
-          setTokenState('missing');
-          return;
-        }
-
-        // Verify the session with Supabase
+        // First, check if we have an existing session (from /auth/callback PKCE flow)
         const {
           data: { session },
           error: sessionError,
         } = await supabase.auth.getSession();
 
-        if (sessionError || !session) {
+        if (session && !sessionError) {
+          // Valid session exists - user came from callback or is already authenticated
+          setTokenState('valid');
+          return;
+        }
+
+        // Fallback: Check for legacy hash fragment flow (access_token in URL)
+        const hashParams = new URLSearchParams(
+          window.location.hash.substring(1)
+        );
+        const accessToken = hashParams.get('access_token');
+
+        if (accessToken) {
+          // Legacy flow - token in hash, Supabase client should have processed it
+          // Re-check session after a brief delay for client to process
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          const { data: retrySession } = await supabase.auth.getSession();
+          if (retrySession.session) {
+            setTokenState('valid');
+            return;
+          }
           setTokenState('expired');
           return;
         }
 
-        setTokenState('valid');
+        // No session and no token - invalid access
+        setTokenState('missing');
       } catch (err: unknown) {
-        console.error('Token validation error:', err);
+        console.error('Session validation error:', err);
         setTokenState('error');
       }
     };
 
-    checkToken();
+    checkSession();
   }, []);
 
   // Auto-redirect to login after successful password reset
