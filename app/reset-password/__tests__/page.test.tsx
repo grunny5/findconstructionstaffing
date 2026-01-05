@@ -258,8 +258,8 @@ describe('ResetPasswordPage', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmInput, 'password456');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'differentpass123');
       await user.click(submitButton);
 
       await waitFor(() => {
