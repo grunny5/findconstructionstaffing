@@ -486,7 +486,7 @@ describe('ResendVerificationForm', () => {
     it('should associate label with input using htmlFor', () => {
       render(<ResendVerificationForm />);
 
-      const label = screen.getByText('Email address', {
+      const label = screen.getByText(/email address/i, {
         selector: 'label',
       });
       const input = screen.getByLabelText(/email address/i);
