@@ -5,36 +5,14 @@ import { redirect } from 'next/navigation';
 interface IntegrationSummary {
   id: string;
   name: string;
+  slug: string;
   created_at: string;
-  config: {
-    is_active: boolean;
-    last_sync_at: string | null;
-    created_at: string;
-    updated_at: string;
-  } | null;
-  last_sync: {
-    status: string;
-    created_at: string;
-  } | null;
-}
-
-interface CompanyData {
-  id: string;
-  name: string;
-  created_at: string;
-  roaddog_jobs_configs?: Array<{
-    company_id: string;
-    is_active: boolean;
-    last_sync_at: string | null;
-    created_at: string;
-    updated_at: string;
-  }>;
-}
-
-interface SyncLog {
-  company_id: string;
-  status: string;
-  created_at: string;
+  integration_enabled?: boolean;
+  integration_provider?: string | null;
+  integration_config?: Record<string, any>;
+  integration_last_sync_at?: string | null;
+  integration_sync_status?: string | null;
+  integration_sync_error?: string | null;
 }
 
 export default async function AdminIntegrationsPage() {
@@ -69,21 +47,21 @@ export default async function AdminIntegrationsPage() {
   // which consolidates the queries below into one database round-trip for better performance.
   // Once the RPC method is properly implemented in your database, you can switch to that approach.
 
-  // Option 1: Single query with joins (recommended for PostgreSQL)
+  // Query agencies table with integration fields
   const { data: integrationsData, error } = await supabase
-    .from('companies')
+    .from('agencies')
     .select(
       `
       id,
       name,
+      slug,
       created_at,
-      roaddog_jobs_configs!left (
-        company_id,
-        is_active,
-        last_sync_at,
-        created_at,
-        updated_at
-      )
+      integration_enabled,
+      integration_provider,
+      integration_config,
+      integration_last_sync_at,
+      integration_sync_status,
+      integration_sync_error
     `
     )
     .order('name');
@@ -93,68 +71,8 @@ export default async function AdminIntegrationsPage() {
     return <div>Error loading integrations</div>;
   }
 
-  // Get latest sync status for each company with a config
-  // Note: This second query is eliminated in the optimized version which uses RPC
-  const companiesWithConfigs =
-    integrationsData
-      ?.filter(
-        (company: any) =>
-          Array.isArray(company.roaddog_jobs_configs) &&
-          company.roaddog_jobs_configs.length > 0
-      )
-      .map((company: any) => company.id) || [];
-
-  let syncLogs: SyncLog[] = [];
-  if (companiesWithConfigs.length > 0) {
-    // Get latest sync log for each company
-    const { data: logs, error: syncError } = await supabase
-      .from('roaddog_jobs_sync_logs')
-      .select('company_id, status, created_at')
-      .in('company_id', companiesWithConfigs)
-      .order('created_at', { ascending: false });
-
-    if (syncError) {
-      console.error('Error fetching sync logs:', syncError);
-      // Continue with empty syncLogs array rather than failing entirely
-    }
-
-    // Group by company_id and get the latest for each
-    const latestSyncByCompany = new Map<string, SyncLog>();
-    logs?.forEach((log: SyncLog) => {
-      if (!latestSyncByCompany.has(log.company_id)) {
-        latestSyncByCompany.set(log.company_id, log);
-      }
-    });
-    syncLogs = Array.from(latestSyncByCompany.values());
-  }
-
-  // Transform data into the format needed for the UI
-  const integrations: IntegrationSummary[] =
-    integrationsData?.map((company: CompanyData) => {
-      const config = company.roaddog_jobs_configs?.[0] || null;
-      const lastSync =
-        syncLogs.find((log: SyncLog) => log.company_id === company.id) || null;
-
-      return {
-        id: company.id,
-        name: company.name,
-        created_at: company.created_at,
-        config: config
-          ? {
-              is_active: config.is_active,
-              last_sync_at: config.last_sync_at,
-              created_at: config.created_at,
-              updated_at: config.updated_at,
-            }
-          : null,
-        last_sync: lastSync
-          ? {
-              status: lastSync.status,
-              created_at: lastSync.created_at,
-            }
-          : null,
-      };
-    }) || [];
+  // Data is already in correct format from query
+  const integrations: IntegrationSummary[] = integrationsData || [];
 
   return (
     <div className="container mx-auto p-6">
@@ -175,19 +93,31 @@ export default async function AdminIntegrationsPage() {
                 <div className="flex flex-col items-end">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
-                      integration.config?.is_active
+                      integration.integration_enabled
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {integration.config?.is_active ? 'Active' : 'Inactive'}
+                    {integration.integration_enabled ? 'Active' : 'Inactive'}
                   </span>
-                  {integration.last_sync && (
+                  {integration.integration_provider && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Provider: {integration.integration_provider}
+                    </p>
+                  )}
+                  {integration.integration_last_sync_at && (
                     <p className="mt-1 text-sm text-gray-500">
-                      Last sync: {integration.last_sync.status} -
+                      Last sync:{' '}
+                      {integration.integration_sync_status || 'Unknown'}
+                      {' - '}
                       {new Date(
-                        integration.last_sync.created_at
+                        integration.integration_last_sync_at
                       ).toLocaleString()}
+                    </p>
+                  )}
+                  {integration.integration_sync_error && (
+                    <p className="mt-1 text-xs text-red-500">
+                      Error: {integration.integration_sync_error}
                     </p>
                   )}
                 </div>
