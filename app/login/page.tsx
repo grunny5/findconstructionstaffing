@@ -8,6 +8,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { ResendVerificationForm } from '@/components/auth/ResendVerificationForm';
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
 const loginSchema = z.object({
@@ -60,93 +66,111 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
+    <AuthPageLayout maxWidth="md">
+      <div className="space-y-8">
+        {/* Page Header */}
+        <div className="text-center">
+          <h1 className="font-display text-4xl md:text-5xl uppercase tracking-wide text-industrial-graphite-600 mb-4">
+            Sign In
+          </h1>
+          <p className="font-body text-lg text-industrial-graphite-500">
+            Don&apos;t have an account?{' '}
             <Link
               href="/signup"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-semibold text-industrial-orange hover:text-industrial-orange-500 underline underline-offset-4"
             >
-              create a new account
+              Create one here
             </Link>
           </p>
         </div>
 
-        <form
-          className="mt-8 space-y-6"
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                {...register('email')}
-                id="email"
-                type="email"
-                autoComplete="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.email.message}
-                </p>
+        {/* Login Card */}
+        <Card className="bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
+          <CardHeader className="border-b border-industrial-graphite-200">
+            <CardTitle className="font-display text-xl uppercase text-industrial-graphite-600">
+              Sign in to your account
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription className="font-body text-sm">
+                    {error}
+                  </AlertDescription>
+                </Alert>
               )}
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                {...register('password')}
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="email"
+                  className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                >
+                  Email Address <span className="text-industrial-orange">*</span>
+                </Label>
+                <Input
+                  {...register('email')}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="your.email@example.com"
+                  className={errors.email ? 'border-industrial-orange' : ''}
+                />
+                {errors.email && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-          <div className="text-center">
-            <Link
-              href="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
-            >
-              Forgot password?
-            </Link>
-          </div>
-        </form>
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                >
+                  Password <span className="text-industrial-orange">*</span>
+                </Label>
+                <Input
+                  {...register('password')}
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  className={errors.password ? 'border-industrial-orange' : ''}
+                />
+                {errors.password && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+
+              {/* Forgot Password Link */}
+              <div className="text-center pt-2">
+                <Link
+                  href="/forgot-password"
+                  className="font-body text-sm font-semibold text-industrial-orange hover:text-industrial-orange-500 underline underline-offset-4"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Resend Verification Form */}
         {isEmailNotVerified &&
           unverifiedEmail &&
           isFeatureEnabled('resendVerification') && (
@@ -155,7 +179,7 @@ function LoginForm() {
             </div>
           )}
       </div>
-    </div>
+    </AuthPageLayout>
   );
 }
 
@@ -163,9 +187,11 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-gray-600">Loading...</div>
-        </div>
+        <AuthPageLayout maxWidth="md">
+          <div className="text-center">
+            <p className="font-body text-lg text-industrial-graphite-400">Loading...</p>
+          </div>
+        </AuthPageLayout>
       }
     >
       <LoginForm />
