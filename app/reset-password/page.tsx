@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().min(12, 'Password must be at least 12 characters'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -138,8 +138,7 @@ export default function ResetPasswordPage() {
       }
       setError(errorMessage);
     } finally {
-      if (!isMountedRef.current) return;
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     }
   };
 

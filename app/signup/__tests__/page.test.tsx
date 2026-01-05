@@ -47,7 +47,9 @@ describe('SignupPage', () => {
       render(<SignupPage />);
 
       // Check for both hero and card headings
-      const headings = screen.getAllByRole('heading', { name: /create your account/i });
+      const headings = screen.getAllByRole('heading', {
+        name: /create your account/i,
+      });
       expect(headings.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -523,7 +525,10 @@ describe('SignupPage', () => {
       const passwordInput = screen.getByLabelText(/^password/i);
       const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       expect(passwordInput).toHaveAttribute('autoComplete', 'new-password');
-      expect(confirmPasswordInput).toHaveAttribute('autoComplete', 'new-password');
+      expect(confirmPasswordInput).toHaveAttribute(
+        'autoComplete',
+        'new-password'
+      );
     });
   });
 
