@@ -138,6 +138,9 @@
   --industrial-space-3xl: 64px;
   --industrial-space-4xl: 96px;
 
+  /* Layout Constants */
+  --header-height: 5rem; /* 80px - Site header height (used in Header.tsx and messages layout) */
+
   /* Border Radius - Sharp corners (2-3px max) */
   --industrial-radius-sharp: 2px;
   --industrial-radius-base: 3px;
