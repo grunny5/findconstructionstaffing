@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import Header from '@/components/Header';
 import { MessagesInboxClient } from '@/components/messages/MessagesInboxClient';
 import type { ConversationWithParticipants } from '@/types/api';
 
@@ -65,7 +66,8 @@ export default async function MessagesPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
+      <Header />
       <MessagesInboxClient
         initialConversations={conversations}
         currentUserId={user.id}

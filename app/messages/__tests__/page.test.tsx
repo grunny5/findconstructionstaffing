@@ -127,10 +127,11 @@ describe('MessagesPage', () => {
       );
 
       // Verify result contains MessagesInboxClient with correct props
-      expect(result.props.children.props.initialConversations).toEqual(
+      // result.props.children is an array: [<Header />, <MessagesInboxClient />]
+      expect(result.props.children[1].props.initialConversations).toEqual(
         mockConversations
       );
-      expect(result.props.children.props.currentUserId).toBe(mockUser.id);
+      expect(result.props.children[1].props.currentUserId).toBe(mockUser.id);
     });
 
     it('should handle fetch error gracefully and render empty inbox', async () => {
@@ -160,8 +161,8 @@ describe('MessagesPage', () => {
       );
 
       // Verify result contains MessagesInboxClient with empty conversations
-      expect(result.props.children.props.initialConversations).toEqual([]);
-      expect(result.props.children.props.currentUserId).toBe(mockUser.id);
+      expect(result.props.children[1].props.initialConversations).toEqual([]);
+      expect(result.props.children[1].props.currentUserId).toBe(mockUser.id);
 
       consoleErrorSpy.mockRestore();
     });
@@ -190,8 +191,8 @@ describe('MessagesPage', () => {
       );
 
       // Verify result contains MessagesInboxClient with empty conversations
-      expect(result.props.children.props.initialConversations).toEqual([]);
-      expect(result.props.children.props.currentUserId).toBe(mockUser.id);
+      expect(result.props.children[1].props.initialConversations).toEqual([]);
+      expect(result.props.children[1].props.currentUserId).toBe(mockUser.id);
 
       consoleErrorSpy.mockRestore();
     });
@@ -215,8 +216,8 @@ describe('MessagesPage', () => {
       const result = await MessagesPage();
 
       // Verify result contains MessagesInboxClient with empty conversations
-      expect(result.props.children.props.initialConversations).toEqual([]);
-      expect(result.props.children.props.currentUserId).toBe(mockUser.id);
+      expect(result.props.children[1].props.initialConversations).toEqual([]);
+      expect(result.props.children[1].props.currentUserId).toBe(mockUser.id);
     });
   });
 
