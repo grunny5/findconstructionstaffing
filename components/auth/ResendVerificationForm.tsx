@@ -75,19 +75,22 @@ export function ResendVerificationForm({
 
   if (success) {
     return (
-      <Card>
+      <Card className="bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle2 className="h-10 w-10 text-green-600" />
+          {/* Orange circle with checkmark icon */}
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-industrial-sharp bg-industrial-orange-100">
+            <CheckCircle2 className="h-10 w-10 text-industrial-orange" />
           </div>
-          <CardTitle className="text-2xl">Check your email</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
+            Check Your Email
+          </CardTitle>
+          <CardDescription className="font-body text-sm text-industrial-graphite-500">
             We&apos;ve sent a new verification link to your email address.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert>
-            <AlertDescription>
+          <Alert className="bg-industrial-orange-100 border-l-4 border-industrial-orange rounded-industrial-sharp">
+            <AlertDescription className="font-body text-sm text-industrial-graphite-600">
               Click the link in the email to verify your account. The link will
               expire in 1 hour.
             </AlertDescription>
@@ -98,15 +101,16 @@ export function ResendVerificationForm({
   }
 
   return (
-    <Card>
+    <Card className="bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
       <CardHeader>
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-          <Mail className="h-6 w-6 text-blue-600" />
+        {/* Orange circle with mail icon */}
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-industrial-sharp bg-industrial-orange-100">
+          <Mail className="h-6 w-6 text-industrial-orange" />
         </div>
-        <CardTitle className="text-center text-xl">
+        <CardTitle className="text-center font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
           Resend Verification Email
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-center font-body text-sm text-industrial-graphite-500">
           Enter your email address to receive a new verification link
         </CardDescription>
       </CardHeader>
@@ -117,7 +121,12 @@ export function ResendVerificationForm({
           noValidate
         >
           <div className="space-y-2">
-            <Label htmlFor="email">Email address</Label>
+            <Label
+              htmlFor="email"
+              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+            >
+              Email Address
+            </Label>
             <Input
               id="email"
               type="email"
@@ -127,11 +136,12 @@ export function ResendVerificationForm({
               aria-describedby={errors.email ? 'email-error' : undefined}
               {...register('email')}
               disabled={loading}
+              className="font-body"
             />
             {errors.email && (
               <p
                 id="email-error"
-                className="text-sm text-destructive"
+                className="font-body text-sm text-industrial-orange"
                 role="alert"
               >
                 {errors.email.message}
@@ -140,15 +150,17 @@ export function ResendVerificationForm({
           </div>
 
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+            <Alert className="bg-industrial-orange-100 border-l-4 border-industrial-orange rounded-industrial-sharp">
+              <AlertCircle className="h-4 w-4 text-industrial-orange" />
+              <AlertDescription className="font-body text-sm text-industrial-graphite-600">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full font-body text-sm uppercase font-semibold"
             disabled={loading}
             aria-label={
               loading ? 'Sending verification email' : 'Send verification email'

@@ -47,7 +47,7 @@ describe('ForgotPasswordPage', () => {
     it('should render email input field', () => {
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       expect(emailInput).toBeInTheDocument();
       expect(emailInput).toHaveAttribute('type', 'email');
       expect(emailInput).toHaveAttribute('id', 'email');
@@ -89,7 +89,7 @@ describe('ForgotPasswordPage', () => {
       const user = userEvent.setup();
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -111,7 +111,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -135,7 +135,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -164,7 +164,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -189,7 +189,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -216,7 +216,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -243,7 +243,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -270,7 +270,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -302,7 +302,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -328,7 +328,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -354,7 +354,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -390,7 +390,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -411,7 +411,7 @@ describe('ForgotPasswordPage', () => {
     it('should have accessible form labels', () => {
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       expect(emailInput).toHaveAccessibleName(/email address/i);
     });
 
@@ -419,7 +419,7 @@ describe('ForgotPasswordPage', () => {
       const user = userEvent.setup();
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -437,7 +437,7 @@ describe('ForgotPasswordPage', () => {
       const user = userEvent.setup();
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -457,7 +457,7 @@ describe('ForgotPasswordPage', () => {
 
       // Tab to email input
       await user.tab();
-      expect(screen.getByPlaceholderText(/email address/i)).toHaveFocus();
+      expect(screen.getByLabelText(/email address/i)).toHaveFocus();
 
       // Tab to submit button
       await user.tab();
@@ -481,7 +481,7 @@ describe('ForgotPasswordPage', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });

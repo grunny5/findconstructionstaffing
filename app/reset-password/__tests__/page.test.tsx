@@ -215,7 +215,7 @@ describe('ResetPasswordPage', () => {
       });
     });
 
-    it('should show error for password less than 6 characters', async () => {
+    it('should show error for password less than 12 characters', async () => {
       const user = userEvent.setup();
       render(<ResetPasswordPage />);
 
@@ -231,13 +231,13 @@ describe('ResetPasswordPage', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, '12345');
-      await user.type(confirmInput, '12345');
+      await user.type(passwordInput, 'short123');
+      await user.type(confirmInput, 'short123');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(
-          screen.getByText(/password must be at least 6 characters/i)
+          screen.getByText(/password must be at least 12 characters/i)
         ).toBeInTheDocument();
       });
     });
@@ -258,8 +258,8 @@ describe('ResetPasswordPage', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmInput, 'password456');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'differentpass123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -288,13 +288,13 @@ describe('ResetPasswordPage', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(
-          screen.queryByText(/password must be at least 6 characters/i)
+          screen.queryByText(/password must be at least 12 characters/i)
         ).not.toBeInTheDocument();
         expect(
           screen.queryByText(/passwords don't match/i)
@@ -550,8 +550,8 @@ describe('ResetPasswordPage', () => {
       });
 
       // Use valid length password that will pass validation but fail at Supabase level
-      await user.type(passwordInput, 'weakpass');
-      await user.type(confirmInput, 'weakpass');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -579,8 +579,8 @@ describe('ResetPasswordPage', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -670,7 +670,7 @@ describe('ResetPasswordPage', () => {
 
       await waitFor(() => {
         const errorMessage = screen.getByText(
-          /password must be at least 6 characters/i
+          /password must be at least 12 characters/i
         );
         expect(errorMessage).toHaveAttribute('role', 'alert');
       });

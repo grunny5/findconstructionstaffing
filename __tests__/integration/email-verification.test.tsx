@@ -81,17 +81,17 @@ describe('Email Verification Integration Tests', () => {
       render(<SignupPage />);
 
       // Fill out signup form
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'John Doe');
       await user.type(emailInput, 'john@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInputs[0], 'validpassword123');
+      await user.type(passwordInputs[1], 'validpassword123');
       await user.click(submitButton);
 
       // Verify success state
@@ -106,7 +106,7 @@ describe('Email Verification Integration Tests', () => {
       // Verify signup was called
       expect(mockSignUp).toHaveBeenCalledWith(
         'john@example.com',
-        'password123',
+        'validpassword123',
         'John Doe'
       );
     });
@@ -117,9 +117,9 @@ describe('Email Verification Integration Tests', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
@@ -143,9 +143,9 @@ describe('Email Verification Integration Tests', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
@@ -157,11 +157,10 @@ describe('Email Verification Integration Tests', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        const resendButton = screen.getByRole('link', {
+        const resendButton = screen.getByRole('button', {
           name: /resend verification email/i,
         });
         expect(resendButton).toBeInTheDocument();
-        expect(resendButton).toHaveAttribute('href', '/signup');
       });
     });
 
@@ -171,17 +170,17 @@ describe('Email Verification Integration Tests', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'testpass123');
-      await user.type(passwordInputs[1], 'testpass123');
+      await user.type(passwordInputs[0], 'testpassword123');
+      await user.type(passwordInputs[1], 'testpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -206,12 +205,12 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'unverified@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -235,12 +234,12 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'unverified@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -258,18 +257,18 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'verified@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockSignIn).toHaveBeenCalledWith(
           'verified@example.com',
-          'password123'
+          'validpassword123'
         );
         expect(mockPush).toHaveBeenCalledWith('/');
       });
@@ -286,8 +285,8 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'wrong@example.com');
@@ -313,9 +312,9 @@ describe('Email Verification Integration Tests', () => {
       mockSignUp.mockResolvedValue(undefined);
       const { unmount: unmountSignup } = render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const signupButton = screen.getByRole('button', {
         name: /create account/i,
       });
@@ -341,8 +340,8 @@ describe('Email Verification Integration Tests', () => {
 
       const { unmount: unmountLogin1 } = render(<LoginPage />);
 
-      const loginEmail1 = screen.getByPlaceholderText(/email address/i);
-      const loginPassword1 = screen.getByPlaceholderText(/password/i);
+      const loginEmail1 = screen.getByLabelText(/email address/i);
+      const loginPassword1 = screen.getByLabelText(/^password/i);
       const loginButton1 = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(loginEmail1, 'alice@example.com');
@@ -362,8 +361,8 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const loginEmail2 = screen.getByPlaceholderText(/email address/i);
-      const loginPassword2 = screen.getByPlaceholderText(/password/i);
+      const loginEmail2 = screen.getByLabelText(/email address/i);
+      const loginPassword2 = screen.getByLabelText(/^password/i);
       const loginButton2 = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(loginEmail2, 'alice@example.com');
@@ -387,17 +386,17 @@ describe('Email Verification Integration Tests', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Existing User');
       await user.type(emailInput, 'existing@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInputs[0], 'validpassword123');
+      await user.type(passwordInputs[1], 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -424,13 +423,13 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       // First attempt
       await user.type(emailInput, 'user@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -446,7 +445,7 @@ describe('Email Verification Integration Tests', () => {
       await user.clear(emailInput);
       await user.clear(passwordInput);
       await user.type(emailInput, 'user@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -469,17 +468,17 @@ describe('Email Verification Integration Tests', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Network Test');
       await user.type(emailInput, 'network@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInputs[0], 'validpassword123');
+      await user.type(passwordInputs[1], 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -497,12 +496,12 @@ describe('Email Verification Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -522,17 +521,17 @@ describe('Email Verification Integration Tests', () => {
       render(<SignupPage />);
 
       // Signup attempt
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByPlaceholderText(/john doe/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'User One');
       await user.type(emailInput, 'user1@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInputs[0], 'validpassword123');
+      await user.type(passwordInputs[1], 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -542,7 +541,7 @@ describe('Email Verification Integration Tests', () => {
       expect(mockSignUp).toHaveBeenCalledTimes(1);
       expect(mockSignUp).toHaveBeenCalledWith(
         'user1@example.com',
-        'password123',
+        'validpassword123',
         'User One'
       );
     });

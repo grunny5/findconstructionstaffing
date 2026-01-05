@@ -7,16 +7,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import { Mail } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout';
 
 const signupSchema = z
   .object({
@@ -39,6 +36,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const {
     register,
@@ -71,178 +70,288 @@ export default function SignupPage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    try {
+      setResendLoading(true);
+      setResendMessage('');
+
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: submittedEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        // Rate limited
+        const retryAfter = data.retryAfter || 60;
+        setResendMessage(
+          `${data.message} Please try again in ${Math.ceil(retryAfter / 60)} minute${Math.ceil(retryAfter / 60) > 1 ? 's' : ''}.`
+        );
+      } else if (response.ok) {
+        // Success (200) - show success message
+        setResendMessage('Verification email sent! Please check your inbox.');
+      } else {
+        // Other errors (4xx/5xx) - use API message or fallback
+        setResendMessage(
+          data.message ||
+            'Failed to resend verification email. Please try again.'
+        );
+      }
+    } catch (err: any) {
+      // Network or JSON parse errors
+      setResendMessage(
+        'Failed to resend verification email. Please try again.'
+      );
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  // Success State - Email Verification Required
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-              <Mail className="h-10 w-10 text-blue-600" />
-            </div>
-            <CardTitle className="text-2xl">Check your email</CardTitle>
-            <CardDescription className="text-base">
-              We&apos;ve sent a verification link to{' '}
-              <span className="font-semibold text-foreground">
-                {submittedEmail}
-              </span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert>
-              <AlertDescription>
-                Click the link in the email to verify your account and complete
-                the signup process.
-              </AlertDescription>
-            </Alert>
+      <AuthPageLayout maxWidth="md">
+        <div className="text-center space-y-8">
+          {/* Page Heading */}
+          <h1 className="font-display text-4xl md:text-5xl uppercase tracking-wide text-industrial-graphite-600">
+            Account Created
+          </h1>
 
-            <div className="rounded-md bg-yellow-50 p-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> The verification link will expire in 1
-                hour.
+          {/* Success Icon */}
+          <div className="flex justify-center">
+            <div className="bg-industrial-orange-100 w-20 h-20 rounded-industrial-sharp flex items-center justify-center">
+              <CheckCircle2 className="h-12 w-12 text-industrial-orange" />
+            </div>
+          </div>
+
+          {/* Success Card */}
+          <Card className="bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
+            <CardHeader className="border-b border-industrial-graphite-200">
+              <CardTitle className="font-display text-2xl uppercase text-industrial-graphite-600">
+                Check Your Email
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+              {/* Email Sent Message */}
+              <p className="font-body text-lg text-industrial-graphite-500">
+                We&apos;ve sent a verification link to{' '}
+                <span className="font-semibold text-industrial-graphite-600">
+                  {submittedEmail}
+                </span>
               </p>
-            </div>
 
-            <div className="space-y-3 pt-2">
-              <p className="text-center text-sm text-muted-foreground">
-                Didn&apos;t receive the email?
-              </p>
-              <Button asChild variant="outline" className="w-full" size="lg">
-                <Link href="/signup">Resend verification email</Link>
-              </Button>
-            </div>
+              {/* Instructions Alert */}
+              <Alert>
+                <AlertDescription className="font-body text-sm">
+                  Click the link in the email to verify your account and
+                  complete the signup process.
+                </AlertDescription>
+              </Alert>
 
-            <div className="text-center">
-              <Link
-                href="/"
-                className="text-sm text-muted-foreground hover:text-primary"
-              >
-                Return to home
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              {/* Expiration Warning */}
+              <div className="rounded-industrial-sharp bg-industrial-orange-100 border-2 border-industrial-orange p-4">
+                <p className="font-body text-sm text-industrial-graphite-600">
+                  <strong className="font-semibold">Note:</strong> The
+                  verification link will expire in 1 hour.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-4 pt-2">
+                <p className="font-body text-sm text-industrial-graphite-400 text-center">
+                  Didn&apos;t receive the email?
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                >
+                  {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+                </Button>
+
+                {/* Resend Feedback Message */}
+                {resendMessage && (
+                  <Alert
+                    variant={
+                      resendMessage.includes('sent') ? 'default' : 'destructive'
+                    }
+                  >
+                    <AlertDescription className="font-body text-sm">
+                      {resendMessage}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+
+              {/* Return Home Link */}
+              <div className="text-center pt-2">
+                <Link
+                  href="/"
+                  className="font-body text-sm font-semibold text-industrial-orange hover:text-industrial-orange-500 underline underline-offset-4"
+                >
+                  Return to home
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthPageLayout>
     );
   }
 
+  // Form State - Create Account
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
+    <AuthPageLayout
+      showHero
+      heroTitle="CREATE YOUR ACCOUNT"
+      heroSubtitle="Join the FindConstructionStaffing network and connect with top staffing agencies"
+      maxWidth="md"
+    >
+      <div className="space-y-8">
+        {/* Page Header */}
+        <div className="text-center">
+          <p className="font-body text-lg text-industrial-graphite-500">
+            Already have an account?{' '}
             <Link
               href="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-semibold text-industrial-orange hover:text-industrial-orange-500 underline underline-offset-4"
             >
-              sign in to existing account
+              Sign in here
             </Link>
           </p>
         </div>
 
-        <form
-          className="mt-8 space-y-6"
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-
-          <div className="rounded-md shadow-sm space-y-3">
-            <div>
-              <label htmlFor="fullName" className="sr-only">
-                Full name
-              </label>
-              <input
-                {...register('fullName')}
-                id="fullName"
-                type="text"
-                autoComplete="name"
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Full name"
-              />
-              {errors.fullName && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.fullName.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                {...register('email')}
-                id="email"
-                type="email"
-                autoComplete="email"
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                {...register('password')}
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password (min. 6 characters)"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                Confirm password
-              </label>
-              <input
-                {...register('confirmPassword')}
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm password"
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+        {/* Signup Card */}
+        <Card className="bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
+          <CardHeader className="border-b border-industrial-graphite-200">
+            <CardTitle className="font-display text-xl uppercase text-industrial-graphite-600">
+              Create your account
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              noValidate
+              className="space-y-6"
             >
-              {loading ? 'Creating account...' : 'Create account'}
-            </button>
-          </div>
-        </form>
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription className="font-body text-sm">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Full Name Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="fullName"
+                  className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                >
+                  Full Name <span className="text-industrial-orange">*</span>
+                </Label>
+                <Input
+                  {...register('fullName')}
+                  id="fullName"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="John Doe"
+                  className={errors.fullName ? 'border-industrial-orange' : ''}
+                />
+                {errors.fullName && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.fullName.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="email"
+                  className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                >
+                  Email Address{' '}
+                  <span className="text-industrial-orange">*</span>
+                </Label>
+                <Input
+                  {...register('email')}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="your.email@example.com"
+                  className={errors.email ? 'border-industrial-orange' : ''}
+                />
+                {errors.email && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                >
+                  Password <span className="text-industrial-orange">*</span>
+                </Label>
+                <Input
+                  {...register('password')}
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  className={errors.password ? 'border-industrial-orange' : ''}
+                />
+                {errors.password && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                >
+                  Confirm Password{' '}
+                  <span className="text-industrial-orange">*</span>
+                </Label>
+                <Input
+                  {...register('confirmPassword')}
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  className={
+                    errors.confirmPassword ? 'border-industrial-orange' : ''
+                  }
+                />
+                {errors.confirmPassword && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AuthPageLayout>
   );
 }

@@ -46,15 +46,17 @@ describe('SignupPage', () => {
     it('should render the signup form', () => {
       render(<SignupPage />);
 
-      expect(
-        screen.getByRole('heading', { name: /create your account/i })
-      ).toBeInTheDocument();
+      // Check for both hero and card headings
+      const headings = screen.getAllByRole('heading', {
+        name: /create your account/i,
+      });
+      expect(headings.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should render full name input field', () => {
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const nameInput = screen.getByLabelText(/full name/i);
       expect(nameInput).toBeInTheDocument();
       expect(nameInput).toHaveAttribute('type', 'text');
     });
@@ -62,7 +64,7 @@ describe('SignupPage', () => {
     it('should render email input field', () => {
       render(<SignupPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       expect(emailInput).toBeInTheDocument();
       expect(emailInput).toHaveAttribute('type', 'email');
     });
@@ -70,10 +72,10 @@ describe('SignupPage', () => {
     it('should render password input fields', () => {
       render(<SignupPage />);
 
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
-      expect(passwordInputs).toHaveLength(2);
-      expect(passwordInputs[0]).toHaveAttribute('type', 'password');
-      expect(passwordInputs[1]).toHaveAttribute('type', 'password');
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+      expect(passwordInput).toHaveAttribute('type', 'password');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
     });
 
     it('should render submit button', () => {
@@ -90,7 +92,7 @@ describe('SignupPage', () => {
       render(<SignupPage />);
 
       const loginLink = screen.getByRole('link', {
-        name: /sign in to existing account/i,
+        name: /sign in here/i,
       });
       expect(loginLink).toBeInTheDocument();
       expect(loginLink).toHaveAttribute('href', '/login');
@@ -102,7 +104,7 @@ describe('SignupPage', () => {
       const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const nameInput = screen.getByLabelText(/full name/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
@@ -121,17 +123,18 @@ describe('SignupPage', () => {
       const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'invalid-email');
-      await user.type(passwordInputs[0], 'validpassword123');
-      await user.type(passwordInputs[1], 'validpassword123');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmPasswordInput, 'validpassword123');
       await user.click(submitButton);
 
       await waitFor(
@@ -148,14 +151,15 @@ describe('SignupPage', () => {
       const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], '12345');
+      await user.type(passwordInput, '12345');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -169,17 +173,18 @@ describe('SignupPage', () => {
       const user = userEvent.setup({ delay: null });
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password456');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password456');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -192,17 +197,18 @@ describe('SignupPage', () => {
       mockSignUp.mockResolvedValue({ session: null, user: null });
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -226,17 +232,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -254,17 +261,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -295,17 +303,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -325,17 +334,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -357,17 +367,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       // Wait for loading state to appear
@@ -393,17 +404,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'valid@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -423,17 +435,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -452,9 +465,10 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
@@ -462,8 +476,8 @@ describe('SignupPage', () => {
       // First submission - error
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'existing@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -492,7 +506,7 @@ describe('SignupPage', () => {
       const emailLabel = screen.getByLabelText(/email address/i);
       expect(emailLabel).toBeInTheDocument();
 
-      const passwordLabel = screen.getByLabelText(/^password$/i);
+      const passwordLabel = screen.getByLabelText(/^password/i);
       expect(passwordLabel).toBeInTheDocument();
 
       const confirmPasswordLabel = screen.getByLabelText(/confirm password/i);
@@ -502,15 +516,19 @@ describe('SignupPage', () => {
     it('should have proper autocomplete attributes', () => {
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
+      const nameInput = screen.getByLabelText(/full name/i);
       expect(nameInput).toHaveAttribute('autoComplete', 'name');
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       expect(emailInput).toHaveAttribute('autoComplete', 'email');
 
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
-      expect(passwordInputs[0]).toHaveAttribute('autoComplete', 'new-password');
-      expect(passwordInputs[1]).toHaveAttribute('autoComplete', 'new-password');
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+      expect(passwordInput).toHaveAttribute('autoComplete', 'new-password');
+      expect(confirmPasswordInput).toHaveAttribute(
+        'autoComplete',
+        'new-password'
+      );
     });
   });
 
@@ -521,17 +539,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'user@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -545,17 +564,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -571,25 +591,25 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
-        const resendLink = screen.getByRole('link', {
+        const resendButton = screen.getByRole('button', {
           name: /resend verification email/i,
         });
-        expect(resendLink).toBeInTheDocument();
-        expect(resendLink).toHaveAttribute('href', '/signup');
+        expect(resendButton).toBeInTheDocument();
       });
     });
 
@@ -599,17 +619,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -627,17 +648,18 @@ describe('SignupPage', () => {
 
       render(<SignupPage />);
 
-      const nameInput = screen.getByPlaceholderText(/full name/i);
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInputs = screen.getAllByPlaceholderText(/password/i);
+      const nameInput = screen.getByLabelText(/full name/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
+      const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', {
         name: /create account/i,
       });
 
       await user.type(nameInput, 'Test User');
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInputs[0], 'password123');
-      await user.type(passwordInputs[1], 'password123');
+      await user.type(passwordInput, 'password123');
+      await user.type(confirmPasswordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
