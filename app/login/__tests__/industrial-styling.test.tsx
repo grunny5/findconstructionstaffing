@@ -57,7 +57,10 @@ describe('LoginPage - Industrial Design System', () => {
     it('should use display font for main heading', () => {
       render(<LoginPage />);
 
-      const heading = screen.getByRole('heading', { name: /sign in/i, level: 1 });
+      const heading = screen.getByRole('heading', {
+        name: /sign in/i,
+        level: 1,
+      });
       expect(heading).toHaveClass('font-display');
       expect(heading).toHaveClass('uppercase');
       expect(heading).toHaveClass('tracking-wide');
@@ -75,7 +78,9 @@ describe('LoginPage - Industrial Design System', () => {
     it('should use display font for card title', () => {
       render(<LoginPage />);
 
-      const cardTitle = screen.getByRole('heading', { name: /sign in to your account/i });
+      const cardTitle = screen.getByRole('heading', {
+        name: /sign in to your account/i,
+      });
       expect(cardTitle).toHaveClass('font-display');
       expect(cardTitle).toHaveClass('uppercase');
       expect(cardTitle).toHaveClass('text-industrial-graphite-600');
@@ -151,7 +156,9 @@ describe('LoginPage - Industrial Design System', () => {
     });
 
     it('should show loading state when submitting', async () => {
-      mockSignIn.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+      mockSignIn.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      );
       const user = userEvent.setup();
 
       render(<LoginPage />);
@@ -181,7 +188,9 @@ describe('LoginPage - Industrial Design System', () => {
     it('should render forgot password link with orange styling', () => {
       render(<LoginPage />);
 
-      const forgotLink = screen.getByRole('link', { name: /forgot your password/i });
+      const forgotLink = screen.getByRole('link', {
+        name: /forgot your password/i,
+      });
       expect(forgotLink).toHaveClass('text-industrial-orange');
       expect(forgotLink).toHaveClass('hover:text-industrial-orange-500');
       expect(forgotLink).toHaveAttribute('href', '/forgot-password');
@@ -233,7 +242,9 @@ describe('LoginPage - Industrial Design System', () => {
       await user.click(button);
 
       await waitFor(() => {
-        const emailInput = screen.getByPlaceholderText(/your.email@example.com/i);
+        const emailInput = screen.getByPlaceholderText(
+          /your.email@example.com/i
+        );
         expect(emailInput).toHaveClass('border-industrial-orange');
       });
     });
@@ -255,7 +266,10 @@ describe('LoginPage - Industrial Design System', () => {
       await user.click(button);
 
       await waitFor(() => {
-        expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+        expect(mockSignIn).toHaveBeenCalledWith(
+          'test@example.com',
+          'password123'
+        );
         expect(mockPush).toHaveBeenCalledWith('/');
       });
     });
@@ -344,7 +358,9 @@ describe('LoginPage - Industrial Design System', () => {
       const { container } = render(
         <div className="min-h-screen bg-industrial-bg-primary">
           <div className="text-center">
-            <p className="font-body text-lg text-industrial-graphite-400">Loading...</p>
+            <p className="font-body text-lg text-industrial-graphite-400">
+              Loading...
+            </p>
           </div>
         </div>
       );

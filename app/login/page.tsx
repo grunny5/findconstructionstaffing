@@ -92,7 +92,11 @@ function LoginForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              noValidate
+              className="space-y-6"
+            >
               {/* Error Alert */}
               {error && (
                 <Alert variant="destructive">
@@ -108,7 +112,8 @@ function LoginForm() {
                   htmlFor="email"
                   className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
                 >
-                  Email Address <span className="text-industrial-orange">*</span>
+                  Email Address{' '}
+                  <span className="text-industrial-orange">*</span>
                 </Label>
                 <Input
                   {...register('email')}
@@ -149,11 +154,7 @@ function LoginForm() {
               </div>
 
               {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full"
-              >
+              <Button type="submit" disabled={loading} className="w-full">
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
 
@@ -189,7 +190,9 @@ export default function LoginPage() {
       fallback={
         <AuthPageLayout maxWidth="md">
           <div className="text-center">
-            <p className="font-body text-lg text-industrial-graphite-400">Loading...</p>
+            <p className="font-body text-lg text-industrial-graphite-400">
+              Loading...
+            </p>
           </div>
         </AuthPageLayout>
       }

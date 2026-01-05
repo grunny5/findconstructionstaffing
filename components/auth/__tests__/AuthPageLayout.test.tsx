@@ -24,7 +24,9 @@ describe('AuthPageLayout', () => {
         </AuthPageLayout>
       );
 
-      expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { level: 1 })
+      ).not.toBeInTheDocument();
     });
 
     it('should not render hero section when showHero is false', () => {
@@ -202,7 +204,9 @@ describe('AuthPageLayout', () => {
         </AuthPageLayout>
       );
 
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('SIGN IN');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'SIGN IN'
+      );
       expect(screen.getByText('Welcome back')).toBeInTheDocument();
       expect(screen.getByTestId('form-content')).toBeInTheDocument();
     });
@@ -214,7 +218,9 @@ describe('AuthPageLayout', () => {
         </AuthPageLayout>
       );
 
-      expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { level: 1 })
+      ).not.toBeInTheDocument();
       expect(screen.getByTestId('minimal-content')).toBeInTheDocument();
     });
   });
