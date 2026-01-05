@@ -345,7 +345,7 @@ describe('Password Reset Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/password must be at least 6 characters/i)
+          screen.getByText(/password must be at least 12 characters/i)
         ).toBeInTheDocument();
       });
 
@@ -384,8 +384,8 @@ describe('Password Reset Integration Tests', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmInput, 'different456');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'differentpass456');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -436,8 +436,8 @@ describe('Password Reset Integration Tests', () => {
         name: /reset password/i,
       });
 
-      await user.type(passwordInput, 'weakpass');
-      await user.type(confirmInput, 'weakpass');
+      await user.type(passwordInput, 'weakpassword12');
+      await user.type(confirmInput, 'weakpassword12');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -730,8 +730,8 @@ describe('Password Reset Integration Tests', () => {
       });
 
       // First attempt: passwords don't match
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmInput, 'different456');
+      await user.type(passwordInput, 'validpassword123');
+      await user.type(confirmInput, 'differentpass456');
       await user.click(submitButton);
 
       await waitFor(() => {
