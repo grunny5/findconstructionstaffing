@@ -479,6 +479,7 @@ describe('SignupPage - Industrial Design System', () => {
       global.fetch = jest.fn(() =>
         Promise.resolve({
           status: 200,
+          ok: true,
           json: () =>
             Promise.resolve({
               message:
@@ -580,6 +581,58 @@ describe('SignupPage - Industrial Design System', () => {
           screen.getByText(/please try again in 2 minutes/i)
         ).toBeInTheDocument();
       });
+    });
+
+    it('should handle server errors (4xx/5xx) from resend endpoint', async () => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          status: 500,
+          ok: false,
+          json: () =>
+            Promise.resolve({
+              message: 'Internal server error occurred',
+            }),
+        })
+      ) as jest.Mock;
+
+      mockSignUp.mockResolvedValue({ session: null, user: {} });
+      const user = userEvent.setup();
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/John Doe/i);
+      const emailInput = screen.getByPlaceholderText(/your.email@example.com/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      });
+
+      const resendButton = screen.getByRole('button', {
+        name: /resend verification email/i,
+      });
+      await user.click(resendButton);
+
+      // Should show error message from API
+      await waitFor(() => {
+        expect(
+          screen.getByText(/internal server error occurred/i)
+        ).toBeInTheDocument();
+      });
+
+      // Should NOT show success message
+      expect(
+        screen.queryByText(/verification email sent/i)
+      ).not.toBeInTheDocument();
     });
 
     it('should render return home link with orange styling', async () => {

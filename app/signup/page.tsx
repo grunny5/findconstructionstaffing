@@ -91,11 +91,18 @@ export default function SignupPage() {
         setResendMessage(
           `${data.message} Please try again in ${Math.ceil(retryAfter / 60)} minute${Math.ceil(retryAfter / 60) > 1 ? 's' : ''}.`
         );
-      } else {
+      } else if (response.ok) {
         // Success (200) - show success message
         setResendMessage('Verification email sent! Please check your inbox.');
+      } else {
+        // Other errors (4xx/5xx) - use API message or fallback
+        setResendMessage(
+          data.message ||
+            'Failed to resend verification email. Please try again.'
+        );
       }
     } catch (err: any) {
+      // Network or JSON parse errors
       setResendMessage(
         'Failed to resend verification email. Please try again.'
       );
