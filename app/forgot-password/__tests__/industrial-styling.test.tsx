@@ -135,7 +135,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
     it('should style email input with industrial design', () => {
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
 
       // Input should have font-body class
       expect(emailInput).toHaveClass('font-body');
@@ -145,7 +145,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
       const user = userEvent.setup();
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -199,7 +199,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       const { container } = render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -232,7 +232,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -260,7 +260,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -287,7 +287,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       const { container } = render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -317,7 +317,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       const { container } = render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -353,7 +353,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       const { container } = render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -400,7 +400,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       const { container } = render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -431,7 +431,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });

@@ -91,7 +91,7 @@ describe('Password Reset Integration Tests', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -125,7 +125,7 @@ describe('Password Reset Integration Tests', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -146,7 +146,7 @@ describe('Password Reset Integration Tests', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -170,7 +170,7 @@ describe('Password Reset Integration Tests', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -458,7 +458,7 @@ describe('Password Reset Integration Tests', () => {
 
       const { unmount: unmountForgot } = render(<ForgotPasswordPage />);
 
-      const forgotEmailInput = screen.getByPlaceholderText(/email address/i);
+      const forgotEmailInput = screen.getByLabelText(/email address/i);
       const forgotSubmitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -525,8 +525,8 @@ describe('Password Reset Integration Tests', () => {
 
       render(<LoginPage />);
 
-      const loginEmailInput = screen.getByPlaceholderText(/email address/i);
-      const loginPasswordInput = screen.getByPlaceholderText(/password/i);
+      const loginEmailInput = screen.getByLabelText(/email address/i);
+      const loginPasswordInput = screen.getByLabelText(/^password/i);
       const loginButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(loginEmailInput, 'alice@example.com');
@@ -578,7 +578,7 @@ describe('Password Reset Integration Tests', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });
@@ -623,7 +623,7 @@ describe('Password Reset Integration Tests', () => {
 
       render(<ForgotPasswordPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', {
         name: /send reset link/i,
       });

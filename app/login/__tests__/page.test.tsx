@@ -85,7 +85,7 @@ describe('LoginPage', () => {
     it('should render email input field', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       expect(emailInput).toBeInTheDocument();
       expect(emailInput).toHaveAttribute('type', 'email');
     });
@@ -93,7 +93,7 @@ describe('LoginPage', () => {
     it('should render password input field', () => {
       render(<LoginPage />);
 
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       expect(passwordInput).toBeInTheDocument();
       expect(passwordInput).toHaveAttribute('type', 'password');
     });
@@ -110,7 +110,7 @@ describe('LoginPage', () => {
       render(<LoginPage />);
 
       const signupLink = screen.getByRole('link', {
-        name: /create a new account/i,
+        name: /create one here/i,
       });
       expect(signupLink).toBeInTheDocument();
       expect(signupLink).toHaveAttribute('href', '/signup');
@@ -122,8 +122,8 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'invalid-email');
@@ -144,8 +144,8 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
@@ -164,8 +164,8 @@ describe('LoginPage', () => {
       mockSignIn.mockResolvedValue(undefined);
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
@@ -191,8 +191,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
@@ -214,8 +214,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
@@ -234,8 +234,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'admin@example.com');
@@ -256,8 +256,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
@@ -288,8 +288,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'wrong@example.com');
@@ -310,8 +310,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'test@example.com');
@@ -332,8 +332,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       // First submission - error
@@ -374,10 +374,10 @@ describe('LoginPage', () => {
     it('should have proper autocomplete attributes', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       expect(emailInput).toHaveAttribute('autoComplete', 'email');
 
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
     });
   });
@@ -393,8 +393,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'unverified@example.com');
@@ -421,8 +421,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'unverified@example.com');
@@ -444,8 +444,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'wrong@example.com');
@@ -475,8 +475,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       // First submission - unverified error
@@ -517,8 +517,8 @@ describe('LoginPage', () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email address/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/^password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       await user.type(emailInput, 'verified@example.com');
