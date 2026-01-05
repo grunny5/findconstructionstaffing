@@ -73,6 +73,11 @@ export default function SignupPage() {
     return (
       <AuthPageLayout maxWidth="md">
         <div className="text-center space-y-8">
+          {/* Page Heading */}
+          <h1 className="font-display text-4xl md:text-5xl uppercase tracking-wide text-industrial-graphite-600">
+            Account Created
+          </h1>
+
           {/* Success Icon */}
           <div className="flex justify-center">
             <div className="bg-industrial-orange-100 w-20 h-20 rounded-industrial-sharp flex items-center justify-center">

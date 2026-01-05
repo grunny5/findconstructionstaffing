@@ -566,7 +566,7 @@ describe('SignupPage - Industrial Design System', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have proper heading hierarchy', () => {
+    it('should have proper heading hierarchy in form state', () => {
       render(<SignupPage />);
 
       const h1 = screen.getByRole('heading', {
@@ -574,6 +574,34 @@ describe('SignupPage - Industrial Design System', () => {
         name: /create your account/i,
       });
       expect(h1).toBeInTheDocument();
+    });
+
+    it('should have proper heading hierarchy in success state', async () => {
+      mockSignUp.mockResolvedValue({ session: null, user: {} });
+      const user = userEvent.setup();
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/John Doe/i);
+      const emailInput = screen.getByPlaceholderText(/your.email@example.com/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
+      const button = screen.getByRole('button', { name: /create account/i });
+
+      await user.type(nameInput, 'John Doe');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(button);
+
+      await waitFor(() => {
+        const h1 = screen.getByRole('heading', {
+          level: 1,
+          name: /account created/i,
+        });
+        expect(h1).toBeInTheDocument();
+        expect(h1).toHaveClass('font-display');
+        expect(h1).toHaveClass('uppercase');
+      });
     });
 
     it('should have associated labels for all inputs', () => {

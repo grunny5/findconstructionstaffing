@@ -96,15 +96,16 @@ describe('AuthPageLayout', () => {
     });
 
     it('should not render hero subtitle when not provided', () => {
-      render(
+      const { container } = render(
         <AuthPageLayout showHero heroTitle="Test Title">
           <div>Test content</div>
         </AuthPageLayout>
       );
 
-      // Should only have heading, no subtitle paragraph
-      const paragraphs = screen.queryAllByRole('paragraph');
-      expect(paragraphs).toHaveLength(0);
+      // Should only have heading, no subtitle paragraph in hero section
+      const heroSection = container.querySelector('section');
+      const heroParagraphs = heroSection?.querySelectorAll('p');
+      expect(heroParagraphs?.length || 0).toBe(0);
     });
 
     it('should apply responsive padding to hero section', () => {
