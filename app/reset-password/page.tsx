@@ -62,6 +62,7 @@ export default function ResetPasswordPage() {
 
         if (session && !sessionError) {
           // Valid session exists - user came from callback or is already authenticated
+          if (!isMountedRef.current) return;
           setTokenState('valid');
           return;
         }
@@ -83,14 +84,17 @@ export default function ResetPasswordPage() {
             setTokenState('valid');
             return;
           }
+          if (!isMountedRef.current) return;
           setTokenState('expired');
           return;
         }
 
         // No session and no token - invalid access
+        if (!isMountedRef.current) return;
         setTokenState('missing');
       } catch (err: unknown) {
         console.error('Session validation error:', err);
+        if (!isMountedRef.current) return;
         setTokenState('error');
       }
     };
@@ -122,8 +126,10 @@ export default function ResetPasswordPage() {
 
       if (updateError) throw updateError;
 
+      if (!isMountedRef.current) return;
       setSuccess(true);
     } catch (err: unknown) {
+      if (!isMountedRef.current) return;
       let errorMessage = 'Failed to update password';
       if (err instanceof Error) {
         errorMessage = err.message;
@@ -132,6 +138,7 @@ export default function ResetPasswordPage() {
       }
       setError(errorMessage);
     } finally {
+      if (!isMountedRef.current) return;
       setLoading(false);
     }
   };
