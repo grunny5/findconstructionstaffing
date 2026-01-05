@@ -122,9 +122,7 @@ describe('AuthProvider and useAuth', () => {
     }));
 
     // Set the onAuthStateChange mock implementation
-    supabase.auth.onAuthStateChange.mockImplementation(
-      mockOnAuthStateChange
-    );
+    supabase.auth.onAuthStateChange.mockImplementation(mockOnAuthStateChange);
   });
 
   describe('Initialization', () => {
