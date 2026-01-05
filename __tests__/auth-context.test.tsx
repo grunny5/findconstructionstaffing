@@ -8,11 +8,32 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/types/database';
 
-// Get typed mock reference for use in tests - createClient returns the mocked supabase instance
+// Mock the createClient module
+jest.mock('@/lib/supabase/client');
+
+// Get typed mock reference for use in tests
 const mockedCreateClient = jest.mocked(createClient);
-// Get the underlying mocked supabase client that's returned by createClient
-// We need to call it once to get the mocked instance for test configuration
-const mockedSupabase = mockedCreateClient();
+
+// Create a reference to the mocked supabase instance
+// We'll configure this in beforeEach to get proper typing
+let mockedSupabase: ReturnType<typeof createClient>;
+
+// Helper type to get proper mock methods
+type MockedAuth = {
+  getSession: jest.MockedFunction<any>;
+  signInWithPassword: jest.MockedFunction<any>;
+  signUp: jest.MockedFunction<any>;
+  signOut: jest.MockedFunction<any>;
+  onAuthStateChange: jest.MockedFunction<any>;
+};
+
+type MockedSupabase = {
+  auth: MockedAuth;
+  from: jest.MockedFunction<any>;
+};
+
+// Helper to get properly typed mocked supabase
+const getMockedSupabase = () => mockedSupabase as unknown as MockedSupabase;
 
 // Mock user data
 const mockUser: User = {
@@ -79,13 +100,21 @@ describe('AuthProvider and useAuth', () => {
   let mockUnsubscribe: jest.Mock;
 
   beforeEach(() => {
+    // Create a single mocked supabase instance for this test
+    mockedSupabase = mockedCreateClient() as ReturnType<typeof createClient>;
+
+    // Make createClient always return the same instance for this test
+    mockedCreateClient.mockReturnValue(mockedSupabase);
+
+    const supabase = getMockedSupabase();
+
     // Clear call history for each mock function
-    mockedSupabase.auth.getSession.mockClear();
-    mockedSupabase.auth.signInWithPassword.mockClear();
-    mockedSupabase.auth.signUp.mockClear();
-    mockedSupabase.auth.signOut.mockClear();
-    mockedSupabase.auth.onAuthStateChange.mockClear();
-    mockedSupabase.from.mockClear();
+    supabase.auth.getSession.mockClear();
+    supabase.auth.signInWithPassword.mockClear();
+    supabase.auth.signUp.mockClear();
+    supabase.auth.signOut.mockClear();
+    supabase.auth.onAuthStateChange.mockClear();
+    supabase.from.mockClear();
 
     mockUnsubscribe = jest.fn();
     mockOnAuthStateChange = jest.fn(() => ({
@@ -93,7 +122,7 @@ describe('AuthProvider and useAuth', () => {
     }));
 
     // Set the onAuthStateChange mock implementation
-    mockedSupabase.auth.onAuthStateChange.mockImplementation(
+    supabase.auth.onAuthStateChange.mockImplementation(
       mockOnAuthStateChange
     );
   });
@@ -111,7 +140,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should initialize with loading state when no session', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
@@ -135,7 +164,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should initialize with session and fetch profile', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -150,7 +179,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -167,7 +196,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should handle profile fetch error gracefully', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -182,7 +211,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -205,7 +234,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should subscribe to auth state changes', () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
@@ -218,7 +247,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should unsubscribe on unmount', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
@@ -239,11 +268,11 @@ describe('AuthProvider and useAuth', () => {
 
   describe('Sign In', () => {
     it('should sign in successfully', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
-      mockedSupabase.auth.signInWithPassword.mockResolvedValue({
+      getMockedSupabase().auth.signInWithPassword.mockResolvedValue({
         data: { user: mockUser, session: mockSession },
         error: null,
       });
@@ -260,18 +289,18 @@ describe('AuthProvider and useAuth', () => {
         await result.current.signIn('test@example.com', 'password123');
       });
 
-      expect(mockedSupabase.auth.signInWithPassword).toHaveBeenCalledWith({
+      expect(getMockedSupabase().auth.signInWithPassword).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
       });
     });
 
     it('should throw error on sign in failure', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
-      mockedSupabase.auth.signInWithPassword.mockResolvedValue({
+      getMockedSupabase().auth.signInWithPassword.mockResolvedValue({
         data: { user: null, session: null },
         error: {
           message: 'Invalid credentials',
@@ -300,11 +329,11 @@ describe('AuthProvider and useAuth', () => {
 
   describe('Sign Up', () => {
     it('should sign up successfully', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
-      mockedSupabase.auth.signUp.mockResolvedValue({
+      getMockedSupabase().auth.signUp.mockResolvedValue({
         data: { user: mockUser, session: null },
         error: null,
       });
@@ -325,7 +354,7 @@ describe('AuthProvider and useAuth', () => {
         );
       });
 
-      expect(mockedSupabase.auth.signUp).toHaveBeenCalledWith({
+      expect(getMockedSupabase().auth.signUp).toHaveBeenCalledWith({
         email: 'new@example.com',
         password: 'password123',
         options: {
@@ -337,11 +366,11 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should sign up without full name', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
-      mockedSupabase.auth.signUp.mockResolvedValue({
+      getMockedSupabase().auth.signUp.mockResolvedValue({
         data: { user: mockUser, session: null },
         error: null,
       });
@@ -358,7 +387,7 @@ describe('AuthProvider and useAuth', () => {
         await result.current.signUp('new@example.com', 'password123');
       });
 
-      expect(mockedSupabase.auth.signUp).toHaveBeenCalledWith({
+      expect(getMockedSupabase().auth.signUp).toHaveBeenCalledWith({
         email: 'new@example.com',
         password: 'password123',
         options: {
@@ -370,11 +399,11 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should throw error on sign up failure', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
-      mockedSupabase.auth.signUp.mockResolvedValue({
+      getMockedSupabase().auth.signUp.mockResolvedValue({
         data: { user: null, session: null },
         error: {
           message: 'Email already exists',
@@ -403,11 +432,11 @@ describe('AuthProvider and useAuth', () => {
 
   describe('Sign Out', () => {
     it('should sign out successfully', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
-      mockedSupabase.auth.signOut.mockResolvedValue({
+      getMockedSupabase().auth.signOut.mockResolvedValue({
         error: null,
       });
 
@@ -421,7 +450,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -435,15 +464,15 @@ describe('AuthProvider and useAuth', () => {
         await result.current.signOut();
       });
 
-      expect(mockedSupabase.auth.signOut).toHaveBeenCalled();
+      expect(getMockedSupabase().auth.signOut).toHaveBeenCalled();
     });
 
     it('should throw error on sign out failure', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
-      mockedSupabase.auth.signOut.mockResolvedValue({
+      getMockedSupabase().auth.signOut.mockResolvedValue({
         error: {
           message: 'Sign out failed',
           name: 'AuthApiError',
@@ -461,7 +490,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -481,7 +510,7 @@ describe('AuthProvider and useAuth', () => {
 
   describe('Role Checking', () => {
     it('should correctly identify admin users', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -496,7 +525,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -511,7 +540,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should correctly identify agency owner users', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -526,7 +555,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -541,7 +570,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should correctly identify regular users', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -556,7 +585,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -571,7 +600,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should return false for role checks when profile is null', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
@@ -591,7 +620,7 @@ describe('AuthProvider and useAuth', () => {
 
   describe('Auth State Changes', () => {
     it('should update state when user signs in via auth state change', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
@@ -614,7 +643,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -640,7 +669,7 @@ describe('AuthProvider and useAuth', () => {
     });
 
     it('should clear state when user signs out via auth state change', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -663,7 +692,7 @@ describe('AuthProvider and useAuth', () => {
           })),
         })),
       }));
-      mockedSupabase.from = mockFrom as any;
+      getMockedSupabase().from = mockFrom as any;
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -688,7 +717,7 @@ describe('AuthProvider and useAuth', () => {
 
   describe('Context Value', () => {
     it('should provide all required context values', async () => {
-      mockedSupabase.auth.getSession.mockResolvedValue({
+      getMockedSupabase().auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null,
       });
