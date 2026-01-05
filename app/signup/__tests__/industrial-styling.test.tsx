@@ -24,6 +24,13 @@ describe('SignupPage - Industrial Design System', () => {
     (useAuth as jest.Mock).mockReturnValue({ signUp: mockSignUp });
   });
 
+  afterEach(() => {
+    // Clean up fetch mock
+    if (global.fetch && (global.fetch as any).mockRestore) {
+      (global.fetch as any).mockRestore();
+    }
+  });
+
   describe('Page Background and Layout', () => {
     it('should render with cream background', () => {
       const { container } = render(<SignupPage />);
@@ -441,7 +448,7 @@ describe('SignupPage - Industrial Design System', () => {
       expect(warningBox).toHaveClass('border-industrial-orange');
     });
 
-    it('should render resend verification link with orange styling', async () => {
+    it('should render resend verification button with industrial styling', async () => {
       mockSignUp.mockResolvedValue({ session: null, user: {} });
       const user = userEvent.setup();
 
@@ -459,10 +466,119 @@ describe('SignupPage - Industrial Design System', () => {
       await user.click(button);
 
       await waitFor(() => {
-        const resendLink = screen.getByRole('link', {
+        const resendButton = screen.getByRole('button', {
           name: /resend verification email/i,
         });
-        expect(resendLink).toHaveAttribute('href', '/signup');
+        expect(resendButton).toBeInTheDocument();
+        expect(resendButton).toHaveClass('w-full');
+        expect(resendButton).not.toBeDisabled();
+      });
+    });
+
+    it('should handle resend verification button click', async () => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              message:
+                'If this email exists, we sent a verification link. Please check your inbox.',
+            }),
+        })
+      ) as jest.Mock;
+
+      mockSignUp.mockResolvedValue({ session: null, user: {} });
+      const user = userEvent.setup();
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/John Doe/i);
+      const emailInput = screen.getByPlaceholderText(/your.email@example.com/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      });
+
+      const resendButton = screen.getByRole('button', {
+        name: /resend verification email/i,
+      });
+      await user.click(resendButton);
+
+      // Should show success message
+      await waitFor(() => {
+        expect(
+          screen.getByText(/verification email sent/i)
+        ).toBeInTheDocument();
+      });
+
+      // Verify API was called with correct email
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/auth/resend-verification',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: 'test@example.com' }),
+        }
+      );
+    });
+
+    it('should handle resend verification rate limiting', async () => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          status: 429,
+          json: () =>
+            Promise.resolve({
+              message:
+                'Please wait before requesting another verification email.',
+              retryAfter: 120,
+            }),
+        })
+      ) as jest.Mock;
+
+      mockSignUp.mockResolvedValue({ session: null, user: {} });
+      const user = userEvent.setup();
+
+      render(<SignupPage />);
+
+      const nameInput = screen.getByPlaceholderText(/John Doe/i);
+      const emailInput = screen.getByPlaceholderText(/your.email@example.com/i);
+      const passwordInputs = screen.getAllByPlaceholderText(/••••••••/);
+      const submitButton = screen.getByRole('button', {
+        name: /create account/i,
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInputs[0], 'password123');
+      await user.type(passwordInputs[1], 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      });
+
+      const resendButton = screen.getByRole('button', {
+        name: /resend verification email/i,
+      });
+      await user.click(resendButton);
+
+      // Should show rate limit message
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please try again in 2 minutes/i)
+        ).toBeInTheDocument();
       });
     });
 

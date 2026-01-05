@@ -36,6 +36,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const {
     register,
@@ -65,6 +67,40 @@ export default function SignupPage() {
       setError(err.message || 'Failed to create account');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      setResendLoading(true);
+      setResendMessage('');
+
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: submittedEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        // Rate limited
+        const retryAfter = data.retryAfter || 60;
+        setResendMessage(
+          `${data.message} Please try again in ${Math.ceil(retryAfter / 60)} minute${Math.ceil(retryAfter / 60) > 1 ? 's' : ''}.`
+        );
+      } else {
+        // Success (200) - show success message
+        setResendMessage('Verification email sent! Please check your inbox.');
+      }
+    } catch (err: any) {
+      setResendMessage(
+        'Failed to resend verification email. Please try again.'
+      );
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -122,9 +158,27 @@ export default function SignupPage() {
                 <p className="font-body text-sm text-industrial-graphite-400 text-center">
                   Didn&apos;t receive the email?
                 </p>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/signup">Resend Verification Email</Link>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                >
+                  {resendLoading ? 'Sending...' : 'Resend Verification Email'}
                 </Button>
+
+                {/* Resend Feedback Message */}
+                {resendMessage && (
+                  <Alert
+                    variant={
+                      resendMessage.includes('sent') ? 'default' : 'destructive'
+                    }
+                  >
+                    <AlertDescription className="font-body text-sm">
+                      {resendMessage}
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               {/* Return Home Link */}
