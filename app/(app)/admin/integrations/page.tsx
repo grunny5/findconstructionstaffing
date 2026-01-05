@@ -78,54 +78,66 @@ export default async function AdminIntegrationsPage() {
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Integration Management</h1>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {integrations.map((integration) => (
-            <li key={integration.id} className="px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">{integration.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    Created:{' '}
-                    {new Date(integration.created_at).toLocaleDateString()}
-                  </p>
+      {integrations.length === 0 ? (
+        <div className="bg-white shadow rounded-lg p-8 text-center">
+          <p className="text-gray-500 mb-4">
+            No agencies found with integration configurations.
+          </p>
+          <p className="text-sm text-gray-400">
+            Integration settings will appear here once agencies have been
+            configured with third-party integrations.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <ul className="divide-y divide-gray-200">
+            {integrations.map((integration) => (
+              <li key={integration.id} className="px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium">{integration.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      Created:{' '}
+                      {new Date(integration.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        integration.integration_enabled
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {integration.integration_enabled ? 'Active' : 'Inactive'}
+                    </span>
+                    {integration.integration_provider && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Provider: {integration.integration_provider}
+                      </p>
+                    )}
+                    {integration.integration_last_sync_at && (
+                      <p className="mt-1 text-sm text-gray-500">
+                        Last sync:{' '}
+                        {integration.integration_sync_status || 'Unknown'}
+                        {' - '}
+                        {new Date(
+                          integration.integration_last_sync_at
+                        ).toLocaleString()}
+                      </p>
+                    )}
+                    {integration.integration_sync_error && (
+                      <p className="mt-1 text-xs text-red-500">
+                        Error: {integration.integration_sync_error}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full ${
-                      integration.integration_enabled
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {integration.integration_enabled ? 'Active' : 'Inactive'}
-                  </span>
-                  {integration.integration_provider && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Provider: {integration.integration_provider}
-                    </p>
-                  )}
-                  {integration.integration_last_sync_at && (
-                    <p className="mt-1 text-sm text-gray-500">
-                      Last sync:{' '}
-                      {integration.integration_sync_status || 'Unknown'}
-                      {' - '}
-                      {new Date(
-                        integration.integration_last_sync_at
-                      ).toLocaleString()}
-                    </p>
-                  )}
-                  {integration.integration_sync_error && (
-                    <p className="mt-1 text-xs text-red-500">
-                      Error: {integration.integration_sync_error}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
