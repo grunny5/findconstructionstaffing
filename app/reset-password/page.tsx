@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +33,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const isMountedRef = useRef(true);
 
   const {
     register,
@@ -41,6 +42,13 @@ export default function ResetPasswordPage() {
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
+
+  // Track mount status to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Validate session on mount (supports both PKCE callback flow and legacy hash flow)
   useEffect(() => {
@@ -68,7 +76,9 @@ export default function ResetPasswordPage() {
           // Legacy flow - token in hash, Supabase client should have processed it
           // Re-check session after a brief delay for client to process
           await new Promise((resolve) => setTimeout(resolve, 100));
+          if (!isMountedRef.current) return;
           const { data: retrySession } = await supabase.auth.getSession();
+          if (!isMountedRef.current) return;
           if (retrySession.session) {
             setTokenState('valid');
             return;

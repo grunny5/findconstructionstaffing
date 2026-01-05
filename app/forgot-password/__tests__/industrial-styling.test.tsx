@@ -51,7 +51,7 @@ describe('ForgotPasswordPage - Industrial Design', () => {
       const { container } = render(<ForgotPasswordPage />);
       const mainDiv = container.firstChild as HTMLElement;
 
-      expect(mainDiv).toHaveClass('flex', 'items-center', 'justify-center');
+      expect(mainDiv).toHaveClass('flex items-center justify-center');
       expect(mainDiv).toHaveClass('py-12');
     });
 

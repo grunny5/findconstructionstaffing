@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
 
+const CARD_CLASS =
+  'w-full max-w-md bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200';
+
 function VerifyEmailSuccessContent() {
   const searchParams = useSearchParams();
   const verified = searchParams.get('verified');
@@ -20,7 +23,7 @@ function VerifyEmailSuccessContent() {
   if (!verified) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-industrial-bg-primary p-4">
-        <Card className="w-full max-w-md bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
+        <Card className={CARD_CLASS}>
           <CardHeader>
             <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
               Email Verification
@@ -45,9 +48,8 @@ function VerifyEmailSuccessContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-industrial-bg-primary p-4">
-      <Card className="w-full max-w-md bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
+      <Card className={CARD_CLASS}>
         <CardHeader className="text-center">
-          {/* Orange circle with checkmark icon */}
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-industrial-sharp bg-industrial-orange-100">
             <CheckCircle2 className="h-10 w-10 text-industrial-orange" />
           </div>
@@ -89,7 +91,7 @@ export default function VerifyEmailSuccessPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-industrial-bg-primary p-4">
-          <Card className="w-full max-w-md bg-industrial-bg-card rounded-industrial-sharp border-2 border-industrial-graphite-200">
+          <Card className={CARD_CLASS}>
             <CardHeader>
               <CardTitle className="font-display text-xl uppercase tracking-wide text-industrial-graphite-600">
                 Email Verification
