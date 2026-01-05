@@ -94,7 +94,7 @@ export function MessagesInboxClient({
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh-5rem)]">
       {/* Sidebar - Conversation List */}
       <div className="w-full lg:w-96 border-r border-gray-200 flex flex-col bg-white">
         {/* Header */}
