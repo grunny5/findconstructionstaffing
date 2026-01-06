@@ -267,10 +267,19 @@ export async function POST(request: NextRequest) {
     let passwordResetSent = false;
 
     // Get the base URL for the redirect
-    const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_VERCEL_URL ||
-      'http://localhost:3000';
+    // NEXT_PUBLIC_VERCEL_URL may lack a protocol, so normalize it
+    let baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!baseUrl) {
+      const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+      if (vercelUrl) {
+        baseUrl =
+          vercelUrl.startsWith('http://') || vercelUrl.startsWith('https://')
+            ? vercelUrl
+            : `https://${vercelUrl}`;
+      } else {
+        baseUrl = 'http://localhost:3000';
+      }
+    }
 
     const { error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'recovery',
