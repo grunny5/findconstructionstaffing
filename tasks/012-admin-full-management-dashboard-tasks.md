@@ -122,7 +122,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.1: Add RegionSelector Component to AgencyFormModal
+### [x] Task 1.2.1: Add RegionSelector Component to AgencyFormModal
 
 - **Role:** Frontend Developer
 - **Objective:** Integrate the existing RegionSelector component into the admin AgencyFormModal

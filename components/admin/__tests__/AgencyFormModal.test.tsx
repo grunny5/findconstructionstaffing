@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AgencyFormModal } from '../AgencyFormModal';
 import { toast } from 'sonner';
-import type { Trade } from '@/types/supabase';
+import type { Trade, Region } from '@/types/supabase';
 
 jest.mock('sonner', () => ({
   toast: {
@@ -45,6 +45,42 @@ jest.mock('@/components/dashboard/TradeSelector', () => ({
         disabled={disabled}
       >
         Clear Trades
+      </button>
+    </div>
+  ),
+}));
+
+// Mock RegionSelector component
+jest.mock('@/components/dashboard/RegionSelector', () => ({
+  RegionSelector: ({
+    selectedRegions,
+    onChange,
+    disabled,
+  }: {
+    selectedRegions: Region[];
+    onChange: (regions: Region[]) => void;
+    disabled?: boolean;
+  }) => (
+    <div data-testid="region-selector-mock">
+      <span data-testid="region-count">{selectedRegions.length}</span>
+      <button
+        data-testid="add-region-button"
+        onClick={() =>
+          onChange([
+            ...selectedRegions,
+            { id: 'region-new', name: 'Texas', slug: 'texas', state_code: 'TX' },
+          ])
+        }
+        disabled={disabled}
+      >
+        Add Region
+      </button>
+      <button
+        data-testid="clear-regions-button"
+        onClick={() => onChange([])}
+        disabled={disabled}
+      >
+        Clear Regions
       </button>
     </div>
   ),
@@ -881,6 +917,129 @@ describe('AgencyFormModal', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('add-trade-button')).toBeDisabled();
+      });
+    });
+  });
+
+  describe('Region Selector Integration', () => {
+    it('renders RegionSelector component', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('region-selector-section')).toBeInTheDocument();
+      expect(screen.getByTestId('region-selector-mock')).toBeInTheDocument();
+    });
+
+    it('shows 0 regions by default in create mode', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('0');
+    });
+
+    it('pre-populates regions when editing existing agency', () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        regions: [
+          { id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' },
+          { id: 'region-2', name: 'California', slug: 'california', state_code: 'CA' },
+        ],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('2');
+    });
+
+    it('allows adding regions via RegionSelector', async () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('0');
+
+      fireEvent.click(screen.getByTestId('add-region-button'));
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('1');
+    });
+
+    it('includes region_ids in form submission', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: {} }),
+      });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Add a region
+      fireEvent.click(screen.getByTestId('add-region-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+        expect(callBody.region_ids).toEqual(['region-new']);
+      });
+    });
+
+    it('resets regions when cancel is clicked', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        regions: [{ id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' }],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Initially has 1 region
+      expect(screen.getByTestId('region-count')).toHaveTextContent('1');
+
+      // Add another region
+      fireEvent.click(screen.getByTestId('add-region-button'));
+      expect(screen.getByTestId('region-count')).toHaveTextContent('2');
+
+      // Cancel should reset to original
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
+
+      // Modal closes on cancel
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('disables RegionSelector when submitting', async () => {
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: {} }),
+                }),
+              100
+            )
+          )
+      );
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('add-region-button')).toBeDisabled();
       });
     });
   });

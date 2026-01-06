@@ -42,7 +42,8 @@ import {
 } from '@/lib/validations/agency-creation';
 import type { AgencyCreationFormData } from '@/lib/validations/agency-creation';
 import { TradeSelector } from '@/components/dashboard/TradeSelector';
-import type { Trade } from '@/types/supabase';
+import { RegionSelector } from '@/components/dashboard/RegionSelector';
+import type { Trade, Region } from '@/types/supabase';
 
 export interface AgencyFormModalProps {
   isOpen: boolean;
@@ -62,6 +63,7 @@ export interface AgencyFormModalProps {
     offers_per_diem?: boolean | null;
     is_union?: boolean | null;
     trades?: Trade[];
+    regions?: Region[];
   };
 }
 
@@ -74,6 +76,9 @@ export function AgencyFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTrades, setSelectedTrades] = useState<Trade[]>(
     agency?.trades || []
+  );
+  const [selectedRegions, setSelectedRegions] = useState<Region[]>(
+    agency?.regions || []
   );
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
@@ -118,6 +123,7 @@ export function AgencyFormModal({
     };
     form.reset(mappedValues);
     setSelectedTrades(agency?.trades || []);
+    setSelectedRegions(agency?.regions || []);
   }, [agency, form]);
 
   const handleSubmit = async (data: AgencyCreationFormData) => {
@@ -130,10 +136,11 @@ export function AgencyFormModal({
 
       const method = isEditMode ? 'PATCH' : 'POST';
 
-      // Include trade_ids in the request body
+      // Include trade_ids and region_ids in the request body
       const requestBody = {
         ...data,
         trade_ids: selectedTrades.map((t) => t.id),
+        region_ids: selectedRegions.map((r) => r.id),
       };
 
       const response = await fetch(endpoint, {
@@ -158,6 +165,7 @@ export function AgencyFormModal({
 
       form.reset();
       setSelectedTrades([]);
+      setSelectedRegions([]);
       onClose();
       onSuccess?.();
     } catch (error) {
@@ -173,6 +181,7 @@ export function AgencyFormModal({
   const handleCancel = () => {
     form.reset();
     setSelectedTrades(agency?.trades || []);
+    setSelectedRegions(agency?.regions || []);
     onClose();
   };
 
@@ -457,6 +466,15 @@ export function AgencyFormModal({
                 onChange={setSelectedTrades}
                 disabled={isSubmitting}
                 maxTrades={100}
+              />
+            </div>
+
+            {/* Service Regions */}
+            <div className="pt-4 border-t" data-testid="region-selector-section">
+              <RegionSelector
+                selectedRegions={selectedRegions}
+                onChange={setSelectedRegions}
+                disabled={isSubmitting}
               />
             </div>
 
