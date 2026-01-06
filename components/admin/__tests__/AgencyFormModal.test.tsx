@@ -8,6 +8,7 @@ jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
     error: jest.fn(),
+    warning: jest.fn(),
   },
 }));
 
@@ -84,6 +85,52 @@ jest.mock('@/components/dashboard/RegionSelector', () => ({
       </button>
     </div>
   ),
+}));
+
+// Mock LogoUpload component
+const mockLogoFileSelect = jest.fn();
+jest.mock('@/components/admin/LogoUpload', () => ({
+  LogoUpload: ({
+    currentLogoUrl,
+    onFileSelect,
+    isUploading,
+    disabled,
+    error,
+  }: {
+    currentLogoUrl?: string | null;
+    onFileSelect: (file: File | null) => void;
+    isUploading?: boolean;
+    disabled?: boolean;
+    error?: string | null;
+  }) => {
+    // Store onFileSelect so tests can call it
+    mockLogoFileSelect.mockImplementation(onFileSelect);
+    return (
+      <div data-testid="logo-upload-mock">
+        <span data-testid="logo-current-url">{currentLogoUrl || 'none'}</span>
+        <span data-testid="logo-is-uploading">{isUploading ? 'true' : 'false'}</span>
+        <span data-testid="logo-disabled">{disabled ? 'true' : 'false'}</span>
+        <span data-testid="logo-error">{error || 'none'}</span>
+        <button
+          data-testid="logo-select-file-button"
+          onClick={() => {
+            const mockFile = new File(['test'], 'logo.png', { type: 'image/png' });
+            onFileSelect(mockFile);
+          }}
+          disabled={disabled}
+        >
+          Select File
+        </button>
+        <button
+          data-testid="logo-remove-button"
+          onClick={() => onFileSelect(null)}
+          disabled={disabled}
+        >
+          Remove Logo
+        </button>
+      </div>
+    );
+  },
 }));
 
 const mockFetch = jest.fn();
@@ -1040,6 +1087,186 @@ describe('AgencyFormModal', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('add-region-button')).toBeDisabled();
+      });
+    });
+  });
+
+  describe('Logo Upload Integration', () => {
+    it('renders LogoUpload component', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+      expect(screen.getByTestId('logo-upload-mock')).toBeInTheDocument();
+    });
+
+    it('shows no logo URL in create mode', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent('none');
+    });
+
+    it('shows existing logo URL in edit mode', () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        logo_url: 'https://example.com/logo.png',
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent(
+        'https://example.com/logo.png'
+      );
+    });
+
+    it('uploads logo when file is selected on form submission', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: { id: 'new-agency-123' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: { logo_url: 'https://storage.example.com/logo.webp' } }),
+        });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Select a logo file
+      fireEvent.click(screen.getByTestId('logo-select-file-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        // First call is for agency creation
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/admin/agencies',
+          expect.any(Object)
+        );
+        // Second call is for logo upload
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/admin/agencies/new-agency-123/logo',
+          expect.objectContaining({
+            method: 'POST',
+          })
+        );
+      });
+    });
+
+    it('clears logo URL display when remove button clicked in edit mode', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        logo_url: 'https://example.com/logo.png',
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Initially shows logo URL
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent(
+        'https://example.com/logo.png'
+      );
+
+      // Click remove button
+      fireEvent.click(screen.getByTestId('logo-remove-button'));
+
+      // Logo URL should now be cleared in display
+      await waitFor(() => {
+        expect(screen.getByTestId('logo-current-url')).toHaveTextContent('none');
+      });
+    });
+
+    it('disables LogoUpload when submitting', async () => {
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: {} }),
+                }),
+              100
+            )
+          )
+      );
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('logo-disabled')).toHaveTextContent('true');
+      });
+    });
+
+    it('resets logo state when cancel is clicked', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        logo_url: 'https://example.com/logo.png',
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Remove the logo (marks for removal)
+      fireEvent.click(screen.getByTestId('logo-remove-button'));
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent('none');
+
+      // Cancel should reset
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
+
+      // Modal closes on cancel
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('shows warning toast when logo upload fails but agency is saved', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: { id: 'new-agency-123' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: { message: 'Upload failed' } }),
+        });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Select a logo file
+      fireEvent.click(screen.getByTestId('logo-select-file-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(toast.warning).toHaveBeenCalledWith(
+          'Agency Saved',
+          expect.objectContaining({
+            description: expect.stringContaining('logo upload failed'),
+          })
+        );
       });
     });
   });

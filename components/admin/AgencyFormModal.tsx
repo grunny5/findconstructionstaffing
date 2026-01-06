@@ -43,6 +43,7 @@ import {
 import type { AgencyCreationFormData } from '@/lib/validations/agency-creation';
 import { TradeSelector } from '@/components/dashboard/TradeSelector';
 import { RegionSelector } from '@/components/dashboard/RegionSelector';
+import { LogoUpload } from '@/components/admin/LogoUpload';
 import type { Trade, Region } from '@/types/supabase';
 
 export interface AgencyFormModalProps {
@@ -62,6 +63,7 @@ export interface AgencyFormModalProps {
     company_size?: string | null;
     offers_per_diem?: boolean | null;
     is_union?: boolean | null;
+    logo_url?: string | null;
     trades?: Trade[];
     regions?: Region[];
   };
@@ -80,6 +82,10 @@ export function AgencyFormModal({
   const [selectedRegions, setSelectedRegions] = useState<Region[]>(
     agency?.regions || []
   );
+  const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+  const [logoRemoved, setLogoRemoved] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
@@ -124,10 +130,77 @@ export function AgencyFormModal({
     form.reset(mappedValues);
     setSelectedTrades(agency?.trades || []);
     setSelectedRegions(agency?.regions || []);
+    setPendingLogoFile(null);
+    setLogoRemoved(false);
+    setLogoUploadError(null);
   }, [agency, form]);
+
+  const handleLogoFileSelect = (file: File | null) => {
+    setLogoUploadError(null);
+    if (file) {
+      setPendingLogoFile(file);
+      setLogoRemoved(false);
+    } else {
+      setPendingLogoFile(null);
+      // If there was an existing logo and user removed the selection, mark as removed
+      if (agency?.logo_url) {
+        setLogoRemoved(true);
+      }
+    }
+  };
+
+  const uploadLogo = async (agencyId: string): Promise<boolean> => {
+    if (!pendingLogoFile) return true;
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', pendingLogoFile);
+
+      const response = await fetch(`/api/admin/agencies/${agencyId}/logo`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error?.message || 'Failed to upload logo');
+      }
+
+      return true;
+    } catch (error) {
+      setLogoUploadError(
+        error instanceof Error ? error.message : 'Failed to upload logo'
+      );
+      return false;
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const removeLogo = async (agencyId: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/admin/agencies/${agencyId}/logo`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error?.message || 'Failed to remove logo');
+      }
+
+      return true;
+    } catch (error) {
+      setLogoUploadError(
+        error instanceof Error ? error.message : 'Failed to remove logo'
+      );
+      return false;
+    }
+  };
 
   const handleSubmit = async (data: AgencyCreationFormData) => {
     setIsSubmitting(true);
+    setLogoUploadError(null);
 
     try {
       const endpoint = isEditMode
@@ -157,6 +230,33 @@ export function AgencyFormModal({
         throw new Error(result.error?.message || 'Failed to save agency');
       }
 
+      const agencyId = isEditMode ? agency.id : result.data?.id;
+
+      // Handle logo upload if there's a pending file
+      if (pendingLogoFile && agencyId) {
+        const uploadSuccess = await uploadLogo(agencyId);
+        if (!uploadSuccess) {
+          // Logo upload failed but agency was saved
+          toast.warning('Agency Saved', {
+            description: `${data.name} was saved, but logo upload failed. You can try again.`,
+          });
+          onSuccess?.();
+          return;
+        }
+      }
+
+      // Handle logo removal if marked for removal
+      if (logoRemoved && isEditMode && agency.id) {
+        const removeSuccess = await removeLogo(agency.id);
+        if (!removeSuccess) {
+          toast.warning('Agency Saved', {
+            description: `${data.name} was saved, but logo removal failed. You can try again.`,
+          });
+          onSuccess?.();
+          return;
+        }
+      }
+
       toast.success(isEditMode ? 'Agency Updated' : 'Agency Created', {
         description: isEditMode
           ? `${data.name} has been updated successfully.`
@@ -166,6 +266,8 @@ export function AgencyFormModal({
       form.reset();
       setSelectedTrades([]);
       setSelectedRegions([]);
+      setPendingLogoFile(null);
+      setLogoRemoved(false);
       onClose();
       onSuccess?.();
     } catch (error) {
@@ -182,6 +284,9 @@ export function AgencyFormModal({
     form.reset();
     setSelectedTrades(agency?.trades || []);
     setSelectedRegions(agency?.regions || []);
+    setPendingLogoFile(null);
+    setLogoRemoved(false);
+    setLogoUploadError(null);
     onClose();
   };
 
@@ -255,6 +360,17 @@ export function AgencyFormModal({
                 </FormItem>
               )}
             />
+
+            {/* Agency Logo */}
+            <div className="pt-4 border-t" data-testid="logo-upload-section">
+              <LogoUpload
+                currentLogoUrl={logoRemoved ? null : agency?.logo_url}
+                onFileSelect={handleLogoFileSelect}
+                isUploading={isUploadingLogo}
+                disabled={isSubmitting}
+                error={logoUploadError}
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
