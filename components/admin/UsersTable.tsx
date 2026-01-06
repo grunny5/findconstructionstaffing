@@ -62,23 +62,50 @@ export function UsersTable({
   // Debounce search term (300ms)
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  // Re-sync users when props change
+  // Track pending role changes to preserve optimistic updates during parent refresh
+  const pendingRoleChanges = useRef<Map<string, UserRole>>(new Map());
+
+  // Re-sync users when props change, preserving pending optimistic updates
   useEffect(() => {
-    setUsers(initialUsers);
+    if (pendingRoleChanges.current.size === 0) {
+      setUsers(initialUsers);
+    } else {
+      // Merge initialUsers with pending role changes
+      setUsers(
+        initialUsers.map((user) => {
+          const pendingRole = pendingRoleChanges.current.get(user.id);
+          return pendingRole ? { ...user, role: pendingRole } : user;
+        })
+      );
+    }
   }, [initialUsers]);
+
+  // Track previous URL params to detect actual URL changes vs re-renders
+  const prevSearchParamsRef = useRef(searchParams.toString());
 
   // Re-sync state when URL params change (browser navigation)
   useEffect(() => {
+    const currentParamsString = searchParams.toString();
+    // Only sync if URL actually changed (browser navigation), not on every render
+    if (currentParamsString === prevSearchParamsRef.current) {
+      return;
+    }
+    prevSearchParamsRef.current = currentParamsString;
+
     const newSearch = searchParams.get('search') || '';
     const newRole = searchParams.get('role') || 'all';
     const pageParam = searchParams.get('page');
     const newPage = pageParam ? parseInt(pageParam, 10) : 1;
     const validPage = isNaN(newPage) || newPage < 1 ? 1 : newPage;
 
-    setSearchQuery(newSearch);
+    // Only update search if URL value differs from current debounced value
+    // This avoids clobbering in-progress typing
+    if (newSearch !== debouncedSearch) {
+      setSearchQuery(newSearch);
+    }
     setRoleFilter(newRole);
     setCurrentPage(validPage);
-  }, [searchParams]);
+  }, [searchParams, debouncedSearch]);
 
   // Update URL when filters change
   const updateURL = useCallback(
@@ -197,6 +224,9 @@ export function UsersTable({
 
     const oldRole = userToUpdate.role;
 
+    // Track pending change for optimistic update preservation
+    pendingRoleChanges.current.set(userId, newRole);
+
     setUsers((prev) =>
       prev.map((user) =>
         user.id === userId ? { ...user, role: newRole } : user
@@ -212,11 +242,17 @@ export function UsersTable({
 
       if (error) throw error;
 
+      // Success: remove from pending changes
+      pendingRoleChanges.current.delete(userId);
+
       toast({
         title: 'Success',
         description: `Role updated from ${roleDisplayName(oldRole)} to ${roleDisplayName(newRole)}.`,
       });
     } catch (error: any) {
+      // Failure: remove from pending changes and revert
+      pendingRoleChanges.current.delete(userId);
+
       setUsers((prev) =>
         prev.map((user) =>
           user.id === userId ? { ...user, role: oldRole } : user
