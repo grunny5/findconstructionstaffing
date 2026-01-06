@@ -289,7 +289,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.3.3: Create Logo Upload API Endpoint
+### [x] Task 1.3.3: Create Logo Upload API Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to upload agency logos to Supabase Storage with server-side resizing
