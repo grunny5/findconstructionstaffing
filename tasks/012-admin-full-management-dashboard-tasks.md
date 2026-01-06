@@ -220,7 +220,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.3.1: Create Supabase Storage Bucket for Agency Logos
+### [x] Task 1.3.1: Create Supabase Storage Bucket for Agency Logos
 
 - **Role:** Backend Developer
 - **Objective:** Set up Supabase Storage bucket with proper policies for agency logos
