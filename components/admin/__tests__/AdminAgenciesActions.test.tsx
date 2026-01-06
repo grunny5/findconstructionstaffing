@@ -27,10 +27,28 @@ describe('AdminAgenciesActions', () => {
     expect(screen.getByTestId('bulk-import-button')).not.toBeDisabled();
   });
 
-  it('Create Agency button is disabled (pending implementation)', () => {
+  it('Create Agency button is enabled', () => {
     render(<AdminAgenciesActions />);
 
-    expect(screen.getByTestId('create-agency-button')).toBeDisabled();
+    expect(screen.getByTestId('create-agency-button')).not.toBeDisabled();
+  });
+
+  it('opens AgencyFormModal when Create Agency button is clicked', async () => {
+    render(<AdminAgenciesActions />);
+
+    await userEvent.click(screen.getByTestId('create-agency-button'));
+
+    expect(screen.getByTestId('agency-form-modal')).toBeInTheDocument();
+  });
+
+  it('closes AgencyFormModal when cancel is clicked', async () => {
+    render(<AdminAgenciesActions />);
+
+    await userEvent.click(screen.getByTestId('create-agency-button'));
+    expect(screen.getByTestId('agency-form-modal')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByTestId('cancel-button'));
+    expect(screen.queryByTestId('agency-form-modal')).not.toBeInTheDocument();
   });
 
   it('opens BulkImportModal when Bulk Import button is clicked', async () => {
