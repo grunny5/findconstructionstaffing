@@ -75,49 +75,53 @@ export default async function AdminIntegrationsPage() {
   const integrations: IntegrationSummary[] = integrationsData || [];
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Integration Management</h1>
+    <div className="container mx-auto p-6 min-h-screen">
+      <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600 mb-6">
+        Integration Management
+      </h1>
 
       {integrations.length === 0 ? (
-        <div className="bg-white shadow rounded-lg p-8 text-center">
-          <p className="text-gray-500 mb-4">
+        <div className="bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-sharp p-8 text-center">
+          <p className="font-body text-base text-industrial-graphite-500 mb-4">
             No agencies found with integration configurations.
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="font-body text-sm text-industrial-graphite-400">
             Integration settings will appear here once agencies have been
             configured with third-party integrations.
           </p>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
+        <div className="bg-industrial-bg-card border-2 border-industrial-graphite-200 overflow-hidden rounded-industrial-base">
+          <ul className="divide-y divide-industrial-graphite-200">
             {integrations.map((integration) => (
               <li key={integration.id} className="px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-medium">{integration.name}</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-display text-lg uppercase text-industrial-graphite-600">
+                      {integration.name}
+                    </h3>
+                    <p className="font-body text-sm text-industrial-graphite-500">
                       Created:{' '}
                       {new Date(integration.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
                     <span
-                      className={`px-2 py-1 text-xs rounded-full ${
+                      className={`px-2 py-1 font-body text-xs font-semibold uppercase tracking-wide rounded-industrial-sharp ${
                         integration.integration_enabled
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-industrial-orange-100 text-industrial-orange-800'
+                          : 'bg-industrial-graphite-100 text-industrial-graphite-600'
                       }`}
                     >
                       {integration.integration_enabled ? 'Active' : 'Inactive'}
                     </span>
                     {integration.integration_provider && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="font-body text-xs text-industrial-graphite-500 mt-1">
                         Provider: {integration.integration_provider}
                       </p>
                     )}
                     {integration.integration_last_sync_at && (
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 font-body text-sm text-industrial-graphite-500">
                         Last sync:{' '}
                         {integration.integration_sync_status || 'Unknown'}
                         {' - '}
@@ -127,7 +131,7 @@ export default async function AdminIntegrationsPage() {
                       </p>
                     )}
                     {integration.integration_sync_error && (
-                      <p className="mt-1 text-xs text-red-500">
+                      <p className="mt-1 font-body text-xs text-industrial-orange-600">
                         Error: {integration.integration_sync_error}
                       </p>
                     )}

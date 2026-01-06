@@ -94,10 +94,12 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="font-display text-3xl lg:text-4xl uppercase tracking-wide text-industrial-graphite-600">
+          Dashboard Overview
+        </h1>
+        <p className="font-body text-base lg:text-lg text-industrial-graphite-500 mt-2">
           Welcome to the admin dashboard. Manage your platform from here.
         </p>
       </div>
@@ -110,27 +112,29 @@ export default async function AdminDashboardPage() {
             <Link
               key={stat.title}
               href={stat.link}
-              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow"
+              className="bg-industrial-bg-card border-2 border-industrial-graphite-200 border-l-4 border-l-industrial-orange rounded-industrial-sharp p-6 hover:border-industrial-orange transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className="bg-industrial-graphite-100 p-3 rounded-industrial-sharp">
+                  <Icon className="w-6 h-6 text-industrial-graphite-600" />
                 </div>
-                <span className="text-3xl font-bold text-gray-900">
+                <span className="font-display text-3xl text-industrial-graphite-600">
                   {stat.value}
                 </span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <h3 className="font-display text-lg uppercase tracking-wide text-industrial-graphite-600 mb-3">
                 {stat.title}
               </h3>
               <div className="space-y-1">
                 {stat.details.map((detail) => (
                   <div
                     key={detail.label}
-                    className="flex justify-between text-sm"
+                    className="flex justify-between font-body text-sm"
                   >
-                    <span className="text-gray-600">{detail.label}:</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-industrial-graphite-500">
+                      {detail.label}:
+                    </span>
+                    <span className="font-semibold text-industrial-graphite-600">
                       {detail.value}
                     </span>
                   </div>
@@ -143,21 +147,21 @@ export default async function AdminDashboardPage() {
 
       {/* Recent Claims */}
       {pendingClaims > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-sharp p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="font-display text-xl uppercase text-industrial-graphite-600">
               Pending Claims Require Attention
             </h2>
             <Link
               href="/admin/claims"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="font-body font-semibold text-industrial-orange hover:text-industrial-orange-500 transition-colors"
             >
               View All →
             </Link>
           </div>
-          <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <Clock className="w-5 h-5 text-yellow-600" />
-            <p className="text-yellow-800">
+          <div className="flex items-center gap-3 p-4 bg-industrial-orange-100 border-2 border-industrial-orange-300 rounded-industrial-sharp">
+            <Clock className="w-5 h-5 text-industrial-orange-600" />
+            <p className="font-body text-sm text-industrial-orange-800">
               You have <strong>{pendingClaims}</strong> pending claim
               {pendingClaims !== 1 ? 's' : ''} waiting for review.
             </p>
@@ -167,35 +171,45 @@ export default async function AdminDashboardPage() {
 
       {/* Quick Actions */}
       <div className="mt-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="font-display text-xl uppercase text-industrial-graphite-600 mb-4">
+          Quick Actions
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/admin/agencies"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-sharp hover:border-industrial-orange transition-all duration-200"
           >
-            <Building2 className="w-5 h-5 text-gray-600" />
-            <span className="font-medium">Manage Agencies</span>
+            <Building2 className="w-5 h-5 text-industrial-graphite-600" />
+            <span className="font-body font-semibold uppercase tracking-wide text-industrial-graphite-600">
+              Manage Agencies
+            </span>
           </Link>
           <Link
             href="/admin/users"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-sharp hover:border-industrial-orange transition-all duration-200"
           >
-            <Users className="w-5 h-5 text-gray-600" />
-            <span className="font-medium">Manage Users</span>
+            <Users className="w-5 h-5 text-industrial-graphite-600" />
+            <span className="font-body font-semibold uppercase tracking-wide text-industrial-graphite-600">
+              Manage Users
+            </span>
           </Link>
           <Link
             href="/admin/claims"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-sharp hover:border-industrial-orange transition-all duration-200"
           >
-            <FileCheck className="w-5 h-5 text-gray-600" />
-            <span className="font-medium">Review Claims</span>
+            <FileCheck className="w-5 h-5 text-industrial-graphite-600" />
+            <span className="font-body font-semibold uppercase tracking-wide text-industrial-graphite-600">
+              Review Claims
+            </span>
           </Link>
           <Link
             href="/admin/integrations"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-industrial-bg-card border-2 border-industrial-graphite-200 rounded-industrial-sharp hover:border-industrial-orange transition-all duration-200"
           >
-            <CheckCircle2 className="w-5 h-5 text-gray-600" />
-            <span className="font-medium">Integrations</span>
+            <CheckCircle2 className="w-5 h-5 text-industrial-graphite-600" />
+            <span className="font-body font-semibold uppercase tracking-wide text-industrial-graphite-600">
+              Integrations
+            </span>
           </Link>
         </div>
       </div>

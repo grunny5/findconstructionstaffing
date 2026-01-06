@@ -75,13 +75,13 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Role Change History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-gray-500">
-            <div className="animate-pulse">Loading history...</div>
+          <div className="flex items-center justify-center py-8 text-industrial-graphite-500">
+            <div className="animate-pulse font-body">Loading history...</div>
           </div>
         </CardContent>
       </Card>
@@ -90,14 +90,14 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
 
   if (error) {
     return (
-      <Card>
+      <Card className="border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Role Change History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 py-8 text-red-600">
+          <div className="flex items-center gap-2 py-8 text-industrial-orange-600">
             <AlertCircle className="h-5 w-5" />
-            <span>{error}</span>
+            <span className="font-body">{error}</span>
           </div>
         </CardContent>
       </Card>
@@ -106,12 +106,12 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
 
   if (auditLogs.length === 0) {
     return (
-      <Card>
+      <Card className="border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Role Change History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-gray-500">
+          <div className="flex items-center justify-center py-8 font-body text-industrial-graphite-500">
             No role changes recorded
           </div>
         </CardContent>
@@ -120,7 +120,7 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
   }
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-industrial-orange">
       <CardHeader>
         <CardTitle>Role Change History</CardTitle>
       </CardHeader>
@@ -130,7 +130,7 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
             <div key={log.id}>
               <div className="flex flex-col gap-3">
                 {/* Timestamp */}
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 font-body text-sm text-industrial-graphite-500">
                   <Clock className="h-4 w-4" />
                   <span>{formatDate(log.changed_at)}</span>
                 </div>
@@ -140,7 +140,7 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
                   <Badge variant={roleBadgeVariant(log.old_role)}>
                     {roleDisplayName(log.old_role)}
                   </Badge>
-                  <span className="text-gray-400">→</span>
+                  <span className="text-industrial-graphite-400">→</span>
                   <Badge variant={roleBadgeVariant(log.new_role)}>
                     {roleDisplayName(log.new_role)}
                   </Badge>
@@ -148,11 +148,11 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
 
                 {/* Admin Info */}
                 {log.admin_profile && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 font-body text-sm text-industrial-graphite-600">
                     <User className="h-4 w-4" />
                     <span>
                       Changed by:{' '}
-                      <span className="font-medium">
+                      <span className="font-semibold">
                         {log.admin_profile.full_name || log.admin_profile.email}
                       </span>
                     </span>
@@ -160,7 +160,7 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
                 )}
 
                 {!log.admin_profile && log.admin_id && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 font-body text-sm text-industrial-graphite-500">
                     <User className="h-4 w-4" />
                     <span className="italic">
                       Changed by: [Admin account deleted]
@@ -170,14 +170,16 @@ export function RoleHistoryTimeline({ userId }: RoleHistoryTimelineProps) {
 
                 {/* Notes */}
                 {log.notes && (
-                  <div className="pl-6 text-sm text-gray-700 border-l-2 border-gray-200">
+                  <div className="pl-6 font-body text-sm text-industrial-graphite-600 border-l-2 border-industrial-orange">
                     {log.notes}
                   </div>
                 )}
               </div>
 
               {/* Separator between entries */}
-              {index < auditLogs.length - 1 && <Separator className="mt-6" />}
+              {index < auditLogs.length - 1 && (
+                <Separator className="mt-6 bg-industrial-graphite-200" />
+              )}
             </div>
           ))}
         </div>

@@ -144,7 +144,7 @@ export function UsersTable({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-industrial-graphite-400" />
           <Input
             type="text"
             placeholder="Search by name or email..."
@@ -167,8 +167,8 @@ export function UsersTable({
       </div>
 
       {paginatedUsers.length === 0 ? (
-        <div className="border rounded-lg p-12 text-center">
-          <p className="text-gray-500">
+        <div className="border-2 border-industrial-graphite-200 rounded-industrial-sharp p-12 text-center bg-industrial-bg-card">
+          <p className="font-body text-industrial-graphite-500">
             {filteredUsers.length === 0 && users.length > 0
               ? 'No users found matching your filters.'
               : 'No users found.'}
@@ -176,61 +176,59 @@ export function UsersTable({
         </div>
       ) : (
         <>
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/admin/users/${user.id}`}
-                          className="text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                          {user.full_name || 'N/A'}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={roleBadgeVariant(user.role)}>
-                          {roleDisplayName(user.role)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <RoleChangeDropdown
-                          userId={user.id}
-                          userName={user.full_name}
-                          currentRole={user.role}
-                          onRoleChange={handleRoleChange}
-                          disabled={user.id === currentUserId}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="font-body font-semibold text-industrial-orange hover:text-industrial-orange-500 hover:underline"
+                    >
+                      {user.full_name || 'N/A'}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="font-body text-industrial-graphite-600">
+                    {user.email}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={roleBadgeVariant(user.role)}>
+                      {roleDisplayName(user.role)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-body text-sm text-industrial-graphite-500">
+                    {new Date(user.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <RoleChangeDropdown
+                      userId={user.id}
+                      userName={user.full_name}
+                      currentRole={user.role}
+                      onRoleChange={handleRoleChange}
+                      disabled={user.id === currentUserId}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">
+              <p className="font-body text-sm text-industrial-graphite-500">
                 Showing {startIndex + 1}-
                 {Math.min(endIndex, filteredUsers.length)} of{' '}
                 {filteredUsers.length} users
@@ -245,7 +243,7 @@ export function UsersTable({
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous
                 </Button>
-                <span className="text-sm text-gray-600">
+                <span className="font-body text-sm text-industrial-graphite-600">
                   Page {currentPage} of {totalPages}
                 </span>
                 <Button
