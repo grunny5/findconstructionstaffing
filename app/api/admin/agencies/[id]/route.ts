@@ -110,6 +110,11 @@ const agencyUpdateSchema = z.object({
   trade_ids: z
     .array(z.string().uuid('Each trade ID must be a valid UUID'))
     .optional(),
+
+  // Region IDs - admin can select any US states
+  region_ids: z
+    .array(z.string().uuid('Each region ID must be a valid UUID'))
+    .optional(),
 });
 
 export type AgencyUpdateData = z.infer<typeof agencyUpdateSchema>;
@@ -197,13 +202,14 @@ export async function PATCH(
     }
 
     const updates = parseResult.data;
-    const { trade_ids, ...agencyUpdates } = updates;
+    const { trade_ids, region_ids, ...agencyUpdates } = updates;
 
-    // If no fields to update (excluding trade_ids which is handled separately)
+    // If no fields to update (excluding trade_ids and region_ids which are handled separately)
     const hasAgencyUpdates = Object.keys(agencyUpdates).length > 0;
     const hasTradeUpdates = trade_ids !== undefined;
+    const hasRegionUpdates = region_ids !== undefined;
 
-    if (!hasAgencyUpdates && !hasTradeUpdates) {
+    if (!hasAgencyUpdates && !hasTradeUpdates && !hasRegionUpdates) {
       return NextResponse.json(
         {
           error: {
@@ -433,26 +439,177 @@ export async function PATCH(
         updatedTrades = tradesData || [];
       }
 
-      // Update agency timestamp if only trades changed
-      if (!hasAgencyUpdates) {
-        await supabase
-          .from('agencies')
-          .update({
-            last_edited_at: new Date().toISOString(),
-            last_edited_by: user.id,
-          })
-          .eq('id', id);
-      }
     }
 
     // ========================================================================
-    // 8. RETURN SUCCESS RESPONSE
+    // 8. UPDATE REGIONS (if region_ids provided)
+    // ========================================================================
+    let updatedRegions: { id: string; name: string; slug: string; state_code: string }[] = [];
+
+    if (hasRegionUpdates) {
+      // 8a. Validate region IDs exist (if not empty array)
+      if (region_ids!.length > 0) {
+        const { data: validRegions, error: regionsError } = await supabase
+          .from('regions')
+          .select('id, name')
+          .in('id', region_ids!);
+
+        if (regionsError) {
+          console.error('Error fetching regions:', regionsError);
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.DATABASE_ERROR,
+                message: 'Failed to validate region IDs',
+              },
+            },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+          );
+        }
+
+        if (!validRegions || validRegions.length !== region_ids!.length) {
+          const validIds = new Set(validRegions?.map((r) => r.id) || []);
+          const invalidIds = region_ids!.filter((rid) => !validIds.has(rid));
+
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.VALIDATION_ERROR,
+                message: 'Invalid region IDs provided',
+                details: {
+                  invalid_region_ids: invalidIds,
+                },
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
+      }
+
+      // 8b. Get current regions for audit trail
+      const { data: currentRegions } = await supabase
+        .from('agency_regions')
+        .select('region_id, regions(id, name)')
+        .eq('agency_id', id);
+
+      const oldRegionNames =
+        currentRegions
+          ?.map((ar) => {
+            const region = ar.regions as unknown as { id: string; name: string };
+            return region?.name;
+          })
+          .filter(Boolean) || [];
+
+      // 8c. Upsert new region relationships (if any)
+      if (region_ids!.length > 0) {
+        const newRelationships = region_ids!.map((region_id) => ({
+          agency_id: id,
+          region_id,
+        }));
+
+        const { error: upsertError } = await supabase
+          .from('agency_regions')
+          .upsert(newRelationships, {
+            onConflict: 'agency_id,region_id',
+            ignoreDuplicates: false,
+          });
+
+        if (upsertError) {
+          console.error('Error upserting agency regions:', upsertError);
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.DATABASE_ERROR,
+                message: 'Failed to update regions',
+              },
+            },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+          );
+        }
+      }
+
+      // 8d. Delete orphaned region relationships
+      const { data: currentRelations } = await supabase
+        .from('agency_regions')
+        .select('region_id')
+        .eq('agency_id', id);
+
+      if (currentRelations && currentRelations.length > 0) {
+        const currentRegionIds = currentRelations.map((r) => r.region_id);
+        const orphanedIds = currentRegionIds.filter(
+          (rid) => !region_ids!.includes(rid)
+        );
+
+        if (orphanedIds.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('agency_regions')
+            .delete()
+            .eq('agency_id', id)
+            .in('region_id', orphanedIds);
+
+          if (deleteError) {
+            console.warn(
+              'Non-critical: Failed to delete orphaned regions:',
+              deleteError
+            );
+          }
+        }
+      }
+
+      // 8e. Create audit trail entry
+      const { data: newRegionData } = await supabase
+        .from('regions')
+        .select('name')
+        .in('id', region_ids!.length > 0 ? region_ids! : ['no-regions']);
+
+      const newRegionNames = newRegionData?.map((r) => r.name) || [];
+
+      const { error: auditError } = await supabase
+        .from('agency_profile_edits')
+        .insert({
+          agency_id: id,
+          edited_by: user.id,
+          field_name: 'regions',
+          old_value: oldRegionNames,
+          new_value: newRegionNames,
+        });
+
+      if (auditError) {
+        console.error('Error creating audit trail:', auditError);
+      }
+
+      // 8f. Fetch updated regions for response
+      if (region_ids!.length > 0) {
+        const { data: regionsData } = await supabase
+          .from('regions')
+          .select('id, name, slug, state_code')
+          .in('id', region_ids!)
+          .order('name');
+
+        updatedRegions = regionsData || [];
+      }
+    }
+
+    // Update agency timestamp if only trades/regions changed (not agency fields)
+    if (!hasAgencyUpdates && (hasTradeUpdates || hasRegionUpdates)) {
+      await supabase
+        .from('agencies')
+        .update({
+          last_edited_at: new Date().toISOString(),
+          last_edited_by: user.id,
+        })
+        .eq('id', id);
+    }
+
+    // ========================================================================
+    // 9. RETURN SUCCESS RESPONSE
     // ========================================================================
     return NextResponse.json(
       {
         agency: {
           ...updatedAgency,
           trades: hasTradeUpdates ? updatedTrades : undefined,
+          regions: hasRegionUpdates ? updatedRegions : undefined,
         },
         message: 'Agency updated successfully',
       },
