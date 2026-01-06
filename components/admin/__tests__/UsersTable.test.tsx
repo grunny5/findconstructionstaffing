@@ -1,6 +1,22 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { UsersTable } from '../UsersTable';
 import type { Profile } from '@/types/database';
+
+// Mock next/navigation
+const mockPush = jest.fn();
+const mockSearchParams = new URLSearchParams();
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+  useSearchParams: () => mockSearchParams,
+}));
+
+// Mock useDebounce to return value immediately for testing
+jest.mock('@/hooks/use-debounce', () => ({
+  useDebounce: (value: string) => value,
+}));
 
 const mockUsers: Profile[] = [
   {
@@ -42,6 +58,10 @@ const mockUsers: Profile[] = [
 ];
 
 describe('UsersTable', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders all users in table', () => {
     render(<UsersTable users={mockUsers} />);
 
@@ -107,7 +127,7 @@ describe('UsersTable', () => {
     fireEvent.change(searchInput, { target: { value: 'nonexistent' } });
 
     expect(
-      screen.getByText('No users found matching your filters.')
+      screen.getByText('No users match your filters.')
     ).toBeInTheDocument();
   });
 
@@ -226,5 +246,85 @@ describe('UsersTable', () => {
 
     expect(screen.queryByText('Previous')).not.toBeInTheDocument();
     expect(screen.queryByText('Next')).not.toBeInTheDocument();
+  });
+
+  it('updates URL when search changes', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
+    fireEvent.change(searchInput, { target: { value: 'admin' } });
+
+    expect(mockPush).toHaveBeenCalledWith('/admin/users?search=admin', {
+      scroll: false,
+    });
+  });
+
+  it('updates URL when role filter changes', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    const roleSelect = screen.getAllByRole('combobox')[0];
+    fireEvent.click(roleSelect);
+
+    const adminOption = screen.getByRole('option', { name: 'Admin' });
+    fireEvent.click(adminOption);
+
+    expect(mockPush).toHaveBeenCalledWith('/admin/users?role=admin', {
+      scroll: false,
+    });
+  });
+
+  it('shows clear filters button when filters are active', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    expect(
+      screen.queryByTestId('clear-filters-button')
+    ).not.toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
+    fireEvent.change(searchInput, { target: { value: 'admin' } });
+
+    expect(screen.getByTestId('clear-filters-button')).toBeInTheDocument();
+  });
+
+  it('clears all filters when clear button is clicked', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or email...'
+    );
+    fireEvent.change(searchInput, { target: { value: 'admin' } });
+
+    expect(screen.getByTestId('clear-filters-button')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('clear-filters-button'));
+
+    expect(searchInput).toHaveValue('');
+    expect(
+      screen.queryByTestId('clear-filters-button')
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders search input with data-testid', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    expect(screen.getByTestId('user-search-input')).toBeInTheDocument();
+  });
+
+  it('renders role filter with data-testid', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    expect(screen.getByTestId('role-filter-trigger')).toBeInTheDocument();
+  });
+
+  it('shows users count in footer', () => {
+    render(<UsersTable users={mockUsers} />);
+
+    expect(screen.getByTestId('users-count')).toHaveTextContent(
+      'Showing 1-4 of 4 users'
+    );
   });
 });
