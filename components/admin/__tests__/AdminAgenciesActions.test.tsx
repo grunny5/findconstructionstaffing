@@ -47,7 +47,7 @@ describe('AdminAgenciesActions', () => {
     await userEvent.click(screen.getByTestId('create-agency-button'));
     expect(screen.getByTestId('agency-form-modal')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByTestId('cancel-button'));
+    await userEvent.click(screen.getByTestId('agency-form-cancel-button'));
     expect(screen.queryByTestId('agency-form-modal')).not.toBeInTheDocument();
   });
 
@@ -65,7 +65,7 @@ describe('AdminAgenciesActions', () => {
     await userEvent.click(screen.getByTestId('bulk-import-button'));
     expect(screen.getByTestId('bulk-import-modal')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByTestId('cancel-button'));
+    await userEvent.click(screen.getByTestId('bulk-import-cancel-button'));
     expect(screen.queryByTestId('bulk-import-modal')).not.toBeInTheDocument();
   });
 });

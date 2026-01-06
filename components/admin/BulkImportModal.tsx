@@ -375,7 +375,7 @@ export function BulkImportModal({
           variant="outline"
           onClick={handleCancel}
           disabled={isLoading}
-          data-testid="cancel-button"
+          data-testid="bulk-import-cancel-button"
         >
           Cancel
         </Button>

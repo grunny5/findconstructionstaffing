@@ -95,7 +95,7 @@ describe('BulkImportModal', () => {
 
       expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
       expect(screen.getByTestId('browse-button')).toBeInTheDocument();
-      expect(screen.getByTestId('cancel-button')).toBeInTheDocument();
+      expect(screen.getByTestId('bulk-import-cancel-button')).toBeInTheDocument();
       expect(screen.getByTestId('next-button')).toBeInTheDocument();
     });
 
@@ -305,7 +305,7 @@ describe('BulkImportModal', () => {
       const onClose = jest.fn();
       render(<BulkImportModal {...defaultProps} onClose={onClose} />);
 
-      await userEvent.click(screen.getByTestId('cancel-button'));
+      await userEvent.click(screen.getByTestId('bulk-import-cancel-button'));
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });
@@ -319,7 +319,7 @@ describe('BulkImportModal', () => {
 
       expect(screen.getByTestId('selected-file-name')).toBeInTheDocument();
 
-      await userEvent.click(screen.getByTestId('cancel-button'));
+      await userEvent.click(screen.getByTestId('bulk-import-cancel-button'));
 
       // Re-open the same modal instance to verify state was reset
       rerender(<BulkImportModal {...defaultProps} isOpen={true} />);
