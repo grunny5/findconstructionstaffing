@@ -121,7 +121,7 @@ jest.mock('@/components/admin/LogoUpload', () => ({
         <button
           data-testid="logo-select-file-button"
           onClick={() => {
-            const mockFile = new File(['test'], 'logo.png', {
+            const mockFile = new global.File(['test'], 'logo.png', {
               type: 'image/png',
             });
             onFileSelect(mockFile);
