@@ -55,7 +55,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.2: Extend Admin Agency PATCH Endpoint for Trades
+### [x] Task 1.1.2: Extend Admin Agency PATCH Endpoint for Trades
 
 - **Role:** Backend Developer
 - **Objective:** Add trade_ids support to the existing PATCH /api/admin/agencies/[id] endpoint
@@ -793,11 +793,11 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ### Total Tasks: 19
 
-| Phase | Tasks | Estimated Hours |
-|-------|-------|-----------------|
-| Phase 1: Agency Full Editing | 11 tasks | 33 hours |
-| Phase 2: User Management | 8 tasks | 27 hours |
-| **Total** | **19 tasks** | **60 hours** |
+| Phase                        | Tasks        | Estimated Hours |
+| ---------------------------- | ------------ | --------------- |
+| Phase 1: Agency Full Editing | 11 tasks     | 33 hours        |
+| Phase 2: User Management     | 8 tasks      | 27 hours        |
+| **Total**                    | **19 tasks** | **60 hours**    |
 
 ### Dependencies Graph
 
@@ -839,28 +839,34 @@ Phase 2 (Week 2) - User Management
 ### Key Files to Create
 
 **API Routes:**
+
 - `app/api/admin/agencies/[id]/logo/route.ts` (POST, DELETE)
 - `app/api/admin/users/route.ts` (POST)
 - `app/api/admin/users/[id]/route.ts` (PATCH, DELETE)
 
 **Components:**
+
 - `components/admin/LogoUpload.tsx`
 - `components/admin/UserFormModal.tsx`
 - `components/admin/UserDeleteDialog.tsx`
 - `components/admin/AdminUsersActions.tsx`
 
 **Migrations:**
+
 - `supabase/migrations/[timestamp]_create_agency_logos_bucket.sql`
 
 ### Key Files to Modify
 
 **API Routes:**
+
 - `app/api/admin/agencies/[id]/route.ts` (add trade_ids, region_ids support)
 
 **Components:**
+
 - `components/admin/AgencyFormModal.tsx` (add TradeSelector, RegionSelector, LogoUpload)
 
 **Pages:**
+
 - `app/(app)/admin/users/page.tsx` (add create button, enhanced search/filters)
 - `app/(app)/admin/users/[id]/page.tsx` (add edit/delete buttons)
 - `app/(app)/admin/agencies/[id]/page.tsx` (pass trades/regions to edit modal)

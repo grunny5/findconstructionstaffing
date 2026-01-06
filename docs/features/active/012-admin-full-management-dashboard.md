@@ -60,6 +60,7 @@ We believe that by building **comprehensive agency and user management capabilit
 > As a **Site Administrator**, I want **to upload or change an agency's logo**, so that **I can ensure agency profiles have proper branding without requiring owner action**.
 
 **Logo Specifications:**
+
 - **Dimensions:** 300px x 300px (square)
 - **Formats:** PNG, JPG, WebP
 - **Max upload size:** 5MB (resized server-side)
@@ -159,36 +160,36 @@ No new database tables required. Changes to existing usage:
 
 **Modified Endpoints:**
 
-| Endpoint | Method | Change |
-|----------|--------|--------|
-| `/api/admin/agencies/[id]` | PATCH | Add support for `trade_ids[]`, `region_ids[]`, `logo_url` |
+| Endpoint                   | Method | Change                                                    |
+| -------------------------- | ------ | --------------------------------------------------------- |
+| `/api/admin/agencies/[id]` | PATCH  | Add support for `trade_ids[]`, `region_ids[]`, `logo_url` |
 
 **New Endpoints:**
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/admin/agencies/[id]/logo` | POST | Upload agency logo to Supabase Storage |
-| `/api/admin/agencies/[id]/logo` | DELETE | Remove agency logo |
-| `/api/admin/users` | POST | Create new user account |
-| `/api/admin/users/[id]` | PATCH | Update user profile |
-| `/api/admin/users/[id]` | DELETE | Delete user account |
+| Endpoint                        | Method | Purpose                                |
+| ------------------------------- | ------ | -------------------------------------- |
+| `/api/admin/agencies/[id]/logo` | POST   | Upload agency logo to Supabase Storage |
+| `/api/admin/agencies/[id]/logo` | DELETE | Remove agency logo                     |
+| `/api/admin/users`              | POST   | Create new user account                |
+| `/api/admin/users/[id]`         | PATCH  | Update user profile                    |
+| `/api/admin/users/[id]`         | DELETE | Delete user account                    |
 
 #### Component Changes
 
 **Modified Components:**
 
-| Component | Change |
-|-----------|--------|
-| `AgencyFormModal` | Add TradeSelector, RegionSelector, LogoUpload components |
-| `AdminAgenciesActions` | No changes needed (Create/Edit already wired) |
+| Component              | Change                                                   |
+| ---------------------- | -------------------------------------------------------- |
+| `AgencyFormModal`      | Add TradeSelector, RegionSelector, LogoUpload components |
+| `AdminAgenciesActions` | No changes needed (Create/Edit already wired)            |
 
 **New Components:**
 
-| Component | Purpose |
-|-----------|---------|
-| `LogoUpload` | Drag-and-drop image upload with preview |
-| `UserFormModal` | Create/edit user modal form |
-| `UserDeleteDialog` | Confirmation dialog for user deletion |
+| Component           | Purpose                                 |
+| ------------------- | --------------------------------------- |
+| `LogoUpload`        | Drag-and-drop image upload with preview |
+| `UserFormModal`     | Create/edit user modal form             |
+| `UserDeleteDialog`  | Confirmation dialog for user deletion   |
 | `AdminUsersActions` | Action buttons for user management page |
 
 #### Non-Functional Requirements
@@ -227,6 +228,7 @@ Per PKD requirements:
 **Priority:** HIGH - Addresses immediate admin pain point
 
 **Tasks:**
+
 1. Add TradeSelector to AgencyFormModal
 2. Add RegionSelector to AgencyFormModal
 3. Extend PATCH `/api/admin/agencies/[id]` for trade/region updates
@@ -244,6 +246,7 @@ Per PKD requirements:
 **Priority:** MEDIUM - Enables complete admin self-service
 
 **Tasks:**
+
 1. Create UserFormModal component for create/edit
 2. Create POST `/api/admin/users` endpoint (Supabase Admin API)
 3. Create PATCH `/api/admin/users/[id]` endpoint
@@ -261,12 +264,12 @@ Per PKD requirements:
 
 ## 6. Success Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Admin database requests eliminated | 100% | Track support tickets requiring DB access |
-| Agency profile completeness | +15% | More agencies with trades/regions populated |
-| Admin task completion time | -50% | Time to update agency/user via dashboard |
-| Test coverage | 85%+ | Jest coverage report |
+| Metric                             | Target | Measurement                                 |
+| ---------------------------------- | ------ | ------------------------------------------- |
+| Admin database requests eliminated | 100%   | Track support tickets requiring DB access   |
+| Agency profile completeness        | +15%   | More agencies with trades/regions populated |
+| Admin task completion time         | -50%   | Time to update agency/user via dashboard    |
+| Test coverage                      | 85%+   | Jest coverage report                        |
 
 ---
 
@@ -281,9 +284,9 @@ Per PKD requirements:
 
 ## 8. Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Supabase Admin API rate limits | User creation could fail | Implement retry logic, batch operations |
-| Large logo uploads slow down form | Poor UX | Compress images client-side, show progress |
-| Accidental user deletion | Data loss | Require confirmation, add soft-delete option later |
+| Risk                              | Impact                   | Mitigation                                            |
+| --------------------------------- | ------------------------ | ----------------------------------------------------- |
+| Supabase Admin API rate limits    | User creation could fail | Implement retry logic, batch operations               |
+| Large logo uploads slow down form | Poor UX                  | Compress images client-side, show progress            |
+| Accidental user deletion          | Data loss                | Require confirmation, add soft-delete option later    |
 | Trade/region changes break search | Incorrect search results | Validate IDs exist before saving, atomic transactions |
