@@ -40,16 +40,16 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Controlled component state
   - No trade limit for admins (unlike 10-trade limit for owners)
 - **Acceptance Criteria (for this task):**
-  - [ ] TradeSelector component rendered in AgencyFormModal
-  - [ ] All 48 trades displayed and selectable
-  - [ ] Current trades pre-selected when editing existing agency
-  - [ ] Form state properly tracks selected trade IDs
-  - [ ] No maximum trade limit enforced for admin
+  - [x] TradeSelector component rendered in AgencyFormModal
+  - [x] All 48 trades displayed and selectable
+  - [x] Current trades pre-selected when editing existing agency
+  - [x] Form state properly tracks selected trade IDs
+  - [x] No maximum trade limit enforced for admin
 - **Definition of Done:**
-  - [ ] Component integrated and functional
-  - [ ] Tests verify trade selection UI
-  - [ ] Tests verify pre-population in edit mode
-  - [ ] **Final Check:** Follows existing form patterns in AgencyFormModal
+  - [x] Component integrated and functional
+  - [x] Tests verify trade selection UI
+  - [x] Tests verify pre-population in edit mode
+  - [x] **Final Check:** Follows existing form patterns in AgencyFormModal
 
 **Estimated Effort:** 3 hours
 
@@ -71,17 +71,17 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Delete existing + insert new pattern
   - Validate trade IDs exist in trades table
 - **Acceptance Criteria (for this task):**
-  - [ ] PATCH accepts `trade_ids: string[]` in request body
-  - [ ] Invalid trade IDs return 400 with specific error
-  - [ ] Existing agency_trades records deleted and new ones created atomically
-  - [ ] Empty array clears all trades for agency
-  - [ ] Audit trail entry created for trade changes
-  - [ ] Returns updated agency with trades in response
+  - [x] PATCH accepts `trade_ids: string[]` in request body
+  - [x] Invalid trade IDs return 400 with specific error
+  - [x] Existing agency_trades records deleted and new ones created atomically
+  - [x] Empty array clears all trades for agency
+  - [x] Audit trail entry created for trade changes
+  - [x] Returns updated agency with trades in response
 - **Definition of Done:**
-  - [ ] Endpoint handles trade updates correctly
-  - [ ] Unit tests cover success, validation errors, empty array
-  - [ ] 85%+ test coverage for new code
-  - [ ] **Final Check:** Follows existing admin API patterns
+  - [x] Endpoint handles trade updates correctly
+  - [x] Unit tests cover success, validation errors, empty array
+  - [x] 85%+ test coverage for new code
+  - [x] **Final Check:** Follows existing admin API patterns
 
 **Estimated Effort:** 3 hours
 
@@ -101,14 +101,14 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Fetch trades with agency data
   - Map trade objects to IDs for form default values
 - **Acceptance Criteria (for this task):**
-  - [ ] Agency detail API returns trades array with agency data
-  - [ ] Edit modal receives trades as prop
-  - [ ] TradeSelector shows existing trades as selected
-  - [ ] Changes to trades reflected in form dirty state
+  - [x] Agency detail API returns trades array with agency data
+  - [x] Edit modal receives trades as prop
+  - [x] TradeSelector shows existing trades as selected
+  - [x] Changes to trades reflected in form dirty state
 - **Definition of Done:**
-  - [ ] Trades pre-populated correctly in edit mode
-  - [ ] Tests verify pre-population
-  - [ ] **Final Check:** Consistent with existing edit patterns
+  - [x] Trades pre-populated correctly in edit mode
+  - [x] Tests verify pre-population
+  - [x] **Final Check:** Consistent with existing edit patterns
 
 **Estimated Effort:** 2 hours
 
@@ -138,16 +138,16 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - React Hook Form integration
   - Controlled component state
 - **Acceptance Criteria (for this task):**
-  - [ ] RegionSelector component rendered in AgencyFormModal
-  - [ ] All 35 US states/regions displayed as checkboxes
-  - [ ] Current regions pre-selected when editing existing agency
-  - [ ] Form state properly tracks selected region IDs
-  - [ ] "Select All" / "Clear All" functionality works
+  - [x] RegionSelector component rendered in AgencyFormModal
+  - [x] All 35 US states/regions displayed as checkboxes
+  - [x] Current regions pre-selected when editing existing agency
+  - [x] Form state properly tracks selected region IDs
+  - [x] "Select All" / "Clear All" functionality works
 - **Definition of Done:**
-  - [ ] Component integrated and functional
-  - [ ] Tests verify region selection UI
-  - [ ] Tests verify pre-population in edit mode
-  - [ ] **Final Check:** Follows existing form patterns
+  - [x] Component integrated and functional
+  - [x] Tests verify region selection UI
+  - [x] Tests verify pre-population in edit mode
+  - [x] **Final Check:** Follows existing form patterns
 
 **Estimated Effort:** 3 hours
 
@@ -169,17 +169,17 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Delete existing + insert new pattern
   - Validate region IDs exist in regions table
 - **Acceptance Criteria (for this task):**
-  - [ ] PATCH accepts `region_ids: string[]` in request body
-  - [ ] Invalid region IDs return 400 with specific error
-  - [ ] Existing agency_regions records deleted and new ones created atomically
-  - [ ] Empty array clears all regions for agency
-  - [ ] Audit trail entry created for region changes
-  - [ ] Returns updated agency with regions in response
+  - [x] PATCH accepts `region_ids: string[]` in request body
+  - [x] Invalid region IDs return 400 with specific error
+  - [x] Existing agency_regions records deleted and new ones created atomically
+  - [x] Empty array clears all regions for agency
+  - [x] Audit trail entry created for region changes
+  - [x] Returns updated agency with regions in response
 - **Definition of Done:**
-  - [ ] Endpoint handles region updates correctly
-  - [ ] Unit tests cover success, validation errors, empty array
-  - [ ] 85%+ test coverage for new code
-  - [ ] **Final Check:** Follows existing admin API patterns
+  - [x] Endpoint handles region updates correctly
+  - [x] Unit tests cover success, validation errors, empty array
+  - [x] 85%+ test coverage for new code
+  - [x] **Final Check:** Follows existing admin API patterns
 
 **Estimated Effort:** 3 hours
 
@@ -199,14 +199,14 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Fetch regions with agency data
   - Map region objects to IDs for form default values
 - **Acceptance Criteria (for this task):**
-  - [ ] Agency detail API returns regions array with agency data
-  - [ ] Edit modal receives regions as prop
-  - [ ] RegionSelector shows existing regions as checked
-  - [ ] Changes to regions reflected in form dirty state
+  - [x] Agency detail API returns regions array with agency data
+  - [x] Edit modal receives regions as prop
+  - [x] RegionSelector shows existing regions as checked
+  - [x] Changes to regions reflected in form dirty state
 - **Definition of Done:**
-  - [ ] Regions pre-populated correctly in edit mode
-  - [ ] Tests verify pre-population
-  - [ ] **Final Check:** Consistent with existing edit patterns
+  - [x] Regions pre-populated correctly in edit mode
+  - [x] Tests verify pre-population
+  - [x] **Final Check:** Consistent with existing edit patterns
 
 **Estimated Effort:** 2 hours
 
@@ -235,15 +235,15 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Admin-only write access
   - File path structure: `logos/{agency_id}/{filename}`
 - **Acceptance Criteria (for this task):**
-  - [ ] Storage bucket `agency-logos` created
-  - [ ] Public SELECT policy for all users (to display logos)
-  - [ ] INSERT/UPDATE/DELETE policies for admin role only
-  - [ ] File size limit configured (5MB max)
-  - [ ] Allowed MIME types: image/png, image/jpeg, image/webp
+  - [x] Storage bucket `agency-logos` created
+  - [x] Public SELECT policy for all users (to display logos)
+  - [x] INSERT/UPDATE/DELETE policies for admin role only
+  - [x] File size limit configured (5MB max)
+  - [x] Allowed MIME types: image/png, image/jpeg, image/webp
 - **Definition of Done:**
-  - [ ] Migration created and tested locally
-  - [ ] Bucket accessible via Supabase client
-  - [ ] **Final Check:** Security policies properly configured
+  - [x] Migration created and tested locally
+  - [x] Bucket accessible via Supabase client
+  - [x] **Final Check:** Security policies properly configured
 
 **Estimated Effort:** 2 hours
 
@@ -270,20 +270,20 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - **Accepted formats:** PNG, JPG, WebP
   - **Max upload size:** 5MB
 - **Acceptance Criteria (for this task):**
-  - [ ] Drag-and-drop zone accepts image files
-  - [ ] Click to browse functionality
-  - [ ] Preview shows selected/current image in 300x300 square container
-  - [ ] Validates file type (PNG, JPG, WebP only)
-  - [ ] Validates file size (max 5MB)
-  - [ ] Shows helpful text: "Recommended: Square image, 300x300px"
-  - [ ] "Remove" button to clear selection/existing logo
-  - [ ] Loading spinner during upload
-  - [ ] Error messages for invalid files
+  - [x] Drag-and-drop zone accepts image files
+  - [x] Click to browse functionality
+  - [x] Preview shows selected/current image in 300x300 square container
+  - [x] Validates file type (PNG, JPG, WebP only)
+  - [x] Validates file size (max 5MB)
+  - [x] Shows helpful text: "Recommended: Square image, 300x300px"
+  - [x] "Remove" button to clear selection/existing logo
+  - [x] Loading spinner during upload
+  - [x] Error messages for invalid files
 - **Definition of Done:**
-  - [ ] Component complete with all states
-  - [ ] Tests verify all validation scenarios
-  - [ ] Tests verify drag-and-drop functionality
-  - [ ] **Final Check:** Accessible and mobile-friendly
+  - [x] Component complete with all states
+  - [x] Tests verify all validation scenarios
+  - [x] Tests verify drag-and-drop functionality
+  - [x] **Final Check:** Accessible and mobile-friendly
 
 **Estimated Effort:** 4 hours
 
@@ -313,23 +313,23 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Convert to WebP for optimal file size
   - Quality: 85%
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies/[id]/logo` accepts multipart form data
-  - [ ] Validates file type and size server-side
-  - [ ] Resizes image to 300x300 pixels using Sharp
-  - [ ] Converts to WebP format for storage
-  - [ ] Uploads to Supabase Storage in `logos/{agency_id}/` path
-  - [ ] Updates agency.logo_url with public URL
-  - [ ] Deletes old logo file if replacing
-  - [ ] Returns 401/403 for unauthorized users
-  - [ ] Returns 400 for invalid files with specific error
-  - [ ] `DELETE /api/admin/agencies/[id]/logo` removes logo
-  - [ ] DELETE sets logo_url to null and removes storage file
+  - [x] `POST /api/admin/agencies/[id]/logo` accepts multipart form data
+  - [x] Validates file type and size server-side
+  - [x] Resizes image to 300x300 pixels using Sharp
+  - [x] Converts to WebP format for storage
+  - [x] Uploads to Supabase Storage in `logos/{agency_id}/` path
+  - [x] Updates agency.logo_url with public URL
+  - [x] Deletes old logo file if replacing
+  - [x] Returns 401/403 for unauthorized users
+  - [x] Returns 400 for invalid files with specific error
+  - [x] `DELETE /api/admin/agencies/[id]/logo` removes logo
+  - [x] DELETE sets logo_url to null and removes storage file
 - **Definition of Done:**
-  - [ ] Upload and delete endpoints functional
-  - [ ] Image resizing tested with various input sizes
-  - [ ] Unit tests cover all scenarios
-  - [ ] 85%+ test coverage
-  - [ ] **Final Check:** Follows existing admin API patterns
+  - [x] Upload and delete endpoints functional
+  - [x] Image resizing tested with various input sizes
+  - [x] Unit tests cover all scenarios
+  - [x] 85%+ test coverage
+  - [x] **Final Check:** Follows existing admin API patterns
 
 **Estimated Effort:** 5 hours
 
@@ -350,17 +350,17 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Show current logo in edit mode
   - Handle upload errors gracefully
 - **Acceptance Criteria (for this task):**
-  - [ ] LogoUpload component rendered in AgencyFormModal
-  - [ ] Current logo displayed when editing existing agency
-  - [ ] New logo uploaded on form submission (if changed)
-  - [ ] Logo removal triggers DELETE endpoint
-  - [ ] Upload errors shown with option to retry
-  - [ ] Form can be saved without logo
+  - [x] LogoUpload component rendered in AgencyFormModal
+  - [x] Current logo displayed when editing existing agency
+  - [x] New logo uploaded on form submission (if changed)
+  - [x] Logo removal triggers DELETE endpoint
+  - [x] Upload errors shown with option to retry
+  - [x] Form can be saved without logo
 - **Definition of Done:**
-  - [ ] Logo upload integrated and functional
-  - [ ] Tests verify upload flow
-  - [ ] Tests verify removal flow
-  - [ ] **Final Check:** Consistent UX with other form fields
+  - [x] Logo upload integrated and functional
+  - [x] Tests verify upload flow
+  - [x] Tests verify removal flow
+  - [x] **Final Check:** Consistent UX with other form fields
 
 **Estimated Effort:** 3 hours
 
@@ -382,17 +382,17 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Fallback to initials/placeholder if no logo
   - Responsive sizing for different viewports
 - **Acceptance Criteria (for this task):**
-  - [ ] Agency cards show logo (if available) in top-left or header area
-  - [ ] Logo displayed at appropriate size on cards (e.g., 64x64 or 80x80)
-  - [ ] Agency profile page shows logo prominently in header (e.g., 120x120 or 150x150)
-  - [ ] Fallback placeholder shown when no logo (initials or generic icon)
-  - [ ] Images lazy-loaded for performance
-  - [ ] Alt text includes agency name for accessibility
+  - [x] Agency cards show logo (if available) in top-left or header area
+  - [x] Logo displayed at appropriate size on cards (e.g., 64x64 or 80x80)
+  - [x] Agency profile page shows logo prominently in header (e.g., 120x120 or 150x150)
+  - [x] Fallback placeholder shown when no logo (initials or generic icon)
+  - [x] Images lazy-loaded for performance
+  - [x] Alt text includes agency name for accessibility
 - **Definition of Done:**
-  - [ ] Logos display correctly on cards and profile
-  - [ ] Fallback works when no logo
-  - [ ] Tests verify logo rendering
-  - [ ] **Final Check:** Responsive and accessible
+  - [x] Logos display correctly on cards and profile
+  - [x] Fallback works when no logo
+  - [x] Tests verify logo rendering
+  - [x] **Final Check:** Responsive and accessible
 
 **Estimated Effort:** 3 hours
 
