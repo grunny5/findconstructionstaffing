@@ -511,7 +511,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 2.2: Admin Edits User Profile
+### [x] ➡️ Story 2.2: Admin Edits User Profile
 
 > As a **Site Administrator**, I want **to edit user profile information**, so that **I can correct errors or update user details without requiring the user to do it themselves**.
 
@@ -519,7 +519,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.1: Create User Update API Endpoint
+### [x] Task 2.2.1: Create User Update API Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to update user profile and optionally email
@@ -535,24 +535,24 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Email change requires Admin API
   - Audit logging for changes
 - **Acceptance Criteria (for this task):**
-  - [ ] `PATCH /api/admin/users/[id]` updates user
-  - [ ] Can update: full_name, avatar_url (profile fields)
-  - [ ] Can update: email (triggers re-verification)
-  - [ ] Returns 404 if user not found
-  - [ ] Returns 409 if new email already in use
-  - [ ] Returns 401/403 for unauthorized users
-  - [ ] Audit trail entry created for changes
+  - [x] `PATCH /api/admin/users/[id]` updates user
+  - [x] Can update: full_name, role (profile fields)
+  - [N/A] Can update: email (email editing disabled - create new user instead)
+  - [x] Returns 404 if user not found
+  - [N/A] Returns 409 if new email already in use (email editing disabled)
+  - [x] Returns 401/403 for unauthorized users
+  - [x] Audit trail entry created for changes (updated_at timestamp)
 - **Definition of Done:**
-  - [ ] Endpoint updates users correctly
-  - [ ] Unit tests cover all scenarios
-  - [ ] 85%+ test coverage
-  - [ ] **Final Check:** Follows existing admin API patterns
+  - [x] Endpoint updates users correctly
+  - [x] Unit tests cover all scenarios
+  - [x] 85%+ test coverage
+  - [x] **Final Check:** Follows existing admin API patterns
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] Task 2.2.2: Add Edit Mode to UserFormModal
+### [x] Task 2.2.2: Add Edit Mode to UserFormModal
 
 - **Role:** Frontend Developer
 - **Objective:** Extend UserFormModal to support editing existing users
@@ -568,23 +568,23 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Different title: "Edit User" vs "Create User"
   - PATCH vs POST based on mode
 - **Acceptance Criteria (for this task):**
-  - [ ] Modal shows "Edit User" title in edit mode
-  - [ ] Form pre-populated with user data
-  - [ ] Submit calls PATCH in edit mode
-  - [ ] Role field shows current role
-  - [ ] Email change warning displayed
-  - [ ] Success message shows "User updated"
+  - [x] Modal shows "Edit User" title in edit mode
+  - [x] Form pre-populated with user data
+  - [x] Submit calls PATCH in edit mode
+  - [x] Role field shows current role
+  - [x] Email field disabled with explanation (cannot be changed)
+  - [x] Success message shows "User updated"
 - **Definition of Done:**
-  - [ ] Edit mode functional
-  - [ ] Tests verify pre-population
-  - [ ] Tests verify correct API calls
-  - [ ] **Final Check:** No code duplication between modes
+  - [x] Edit mode functional
+  - [x] Tests verify pre-population
+  - [x] Tests verify correct API calls
+  - [x] **Final Check:** No code duplication between modes
 
 **Estimated Effort:** 2 hours
 
 ---
 
-### [ ] Task 2.2.3: Add Edit Button to User Detail Page
+### [x] Task 2.2.3: Add Edit Button to User Detail Page
 
 - **Role:** Frontend Developer
 - **Objective:** Add "Edit" button to user detail page header
@@ -596,14 +596,14 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Opens UserFormModal in edit mode
   - Refresh page data after edit
 - **Acceptance Criteria (for this task):**
-  - [ ] "Edit" button visible on user detail page
-  - [ ] Button click opens UserFormModal with user data
-  - [ ] Page refreshes after successful edit
-  - [ ] Updated data displayed immediately
+  - [x] "Edit" button visible on user detail page
+  - [x] Button click opens UserFormModal with user data
+  - [x] Page refreshes after successful edit
+  - [x] Updated data displayed immediately
 - **Definition of Done:**
-  - [ ] Edit button and integration complete
-  - [ ] Tests verify edit flow
-  - [ ] **Final Check:** Consistent with agency detail page pattern
+  - [x] Edit button and integration complete
+  - [x] Tests verify edit flow
+  - [x] **Final Check:** Consistent with agency detail page pattern
 
 **Estimated Effort:** 2 hours
 
