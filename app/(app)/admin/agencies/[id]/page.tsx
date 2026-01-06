@@ -57,7 +57,7 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch agency details
+  // Fetch agency details with trades
   const { data: agency, error: agencyError } = await supabase
     .from('agencies')
     .select(
@@ -80,13 +80,30 @@ export default async function AgencyDetailPage({
       claimed_by,
       created_at,
       updated_at,
-      profile_completion_percentage
+      profile_completion_percentage,
+      trades:agency_trades(
+        trade:trades(
+          id,
+          name,
+          slug
+        )
+      )
     `
     )
     .eq('id', params.id)
     .single();
 
-  if (agencyError || !agency) {
+  // Transform trades from nested structure to flat array
+  const agencyWithTrades = agency
+    ? {
+        ...agency,
+        trades: (agency.trades as unknown as Array<{ trade: { id: string; name: string; slug: string } | null }>)
+          ?.map((at) => at.trade)
+          .filter((t): t is { id: string; name: string; slug: string } => t !== null),
+      }
+    : null;
+
+  if (agencyError || !agencyWithTrades) {
     notFound();
     return null;
   }
@@ -94,11 +111,11 @@ export default async function AgencyDetailPage({
   // Fetch owner profile if agency is claimed
   let ownerProfile: { email: string | null; full_name: string | null } | null =
     null;
-  if (agency.claimed_by) {
+  if (agencyWithTrades.claimed_by) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('email, full_name')
-      .eq('id', agency.claimed_by)
+      .eq('id', agencyWithTrades.claimed_by)
       .single();
 
     ownerProfile = profile || null;
@@ -123,11 +140,11 @@ export default async function AgencyDetailPage({
         </h1>
         <div className="flex gap-2">
           <AgencyStatusToggle
-            agencyId={agency.id}
-            agencyName={agency.name}
-            currentStatus={agency.is_active ? 'active' : 'inactive'}
+            agencyId={agencyWithTrades.id}
+            agencyName={agencyWithTrades.name}
+            currentStatus={agencyWithTrades.is_active ? 'active' : 'inactive'}
           />
-          <AgencyEditButton agency={agency} />
+          <AgencyEditButton agency={agencyWithTrades} />
         </div>
       </div>
 
@@ -144,7 +161,7 @@ export default async function AgencyDetailPage({
                 Agency Name
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agency.name}
+                {agencyWithTrades.name}
               </p>
             </div>
 
@@ -154,97 +171,97 @@ export default async function AgencyDetailPage({
                 Slug
               </label>
               <p className="mt-1 font-mono text-sm text-industrial-graphite-600">
-                {agency.slug}
+                {agencyWithTrades.slug}
               </p>
             </div>
 
             {/* Email */}
-            {agency.email && (
+            {agencyWithTrades.email && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Email
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.email}
+                  {agencyWithTrades.email}
                 </p>
               </div>
             )}
 
             {/* Phone */}
-            {agency.phone && (
+            {agencyWithTrades.phone && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Phone
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.phone}
+                  {agencyWithTrades.phone}
                 </p>
               </div>
             )}
 
             {/* Website */}
-            {agency.website && (
+            {agencyWithTrades.website && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Website
                 </label>
                 <p className="mt-1 font-body text-base">
                   <a
-                    href={agency.website}
+                    href={agencyWithTrades.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-industrial-orange hover:text-industrial-orange-500 hover:underline"
                   >
-                    {agency.website}
+                    {agencyWithTrades.website}
                   </a>
                 </p>
               </div>
             )}
 
             {/* Headquarters */}
-            {agency.headquarters && (
+            {agencyWithTrades.headquarters && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Headquarters
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.headquarters}
+                  {agencyWithTrades.headquarters}
                 </p>
               </div>
             )}
 
             {/* Founded Year */}
-            {agency.founded_year && (
+            {agencyWithTrades.founded_year && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Founded Year
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.founded_year}
+                  {agencyWithTrades.founded_year}
                 </p>
               </div>
             )}
 
             {/* Employee Count */}
-            {agency.employee_count && (
+            {agencyWithTrades.employee_count && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Employee Count
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.employee_count}
+                  {agencyWithTrades.employee_count}
                 </p>
               </div>
             )}
 
             {/* Company Size */}
-            {agency.company_size && (
+            {agencyWithTrades.company_size && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Company Size
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.company_size}
+                  {agencyWithTrades.company_size}
                 </p>
               </div>
             )}
@@ -255,7 +272,7 @@ export default async function AgencyDetailPage({
                 Offers Per Diem
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agency.offers_per_diem ? 'Yes' : 'No'}
+                {agencyWithTrades.offers_per_diem ? 'Yes' : 'No'}
               </p>
             </div>
 
@@ -265,19 +282,19 @@ export default async function AgencyDetailPage({
                 Union Shop
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agency.is_union ? 'Yes' : 'No'}
+                {agencyWithTrades.is_union ? 'Yes' : 'No'}
               </p>
             </div>
           </div>
 
           {/* Description - full width */}
-          {agency.description && (
+          {agencyWithTrades.description && (
             <div className="pt-2">
               <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Description
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600 whitespace-pre-wrap">
-                {agency.description}
+                {agencyWithTrades.description}
               </p>
             </div>
           )}
@@ -297,8 +314,8 @@ export default async function AgencyDetailPage({
                 Status
               </label>
               <div className="mt-1">
-                <Badge variant={agency.is_active ? 'orange' : 'secondary'}>
-                  {agency.is_active ? 'Active' : 'Inactive'}
+                <Badge variant={agencyWithTrades.is_active ? 'orange' : 'secondary'}>
+                  {agencyWithTrades.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
             </div>
@@ -309,14 +326,14 @@ export default async function AgencyDetailPage({
                 Claimed
               </label>
               <div className="mt-1">
-                <Badge variant={agency.is_claimed ? 'default' : 'outline'}>
-                  {agency.is_claimed ? 'Claimed' : 'Unclaimed'}
+                <Badge variant={agencyWithTrades.is_claimed ? 'default' : 'outline'}>
+                  {agencyWithTrades.is_claimed ? 'Claimed' : 'Unclaimed'}
                 </Badge>
               </div>
             </div>
 
             {/* Owner Profile */}
-            {agency.is_claimed && ownerProfile && (
+            {agencyWithTrades.is_claimed && ownerProfile && (
               <>
                 <div>
                   <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
@@ -338,13 +355,13 @@ export default async function AgencyDetailPage({
             )}
 
             {/* Profile Completion */}
-            {agency.profile_completion_percentage !== null && (
+            {agencyWithTrades.profile_completion_percentage !== null && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Profile Completion
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.profile_completion_percentage}%
+                  {agencyWithTrades.profile_completion_percentage}%
                 </p>
               </div>
             )}
@@ -370,7 +387,7 @@ export default async function AgencyDetailPage({
             </div>
 
             {/* Updated At */}
-            {agency.updated_at && (
+            {agencyWithTrades.updated_at && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Last Updated

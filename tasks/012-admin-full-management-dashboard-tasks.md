@@ -16,7 +16,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 1.1: Admin Edits Agency Trade Specialties
+### [x] ➡️ Story 1.1: Admin Edits Agency Trade Specialties
 
 > As a **Site Administrator**, I want **to add, edit, or remove trade specialties from any agency's profile**, so that **I can ensure agencies are accurately categorized for search and matching without requiring the agency owner to make changes**.
 
@@ -87,7 +87,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.3: Fetch and Display Current Agency Trades in Edit Modal
+### [x] Task 1.1.3: Fetch and Display Current Agency Trades in Edit Modal
 
 - **Role:** Frontend Developer
 - **Objective:** Load current trades when opening the edit modal and pass to TradeSelector
