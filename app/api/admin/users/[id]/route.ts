@@ -187,6 +187,18 @@ export async function PATCH(
     }
 
     if (hasRoleUpdate) {
+      // Prevent admin from demoting themselves
+      if (user.id === id && updates.role !== 'admin') {
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.FORBIDDEN,
+              message: 'Cannot demote yourself from admin role',
+            },
+          },
+          { status: HTTP_STATUS.FORBIDDEN }
+        );
+      }
       updateData.role = updates.role;
     }
 

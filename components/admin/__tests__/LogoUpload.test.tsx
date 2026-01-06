@@ -578,4 +578,165 @@ describe('LogoUpload', () => {
       expect(image).toHaveAttribute('alt', 'Agency logo preview');
     });
   });
+
+  describe('Keyboard Activation', () => {
+    it('opens file dialog when Enter key is pressed', () => {
+      render(<LogoUpload {...defaultProps} />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: 'Enter' });
+
+      expect(clickSpy).toHaveBeenCalled();
+    });
+
+    it('opens file dialog when Space key is pressed', () => {
+      render(<LogoUpload {...defaultProps} />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: ' ' });
+
+      expect(clickSpy).toHaveBeenCalled();
+    });
+
+    it('does not open file dialog on Enter when disabled', () => {
+      render(<LogoUpload {...defaultProps} disabled />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: 'Enter' });
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not open file dialog on Enter when uploading', () => {
+      render(<LogoUpload {...defaultProps} isUploading />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: 'Enter' });
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not open file dialog on Space when disabled', () => {
+      render(<LogoUpload {...defaultProps} disabled />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: ' ' });
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+
+    it('ignores other keys', () => {
+      render(<LogoUpload {...defaultProps} />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: 'Tab' });
+      fireEvent.keyDown(zone, { key: 'Escape' });
+      fireEvent.keyDown(zone, { key: 'a' });
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Interaction Blocking with Existing Image', () => {
+    it('does not open file dialog when clicking with currentLogoUrl', () => {
+      render(
+        <LogoUpload
+          {...defaultProps}
+          currentLogoUrl="https://example.com/logo.png"
+        />
+      );
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.click(zone);
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not respond to keyboard when image exists', () => {
+      render(
+        <LogoUpload
+          {...defaultProps}
+          currentLogoUrl="https://example.com/logo.png"
+        />
+      );
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+      const clickSpy = jest.spyOn(input, 'click');
+
+      fireEvent.keyDown(zone, { key: 'Enter' });
+      fireEvent.keyDown(zone, { key: ' ' });
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not open file dialog when clicking with selected file', () => {
+      render(<LogoUpload {...defaultProps} />);
+      const zone = screen.getByTestId('logo-upload-zone');
+      const input = screen.getByTestId('logo-file-input');
+
+      // First select a file
+      const file = createMockFile('logo.png', 1024, 'image/png');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      // Now try clicking the zone
+      const clickSpy = jest.spyOn(input, 'click');
+      fireEvent.click(zone);
+
+      expect(clickSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('URL Cleanup on Unmount', () => {
+    it('revokes object URL when component unmounts', () => {
+      const { unmount } = render(<LogoUpload {...defaultProps} />);
+
+      const file = createMockFile('logo.png', 1024, 'image/png');
+      const input = screen.getByTestId('logo-file-input');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      expect(mockCreateObjectURL).toHaveBeenCalled();
+
+      unmount();
+
+      expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+    });
+
+    it('does not call revokeObjectURL if no file was selected', () => {
+      mockRevokeObjectURL.mockClear();
+      const { unmount } = render(<LogoUpload {...defaultProps} />);
+
+      unmount();
+
+      expect(mockRevokeObjectURL).not.toHaveBeenCalled();
+    });
+
+    it('does not revoke URL for currentLogoUrl on unmount', () => {
+      mockRevokeObjectURL.mockClear();
+      const { unmount } = render(
+        <LogoUpload
+          {...defaultProps}
+          currentLogoUrl="https://example.com/logo.png"
+        />
+      );
+
+      unmount();
+
+      // Should not be called because currentLogoUrl is not a blob URL
+      expect(mockRevokeObjectURL).not.toHaveBeenCalled();
+    });
+  });
 });

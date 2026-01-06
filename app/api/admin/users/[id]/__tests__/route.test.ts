@@ -21,7 +21,7 @@ describe('PATCH /api/admin/users/[id]', () => {
   };
 
   const validUserId = '11111111-1111-1111-1111-111111111111';
-  const adminUserId = 'admin-user-123';
+  const adminUserId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -592,6 +592,269 @@ describe('PATCH /api/admin/users/[id]', () => {
       const response = await PATCH(request, params);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
+    });
+  });
+
+  // ========================================================================
+  // SELF-DEMOTION PREVENTION TESTS
+  // ========================================================================
+
+  describe('Self-Demotion Prevention', () => {
+    it('returns 403 when admin tries to demote themselves to user', async () => {
+      // Admin is trying to update their own user ID
+      const adminId = adminUserId;
+
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: adminId, email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin' },
+          error: null,
+        }),
+      };
+
+      const mockUserQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: adminId,
+            email: 'admin@example.com',
+            full_name: 'Admin User',
+            role: 'admin',
+          },
+          error: null,
+        }),
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        return mockUserQuery;
+      });
+
+      // Admin trying to demote themselves
+      const [request, params] = createRequest({ role: 'user' }, adminId);
+      const response = await PATCH(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Cannot demote yourself from admin role');
+    });
+
+    it('returns 403 when admin tries to demote themselves to agency_owner', async () => {
+      const adminId = adminUserId;
+
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: adminId, email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin' },
+          error: null,
+        }),
+      };
+
+      const mockUserQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: adminId,
+            email: 'admin@example.com',
+            full_name: 'Admin User',
+            role: 'admin',
+          },
+          error: null,
+        }),
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        return mockUserQuery;
+      });
+
+      const [request, params] = createRequest(
+        { role: 'agency_owner' },
+        adminId
+      );
+      const response = await PATCH(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Cannot demote yourself from admin role');
+    });
+
+    it('allows admin to keep their admin role when updating themselves', async () => {
+      const adminId = adminUserId;
+
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: adminId, email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin' },
+          error: null,
+        }),
+      };
+
+      const mockUserQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: adminId,
+            email: 'admin@example.com',
+            full_name: 'Admin User',
+            role: 'admin',
+          },
+          error: null,
+        }),
+      };
+
+      const mockUpdateQuery = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: adminId,
+            email: 'admin@example.com',
+            full_name: 'Admin User',
+            role: 'admin',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: new Date().toISOString(),
+          },
+          error: null,
+        }),
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return mockUpdateQuery;
+      });
+
+      // Admin keeping their admin role is allowed
+      const [request, params] = createRequest({ role: 'admin' }, adminId);
+      const response = await PATCH(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.user.role).toBe('admin');
+    });
+
+    it('allows admin to update their own full_name without role change', async () => {
+      const adminId = adminUserId;
+
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: adminId, email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin' },
+          error: null,
+        }),
+      };
+
+      const mockUserQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: adminId,
+            email: 'admin@example.com',
+            full_name: 'Admin User',
+            role: 'admin',
+          },
+          error: null,
+        }),
+      };
+
+      const mockUpdateQuery = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: adminId,
+            email: 'admin@example.com',
+            full_name: 'Updated Admin Name',
+            role: 'admin',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: new Date().toISOString(),
+          },
+          error: null,
+        }),
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return mockUpdateQuery;
+      });
+
+      // Admin updating their name without changing role is allowed
+      const [request, params] = createRequest(
+        { full_name: 'Updated Admin Name' },
+        adminId
+      );
+      const response = await PATCH(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.user.full_name).toBe('Updated Admin Name');
+    });
+
+    it('allows admin to change another user role to anything', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupUserExists();
+      const mockUpdateQuery = setupSuccessfulUpdate({
+        full_name: 'Test User',
+        role: 'agency_owner',
+      });
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return mockUpdateQuery;
+      });
+
+      // Admin changing another user's role is allowed
+      const [request, params] = createRequest({ role: 'agency_owner' });
+      const response = await PATCH(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.user.role).toBe('agency_owner');
     });
   });
 });

@@ -5,6 +5,20 @@
  * Tests for Admin Agency Logo API Endpoint
  */
 
+// Polyfill File for Node.js environment (not available in node test environment)
+if (typeof File === 'undefined') {
+  global.File = class File extends Blob {
+    name: string;
+    lastModified: number;
+
+    constructor(chunks: BlobPart[], name: string, options?: FilePropertyBag) {
+      super(chunks, options);
+      this.name = name;
+      this.lastModified = options?.lastModified ?? Date.now();
+    }
+  } as unknown as typeof File;
+}
+
 import { NextRequest } from 'next/server';
 
 // Mock Supabase client
