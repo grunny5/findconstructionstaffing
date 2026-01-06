@@ -249,7 +249,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.3.2: Create LogoUpload Component
+### [x] Task 1.3.2: Create LogoUpload Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build a reusable logo upload component with 300x300 preview and validation
