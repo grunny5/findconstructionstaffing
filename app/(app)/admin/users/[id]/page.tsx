@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { roleDisplayName, roleBadgeVariant } from '@/lib/utils/role';
+import { UserEditButton } from '@/components/admin/UserEditButton';
+import { UserDeleteButton } from '@/components/admin/UserDeleteButton';
 import type { Profile } from '@/types/database';
 
 interface UserDetailPageProps {
@@ -80,10 +82,16 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
         </Link>
       </div>
 
-      {/* Page title */}
-      <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600 mb-6">
-        User Details
-      </h1>
+      {/* Page header with title and actions */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600">
+          User Details
+        </h1>
+        <div className="flex gap-2">
+          <UserEditButton user={targetUser} />
+          <UserDeleteButton user={targetUser} currentUserId={user.id} />
+        </div>
+      </div>
 
       {/* User profile card */}
       <Card className="mb-6 border-l-4 border-l-industrial-orange">

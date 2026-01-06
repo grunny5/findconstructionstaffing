@@ -57,7 +57,7 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch agency details
+  // Fetch agency details with trades and regions
   const { data: agency, error: agencyError } = await supabase
     .from('agencies')
     .select(
@@ -80,13 +80,65 @@ export default async function AgencyDetailPage({
       claimed_by,
       created_at,
       updated_at,
-      profile_completion_percentage
+      profile_completion_percentage,
+      trades:agency_trades(
+        trade:trades(
+          id,
+          name,
+          slug
+        )
+      ),
+      regions:agency_regions(
+        region:regions(
+          id,
+          name,
+          slug,
+          state_code
+        )
+      )
     `
     )
     .eq('id', params.id)
     .single();
 
-  if (agencyError || !agency) {
+  // Transform trades and regions from nested structure to flat arrays
+  const agencyWithRelations = agency
+    ? {
+        ...agency,
+        trades: (
+          agency.trades as unknown as Array<{
+            trade: { id: string; name: string; slug: string } | null;
+          }>
+        )
+          ?.map((at) => at.trade)
+          .filter(
+            (t): t is { id: string; name: string; slug: string } => t !== null
+          ),
+        regions: (
+          agency.regions as unknown as Array<{
+            region: {
+              id: string;
+              name: string;
+              slug: string;
+              state_code: string;
+            } | null;
+          }>
+        )
+          ?.map((ar) => ar.region)
+          .filter(
+            (
+              r
+            ): r is {
+              id: string;
+              name: string;
+              slug: string;
+              state_code: string;
+            } => r !== null
+          ),
+      }
+    : null;
+
+  if (agencyError || !agencyWithRelations) {
     notFound();
     return null;
   }
@@ -94,11 +146,11 @@ export default async function AgencyDetailPage({
   // Fetch owner profile if agency is claimed
   let ownerProfile: { email: string | null; full_name: string | null } | null =
     null;
-  if (agency.claimed_by) {
+  if (agencyWithRelations.claimed_by) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('email, full_name')
-      .eq('id', agency.claimed_by)
+      .eq('id', agencyWithRelations.claimed_by)
       .single();
 
     ownerProfile = profile || null;
@@ -123,11 +175,13 @@ export default async function AgencyDetailPage({
         </h1>
         <div className="flex gap-2">
           <AgencyStatusToggle
-            agencyId={agency.id}
-            agencyName={agency.name}
-            currentStatus={agency.is_active ? 'active' : 'inactive'}
+            agencyId={agencyWithRelations.id}
+            agencyName={agencyWithRelations.name}
+            currentStatus={
+              agencyWithRelations.is_active ? 'active' : 'inactive'
+            }
           />
-          <AgencyEditButton agency={agency} />
+          <AgencyEditButton agency={agencyWithRelations} />
         </div>
       </div>
 
@@ -144,7 +198,7 @@ export default async function AgencyDetailPage({
                 Agency Name
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agency.name}
+                {agencyWithRelations.name}
               </p>
             </div>
 
@@ -154,97 +208,97 @@ export default async function AgencyDetailPage({
                 Slug
               </label>
               <p className="mt-1 font-mono text-sm text-industrial-graphite-600">
-                {agency.slug}
+                {agencyWithRelations.slug}
               </p>
             </div>
 
             {/* Email */}
-            {agency.email && (
+            {agencyWithRelations.email && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Email
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.email}
+                  {agencyWithRelations.email}
                 </p>
               </div>
             )}
 
             {/* Phone */}
-            {agency.phone && (
+            {agencyWithRelations.phone && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Phone
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.phone}
+                  {agencyWithRelations.phone}
                 </p>
               </div>
             )}
 
             {/* Website */}
-            {agency.website && (
+            {agencyWithRelations.website && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Website
                 </label>
                 <p className="mt-1 font-body text-base">
                   <a
-                    href={agency.website}
+                    href={agencyWithRelations.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-industrial-orange hover:text-industrial-orange-500 hover:underline"
                   >
-                    {agency.website}
+                    {agencyWithRelations.website}
                   </a>
                 </p>
               </div>
             )}
 
             {/* Headquarters */}
-            {agency.headquarters && (
+            {agencyWithRelations.headquarters && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Headquarters
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.headquarters}
+                  {agencyWithRelations.headquarters}
                 </p>
               </div>
             )}
 
             {/* Founded Year */}
-            {agency.founded_year && (
+            {agencyWithRelations.founded_year && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Founded Year
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.founded_year}
+                  {agencyWithRelations.founded_year}
                 </p>
               </div>
             )}
 
             {/* Employee Count */}
-            {agency.employee_count && (
+            {agencyWithRelations.employee_count && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Employee Count
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.employee_count}
+                  {agencyWithRelations.employee_count}
                 </p>
               </div>
             )}
 
             {/* Company Size */}
-            {agency.company_size && (
+            {agencyWithRelations.company_size && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Company Size
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.company_size}
+                  {agencyWithRelations.company_size}
                 </p>
               </div>
             )}
@@ -255,7 +309,7 @@ export default async function AgencyDetailPage({
                 Offers Per Diem
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agency.offers_per_diem ? 'Yes' : 'No'}
+                {agencyWithRelations.offers_per_diem ? 'Yes' : 'No'}
               </p>
             </div>
 
@@ -265,19 +319,19 @@ export default async function AgencyDetailPage({
                 Union Shop
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agency.is_union ? 'Yes' : 'No'}
+                {agencyWithRelations.is_union ? 'Yes' : 'No'}
               </p>
             </div>
           </div>
 
           {/* Description - full width */}
-          {agency.description && (
+          {agencyWithRelations.description && (
             <div className="pt-2">
               <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Description
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600 whitespace-pre-wrap">
-                {agency.description}
+                {agencyWithRelations.description}
               </p>
             </div>
           )}
@@ -297,8 +351,12 @@ export default async function AgencyDetailPage({
                 Status
               </label>
               <div className="mt-1">
-                <Badge variant={agency.is_active ? 'orange' : 'secondary'}>
-                  {agency.is_active ? 'Active' : 'Inactive'}
+                <Badge
+                  variant={
+                    agencyWithRelations.is_active ? 'orange' : 'secondary'
+                  }
+                >
+                  {agencyWithRelations.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
             </div>
@@ -309,14 +367,18 @@ export default async function AgencyDetailPage({
                 Claimed
               </label>
               <div className="mt-1">
-                <Badge variant={agency.is_claimed ? 'default' : 'outline'}>
-                  {agency.is_claimed ? 'Claimed' : 'Unclaimed'}
+                <Badge
+                  variant={
+                    agencyWithRelations.is_claimed ? 'default' : 'outline'
+                  }
+                >
+                  {agencyWithRelations.is_claimed ? 'Claimed' : 'Unclaimed'}
                 </Badge>
               </div>
             </div>
 
             {/* Owner Profile */}
-            {agency.is_claimed && ownerProfile && (
+            {agencyWithRelations.is_claimed && ownerProfile && (
               <>
                 <div>
                   <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
@@ -338,13 +400,13 @@ export default async function AgencyDetailPage({
             )}
 
             {/* Profile Completion */}
-            {agency.profile_completion_percentage !== null && (
+            {agencyWithRelations.profile_completion_percentage !== null && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Profile Completion
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agency.profile_completion_percentage}%
+                  {agencyWithRelations.profile_completion_percentage}%
                 </p>
               </div>
             )}
@@ -370,7 +432,7 @@ export default async function AgencyDetailPage({
             </div>
 
             {/* Updated At */}
-            {agency.updated_at && (
+            {agencyWithRelations.updated_at && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Last Updated

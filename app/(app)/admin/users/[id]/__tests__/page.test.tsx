@@ -19,6 +19,16 @@ jest.mock('@/components/admin/RoleHistoryTimeline', () => ({
   ),
 }));
 
+jest.mock('@/components/admin/UserEditButton', () => ({
+  UserEditButton: () => <button data-testid="edit-user-button">Edit</button>,
+}));
+
+jest.mock('@/components/admin/UserDeleteButton', () => ({
+  UserDeleteButton: () => (
+    <button data-testid="delete-user-button">Delete</button>
+  ),
+}));
+
 describe('UserDetailPage', () => {
   const mockCreateClient = createClient as jest.MockedFunction<
     typeof createClient

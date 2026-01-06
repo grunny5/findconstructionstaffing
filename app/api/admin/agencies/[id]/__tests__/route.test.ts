@@ -708,6 +708,1204 @@ describe('PATCH /api/admin/agencies/[id]', () => {
   });
 
   // ========================================================================
+  // TRADE UPDATE TESTS
+  // ========================================================================
+
+  describe('Trade Updates', () => {
+    const mockTrades = [
+      {
+        id: 'a0000000-0000-0000-0000-000000000001',
+        name: 'Electrician',
+        slug: 'electrician',
+      },
+      {
+        id: 'b0000000-0000-0000-0000-000000000002',
+        name: 'Plumber',
+        slug: 'plumber',
+      },
+      {
+        id: 'c0000000-0000-0000-0000-000000000003',
+        name: 'Carpenter',
+        slug: 'carpenter',
+      },
+    ];
+
+    it('accepts trade_ids array in request body', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  // For validation query (no order)
+                  data: [mockTrades[0], mockTrades[1]],
+                  error: null,
+                  // For fetch query (with order)
+                  order: jest.fn().mockResolvedValue({
+                    data: [mockTrades[0], mockTrades[1]],
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: [mockTrades[0].id, mockTrades[1].id],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.agency.trades).toBeDefined();
+    });
+
+    it('returns 400 for invalid trade IDs (non-UUID format)', async () => {
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: ['not-a-uuid'],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('returns 400 for trade IDs that do not exist in database', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            }
+          } else if (table === 'trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockResolvedValue({
+                  data: [{ id: 'trade-1', name: 'Electrician' }], // Only 1 found
+                  error: null,
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: [
+          'a0000000-0000-0000-0000-000000000001',
+          'b0000000-0000-0000-0000-000000000002',
+        ],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe('Invalid trade IDs provided');
+      expect(data.error.details.invalid_trade_ids).toBeDefined();
+    });
+
+    it('clears all trades when empty array is provided', async () => {
+      let agencySelectCalled = false;
+      let deleteCalledWithAgencyId = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+            };
+          } else if (table === 'agency_trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [{ trade_id: 'trade-1' }, { trade_id: 'trade-2' }],
+                  error: null,
+                }),
+              }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn((field, value) => {
+                  if (field === 'agency_id') {
+                    deleteCalledWithAgencyId = true;
+                  }
+                  return {
+                    in: jest.fn().mockResolvedValue({ error: null }),
+                  };
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: [],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.agency.trades).toEqual([]);
+      expect(deleteCalledWithAgencyId).toBe(true);
+    });
+
+    it('updates trades only without requiring other fields', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              // This is for the timestamp update when only trades changed
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: [mockTrades[0]],
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: [mockTrades[0]],
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: [mockTrades[0].id],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.message).toBe('Agency updated successfully');
+    });
+
+    it('creates audit trail entry when trades are updated', async () => {
+      let agencySelectCalled = false;
+      let auditInsertCalled = false;
+      let auditData: any = null;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: [mockTrades[0]],
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: [mockTrades[0]],
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [
+                    {
+                      trade_id: 'old-trade',
+                      trades: { id: 'old-trade', name: 'Old Trade' },
+                    },
+                  ],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn((data: any) => {
+                auditInsertCalled = true;
+                auditData = data;
+                return Promise.resolve({ error: null });
+              }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: [mockTrades[0].id],
+      });
+      await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+
+      expect(auditInsertCalled).toBe(true);
+      expect(auditData.field_name).toBe('trades');
+      expect(auditData.edited_by).toBe(mockAdminUser.id);
+      expect(auditData.agency_id).toBe('agency-456');
+    });
+
+    it('returns trades in response when trade_ids provided', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: [mockTrades[0], mockTrades[1]],
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: [mockTrades[0], mockTrades[1]],
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_trades') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        trade_ids: [mockTrades[0].id, mockTrades[1].id],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.agency.trades).toHaveLength(2);
+      expect(data.agency.trades[0].name).toBe('Electrician');
+      expect(data.agency.trades[1].name).toBe('Plumber');
+    });
+  });
+
+  // ========================================================================
+  // REGION UPDATE TESTS
+  // ========================================================================
+
+  describe('Region Updates', () => {
+    const mockRegions = [
+      {
+        id: 'a0000000-0000-0000-0000-000000000011',
+        name: 'Texas',
+        slug: 'texas',
+        state_code: 'TX',
+      },
+      {
+        id: 'b0000000-0000-0000-0000-000000000012',
+        name: 'California',
+        slug: 'california',
+        state_code: 'CA',
+      },
+    ];
+
+    it('accepts region_ids array in request body', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: mockRegions,
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: mockRegions,
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: [mockRegions[0].id, mockRegions[1].id],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.agency.regions).toBeDefined();
+    });
+
+    it('returns 400 for invalid region IDs (non-UUID format)', async () => {
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: ['not-a-uuid'],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+    });
+
+    it('returns 400 for region IDs that do not exist in database', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            }
+          } else if (table === 'regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockResolvedValue({
+                  data: [{ id: 'region-1', name: 'Texas' }], // Only 1 found
+                  error: null,
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: [
+          'a0000000-0000-0000-0000-000000000001',
+          'b0000000-0000-0000-0000-000000000002',
+        ],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe('Invalid region IDs provided');
+      expect(data.error.details.invalid_region_ids).toBeDefined();
+    });
+
+    it('clears all regions when empty array is provided', async () => {
+      let agencySelectCalled = false;
+      let deleteCalledWithAgencyId = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+            };
+          } else if (table === 'agency_regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [{ region_id: 'region-1' }, { region_id: 'region-2' }],
+                  error: null,
+                }),
+              }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn((field) => {
+                  if (field === 'agency_id') {
+                    deleteCalledWithAgencyId = true;
+                  }
+                  return {
+                    in: jest.fn().mockResolvedValue({ error: null }),
+                  };
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: [],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.agency.regions).toEqual([]);
+      expect(deleteCalledWithAgencyId).toBe(true);
+    });
+
+    it('updates regions only without requiring other fields', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: [mockRegions[0]],
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: [mockRegions[0]],
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: [mockRegions[0].id],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.message).toBe('Agency updated successfully');
+    });
+
+    it('creates audit trail entry when regions are updated', async () => {
+      let agencySelectCalled = false;
+      let auditInsertCalled = false;
+      let auditData: any = null;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: [mockRegions[0]],
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: [mockRegions[0]],
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [
+                    {
+                      region_id: 'old-region',
+                      regions: { id: 'old-region', name: 'Old Region' },
+                    },
+                  ],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn((data: any) => {
+                auditInsertCalled = true;
+                auditData = data;
+                return Promise.resolve({ error: null });
+              }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: [mockRegions[0].id],
+      });
+      await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+
+      expect(auditInsertCalled).toBe(true);
+      expect(auditData.field_name).toBe('regions');
+      expect(auditData.edited_by).toBe(mockAdminUser.id);
+      expect(auditData.agency_id).toBe('agency-456');
+    });
+
+    it('returns regions in response when region_ids provided', async () => {
+      let agencySelectCalled = false;
+
+      mockCreateClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: mockAdminUser },
+            error: null,
+          }),
+        },
+        from: jest.fn((table: string) => {
+          if (table === 'profiles') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  single: jest.fn().mockResolvedValue({
+                    data: { role: 'admin' },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          } else if (table === 'agencies') {
+            if (!agencySelectCalled) {
+              agencySelectCalled = true;
+              return {
+                select: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockReturnValue({
+                    single: jest.fn().mockResolvedValue({
+                      data: mockAgency,
+                      error: null,
+                    }),
+                  }),
+                }),
+              };
+            } else {
+              return {
+                update: jest.fn().mockReturnValue({
+                  eq: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              };
+            }
+          } else if (table === 'regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                in: jest.fn().mockImplementation(() => ({
+                  data: mockRegions,
+                  error: null,
+                  order: jest.fn().mockResolvedValue({
+                    data: mockRegions,
+                    error: null,
+                  }),
+                })),
+              }),
+            };
+          } else if (table === 'agency_regions') {
+            return {
+              select: jest.fn().mockReturnValue({
+                eq: jest.fn().mockResolvedValue({
+                  data: [],
+                  error: null,
+                }),
+              }),
+              upsert: jest.fn().mockResolvedValue({ error: null }),
+              delete: jest.fn().mockReturnValue({
+                eq: jest.fn().mockReturnValue({
+                  in: jest.fn().mockResolvedValue({ error: null }),
+                }),
+              }),
+            };
+          } else if (table === 'agency_profile_edits') {
+            return {
+              insert: jest.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as any);
+
+      const request = createMockRequest({
+        region_ids: [mockRegions[0].id, mockRegions[1].id],
+      });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: 'agency-456' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.agency.regions).toHaveLength(2);
+      expect(data.agency.regions[0].name).toBe('Texas');
+      expect(data.agency.regions[1].name).toBe('California');
+    });
+  });
+
+  // ========================================================================
   // ERROR HANDLING TESTS
   // ========================================================================
 

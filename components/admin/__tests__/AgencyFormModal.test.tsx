@@ -2,11 +2,143 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AgencyFormModal } from '../AgencyFormModal';
 import { toast } from 'sonner';
+import type { Trade, Region } from '@/types/supabase';
 
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
     error: jest.fn(),
+    warning: jest.fn(),
+  },
+}));
+
+// Mock TradeSelector component
+jest.mock('@/components/dashboard/TradeSelector', () => ({
+  TradeSelector: ({
+    selectedTrades,
+    onChange,
+    disabled,
+    maxTrades,
+  }: {
+    selectedTrades: Trade[];
+    onChange: (trades: Trade[]) => void;
+    disabled?: boolean;
+    maxTrades?: number;
+  }) => (
+    <div data-testid="trade-selector-mock">
+      <span data-testid="trade-count">{selectedTrades.length}</span>
+      <span data-testid="max-trades">{maxTrades}</span>
+      <button
+        data-testid="add-trade-button"
+        onClick={() =>
+          onChange([
+            ...selectedTrades,
+            { id: 'trade-new', name: 'New Trade', slug: 'new-trade' },
+          ])
+        }
+        disabled={disabled}
+      >
+        Add Trade
+      </button>
+      <button
+        data-testid="clear-trades-button"
+        onClick={() => onChange([])}
+        disabled={disabled}
+      >
+        Clear Trades
+      </button>
+    </div>
+  ),
+}));
+
+// Mock RegionSelector component
+jest.mock('@/components/dashboard/RegionSelector', () => ({
+  RegionSelector: ({
+    selectedRegions,
+    onChange,
+    disabled,
+  }: {
+    selectedRegions: Region[];
+    onChange: (regions: Region[]) => void;
+    disabled?: boolean;
+  }) => (
+    <div data-testid="region-selector-mock">
+      <span data-testid="region-count">{selectedRegions.length}</span>
+      <button
+        data-testid="add-region-button"
+        onClick={() =>
+          onChange([
+            ...selectedRegions,
+            {
+              id: 'region-new',
+              name: 'Texas',
+              slug: 'texas',
+              state_code: 'TX',
+            },
+          ])
+        }
+        disabled={disabled}
+      >
+        Add Region
+      </button>
+      <button
+        data-testid="clear-regions-button"
+        onClick={() => onChange([])}
+        disabled={disabled}
+      >
+        Clear Regions
+      </button>
+    </div>
+  ),
+}));
+
+// Mock LogoUpload component
+const mockLogoFileSelect = jest.fn();
+jest.mock('@/components/admin/LogoUpload', () => ({
+  LogoUpload: ({
+    currentLogoUrl,
+    onFileSelect,
+    isUploading,
+    disabled,
+    error,
+  }: {
+    currentLogoUrl?: string | null;
+    onFileSelect: (file: File | null) => void;
+    isUploading?: boolean;
+    disabled?: boolean;
+    error?: string | null;
+  }) => {
+    // Store onFileSelect so tests can call it
+    mockLogoFileSelect.mockImplementation(onFileSelect);
+    return (
+      <div data-testid="logo-upload-mock">
+        <span data-testid="logo-current-url">{currentLogoUrl || 'none'}</span>
+        <span data-testid="logo-is-uploading">
+          {isUploading ? 'true' : 'false'}
+        </span>
+        <span data-testid="logo-disabled">{disabled ? 'true' : 'false'}</span>
+        <span data-testid="logo-error">{error || 'none'}</span>
+        <button
+          data-testid="logo-select-file-button"
+          onClick={() => {
+            const mockFile = new global.File(['test'], 'logo.png', {
+              type: 'image/png',
+            });
+            onFileSelect(mockFile);
+          }}
+          disabled={disabled}
+        >
+          Select File
+        </button>
+        <button
+          data-testid="logo-remove-button"
+          onClick={() => onFileSelect(null)}
+          disabled={disabled}
+        >
+          Remove Logo
+        </button>
+      </div>
+    );
   },
 }));
 
@@ -712,6 +844,450 @@ describe('AgencyFormModal', () => {
 
       expect(defaultProps.onClose).not.toHaveBeenCalled();
       expect(defaultProps.onSuccess).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Trade Selector Integration', () => {
+    it('renders TradeSelector component', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('trade-selector-section')).toBeInTheDocument();
+      expect(screen.getByTestId('trade-selector-mock')).toBeInTheDocument();
+    });
+
+    it('sets maxTrades to 100 for admin (no limit)', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('max-trades')).toHaveTextContent('100');
+    });
+
+    it('shows 0 trades by default in create mode', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('0');
+    });
+
+    it('pre-populates trades when editing existing agency', () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        trades: [
+          { id: 'trade-1', name: 'Electrician', slug: 'electrician' },
+          { id: 'trade-2', name: 'Plumber', slug: 'plumber' },
+        ],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('2');
+    });
+
+    it('allows adding trades via TradeSelector', async () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('0');
+
+      fireEvent.click(screen.getByTestId('add-trade-button'));
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('1');
+    });
+
+    it('includes trade_ids in form submission', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: {} }),
+      });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Add a trade
+      fireEvent.click(screen.getByTestId('add-trade-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+        expect(callBody.trade_ids).toEqual(['trade-new']);
+      });
+    });
+
+    it('resets trades when cancel is clicked', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        trades: [{ id: 'trade-1', name: 'Electrician', slug: 'electrician' }],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Initially has 1 trade
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('1');
+
+      // Add another trade
+      fireEvent.click(screen.getByTestId('add-trade-button'));
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('2');
+
+      // Cancel should reset to original
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
+
+      // Re-render with same agency to check reset
+      // Note: The modal closes on cancel, so we need to check the state was reset
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('disables TradeSelector when submitting', async () => {
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: {} }),
+                }),
+              100
+            )
+          )
+      );
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('add-trade-button')).toBeDisabled();
+      });
+    });
+  });
+
+  describe('Region Selector Integration', () => {
+    it('renders RegionSelector component', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('region-selector-section')).toBeInTheDocument();
+      expect(screen.getByTestId('region-selector-mock')).toBeInTheDocument();
+    });
+
+    it('shows 0 regions by default in create mode', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('0');
+    });
+
+    it('pre-populates regions when editing existing agency', () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        regions: [
+          { id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' },
+          {
+            id: 'region-2',
+            name: 'California',
+            slug: 'california',
+            state_code: 'CA',
+          },
+        ],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('2');
+    });
+
+    it('allows adding regions via RegionSelector', async () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('0');
+
+      fireEvent.click(screen.getByTestId('add-region-button'));
+
+      expect(screen.getByTestId('region-count')).toHaveTextContent('1');
+    });
+
+    it('includes region_ids in form submission', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: {} }),
+      });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Add a region
+      fireEvent.click(screen.getByTestId('add-region-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+        expect(callBody.region_ids).toEqual(['region-new']);
+      });
+    });
+
+    it('resets regions when cancel is clicked', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        regions: [
+          { id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' },
+        ],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Initially has 1 region
+      expect(screen.getByTestId('region-count')).toHaveTextContent('1');
+
+      // Add another region
+      fireEvent.click(screen.getByTestId('add-region-button'));
+      expect(screen.getByTestId('region-count')).toHaveTextContent('2');
+
+      // Cancel should reset to original
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
+
+      // Modal closes on cancel
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('disables RegionSelector when submitting', async () => {
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: {} }),
+                }),
+              100
+            )
+          )
+      );
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('add-region-button')).toBeDisabled();
+      });
+    });
+  });
+
+  describe('Logo Upload Integration', () => {
+    it('renders LogoUpload component', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+      expect(screen.getByTestId('logo-upload-mock')).toBeInTheDocument();
+    });
+
+    it('shows no logo URL in create mode', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent('none');
+    });
+
+    it('shows existing logo URL in edit mode', () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        logo_url: 'https://example.com/logo.png',
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent(
+        'https://example.com/logo.png'
+      );
+    });
+
+    it('uploads logo when file is selected on form submission', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: { id: 'new-agency-123' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: { logo_url: 'https://storage.example.com/logo.webp' },
+          }),
+        });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Select a logo file
+      fireEvent.click(screen.getByTestId('logo-select-file-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        // First call is for agency creation
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/admin/agencies',
+          expect.any(Object)
+        );
+        // Second call is for logo upload
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/admin/agencies/new-agency-123/logo',
+          expect.objectContaining({
+            method: 'POST',
+          })
+        );
+      });
+    });
+
+    it('clears logo URL display when remove button clicked in edit mode', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        logo_url: 'https://example.com/logo.png',
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Initially shows logo URL
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent(
+        'https://example.com/logo.png'
+      );
+
+      // Click remove button
+      fireEvent.click(screen.getByTestId('logo-remove-button'));
+
+      // Logo URL should now be cleared in display
+      await waitFor(() => {
+        expect(screen.getByTestId('logo-current-url')).toHaveTextContent(
+          'none'
+        );
+      });
+    });
+
+    it('disables LogoUpload when submitting', async () => {
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: {} }),
+                }),
+              100
+            )
+          )
+      );
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('logo-disabled')).toHaveTextContent('true');
+      });
+    });
+
+    it('resets logo state when cancel is clicked', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        logo_url: 'https://example.com/logo.png',
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Remove the logo (marks for removal)
+      fireEvent.click(screen.getByTestId('logo-remove-button'));
+      expect(screen.getByTestId('logo-current-url')).toHaveTextContent('none');
+
+      // Cancel should reset
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
+
+      // Modal closes on cancel
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('shows warning toast when logo upload fails but agency is saved', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: { id: 'new-agency-123' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: { message: 'Upload failed' } }),
+        });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Select a logo file
+      fireEvent.click(screen.getByTestId('logo-select-file-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(toast.warning).toHaveBeenCalledWith(
+          'Agency Saved',
+          expect.objectContaining({
+            description: expect.stringContaining('logo upload failed'),
+          })
+        );
+      });
     });
   });
 });

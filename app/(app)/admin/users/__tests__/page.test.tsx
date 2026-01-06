@@ -20,6 +20,10 @@ jest.mock('@/components/admin/UsersTable', () => ({
   ),
 }));
 
+jest.mock('@/components/admin/AdminUsersActions', () => ({
+  AdminUsersActions: () => <div data-testid="admin-users-actions">Actions</div>,
+}));
+
 const mockUsers: Profile[] = [
   {
     id: '1',
@@ -187,11 +191,12 @@ describe('AdminUsersPage', () => {
     (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
     const result = await AdminUsersPage();
-    const { container } = render(result as React.ReactElement);
+    render(result as React.ReactElement);
 
     expect(screen.getByText('User Management')).toBeInTheDocument();
     expect(screen.getByTestId('users-table')).toBeInTheDocument();
     expect(screen.getByText('Users count: 2')).toBeInTheDocument();
+    expect(screen.getByTestId('admin-users-actions')).toBeInTheDocument();
   });
 
   it('handles empty users array', async () => {
