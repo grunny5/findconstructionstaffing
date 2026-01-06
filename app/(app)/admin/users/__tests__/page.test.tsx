@@ -20,6 +20,10 @@ jest.mock('@/components/admin/UsersTable', () => ({
   ),
 }));
 
+jest.mock('@/components/admin/AdminUsersActions', () => ({
+  AdminUsersActions: () => <div data-testid="admin-users-actions">Actions</div>,
+}));
+
 const mockUsers: Profile[] = [
   {
     id: '1',
