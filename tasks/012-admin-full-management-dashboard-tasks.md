@@ -406,7 +406,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 2.1: Admin Creates New User Account
+### [x] ➡️ Story 2.1: Admin Creates New User Account
 
 > As a **Site Administrator**, I want **to create new user accounts directly from the admin dashboard**, so that **I can onboard users manually when needed (e.g., for agency owners who need assistance)**.
 
@@ -414,7 +414,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.1.1: Create User Creation API Endpoint
+### [x] Task 2.1.1: Create User Creation API Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to create new users via Supabase Auth Admin API
@@ -430,26 +430,26 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Create auth user then profile in transaction
   - Generate temporary password or use invite flow
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/users` creates new user
-  - [ ] Accepts: email (required), full_name, role (default: user)
-  - [ ] Creates auth.users record via Admin API
-  - [ ] Creates profiles record with specified role
-  - [ ] Sends password reset email automatically
-  - [ ] Returns 409 if email already exists
-  - [ ] Returns 401/403 for unauthorized users
-  - [ ] Returns 400 for validation errors
+  - [x] `POST /api/admin/users` creates new user
+  - [x] Accepts: email (required), full_name, role (default: user)
+  - [x] Creates auth.users record via Admin API
+  - [x] Creates profiles record with specified role
+  - [x] Sends password reset email automatically
+  - [x] Returns 409 if email already exists
+  - [x] Returns 401/403 for unauthorized users
+  - [x] Returns 400 for validation errors
 - **Definition of Done:**
-  - [ ] Endpoint creates users correctly
-  - [ ] Unit tests cover all scenarios
-  - [ ] Integration test verifies email sent
-  - [ ] 85%+ test coverage
-  - [ ] **Final Check:** Follows existing admin API patterns
+  - [x] Endpoint creates users correctly
+  - [x] Unit tests cover all scenarios
+  - [x] Integration test verifies email sent
+  - [x] 85%+ test coverage
+  - [x] **Final Check:** Follows existing admin API patterns
 
 **Estimated Effort:** 4 hours
 
 ---
 
-### [ ] Task 2.1.2: Create UserFormModal Component
+### [x] Task 2.1.2: Create UserFormModal Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build modal form for creating new users
@@ -465,24 +465,24 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - React Hook Form with Zod validation
   - Role dropdown (user, agency_owner, admin)
 - **Acceptance Criteria (for this task):**
-  - [ ] Modal with fields: email (required), full_name, role
-  - [ ] Email validation (format)
-  - [ ] Role dropdown with all three options
-  - [ ] Submit button calls POST /api/admin/users
-  - [ ] Success toast and modal close on success
-  - [ ] Error display for duplicate email
-  - [ ] Cancel button closes without action
+  - [x] Modal with fields: email (required), full_name, role
+  - [x] Email validation (format)
+  - [x] Role dropdown with all three options
+  - [x] Submit button calls POST /api/admin/users
+  - [x] Success toast and modal close on success
+  - [x] Error display for duplicate email
+  - [x] Cancel button closes without action
 - **Definition of Done:**
-  - [ ] Modal component complete
-  - [ ] Tests verify form validation
-  - [ ] Tests verify API integration
-  - [ ] **Final Check:** Follows existing modal patterns
+  - [x] Modal component complete
+  - [x] Tests verify form validation
+  - [x] Tests verify API integration
+  - [x] **Final Check:** Follows existing modal patterns
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] Task 2.1.3: Add Create User Button to Admin Users Page
+### [x] Task 2.1.3: Add Create User Button to Admin Users Page
 
 - **Role:** Frontend Developer
 - **Objective:** Add "Create User" button that opens UserFormModal
@@ -498,14 +498,14 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Client component for modal state
   - Refresh list after successful creation
 - **Acceptance Criteria (for this task):**
-  - [ ] "Create User" button visible on admin users page
-  - [ ] Button click opens UserFormModal
-  - [ ] User list refreshes after successful creation
-  - [ ] New user appears in list
+  - [x] "Create User" button visible on admin users page
+  - [x] Button click opens UserFormModal
+  - [x] User list refreshes after successful creation
+  - [x] New user appears in list
 - **Definition of Done:**
-  - [ ] Button and integration complete
-  - [ ] Tests verify button renders and opens modal
-  - [ ] **Final Check:** Consistent with AdminAgenciesActions pattern
+  - [x] Button and integration complete
+  - [x] Tests verify button renders and opens modal
+  - [x] **Final Check:** Consistent with AdminAgenciesActions pattern
 
 **Estimated Effort:** 2 hours
 
