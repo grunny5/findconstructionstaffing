@@ -79,22 +79,33 @@ export function UsersTable({
     [router]
   );
 
-  // Track if this is the initial mount to avoid resetting page on first render
+  // Track previous filter values to detect filter changes vs page changes
+  const prevFiltersRef = useRef({ search: debouncedSearch, role: roleFilter });
   const isInitialMount = useRef(true);
 
-  // Update URL when debounced search changes
+  // Single effect to handle URL updates
   useEffect(() => {
-    updateURL(debouncedSearch, roleFilter, currentPage);
-  }, [debouncedSearch, roleFilter, currentPage, updateURL]);
-
-  // Reset to page 1 when filters change (but not on initial mount)
-  useEffect(() => {
+    // Skip URL push on initial mount
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      prevFiltersRef.current = { search: debouncedSearch, role: roleFilter };
       return;
     }
-    setCurrentPage(1);
-  }, [debouncedSearch, roleFilter]);
+
+    const filtersChanged =
+      prevFiltersRef.current.search !== debouncedSearch ||
+      prevFiltersRef.current.role !== roleFilter;
+
+    if (filtersChanged) {
+      // Filters changed: reset to page 1 and update URL
+      prevFiltersRef.current = { search: debouncedSearch, role: roleFilter };
+      setCurrentPage(1);
+      updateURL(debouncedSearch, roleFilter, 1);
+    } else {
+      // Only page changed: update URL with current page
+      updateURL(debouncedSearch, roleFilter, currentPage);
+    }
+  }, [debouncedSearch, roleFilter, currentPage, updateURL]);
 
   // Filter users based on current filters
   const filteredUsers = users.filter((user) => {
