@@ -1,18 +1,21 @@
 /**
- * Tests for Admin User Update API Endpoint
+ * Tests for Admin User Management API Endpoint
  *
  * @jest-environment node
  */
 
 import { NextRequest } from 'next/server';
-import { PATCH } from '../route';
+import { PATCH, DELETE } from '../route';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 
 // Mock Supabase client
 jest.mock('@/lib/supabase/server');
+jest.mock('@supabase/supabase-js');
 
 const mockedCreateClient = jest.mocked(createClient);
+const mockedCreateAdminClient = jest.mocked(createAdminClient);
 
 describe('PATCH /api/admin/users/[id]', () => {
   let mockSupabaseClient: {
@@ -855,6 +858,595 @@ describe('PATCH /api/admin/users/[id]', () => {
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(data.user.role).toBe('agency_owner');
+    });
+  });
+});
+
+// =============================================================================
+// DELETE /api/admin/users/[id] TESTS
+// =============================================================================
+
+describe('DELETE /api/admin/users/[id]', () => {
+  let mockSupabaseClient: {
+    auth: { getUser: jest.Mock };
+    from: jest.Mock;
+  };
+
+  let mockAdminClient: {
+    auth: { admin: { deleteUser: jest.Mock } };
+  };
+
+  const validUserId = '11111111-1111-1111-1111-111111111111';
+  const adminUserId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
+  // Store original env
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Setup environment variables
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
+    };
+
+    // Setup default Supabase client mock
+    mockSupabaseClient = {
+      auth: {
+        getUser: jest.fn(),
+      },
+      from: jest.fn(),
+    };
+
+    mockedCreateClient.mockResolvedValue(
+      mockSupabaseClient as unknown as ReturnType<typeof createClient>
+    );
+
+    // Setup admin client mock
+    mockAdminClient = {
+      auth: {
+        admin: {
+          deleteUser: jest.fn(),
+        },
+      },
+    };
+
+    mockedCreateAdminClient.mockReturnValue(mockAdminClient as any);
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  // Helper to create DELETE request with params
+  const createDeleteRequest = (
+    userId: string = validUserId
+  ): [NextRequest, { params: Promise<{ id: string }> }] => {
+    const request = new NextRequest(
+      'http://localhost/api/admin/users/' + userId,
+      { method: 'DELETE' }
+    );
+    return [request, { params: Promise.resolve({ id: userId }) }];
+  };
+
+  // Helper to setup authenticated admin
+  const setupAdminAuth = () => {
+    mockSupabaseClient.auth.getUser.mockResolvedValue({
+      data: { user: { id: adminUserId, email: 'admin@example.com' } },
+      error: null,
+    });
+
+    return {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { role: 'admin' },
+        error: null,
+      }),
+    };
+  };
+
+  // Helper to setup target user exists
+  const setupTargetUserExists = (
+    userData = {
+      id: validUserId,
+      email: 'user@example.com',
+      full_name: 'Test User',
+      role: 'user',
+    }
+  ) => {
+    return {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: userData,
+        error: null,
+      }),
+    };
+  };
+
+  // Helper to setup no claimed agencies
+  const setupNoClaimedAgencies = () => {
+    return {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    };
+  };
+
+  // ========================================================================
+  // AUTHENTICATION TESTS
+  // ========================================================================
+
+  describe('Authentication', () => {
+    it('returns 401 when user is not authenticated', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Not authenticated'),
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(data.error.message).toBe('Authentication required');
+    });
+
+    it('returns 401 when auth returns null user', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+    });
+  });
+
+  // ========================================================================
+  // AUTHORIZATION TESTS
+  // ========================================================================
+
+  describe('Authorization', () => {
+    it('returns 403 when user is not an admin', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'user' },
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockProfileQuery);
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Admin access required');
+    });
+
+    it('returns 403 when user is agency_owner', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'owner-123' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'agency_owner' },
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockProfileQuery);
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+    });
+  });
+
+  // ========================================================================
+  // VALIDATION TESTS
+  // ========================================================================
+
+  describe('Validation', () => {
+    it('returns 400 for invalid UUID format', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      mockSupabaseClient.from.mockReturnValue(mockProfileQuery);
+
+      const [request, params] = createDeleteRequest('invalid-uuid');
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe('Invalid user ID format');
+    });
+  });
+
+  // ========================================================================
+  // SELF-DELETION PREVENTION TESTS
+  // ========================================================================
+
+  describe('Self-Deletion Prevention', () => {
+    it('returns 403 when admin tries to delete themselves', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: adminUserId, email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const mockProfileQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin' },
+          error: null,
+        }),
+      };
+      mockSupabaseClient.from.mockReturnValue(mockProfileQuery);
+
+      // Admin trying to delete their own account
+      const [request, params] = createDeleteRequest(adminUserId);
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Cannot delete your own account');
+    });
+  });
+
+  // ========================================================================
+  // NOT FOUND TESTS
+  // ========================================================================
+
+  describe('Not Found', () => {
+    it('returns 404 when target user does not exist', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { code: 'PGRST116', message: 'No rows returned' },
+        }),
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        return mockUserQuery;
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(data.error.code).toBe(ERROR_CODES.NOT_FOUND);
+      expect(data.error.message).toBe('User not found');
+    });
+  });
+
+  // ========================================================================
+  // CLAIMED AGENCY CONFLICT TESTS
+  // ========================================================================
+
+  describe('Claimed Agency Conflict', () => {
+    it('returns 409 when user owns a claimed agency', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists();
+
+      // Create a mock that returns a thenable for the agencies query
+      const createAgencyMock = (agencies: unknown[]) => {
+        const mockEq = jest.fn().mockReturnValue(
+          Promise.resolve({
+            data: agencies,
+            error: null,
+          })
+        );
+        return {
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              eq: mockEq,
+            }),
+          }),
+        };
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([
+          { id: 'agency-1', name: 'Test Agency', slug: 'test-agency' },
+        ]);
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CONFLICT);
+      expect(data.error.code).toBe(ERROR_CODES.CONFLICT);
+      expect(data.error.message).toContain('claimed agency');
+      expect(data.error.details.claimed_agencies).toHaveLength(1);
+      expect(data.error.details.claimed_agencies[0].name).toBe('Test Agency');
+    });
+
+    it('returns 409 when user owns multiple claimed agencies', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists();
+
+      const createAgencyMock = (agencies: unknown[]) => {
+        const mockEq = jest.fn().mockReturnValue(
+          Promise.resolve({
+            data: agencies,
+            error: null,
+          })
+        );
+        return {
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              eq: mockEq,
+            }),
+          }),
+        };
+      };
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([
+          { id: 'agency-1', name: 'Agency One', slug: 'agency-one' },
+          { id: 'agency-2', name: 'Agency Two', slug: 'agency-two' },
+        ]);
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.CONFLICT);
+      expect(data.error.details.claimed_agencies).toHaveLength(2);
+    });
+  });
+
+  // ========================================================================
+  // SUCCESSFUL DELETION TESTS
+  // ========================================================================
+
+  describe('Successful Deletion', () => {
+    // Helper to create agency query mock
+    const createAgencyMock = (agencies: unknown[], error: unknown = null) => {
+      const mockEq = jest.fn().mockReturnValue(
+        Promise.resolve({
+          data: agencies,
+          error: error,
+        })
+      );
+      return {
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            eq: mockEq,
+          }),
+        }),
+      };
+    };
+
+    it('deletes user successfully when no claimed agencies', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists({
+        id: validUserId,
+        email: 'user@example.com',
+        full_name: 'Test User',
+        role: 'user',
+      });
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([]); // No claimed agencies
+      });
+
+      // Admin client delete succeeds
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.message).toBe('User deleted successfully');
+      expect(data.deleted_user.id).toBe(validUserId);
+      expect(data.deleted_user.email).toBe('user@example.com');
+      expect(data.deleted_user.full_name).toBe('Test User');
+    });
+
+    it('calls admin deleteUser with correct user ID', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists();
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([]);
+      });
+
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      const [request, params] = createDeleteRequest();
+      await DELETE(request, params);
+
+      expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(
+        validUserId
+      );
+    });
+
+    it('deletes agency_owner user without claimed agencies', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists({
+        id: validUserId,
+        email: 'owner@example.com',
+        full_name: 'Agency Owner',
+        role: 'agency_owner',
+      });
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([]); // No claimed agencies
+      });
+
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.deleted_user.role).toBeUndefined(); // role not in response
+    });
+  });
+
+  // ========================================================================
+  // ERROR HANDLING TESTS
+  // ========================================================================
+
+  describe('Error Handling', () => {
+    // Helper to create agency query mock
+    const createAgencyMock = (
+      agencies: unknown[] | null,
+      error: unknown = null
+    ) => {
+      const mockEq = jest.fn().mockReturnValue(
+        Promise.resolve({
+          data: agencies,
+          error: error,
+        })
+      );
+      return {
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            eq: mockEq,
+          }),
+        }),
+      };
+    };
+
+    it('returns 500 when admin deleteUser fails', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists();
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([]);
+      });
+
+      // Admin client delete fails
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValue({
+        data: null,
+        error: new Error('Failed to delete user'),
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.INTERNAL_ERROR);
+      expect(data.error.message).toBe('Failed to delete user');
+    });
+
+    it('returns 500 when service role key is missing', async () => {
+      // Remove service role key
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists();
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock([]);
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.INTERNAL_ERROR);
+      expect(data.error.message).toBe('Server configuration error');
+    });
+
+    it('returns 500 when agency check fails', async () => {
+      const mockProfileQuery = setupAdminAuth();
+      const mockUserQuery = setupTargetUserExists();
+
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return mockProfileQuery;
+        if (callCount === 2) return mockUserQuery;
+        return createAgencyMock(null, new Error('Database error'));
+      });
+
+      const [request, params] = createDeleteRequest();
+      const response = await DELETE(request, params);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(data.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+      expect(data.error.message).toBe('Failed to check agency ownership');
     });
   });
 });

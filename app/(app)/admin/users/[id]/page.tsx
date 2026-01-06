@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { roleDisplayName, roleBadgeVariant } from '@/lib/utils/role';
 import { UserEditButton } from '@/components/admin/UserEditButton';
+import { UserDeleteButton } from '@/components/admin/UserDeleteButton';
 import type { Profile } from '@/types/database';
 
 interface UserDetailPageProps {
@@ -88,6 +89,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
         </h1>
         <div className="flex gap-2">
           <UserEditButton user={targetUser} />
+          <UserDeleteButton user={targetUser} currentUserId={user.id} />
         </div>
       </div>
 
