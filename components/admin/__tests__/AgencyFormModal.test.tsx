@@ -68,7 +68,9 @@ describe('AgencyFormModal', () => {
     it('renders cancel button', () => {
       render(<AgencyFormModal {...defaultProps} />);
 
-      expect(screen.getByTestId('agency-form-cancel-button')).toHaveTextContent('Cancel');
+      expect(screen.getByTestId('agency-form-cancel-button')).toHaveTextContent(
+        'Cancel'
+      );
     });
 
     it('shows required indicator for company name field', () => {

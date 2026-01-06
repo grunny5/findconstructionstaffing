@@ -95,7 +95,9 @@ describe('BulkImportModal', () => {
 
       expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
       expect(screen.getByTestId('browse-button')).toBeInTheDocument();
-      expect(screen.getByTestId('bulk-import-cancel-button')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('bulk-import-cancel-button')
+      ).toBeInTheDocument();
       expect(screen.getByTestId('next-button')).toBeInTheDocument();
     });
 
