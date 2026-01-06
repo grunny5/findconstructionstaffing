@@ -72,19 +72,40 @@ describe('GET /api/agencies/[slug]', () => {
       ],
     };
 
-    // Configure mock for single result
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: mockAgency,
-            error: null,
-          })
-        ),
+    // Configure mock for both agency and compliance queries
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: mockAgency,
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      if (table === 'agency_compliance') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          order: jest.fn(() =>
+            Promise.resolve({
+              data: [],
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -104,18 +125,26 @@ describe('GET /api/agencies/[slug]', () => {
 
   it('should return 404 for non-existent agency', async () => {
     // Configure mock for 404 response
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: null,
-            error: { code: 'PGRST116', message: 'No rows found' },
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: null,
+              error: { code: 'PGRST116', message: 'No rows found' },
+            })
+          ),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        order: jest.fn(() => Promise.resolve({ data: [], error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -139,18 +168,26 @@ describe('GET /api/agencies/[slug]', () => {
     const dbError = { message: 'Database connection failed' };
 
     // Configure mock for database error
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: null,
-            error: dbError,
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: null,
+              error: dbError,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        order: jest.fn(() => Promise.resolve({ data: [], error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -189,18 +226,26 @@ describe('GET /api/agencies/[slug]', () => {
     const specialSlug = 'test-agency-123';
 
     // Configure mock for special slug
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: null,
-            error: { code: 'PGRST116', message: 'No rows found' },
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: null,
+              error: { code: 'PGRST116', message: 'No rows found' },
+            })
+          ),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        order: jest.fn(() => Promise.resolve({ data: [], error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -216,27 +261,43 @@ describe('GET /api/agencies/[slug]', () => {
     // Track the select call
     let selectCall: string | undefined;
 
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn((query) => {
-          selectCall = query;
-          return queryChain;
-        }),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: {
-              id: '1',
-              name: 'Test Agency',
-              slug: 'test-agency',
-              agency_trades: [],
-              agency_regions: [],
-            },
-            error: null,
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn((query) => {
+            selectCall = query;
+            return queryChain;
+          }),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: {
+                id: '1',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                agency_trades: [],
+                agency_regions: [],
+              },
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      if (table === 'agency_compliance') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -252,19 +313,26 @@ describe('GET /api/agencies/[slug]', () => {
 
   it('should handle unexpected errors', async () => {
     // Configure mock to throw an error that will be caught by the route's catch block
-    (supabase.from as any).mockImplementation(() => {
-      // This simulates an error in the Supabase client itself
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: null,
-            error: { message: 'Unexpected database error' },
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: null,
+              error: { message: 'Unexpected database error' },
+            })
+          ),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        order: jest.fn(() => Promise.resolve({ data: [], error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -298,18 +366,34 @@ describe('GET /api/agencies/[slug]', () => {
       phone: '555-1234',
     };
 
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: rawAgency,
-            error: null,
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: rawAgency,
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      if (table === 'agency_compliance') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -347,18 +431,34 @@ describe('GET /api/agencies/[slug]', () => {
       agency_regions: null,
     };
 
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: agencyNoRelations,
-            error: null,
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: agencyNoRelations,
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      if (table === 'agency_compliance') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -374,24 +474,40 @@ describe('GET /api/agencies/[slug]', () => {
   });
 
   it('should set proper cache headers on success', async () => {
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn(() => queryChain),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: {
-              id: '1',
-              name: 'Test Agency',
-              slug: 'test-agency',
-              agency_trades: [],
-              agency_regions: [],
-            },
-            error: null,
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: {
+                id: '1',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                agency_trades: [],
+                agency_regions: [],
+              },
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      if (table === 'agency_compliance') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn(() => queryChain),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({
@@ -410,28 +526,47 @@ describe('GET /api/agencies/[slug]', () => {
     // Track eq calls
     const eqCalls: any[] = [];
 
-    (supabase.from as any).mockImplementation(() => {
-      const queryChain: any = {
-        select: jest.fn(() => queryChain),
-        eq: jest.fn((...args) => {
-          eqCalls.push(args);
-          return queryChain;
-        }),
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: {
-              id: '1',
-              name: 'Active Agency',
-              slug: 'active-agency',
-              is_active: true,
-              agency_trades: [],
-              agency_regions: [],
-            },
-            error: null,
-          })
-        ),
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn((...args) => {
+            eqCalls.push(args);
+            return queryChain;
+          }),
+          single: jest.fn(() =>
+            Promise.resolve({
+              data: {
+                id: '1',
+                name: 'Active Agency',
+                slug: 'active-agency',
+                is_active: true,
+                agency_trades: [],
+                agency_regions: [],
+              },
+              error: null,
+            })
+          ),
+        };
+        return queryChain;
+      }
+      if (table === 'agency_compliance') {
+        const queryChain: any = {
+          select: jest.fn(() => queryChain),
+          eq: jest.fn((...args) => {
+            eqCalls.push(args);
+            return queryChain;
+          }),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+        };
+        return queryChain;
+      }
+      const defaultChain: any = {
+        select: jest.fn(() => defaultChain),
+        eq: jest.fn(() => defaultChain),
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
       };
-      return queryChain;
+      return defaultChain;
     });
 
     const request = createMockNextRequest({

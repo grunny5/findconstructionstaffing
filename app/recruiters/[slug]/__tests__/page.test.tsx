@@ -59,33 +59,47 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should fetch agency by slug successfully', async () => {
-    const mockQueryBuilder = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
-        data: {
-          ...mockAgency,
-          agency_trades: [
-            {
-              trade: { id: 't1', name: 'Electricians', slug: 'electricians' },
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: {
+              ...mockAgency,
+              agency_trades: [
+                {
+                  trade: { id: 't1', name: 'Electricians', slug: 'electricians' },
+                },
+              ],
+              agency_regions: [
+                {
+                  region: {
+                    id: 'r1',
+                    name: 'Texas',
+                    state_code: 'TX',
+                    slug: 'texas',
+                  },
+                },
+              ],
             },
-          ],
-          agency_regions: [
-            {
-              region: {
-                id: 'r1',
-                name: 'Texas',
-                state_code: 'TX',
-                slug: 'texas',
-              },
-            },
-          ],
-        },
-        error: null,
-      }),
-    };
-
-    supabase.from.mockReturnValue(mockQueryBuilder);
+            error: null,
+          }),
+        };
+      }
+      if (table === 'agency_compliance') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({ data: [], error: null }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
@@ -163,20 +177,34 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should include cache headers on success', async () => {
-    const mockQueryBuilder = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
-        data: {
-          ...mockAgency,
-          agency_trades: [],
-          agency_regions: [],
-        },
-        error: null,
-      }),
-    };
-
-    supabase.from.mockReturnValue(mockQueryBuilder);
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: {
+              ...mockAgency,
+              agency_trades: [],
+              agency_regions: [],
+            },
+            error: null,
+          }),
+        };
+      }
+      if (table === 'agency_compliance') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({ data: [], error: null }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'

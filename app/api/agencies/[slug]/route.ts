@@ -6,6 +6,9 @@ import {
   HTTP_STATUS,
   ERROR_CODES,
   AgencyResponse,
+  type AgencyComplianceRow,
+  type ComplianceItem,
+  toComplianceItem,
 } from '@/types/api';
 import {
   PerformanceMonitor,
@@ -509,6 +512,31 @@ export async function GET(
       );
     }
 
+    // Fetch active compliance items for this agency
+    const complianceQueryId = monitor.startQuery();
+    const agencyId = (agency as { id: string }).id;
+    const { data: complianceRows, error: complianceError } = await supabase
+      .from('agency_compliance')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('is_active', true)
+      .order('compliance_type');
+
+    monitor.endQuery(complianceQueryId);
+
+    // Log but don't fail if compliance query fails (not critical for display)
+    if (complianceError) {
+      console.error(
+        '[API WARNING] Failed to fetch compliance data:',
+        complianceError.message
+      );
+    }
+
+    // Transform compliance data
+    const complianceItems: ComplianceItem[] = complianceRows
+      ? (complianceRows as AgencyComplianceRow[]).map(toComplianceItem)
+      : [];
+
     // Transform the data to match expected format
     const agencyData = agency as Agency & {
       agency_trades?: Array<{
@@ -568,6 +596,7 @@ export async function GET(
           code: ar.region.state_code,
           slug: ar.region.slug,
         })) || [],
+      compliance: complianceItems,
     };
 
     const response = NextResponse.json(
