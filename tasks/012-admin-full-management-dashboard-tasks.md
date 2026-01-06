@@ -114,7 +114,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 1.2: Admin Edits Agency Service Areas (Regions)
+### [x] ➡️ Story 1.2: Admin Edits Agency Service Areas (Regions)
 
 > As a **Site Administrator**, I want **to add, edit, or remove service areas (regions/states) from any agency's profile**, so that **I can ensure agencies appear in location-based searches correctly**.
 
@@ -185,7 +185,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.3: Fetch and Display Current Agency Regions in Edit Modal
+### [x] Task 1.2.3: Fetch and Display Current Agency Regions in Edit Modal
 
 - **Role:** Frontend Developer
 - **Objective:** Load current regions when opening the edit modal and pass to RegionSelector

@@ -57,7 +57,7 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch agency details with trades
+  // Fetch agency details with trades and regions
   const { data: agency, error: agencyError } = await supabase
     .from('agencies')
     .select(
@@ -87,23 +87,34 @@ export default async function AgencyDetailPage({
           name,
           slug
         )
+      ),
+      regions:agency_regions(
+        region:regions(
+          id,
+          name,
+          slug,
+          state_code
+        )
       )
     `
     )
     .eq('id', params.id)
     .single();
 
-  // Transform trades from nested structure to flat array
-  const agencyWithTrades = agency
+  // Transform trades and regions from nested structure to flat arrays
+  const agencyWithRelations = agency
     ? {
         ...agency,
         trades: (agency.trades as unknown as Array<{ trade: { id: string; name: string; slug: string } | null }>)
           ?.map((at) => at.trade)
           .filter((t): t is { id: string; name: string; slug: string } => t !== null),
+        regions: (agency.regions as unknown as Array<{ region: { id: string; name: string; slug: string; state_code: string } | null }>)
+          ?.map((ar) => ar.region)
+          .filter((r): r is { id: string; name: string; slug: string; state_code: string } => r !== null),
       }
     : null;
 
-  if (agencyError || !agencyWithTrades) {
+  if (agencyError || !agencyWithRelations) {
     notFound();
     return null;
   }
@@ -111,11 +122,11 @@ export default async function AgencyDetailPage({
   // Fetch owner profile if agency is claimed
   let ownerProfile: { email: string | null; full_name: string | null } | null =
     null;
-  if (agencyWithTrades.claimed_by) {
+  if (agencyWithRelations.claimed_by) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('email, full_name')
-      .eq('id', agencyWithTrades.claimed_by)
+      .eq('id', agencyWithRelations.claimed_by)
       .single();
 
     ownerProfile = profile || null;
@@ -140,11 +151,11 @@ export default async function AgencyDetailPage({
         </h1>
         <div className="flex gap-2">
           <AgencyStatusToggle
-            agencyId={agencyWithTrades.id}
-            agencyName={agencyWithTrades.name}
-            currentStatus={agencyWithTrades.is_active ? 'active' : 'inactive'}
+            agencyId={agencyWithRelations.id}
+            agencyName={agencyWithRelations.name}
+            currentStatus={agencyWithRelations.is_active ? 'active' : 'inactive'}
           />
-          <AgencyEditButton agency={agencyWithTrades} />
+          <AgencyEditButton agency={agencyWithRelations} />
         </div>
       </div>
 
@@ -161,7 +172,7 @@ export default async function AgencyDetailPage({
                 Agency Name
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agencyWithTrades.name}
+                {agencyWithRelations.name}
               </p>
             </div>
 
@@ -171,97 +182,97 @@ export default async function AgencyDetailPage({
                 Slug
               </label>
               <p className="mt-1 font-mono text-sm text-industrial-graphite-600">
-                {agencyWithTrades.slug}
+                {agencyWithRelations.slug}
               </p>
             </div>
 
             {/* Email */}
-            {agencyWithTrades.email && (
+            {agencyWithRelations.email && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Email
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.email}
+                  {agencyWithRelations.email}
                 </p>
               </div>
             )}
 
             {/* Phone */}
-            {agencyWithTrades.phone && (
+            {agencyWithRelations.phone && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Phone
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.phone}
+                  {agencyWithRelations.phone}
                 </p>
               </div>
             )}
 
             {/* Website */}
-            {agencyWithTrades.website && (
+            {agencyWithRelations.website && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Website
                 </label>
                 <p className="mt-1 font-body text-base">
                   <a
-                    href={agencyWithTrades.website}
+                    href={agencyWithRelations.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-industrial-orange hover:text-industrial-orange-500 hover:underline"
                   >
-                    {agencyWithTrades.website}
+                    {agencyWithRelations.website}
                   </a>
                 </p>
               </div>
             )}
 
             {/* Headquarters */}
-            {agencyWithTrades.headquarters && (
+            {agencyWithRelations.headquarters && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Headquarters
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.headquarters}
+                  {agencyWithRelations.headquarters}
                 </p>
               </div>
             )}
 
             {/* Founded Year */}
-            {agencyWithTrades.founded_year && (
+            {agencyWithRelations.founded_year && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Founded Year
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.founded_year}
+                  {agencyWithRelations.founded_year}
                 </p>
               </div>
             )}
 
             {/* Employee Count */}
-            {agencyWithTrades.employee_count && (
+            {agencyWithRelations.employee_count && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Employee Count
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.employee_count}
+                  {agencyWithRelations.employee_count}
                 </p>
               </div>
             )}
 
             {/* Company Size */}
-            {agencyWithTrades.company_size && (
+            {agencyWithRelations.company_size && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Company Size
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.company_size}
+                  {agencyWithRelations.company_size}
                 </p>
               </div>
             )}
@@ -272,7 +283,7 @@ export default async function AgencyDetailPage({
                 Offers Per Diem
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agencyWithTrades.offers_per_diem ? 'Yes' : 'No'}
+                {agencyWithRelations.offers_per_diem ? 'Yes' : 'No'}
               </p>
             </div>
 
@@ -282,19 +293,19 @@ export default async function AgencyDetailPage({
                 Union Shop
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                {agencyWithTrades.is_union ? 'Yes' : 'No'}
+                {agencyWithRelations.is_union ? 'Yes' : 'No'}
               </p>
             </div>
           </div>
 
           {/* Description - full width */}
-          {agencyWithTrades.description && (
+          {agencyWithRelations.description && (
             <div className="pt-2">
               <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Description
               </label>
               <p className="mt-1 font-body text-base text-industrial-graphite-600 whitespace-pre-wrap">
-                {agencyWithTrades.description}
+                {agencyWithRelations.description}
               </p>
             </div>
           )}
@@ -314,8 +325,8 @@ export default async function AgencyDetailPage({
                 Status
               </label>
               <div className="mt-1">
-                <Badge variant={agencyWithTrades.is_active ? 'orange' : 'secondary'}>
-                  {agencyWithTrades.is_active ? 'Active' : 'Inactive'}
+                <Badge variant={agencyWithRelations.is_active ? 'orange' : 'secondary'}>
+                  {agencyWithRelations.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
             </div>
@@ -326,14 +337,14 @@ export default async function AgencyDetailPage({
                 Claimed
               </label>
               <div className="mt-1">
-                <Badge variant={agencyWithTrades.is_claimed ? 'default' : 'outline'}>
-                  {agencyWithTrades.is_claimed ? 'Claimed' : 'Unclaimed'}
+                <Badge variant={agencyWithRelations.is_claimed ? 'default' : 'outline'}>
+                  {agencyWithRelations.is_claimed ? 'Claimed' : 'Unclaimed'}
                 </Badge>
               </div>
             </div>
 
             {/* Owner Profile */}
-            {agencyWithTrades.is_claimed && ownerProfile && (
+            {agencyWithRelations.is_claimed && ownerProfile && (
               <>
                 <div>
                   <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
@@ -355,13 +366,13 @@ export default async function AgencyDetailPage({
             )}
 
             {/* Profile Completion */}
-            {agencyWithTrades.profile_completion_percentage !== null && (
+            {agencyWithRelations.profile_completion_percentage !== null && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Profile Completion
                 </label>
                 <p className="mt-1 font-body text-base text-industrial-graphite-600">
-                  {agencyWithTrades.profile_completion_percentage}%
+                  {agencyWithRelations.profile_completion_percentage}%
                 </p>
               </div>
             )}
@@ -387,7 +398,7 @@ export default async function AgencyDetailPage({
             </div>
 
             {/* Updated At */}
-            {agencyWithTrades.updated_at && (
+            {agencyWithRelations.updated_at && (
               <div>
                 <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Last Updated
