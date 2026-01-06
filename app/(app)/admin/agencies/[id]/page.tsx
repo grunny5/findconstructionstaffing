@@ -105,12 +105,36 @@ export default async function AgencyDetailPage({
   const agencyWithRelations = agency
     ? {
         ...agency,
-        trades: (agency.trades as unknown as Array<{ trade: { id: string; name: string; slug: string } | null }>)
+        trades: (
+          agency.trades as unknown as Array<{
+            trade: { id: string; name: string; slug: string } | null;
+          }>
+        )
           ?.map((at) => at.trade)
-          .filter((t): t is { id: string; name: string; slug: string } => t !== null),
-        regions: (agency.regions as unknown as Array<{ region: { id: string; name: string; slug: string; state_code: string } | null }>)
+          .filter(
+            (t): t is { id: string; name: string; slug: string } => t !== null
+          ),
+        regions: (
+          agency.regions as unknown as Array<{
+            region: {
+              id: string;
+              name: string;
+              slug: string;
+              state_code: string;
+            } | null;
+          }>
+        )
           ?.map((ar) => ar.region)
-          .filter((r): r is { id: string; name: string; slug: string; state_code: string } => r !== null),
+          .filter(
+            (
+              r
+            ): r is {
+              id: string;
+              name: string;
+              slug: string;
+              state_code: string;
+            } => r !== null
+          ),
       }
     : null;
 
@@ -153,7 +177,9 @@ export default async function AgencyDetailPage({
           <AgencyStatusToggle
             agencyId={agencyWithRelations.id}
             agencyName={agencyWithRelations.name}
-            currentStatus={agencyWithRelations.is_active ? 'active' : 'inactive'}
+            currentStatus={
+              agencyWithRelations.is_active ? 'active' : 'inactive'
+            }
           />
           <AgencyEditButton agency={agencyWithRelations} />
         </div>
@@ -325,7 +351,11 @@ export default async function AgencyDetailPage({
                 Status
               </label>
               <div className="mt-1">
-                <Badge variant={agencyWithRelations.is_active ? 'orange' : 'secondary'}>
+                <Badge
+                  variant={
+                    agencyWithRelations.is_active ? 'orange' : 'secondary'
+                  }
+                >
                   {agencyWithRelations.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
@@ -337,7 +367,11 @@ export default async function AgencyDetailPage({
                 Claimed
               </label>
               <div className="mt-1">
-                <Badge variant={agencyWithRelations.is_claimed ? 'default' : 'outline'}>
+                <Badge
+                  variant={
+                    agencyWithRelations.is_claimed ? 'default' : 'outline'
+                  }
+                >
                   {agencyWithRelations.is_claimed ? 'Claimed' : 'Unclaimed'}
                 </Badge>
               </div>

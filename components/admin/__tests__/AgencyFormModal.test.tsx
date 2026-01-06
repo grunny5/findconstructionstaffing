@@ -69,7 +69,12 @@ jest.mock('@/components/dashboard/RegionSelector', () => ({
         onClick={() =>
           onChange([
             ...selectedRegions,
-            { id: 'region-new', name: 'Texas', slug: 'texas', state_code: 'TX' },
+            {
+              id: 'region-new',
+              name: 'Texas',
+              slug: 'texas',
+              state_code: 'TX',
+            },
           ])
         }
         disabled={disabled}
@@ -108,13 +113,17 @@ jest.mock('@/components/admin/LogoUpload', () => ({
     return (
       <div data-testid="logo-upload-mock">
         <span data-testid="logo-current-url">{currentLogoUrl || 'none'}</span>
-        <span data-testid="logo-is-uploading">{isUploading ? 'true' : 'false'}</span>
+        <span data-testid="logo-is-uploading">
+          {isUploading ? 'true' : 'false'}
+        </span>
         <span data-testid="logo-disabled">{disabled ? 'true' : 'false'}</span>
         <span data-testid="logo-error">{error || 'none'}</span>
         <button
           data-testid="logo-select-file-button"
           onClick={() => {
-            const mockFile = new File(['test'], 'logo.png', { type: 'image/png' });
+            const mockFile = new File(['test'], 'logo.png', {
+              type: 'image/png',
+            });
             onFileSelect(mockFile);
           }}
           disabled={disabled}
@@ -988,7 +997,12 @@ describe('AgencyFormModal', () => {
         name: 'Test Agency',
         regions: [
           { id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' },
-          { id: 'region-2', name: 'California', slug: 'california', state_code: 'CA' },
+          {
+            id: 'region-2',
+            name: 'California',
+            slug: 'california',
+            state_code: 'CA',
+          },
         ],
       };
 
@@ -1039,7 +1053,9 @@ describe('AgencyFormModal', () => {
       const existingAgency = {
         id: 'agency-123',
         name: 'Test Agency',
-        regions: [{ id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' }],
+        regions: [
+          { id: 'region-1', name: 'Texas', slug: 'texas', state_code: 'TX' },
+        ],
       };
 
       render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
@@ -1123,7 +1139,9 @@ describe('AgencyFormModal', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ data: { logo_url: 'https://storage.example.com/logo.webp' } }),
+          json: async () => ({
+            data: { logo_url: 'https://storage.example.com/logo.webp' },
+          }),
         });
 
       render(<AgencyFormModal {...defaultProps} />);
@@ -1177,7 +1195,9 @@ describe('AgencyFormModal', () => {
 
       // Logo URL should now be cleared in display
       await waitFor(() => {
-        expect(screen.getByTestId('logo-current-url')).toHaveTextContent('none');
+        expect(screen.getByTestId('logo-current-url')).toHaveTextContent(
+          'none'
+        );
       });
     });
 

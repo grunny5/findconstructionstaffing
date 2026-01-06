@@ -1315,8 +1315,18 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
   describe('Region Updates', () => {
     const mockRegions = [
-      { id: 'a0000000-0000-0000-0000-000000000011', name: 'Texas', slug: 'texas', state_code: 'TX' },
-      { id: 'b0000000-0000-0000-0000-000000000012', name: 'California', slug: 'california', state_code: 'CA' },
+      {
+        id: 'a0000000-0000-0000-0000-000000000011',
+        name: 'Texas',
+        slug: 'texas',
+        state_code: 'TX',
+      },
+      {
+        id: 'b0000000-0000-0000-0000-000000000012',
+        name: 'California',
+        slug: 'california',
+        state_code: 'CA',
+      },
     ];
 
     it('accepts region_ids array in request body', async () => {
@@ -1759,7 +1769,12 @@ describe('PATCH /api/admin/agencies/[id]', () => {
             return {
               select: jest.fn().mockReturnValue({
                 eq: jest.fn().mockResolvedValue({
-                  data: [{ region_id: 'old-region', regions: { id: 'old-region', name: 'Old Region' } }],
+                  data: [
+                    {
+                      region_id: 'old-region',
+                      regions: { id: 'old-region', name: 'Old Region' },
+                    },
+                  ],
                   error: null,
                 }),
               }),

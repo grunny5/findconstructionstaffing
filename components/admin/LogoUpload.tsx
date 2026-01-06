@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, X, AlertCircle, Loader2, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -54,7 +54,9 @@ export function LogoUpload({
       }
 
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        setValidationError(`File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
+        setValidationError(
+          `File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`
+        );
         return;
       }
 
@@ -127,8 +129,29 @@ export function LogoUpload({
     onFileSelect(null);
   }, [previewUrl, onFileSelect]);
 
+  // Cleanup object URL on unmount or when previewUrl changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (disabled || isUploading) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleBrowseClick();
+      }
+    },
+    [disabled, isUploading, handleBrowseClick]
+  );
+
   const displayUrl = previewUrl || currentLogoUrl;
   const hasImage = !!displayUrl;
+  const isInteractive = !hasImage && !disabled && !isUploading;
 
   return (
     <div className="space-y-3" data-testid="logo-upload">
@@ -142,13 +165,19 @@ export function LogoUpload({
           hasImage && 'border-solid',
           error && 'border-destructive',
           !hasImage && !isDragging && !error && 'border-muted-foreground/25',
-          disabled || isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+          disabled || isUploading
+            ? 'opacity-50 cursor-not-allowed'
+            : 'cursor-pointer'
         )}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={!hasImage ? handleBrowseClick : undefined}
+        onKeyDown={isInteractive ? handleKeyDown : undefined}
+        role={isInteractive ? 'button' : undefined}
+        tabIndex={isInteractive ? 0 : -1}
+        aria-disabled={disabled || isUploading}
         data-testid="logo-upload-zone"
       >
         {isUploading && (
@@ -197,7 +226,9 @@ export function LogoUpload({
             <p className="text-sm font-medium mb-1">
               {isDragging ? 'Drop image here' : 'Drag and drop an image'}
             </p>
-            <p className="text-xs text-muted-foreground mb-3">or click to browse</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              or click to browse
+            </p>
             <p className="text-xs text-muted-foreground">
               PNG, JPG, or WebP (max {MAX_FILE_SIZE_MB}MB)
             </p>
@@ -232,9 +263,12 @@ export function LogoUpload({
 
       {/* File info when selected */}
       {selectedFile && !error && (
-        <div className="text-xs text-muted-foreground" data-testid="logo-file-info">
-          Selected: {selectedFile.name} (
-          {(selectedFile.size / 1024).toFixed(1)} KB)
+        <div
+          className="text-xs text-muted-foreground"
+          data-testid="logo-file-info"
+        >
+          Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)}{' '}
+          KB)
         </div>
       )}
     </div>

@@ -407,12 +407,14 @@ export async function PATCH(
       }
 
       // 7e. Create audit trail entry
-      const { data: newTradeData } = await supabase
-        .from('trades')
-        .select('name')
-        .in('id', trade_ids!.length > 0 ? trade_ids! : ['no-trades']);
-
-      const newTradeNames = newTradeData?.map((t) => t.name) || [];
+      let newTradeNames: string[] = [];
+      if (trade_ids && trade_ids.length > 0) {
+        const { data: newTradeData } = await supabase
+          .from('trades')
+          .select('name')
+          .in('id', trade_ids);
+        newTradeNames = newTradeData?.map((t) => t.name) || [];
+      }
 
       const { error: auditError } = await supabase
         .from('agency_profile_edits')
@@ -438,13 +440,17 @@ export async function PATCH(
 
         updatedTrades = tradesData || [];
       }
-
     }
 
     // ========================================================================
     // 8. UPDATE REGIONS (if region_ids provided)
     // ========================================================================
-    let updatedRegions: { id: string; name: string; slug: string; state_code: string }[] = [];
+    let updatedRegions: {
+      id: string;
+      name: string;
+      slug: string;
+      state_code: string;
+    }[] = [];
 
     if (hasRegionUpdates) {
       // 8a. Validate region IDs exist (if not empty array)
@@ -495,7 +501,10 @@ export async function PATCH(
       const oldRegionNames =
         currentRegions
           ?.map((ar) => {
-            const region = ar.regions as unknown as { id: string; name: string };
+            const region = ar.regions as unknown as {
+              id: string;
+              name: string;
+            };
             return region?.name;
           })
           .filter(Boolean) || [];
@@ -557,12 +566,14 @@ export async function PATCH(
       }
 
       // 8e. Create audit trail entry
-      const { data: newRegionData } = await supabase
-        .from('regions')
-        .select('name')
-        .in('id', region_ids!.length > 0 ? region_ids! : ['no-regions']);
-
-      const newRegionNames = newRegionData?.map((r) => r.name) || [];
+      let newRegionNames: string[] = [];
+      if (region_ids && region_ids.length > 0) {
+        const { data: newRegionData } = await supabase
+          .from('regions')
+          .select('name')
+          .in('id', region_ids);
+        newRegionNames = newRegionData?.map((r) => r.name) || [];
+      }
 
       const { error: auditError } = await supabase
         .from('agency_profile_edits')

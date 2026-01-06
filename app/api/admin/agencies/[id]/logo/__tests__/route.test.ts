@@ -82,11 +82,7 @@ jest.mock('sharp', () => {
 import { POST, DELETE } from '../route';
 
 // Helper to create a mock file
-function createMockFile(
-  name: string,
-  size: number,
-  type: string
-): File {
+function createMockFile(name: string, size: number, type: string): File {
   const content = new Array(size).fill('a').join('');
   return new File([content], name, { type });
 }
@@ -406,7 +402,10 @@ describe('Admin Agency Logo API', () => {
           error: { message: 'Not authenticated' },
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         expect(response.status).toBe(401);
@@ -420,7 +419,10 @@ describe('Admin Agency Logo API', () => {
           error: null,
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         expect(response.status).toBe(403);
@@ -431,7 +433,10 @@ describe('Admin Agency Logo API', () => {
 
     describe('Validation', () => {
       it('returns 400 for invalid agency ID format', async () => {
-        const response = await DELETE(createDeleteRequest(), createContext('invalid-id'));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext('invalid-id')
+        );
         const body = await response.json();
 
         expect(response.status).toBe(400);
@@ -445,7 +450,10 @@ describe('Admin Agency Logo API', () => {
           error: { message: 'Not found' },
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         expect(response.status).toBe(404);
@@ -465,7 +473,10 @@ describe('Admin Agency Logo API', () => {
           error: null,
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -510,7 +521,10 @@ describe('Admin Agency Logo API', () => {
           error: null,
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -532,7 +546,10 @@ describe('Admin Agency Logo API', () => {
           error: { message: 'Delete failed' },
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         // Should still succeed - we clear logo_url even if storage delete fails
@@ -549,7 +566,10 @@ describe('Admin Agency Logo API', () => {
           error: { message: 'Update failed' },
         });
 
-        const response = await DELETE(createDeleteRequest(), createContext(VALID_UUID));
+        const response = await DELETE(
+          createDeleteRequest(),
+          createContext(VALID_UUID)
+        );
         const body = await response.json();
 
         expect(response.status).toBe(500);

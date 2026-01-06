@@ -236,7 +236,8 @@ export function AgencyFormModal({
       if (pendingLogoFile && agencyId) {
         const uploadSuccess = await uploadLogo(agencyId);
         if (!uploadSuccess) {
-          // Logo upload failed but agency was saved
+          // Logo upload failed but agency was saved - close modal and notify
+          onClose();
           toast.warning('Agency Saved', {
             description: `${data.name} was saved, but logo upload failed. You can try again.`,
           });
@@ -249,6 +250,8 @@ export function AgencyFormModal({
       if (logoRemoved && isEditMode && agency.id) {
         const removeSuccess = await removeLogo(agency.id);
         if (!removeSuccess) {
+          // Logo removal failed but agency was saved - close modal and notify
+          onClose();
           toast.warning('Agency Saved', {
             description: `${data.name} was saved, but logo removal failed. You can try again.`,
           });
@@ -586,7 +589,10 @@ export function AgencyFormModal({
             </div>
 
             {/* Service Regions */}
-            <div className="pt-4 border-t" data-testid="region-selector-section">
+            <div
+              className="pt-4 border-t"
+              data-testid="region-selector-section"
+            >
               <RegionSelector
                 selectedRegions={selectedRegions}
                 onChange={setSelectedRegions}

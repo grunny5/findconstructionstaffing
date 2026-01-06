@@ -24,14 +24,14 @@ jest.mock('next/image', () => ({
 // Mock URL.createObjectURL and URL.revokeObjectURL
 const mockCreateObjectURL = jest.fn(() => 'blob:mock-url');
 const mockRevokeObjectURL = jest.fn();
-Object.defineProperty(global.URL, 'createObjectURL', { value: mockCreateObjectURL });
-Object.defineProperty(global.URL, 'revokeObjectURL', { value: mockRevokeObjectURL });
+Object.defineProperty(global.URL, 'createObjectURL', {
+  value: mockCreateObjectURL,
+});
+Object.defineProperty(global.URL, 'revokeObjectURL', {
+  value: mockRevokeObjectURL,
+});
 
-function createMockFile(
-  name: string,
-  size: number,
-  type: string
-): File {
+function createMockFile(name: string, size: number, type: string): File {
   const content = new Array(size).fill('a').join('');
   return new File([content], name, { type });
 }
@@ -60,7 +60,9 @@ describe('LogoUpload', () => {
 
     it('shows file type and size restrictions', () => {
       render(<LogoUpload {...defaultProps} />);
-      expect(screen.getByText('PNG, JPG, or WebP (max 5MB)')).toBeInTheDocument();
+      expect(
+        screen.getByText('PNG, JPG, or WebP (max 5MB)')
+      ).toBeInTheDocument();
     });
 
     it('shows recommended dimensions', () => {
@@ -118,7 +120,9 @@ describe('LogoUpload', () => {
           currentLogoUrl="https://example.com/logo.png"
         />
       );
-      expect(screen.queryByText('Drag and drop an image')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Drag and drop an image')
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -178,7 +182,9 @@ describe('LogoUpload', () => {
 
       fireEvent.change(input, { target: { files: [file] } });
 
-      expect(screen.getByTestId('logo-file-info')).toHaveTextContent('Selected: logo.png');
+      expect(screen.getByTestId('logo-file-info')).toHaveTextContent(
+        'Selected: logo.png'
+      );
     });
   });
 
@@ -335,7 +341,9 @@ describe('LogoUpload', () => {
 
     it('ignores drag and drop when disabled', () => {
       const onFileSelect = jest.fn();
-      render(<LogoUpload {...defaultProps} onFileSelect={onFileSelect} disabled />);
+      render(
+        <LogoUpload {...defaultProps} onFileSelect={onFileSelect} disabled />
+      );
 
       const file = createMockFile('logo.png', 1024, 'image/png');
       const zone = screen.getByTestId('logo-upload-zone');
@@ -351,7 +359,9 @@ describe('LogoUpload', () => {
 
     it('ignores drag and drop when uploading', () => {
       const onFileSelect = jest.fn();
-      render(<LogoUpload {...defaultProps} onFileSelect={onFileSelect} isUploading />);
+      render(
+        <LogoUpload {...defaultProps} onFileSelect={onFileSelect} isUploading />
+      );
 
       const file = createMockFile('logo.png', 1024, 'image/png');
       const zone = screen.getByTestId('logo-upload-zone');
@@ -383,7 +393,9 @@ describe('LogoUpload', () => {
       fireEvent.click(screen.getByTestId('logo-remove-button'));
 
       expect(onFileSelect).toHaveBeenCalledWith(null);
-      expect(screen.queryByTestId('logo-preview-image')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('logo-preview-image')
+      ).not.toBeInTheDocument();
     });
 
     it('clears current logo when remove clicked', async () => {
@@ -429,7 +441,9 @@ describe('LogoUpload', () => {
       const validFile = createMockFile('logo.png', 1024, 'image/png');
       fireEvent.change(input, { target: { files: [validFile] } });
 
-      expect(screen.queryByTestId('logo-error-message')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('logo-error-message')
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -447,7 +461,9 @@ describe('LogoUpload', () => {
           isUploading
         />
       );
-      expect(screen.queryByTestId('logo-remove-button')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('logo-remove-button')
+      ).not.toBeInTheDocument();
     });
 
     it('disables file input when uploading', () => {
@@ -480,7 +496,9 @@ describe('LogoUpload', () => {
           disabled
         />
       );
-      expect(screen.queryByTestId('logo-remove-button')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('logo-remove-button')
+      ).not.toBeInTheDocument();
     });
 
     it('applies disabled styles to upload zone', () => {
@@ -493,7 +511,12 @@ describe('LogoUpload', () => {
 
   describe('External Error Display', () => {
     it('displays external error message', () => {
-      render(<LogoUpload {...defaultProps} error="Upload failed. Please try again." />);
+      render(
+        <LogoUpload
+          {...defaultProps}
+          error="Upload failed. Please try again."
+        />
+      );
       expect(screen.getByTestId('logo-error-message')).toHaveTextContent(
         'Upload failed. Please try again.'
       );
@@ -505,7 +528,9 @@ describe('LogoUpload', () => {
       );
 
       // The external error should be shown
-      expect(screen.getByTestId('logo-error-message')).toHaveTextContent('Server error');
+      expect(screen.getByTestId('logo-error-message')).toHaveTextContent(
+        'Server error'
+      );
 
       // Even if we try to trigger a validation error
       const file = createMockFile('logo.gif', 1024, 'image/gif');
@@ -517,7 +542,9 @@ describe('LogoUpload', () => {
       // and externalError || validationError would show validation error
       // But since we set error externally, it should show that
       rerender(<LogoUpload {...defaultProps} error="Server error" />);
-      expect(screen.getByTestId('logo-error-message')).toHaveTextContent('Server error');
+      expect(screen.getByTestId('logo-error-message')).toHaveTextContent(
+        'Server error'
+      );
     });
 
     it('applies error styles to upload zone', () => {
