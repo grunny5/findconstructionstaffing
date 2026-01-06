@@ -27,32 +27,56 @@ export default async function AdminDashboardPage() {
     return null; // Ensure we don't continue execution in tests
   }
 
-  // Fetch dashboard stats
-  const [agenciesResult, usersResult, claimsResult] = await Promise.all([
+  // Fetch dashboard stats using optimized count-only queries
+  const [
+    totalAgenciesResult,
+    activeAgenciesResult,
+    claimedAgenciesResult,
+    totalUsersResult,
+    adminUsersResult,
+    totalClaimsResult,
+    pendingClaimsResult,
+    approvedClaimsResult,
+    rejectedClaimsResult,
+  ] = await Promise.all([
+    supabase.from('agencies').select('*', { count: 'exact', head: true }),
     supabase
       .from('agencies')
-      .select('id, is_active, is_claimed', { count: 'exact' }),
-    supabase.from('profiles').select('id, role', { count: 'exact' }),
-    supabase.from('agency_claims').select('id, status', { count: 'exact' }),
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true),
+    supabase
+      .from('agencies')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_claimed', true),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'admin'),
+    supabase.from('agency_claims').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('agency_claims')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    supabase
+      .from('agency_claims')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved'),
+    supabase
+      .from('agency_claims')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'rejected'),
   ]);
 
-  const totalAgencies = agenciesResult.count || 0;
-  const activeAgencies =
-    agenciesResult.data?.filter((a) => a.is_active).length || 0;
-  const claimedAgencies =
-    agenciesResult.data?.filter((a) => a.is_claimed).length || 0;
-
-  const totalUsers = usersResult.count || 0;
-  const adminUsers =
-    usersResult.data?.filter((u) => u.role === 'admin').length || 0;
-
-  const totalClaims = claimsResult.count || 0;
-  const pendingClaims =
-    claimsResult.data?.filter((c) => c.status === 'pending').length || 0;
-  const approvedClaims =
-    claimsResult.data?.filter((c) => c.status === 'approved').length || 0;
-  const rejectedClaims =
-    claimsResult.data?.filter((c) => c.status === 'rejected').length || 0;
+  const totalAgencies = totalAgenciesResult.count || 0;
+  const activeAgencies = activeAgenciesResult.count || 0;
+  const claimedAgencies = claimedAgenciesResult.count || 0;
+  const totalUsers = totalUsersResult.count || 0;
+  const adminUsers = adminUsersResult.count || 0;
+  const totalClaims = totalClaimsResult.count || 0;
+  const pendingClaims = pendingClaimsResult.count || 0;
+  const approvedClaims = approvedClaimsResult.count || 0;
+  const rejectedClaims = rejectedClaimsResult.count || 0;
 
   const stats = [
     {

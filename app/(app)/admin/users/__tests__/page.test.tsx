@@ -154,7 +154,9 @@ describe('AdminUsersPage', () => {
     expect(
       screen.getByText('Error loading users. Please try again later.')
     ).toBeInTheDocument();
-    expect(container.querySelector('.bg-red-50')).toBeInTheDocument();
+    expect(
+      container.querySelector('.bg-industrial-orange-100')
+    ).toBeInTheDocument();
   });
 
   it('renders users table when admin authenticated and users fetched', async () => {
