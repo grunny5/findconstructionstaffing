@@ -212,7 +212,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 1.3: Admin Edits Agency Logo
+### [x] ➡️ Story 1.3: Admin Edits Agency Logo
 
 > As a **Site Administrator**, I want **to upload or change an agency's logo**, so that **I can ensure agency profiles have proper branding without requiring owner action**.
 
@@ -335,7 +335,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.3.4: Integrate LogoUpload into AgencyFormModal
+### [x] Task 1.3.4: Integrate LogoUpload into AgencyFormModal
 
 - **Role:** Frontend Developer
 - **Objective:** Add logo upload capability to the agency create/edit modal
@@ -366,7 +366,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.3.5: Display Logo on Agency Cards and Profile Page
+### [x] Task 1.3.5: Display Logo on Agency Cards and Profile Page
 
 - **Role:** Frontend Developer
 - **Objective:** Show agency logos on the directory listing cards and agency profile page header
