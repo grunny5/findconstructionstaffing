@@ -441,7 +441,7 @@ export function AgencyFormModal({
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                data-testid="cancel-button"
+                data-testid="agency-form-cancel-button"
               >
                 Cancel
               </Button>

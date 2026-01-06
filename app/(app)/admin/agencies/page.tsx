@@ -14,6 +14,7 @@ export default async function AdminAgenciesPage() {
 
   if (!user || authError) {
     redirect('/login');
+    return null; // Ensure we don't continue execution in tests
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -24,6 +25,7 @@ export default async function AdminAgenciesPage() {
 
   if (profileError || !profile || profile.role !== 'admin') {
     redirect('/');
+    return null; // Ensure we don't continue execution in tests
   }
 
   const { data: agencies, error: agenciesError } = await supabase
@@ -85,19 +87,25 @@ export default async function AdminAgenciesPage() {
   if (agenciesError) {
     console.error('Error fetching agencies:', agenciesError);
     return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Agency Management</h1>
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-          Error loading agencies. Please try again later.
+      <div className="container mx-auto p-6 min-h-screen">
+        <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600 mb-6">
+          Agency Management
+        </h1>
+        <div className="bg-industrial-orange-100 border-2 border-industrial-orange-300 rounded-industrial-sharp px-4 py-3">
+          <p className="font-body text-sm text-industrial-orange-800">
+            Error loading agencies. Please try again later.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Agency Management</h1>
+        <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600">
+          Agency Management
+        </h1>
         <AdminAgenciesActions />
       </div>
       <AdminAgenciesTable agencies={agenciesWithOwners} />

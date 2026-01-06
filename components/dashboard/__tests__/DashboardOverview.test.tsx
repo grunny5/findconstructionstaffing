@@ -56,7 +56,7 @@ describe('DashboardOverview', () => {
       // Get all elements with "0" text and check the context
       const profileViewsCard = screen
         .getByText('Profile Views')
-        .closest('.rounded-lg');
+        .closest('.rounded-industrial-sharp');
       expect(profileViewsCard).toHaveTextContent('0');
       expect(profileViewsCard).toHaveTextContent('Last 30 days');
     });
@@ -66,7 +66,7 @@ describe('DashboardOverview', () => {
 
       const leadRequestsCard = screen
         .getByText('Lead Requests')
-        .closest('.rounded-lg');
+        .closest('.rounded-industrial-sharp');
       expect(leadRequestsCard).toHaveTextContent('0');
       expect(leadRequestsCard).toHaveTextContent('Coming soon');
     });
@@ -110,7 +110,7 @@ describe('DashboardOverview', () => {
       // Check within the Profile Completion Widget (checklist)
       const profileCompletionWidget = screen
         .getAllByText('Profile Completion')[1] // Second occurrence is the widget
-        .closest('.rounded-lg');
+        .closest('.rounded-industrial-sharp');
 
       expect(profileCompletionWidget).toHaveTextContent('Add Logo');
       expect(profileCompletionWidget).toHaveTextContent(
@@ -153,7 +153,7 @@ describe('DashboardOverview', () => {
       // Check for the "Add Logo" button in Quick Actions section
       const quickActionsSection = screen
         .getByText('Quick Actions')
-        .closest('.rounded-lg');
+        .closest('.rounded-industrial-sharp');
 
       expect(quickActionsSection).toHaveTextContent('Add Logo');
       expect(quickActionsSection).toHaveTextContent('Upload company logo');
@@ -300,7 +300,7 @@ describe('DashboardOverview', () => {
 
       const quickActionsGrid = screen
         .getByText('Quick Actions')
-        .closest('.rounded-lg')
+        .closest('.rounded-industrial-sharp')
         ?.querySelector('.grid.sm\\:grid-cols-2');
       expect(quickActionsGrid).toBeInTheDocument();
     });
@@ -320,7 +320,7 @@ describe('DashboardOverview', () => {
 
       const quickActionsSection = screen
         .getByText('Quick Actions')
-        .closest('.rounded-lg');
+        .closest('.rounded-industrial-sharp');
       const icons = quickActionsSection?.querySelectorAll('svg');
       expect(icons && icons.length).toBeGreaterThan(0);
     });

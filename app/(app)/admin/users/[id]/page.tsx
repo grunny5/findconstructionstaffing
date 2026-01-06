@@ -69,7 +69,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
+    <div className="container mx-auto p-6 max-w-5xl min-h-screen">
       {/* Back button */}
       <div className="mb-6">
         <Link href="/admin/users">
@@ -81,10 +81,12 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
       </div>
 
       {/* Page title */}
-      <h1 className="text-3xl font-bold mb-6">User Details</h1>
+      <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600 mb-6">
+        User Details
+      </h1>
 
       {/* User profile card */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
         </CardHeader>
@@ -92,23 +94,29 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Full Name */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Full Name
               </label>
-              <p className="mt-1 text-base">
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
                 {targetUser.full_name || 'Not provided'}
               </p>
             </div>
 
             {/* Email */}
             <div>
-              <label className="text-sm font-medium text-gray-500">Email</label>
-              <p className="mt-1 text-base">{targetUser.email}</p>
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
+                Email
+              </label>
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                {targetUser.email}
+              </p>
             </div>
 
             {/* Role */}
             <div>
-              <label className="text-sm font-medium text-gray-500">Role</label>
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
+                Role
+              </label>
               <div className="mt-1">
                 <Badge variant={roleBadgeVariant(targetUser.role)}>
                   {roleDisplayName(targetUser.role)}
@@ -118,20 +126,20 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
 
             {/* Created At */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Account Created
               </label>
-              <p className="mt-1 text-base">
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
                 {formatDate(targetUser.created_at)}
               </p>
             </div>
 
             {/* Updated At */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Last Updated
               </label>
-              <p className="mt-1 text-base">
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
                 {formatDate(targetUser.updated_at)}
               </p>
             </div>

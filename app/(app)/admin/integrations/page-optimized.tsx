@@ -5,13 +5,14 @@ import { redirect } from 'next/navigation';
 interface IntegrationSummaryRPC {
   id: string;
   name: string;
+  slug: string;
   created_at: string;
-  config_is_active: boolean | null;
-  config_last_sync_at: string | null;
-  config_created_at: string | null;
-  config_updated_at: string | null;
-  last_sync_status: string | null;
-  last_sync_created_at: string | null;
+  integration_enabled?: boolean;
+  integration_provider?: string | null;
+  integration_config?: Record<string, any>;
+  integration_last_sync_at?: string | null;
+  integration_sync_status?: string | null;
+  integration_sync_error?: string | null;
 }
 
 export default async function AdminIntegrationsPageOptimized() {
@@ -69,44 +70,35 @@ export default async function AdminIntegrationsPageOptimized() {
                     Created:{' '}
                     {new Date(integration.created_at).toLocaleDateString()}
                   </p>
-                  {integration.config_created_at && (
-                    <p className="text-sm text-gray-500">
-                      Config updated:{' '}
-                      {new Date(
-                        integration.config_updated_at ||
-                          integration.config_created_at
-                      ).toLocaleDateString()}
-                    </p>
-                  )}
                 </div>
                 <div className="flex flex-col items-end">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
-                      integration.config_is_active
+                      integration.integration_enabled
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {integration.config_is_active ? 'Active' : 'Inactive'}
+                    {integration.integration_enabled ? 'Active' : 'Inactive'}
                   </span>
-                  {integration.last_sync_status && (
+                  {integration.integration_provider && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Provider: {integration.integration_provider}
+                    </p>
+                  )}
+                  {integration.integration_last_sync_at && (
                     <p className="mt-1 text-sm text-gray-500">
-                      Last sync: {integration.last_sync_status}
-                    </p>
-                  )}
-                  {integration.last_sync_created_at && (
-                    <p className="text-xs text-gray-400">
+                      Last sync:{' '}
+                      {integration.integration_sync_status || 'Unknown'}
+                      {' - '}
                       {new Date(
-                        integration.last_sync_created_at
+                        integration.integration_last_sync_at
                       ).toLocaleString()}
                     </p>
                   )}
-                  {integration.config_last_sync_at && (
-                    <p className="text-xs text-gray-400">
-                      Config sync:{' '}
-                      {new Date(
-                        integration.config_last_sync_at
-                      ).toLocaleString()}
+                  {integration.integration_sync_error && (
+                    <p className="mt-1 text-xs text-red-500">
+                      Error: {integration.integration_sync_error}
                     </p>
                   )}
                 </div>

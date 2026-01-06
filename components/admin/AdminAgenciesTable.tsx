@@ -33,9 +33,9 @@ const AGENCIES_PER_PAGE = 20;
  * @returns Tailwind CSS text color class
  */
 function getProfileCompletionColor(percentage: number): string {
-  if (percentage >= 80) return 'text-green-600';
-  if (percentage >= 50) return 'text-yellow-600';
-  return 'text-muted-foreground';
+  if (percentage >= 80) return 'text-industrial-orange';
+  if (percentage >= 50) return 'text-industrial-graphite-500';
+  return 'text-industrial-graphite-400';
 }
 
 interface AdminAgenciesTableProps {
@@ -158,11 +158,11 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
   };
 
   return (
-    <div className="rounded-md border">
-      <div className="border-b bg-muted/50 p-4">
+    <div className="rounded-industrial-base border-2 border-industrial-graphite-200">
+      <div className="border-b-2 border-industrial-graphite-200 bg-industrial-graphite-100 p-4">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-industrial-graphite-400" />
             <Input
               placeholder="Search agencies..."
               value={searchTerm}
@@ -238,11 +238,13 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
           {paginatedAgencies.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
-                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                <div className="flex flex-col items-center justify-center text-industrial-graphite-500">
                   <Building2 className="h-8 w-8 mb-2" />
-                  {hasActiveFilters
-                    ? 'No agencies match your filters.'
-                    : 'No agencies found.'}
+                  <span className="font-body">
+                    {hasActiveFilters
+                      ? 'No agencies match your filters.'
+                      : 'No agencies found.'}
+                  </span>
                 </div>
               </TableCell>
             </TableRow>
@@ -252,7 +254,7 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
                 <TableCell className="font-medium">
                   <Link
                     href={`/recruiters/${agency.slug}`}
-                    className="hover:underline text-primary"
+                    className="font-body font-semibold text-industrial-orange hover:text-industrial-orange-500 hover:underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -277,16 +279,18 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
                 </TableCell>
                 <TableCell>
                   {agency.owner_profile ? (
-                    <span className="text-sm">
+                    <span className="font-body text-sm text-industrial-graphite-600">
                       {agency.owner_profile.full_name ||
                         agency.owner_profile.email ||
                         'Unknown'}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground text-sm">—</span>
+                    <span className="font-body text-industrial-graphite-400 text-sm">
+                      —
+                    </span>
                   )}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
+                <TableCell className="font-body text-sm text-industrial-graphite-500">
                   {formatDate(agency.created_at)}
                 </TableCell>
                 <TableCell className="text-right">
@@ -304,7 +308,7 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
         </TableBody>
       </Table>
 
-      <div className="border-t p-4 flex items-center justify-between text-sm text-muted-foreground">
+      <div className="border-t-2 border-industrial-graphite-200 p-4 flex items-center justify-between font-body text-sm text-industrial-graphite-500">
         <span data-testid="agencies-count">
           {totalFiltered === 0
             ? 'Showing 0 of 0 agencies'
@@ -325,7 +329,10 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
             </Button>
-            <span className="text-sm" data-testid="pagination-info">
+            <span
+              className="font-body text-sm text-industrial-graphite-600"
+              data-testid="pagination-info"
+            >
               Page {validCurrentPage} of {totalPages}
             </span>
             <Button

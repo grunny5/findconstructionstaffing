@@ -178,8 +178,8 @@ describe('AdminClaimsPage', () => {
       const { container } = render(result as React.ReactElement);
 
       const h1 = container.querySelector('h1');
+      expect(h1).toHaveClass('font-display');
       expect(h1).toHaveClass('text-2xl');
-      expect(h1).toHaveClass('font-bold');
       expect(h1).toHaveClass('mb-6');
     });
   });

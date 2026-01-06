@@ -61,26 +61,28 @@ describe('AdminIntegrationsPageOptimized', () => {
     };
     const mockIntegrations = [
       {
-        id: 'comp-1',
-        name: 'Test Company 1',
+        id: 'agency-1',
+        name: 'Test Agency 1',
+        slug: 'test-agency-1',
         created_at: '2024-01-01T00:00:00Z',
-        config_is_active: true,
-        config_last_sync_at: '2024-01-15T10:00:00Z',
-        config_created_at: '2024-01-01T00:00:00Z',
-        config_updated_at: '2024-01-15T10:00:00Z',
-        last_sync_status: 'success',
-        last_sync_created_at: '2024-01-15T10:00:00Z',
+        integration_enabled: true,
+        integration_provider: 'roaddog_jobs',
+        integration_config: { api_key: 'test-key-1' },
+        integration_last_sync_at: '2024-01-15T10:00:00Z',
+        integration_sync_status: 'success',
+        integration_sync_error: null,
       },
       {
-        id: 'comp-2',
-        name: 'Test Company 2',
+        id: 'agency-2',
+        name: 'Test Agency 2',
+        slug: 'test-agency-2',
         created_at: '2024-01-02T00:00:00Z',
-        config_is_active: false,
-        config_last_sync_at: null,
-        config_created_at: null,
-        config_updated_at: null,
-        last_sync_status: null,
-        last_sync_created_at: null,
+        integration_enabled: false,
+        integration_provider: null,
+        integration_config: {},
+        integration_last_sync_at: null,
+        integration_sync_status: null,
+        integration_sync_error: null,
       },
     ];
 
@@ -102,9 +104,9 @@ describe('AdminIntegrationsPageOptimized', () => {
       'get_admin_integrations_summary'
     );
 
-    // Check that companies are displayed
-    expect(screen.getByText('Test Company 1')).toBeInTheDocument();
-    expect(screen.getByText('Test Company 2')).toBeInTheDocument();
+    // Check that agencies are displayed
+    expect(screen.getByText('Test Agency 1')).toBeInTheDocument();
+    expect(screen.getByText('Test Agency 2')).toBeInTheDocument();
 
     // Check status badges
     const activeStatus = screen.getByText('Active');

@@ -299,9 +299,13 @@ export function ClaimsTable() {
   if (error && claims.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-          <p className="font-semibold">Error loading claim requests</p>
-          <p className="text-sm">{error}</p>
+        <div className="bg-industrial-orange-100 border-2 border-industrial-orange-300 rounded-industrial-sharp px-4 py-3">
+          <p className="font-body font-semibold text-industrial-orange-800">
+            Error loading claim requests
+          </p>
+          <p className="font-body text-sm text-industrial-orange-700">
+            {error}
+          </p>
         </div>
       </div>
     );
@@ -313,7 +317,7 @@ export function ClaimsTable() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-industrial-graphite-400" />
             <Input
               type="text"
               placeholder="Search by agency name or email..."
@@ -337,7 +341,7 @@ export function ClaimsTable() {
         </div>
 
         {/* Table */}
-        <div className="rounded-md border">
+        <div className="rounded-industrial-base border-2 border-industrial-graphite-200 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -355,10 +359,12 @@ export function ClaimsTable() {
               {claims.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
+                    <div className="flex flex-col items-center justify-center gap-2 text-industrial-graphite-500">
                       <FileText className="h-8 w-8" />
-                      <p className="font-medium">No claim requests found</p>
-                      <p className="text-sm">
+                      <p className="font-body font-semibold">
+                        No claim requests found
+                      </p>
+                      <p className="font-body text-sm">
                         {searchQuery || statusFilter !== 'all'
                           ? 'Try adjusting your filters'
                           : 'Claims will appear here when submitted'}
@@ -369,20 +375,22 @@ export function ClaimsTable() {
               ) : (
                 claims.map((claim) => (
                   <TableRow key={claim.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-body font-semibold text-industrial-graphite-600">
                       {claim.agency.name}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="font-body text-industrial-graphite-600">
                       {claim.user.full_name || (
-                        <span className="text-gray-500 italic">No name</span>
+                        <span className="text-industrial-graphite-400 italic">
+                          No name
+                        </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="font-body text-sm text-industrial-graphite-600">
                       {claim.business_email}
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="font-body text-sm text-industrial-graphite-600">
                       {claim.phone_number || (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-industrial-graphite-400">—</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -395,9 +403,9 @@ export function ClaimsTable() {
                         <TooltipTrigger asChild>
                           <div className="flex items-center gap-1.5">
                             {claim.email_domain_verified ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              <CheckCircle2 className="h-4 w-4 text-industrial-orange" />
                             ) : (
-                              <AlertCircle className="h-4 w-4 text-gray-400" />
+                              <AlertCircle className="h-4 w-4 text-industrial-graphite-400" />
                             )}
                             <Badge
                               variant={verificationBadgeVariant(
@@ -416,7 +424,7 @@ export function ClaimsTable() {
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="max-w-xs">
+                          <p className="max-w-xs font-body">
                             {verificationTooltipText(
                               claim.email_domain_verified
                             )}
@@ -424,7 +432,7 @@ export function ClaimsTable() {
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="font-body text-sm text-industrial-graphite-500">
                       {formatDate(claim.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
@@ -447,7 +455,7 @@ export function ClaimsTable() {
         {/* Pagination */}
         {pagination.totalPages && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-2">
-            <p className="text-sm text-gray-600">
+            <p className="font-body text-sm text-industrial-graphite-500">
               Showing {pagination.offset + 1} to{' '}
               {Math.min(pagination.offset + pagination.limit, pagination.total)}{' '}
               of {pagination.total} claims
@@ -462,7 +470,7 @@ export function ClaimsTable() {
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
+              <span className="font-body text-sm text-industrial-graphite-600">
                 Page {currentPage} of {pagination.totalPages}
               </span>
               <Button

@@ -25,6 +25,13 @@ export type Agency = {
   profile_completion_percentage?: number;
   last_edited_at?: string;
   last_edited_by?: string;
+  // Integration fields
+  integration_enabled?: boolean;
+  integration_provider?: string;
+  integration_config?: Record<string, any>;
+  integration_last_sync_at?: string;
+  integration_sync_status?: string;
+  integration_sync_error?: string;
   trades?: Trade[];
   regions?: Region[];
 };

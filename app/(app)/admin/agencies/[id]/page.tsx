@@ -105,7 +105,7 @@ export default async function AgencyDetailPage({
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
+    <div className="container mx-auto p-6 max-w-5xl min-h-screen">
       {/* Back button */}
       <div className="mb-6">
         <Link href="/admin/agencies">
@@ -118,7 +118,9 @@ export default async function AgencyDetailPage({
 
       {/* Page title with action buttons */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Agency Details</h1>
+        <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600">
+          Agency Details
+        </h1>
         <div className="flex gap-2">
           <AgencyStatusToggle
             agencyId={agency.id}
@@ -130,7 +132,7 @@ export default async function AgencyDetailPage({
       </div>
 
       {/* Basic Information Card */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
@@ -138,50 +140,60 @@ export default async function AgencyDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Name */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Agency Name
               </label>
-              <p className="mt-1 text-base">{agency.name}</p>
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                {agency.name}
+              </p>
             </div>
 
             {/* Slug */}
             <div>
-              <label className="text-sm font-medium text-gray-500">Slug</label>
-              <p className="mt-1 font-mono text-sm">{agency.slug}</p>
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
+                Slug
+              </label>
+              <p className="mt-1 font-mono text-sm text-industrial-graphite-600">
+                {agency.slug}
+              </p>
             </div>
 
             {/* Email */}
             {agency.email && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Email
                 </label>
-                <p className="mt-1 text-base">{agency.email}</p>
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                  {agency.email}
+                </p>
               </div>
             )}
 
             {/* Phone */}
             {agency.phone && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Phone
                 </label>
-                <p className="mt-1 text-base">{agency.phone}</p>
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                  {agency.phone}
+                </p>
               </div>
             )}
 
             {/* Website */}
             {agency.website && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Website
                 </label>
-                <p className="mt-1 text-base">
+                <p className="mt-1 font-body text-base">
                   <a
                     href={agency.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-industrial-orange hover:text-industrial-orange-500 hover:underline"
                   >
                     {agency.website}
                   </a>
@@ -192,69 +204,79 @@ export default async function AgencyDetailPage({
             {/* Headquarters */}
             {agency.headquarters && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Headquarters
                 </label>
-                <p className="mt-1 text-base">{agency.headquarters}</p>
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                  {agency.headquarters}
+                </p>
               </div>
             )}
 
             {/* Founded Year */}
             {agency.founded_year && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Founded Year
                 </label>
-                <p className="mt-1 text-base">{agency.founded_year}</p>
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                  {agency.founded_year}
+                </p>
               </div>
             )}
 
             {/* Employee Count */}
             {agency.employee_count && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Employee Count
                 </label>
-                <p className="mt-1 text-base">{agency.employee_count}</p>
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                  {agency.employee_count}
+                </p>
               </div>
             )}
 
             {/* Company Size */}
             {agency.company_size && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Company Size
                 </label>
-                <p className="mt-1 text-base">{agency.company_size}</p>
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                  {agency.company_size}
+                </p>
               </div>
             )}
 
             {/* Offers Per Diem */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Offers Per Diem
               </label>
-              <p className="mt-1 text-base">
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
                 {agency.offers_per_diem ? 'Yes' : 'No'}
               </p>
             </div>
 
             {/* Is Union */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Union Shop
               </label>
-              <p className="mt-1 text-base">{agency.is_union ? 'Yes' : 'No'}</p>
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                {agency.is_union ? 'Yes' : 'No'}
+              </p>
             </div>
           </div>
 
           {/* Description - full width */}
           {agency.description && (
             <div className="pt-2">
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Description
               </label>
-              <p className="mt-1 text-base whitespace-pre-wrap">
+              <p className="mt-1 font-body text-base text-industrial-graphite-600 whitespace-pre-wrap">
                 {agency.description}
               </p>
             </div>
@@ -263,7 +285,7 @@ export default async function AgencyDetailPage({
       </Card>
 
       {/* Status Card */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Status & Ownership</CardTitle>
         </CardHeader>
@@ -271,11 +293,11 @@ export default async function AgencyDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Active Status */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Status
               </label>
               <div className="mt-1">
-                <Badge variant={agency.is_active ? 'default' : 'secondary'}>
+                <Badge variant={agency.is_active ? 'orange' : 'secondary'}>
                   {agency.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
@@ -283,7 +305,7 @@ export default async function AgencyDetailPage({
 
             {/* Claimed Status */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Claimed
               </label>
               <div className="mt-1">
@@ -297,18 +319,18 @@ export default async function AgencyDetailPage({
             {agency.is_claimed && ownerProfile && (
               <>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                     Owner Name
                   </label>
-                  <p className="mt-1 text-base">
+                  <p className="mt-1 font-body text-base text-industrial-graphite-600">
                     {ownerProfile.full_name || 'Not provided'}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                     Owner Email
                   </label>
-                  <p className="mt-1 text-base">
+                  <p className="mt-1 font-body text-base text-industrial-graphite-600">
                     {ownerProfile.email || 'Not provided'}
                   </p>
                 </div>
@@ -318,10 +340,10 @@ export default async function AgencyDetailPage({
             {/* Profile Completion */}
             {agency.profile_completion_percentage !== null && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Profile Completion
                 </label>
-                <p className="mt-1 text-base">
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
                   {agency.profile_completion_percentage}%
                 </p>
               </div>
@@ -331,7 +353,7 @@ export default async function AgencyDetailPage({
       </Card>
 
       {/* Timestamps Card */}
-      <Card>
+      <Card className="border-l-4 border-l-industrial-orange">
         <CardHeader>
           <CardTitle>Record Information</CardTitle>
         </CardHeader>
@@ -339,19 +361,21 @@ export default async function AgencyDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Created At */}
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                 Created
               </label>
-              <p className="mt-1 text-base">{formatDate(agency.created_at)}</p>
+              <p className="mt-1 font-body text-base text-industrial-graphite-600">
+                {formatDate(agency.created_at)}
+              </p>
             </div>
 
             {/* Updated At */}
             {agency.updated_at && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="font-body text-xs uppercase font-semibold tracking-widest text-industrial-graphite-400">
                   Last Updated
                 </label>
-                <p className="mt-1 text-base">
+                <p className="mt-1 font-body text-base text-industrial-graphite-600">
                   {formatDate(agency.updated_at)}
                 </p>
               </div>

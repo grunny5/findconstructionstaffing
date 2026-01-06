@@ -68,7 +68,9 @@ describe('AgencyFormModal', () => {
     it('renders cancel button', () => {
       render(<AgencyFormModal {...defaultProps} />);
 
-      expect(screen.getByTestId('cancel-button')).toHaveTextContent('Cancel');
+      expect(screen.getByTestId('agency-form-cancel-button')).toHaveTextContent(
+        'Cancel'
+      );
     });
 
     it('shows required indicator for company name field', () => {
@@ -426,7 +428,7 @@ describe('AgencyFormModal', () => {
       fireEvent.click(screen.getByTestId('submit-button'));
 
       await waitFor(() => {
-        expect(screen.getByTestId('cancel-button')).toBeDisabled();
+        expect(screen.getByTestId('agency-form-cancel-button')).toBeDisabled();
       });
     });
   });
@@ -537,7 +539,7 @@ describe('AgencyFormModal', () => {
     it('calls onClose when cancel button is clicked', () => {
       render(<AgencyFormModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByTestId('cancel-button'));
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
 
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
@@ -548,7 +550,7 @@ describe('AgencyFormModal', () => {
       const nameInput = screen.getByTestId('name-input');
       await userEvent.type(nameInput, 'Some Agency');
 
-      fireEvent.click(screen.getByTestId('cancel-button'));
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
 
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
