@@ -125,8 +125,11 @@ export function UsersTable({
     if (filtersChanged) {
       // Filters changed: reset to page 1 and update URL
       prevFiltersRef.current = { search: debouncedSearch, role: roleFilter };
-      skipNextPageUpdate.current = true;
-      setCurrentPage(1);
+      if (currentPage !== 1) {
+        // Only set skip flag when page will actually change
+        skipNextPageUpdate.current = true;
+        setCurrentPage(1);
+      }
       updateURL(debouncedSearch, roleFilter, 1);
     } else {
       // Only page changed: update URL with current page
