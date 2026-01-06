@@ -59,13 +59,21 @@ We believe that by building **comprehensive agency and user management capabilit
 
 > As a **Site Administrator**, I want **to upload or change an agency's logo**, so that **I can ensure agency profiles have proper branding without requiring owner action**.
 
+**Logo Specifications:**
+- **Dimensions:** 300px x 300px (square)
+- **Formats:** PNG, JPG, WebP
+- **Max upload size:** 5MB (resized server-side)
+- **Display locations:** Agency cards (directory listing), Agency profile page header
+
 **Acceptance Criteria:**
 
-- [ ] **Given** an admin is on the agency edit form, **When** they view the form, **Then** they see a logo upload component.
-- [ ] **Given** an admin uploads a valid image (PNG, JPG, WebP, max 5MB), **When** they save the form, **Then** the image is stored in Supabase Storage and the logo_url is updated.
+- [ ] **Given** an admin is on the agency edit form, **When** they view the form, **Then** they see a logo upload component with 300x300 preview.
+- [ ] **Given** an admin uploads a valid image (PNG, JPG, WebP, max 5MB), **When** they save the form, **Then** the image is resized to 300x300, stored in Supabase Storage, and the logo_url is updated.
 - [ ] **Given** an agency has an existing logo, **When** the admin opens the edit form, **Then** the current logo is displayed with an option to replace or remove.
 - [ ] **Given** an admin removes a logo, **When** they save, **Then** the logo_url is set to null and the storage file is deleted.
 - [ ] **Given** an admin uploads an invalid file type or oversized image, **When** they attempt to upload, **Then** they see a clear validation error message.
+- [ ] **Given** an agency has a logo, **When** viewing the agency card in the directory, **Then** the logo is displayed at appropriate size.
+- [ ] **Given** an agency has a logo, **When** viewing the agency profile page, **Then** the logo is displayed prominently in the header.
 
 ---
 
@@ -199,7 +207,7 @@ Per PKD requirements:
 - **Bulk user operations:** No bulk delete or bulk role change in v1
 - **User impersonation:** Admin cannot "login as" another user
 - **User password reset by admin:** Admin can only trigger password reset email, not set passwords directly
-- **Agency logo cropping/editing:** Upload only, no in-browser editing
+- **Agency logo cropping/editing:** Server-side resize to 300x300 only, no in-browser cropping or editing tools
 - **User suspension/ban:** Only full deletion, no temporary suspension in v1
 - **Email template customization:** Uses existing Supabase email templates
 

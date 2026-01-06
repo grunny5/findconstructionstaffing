@@ -252,8 +252,8 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 ### [ ] Task 1.3.2: Create LogoUpload Component
 
 - **Role:** Frontend Developer
-- **Objective:** Build a reusable logo upload component with preview and validation
-- **Context:** Component will be used in AgencyFormModal for logo management
+- **Objective:** Build a reusable logo upload component with 300x300 preview and validation
+- **Context:** Component will be used in AgencyFormModal for logo management. Logos are displayed on agency cards and profile pages.
 - **Key Files to Create:**
   - `components/admin/LogoUpload.tsx`
   - `components/admin/__tests__/LogoUpload.test.tsx`
@@ -262,15 +262,20 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - Shadcn/ui Avatar component
 - **Key Patterns to Follow:**
   - Drag-and-drop upload zone
-  - Image preview before upload
+  - 300x300 square preview area
   - Client-side validation (type, size)
   - Loading state during upload
+- **Logo Specifications:**
+  - **Output dimensions:** 300px x 300px (square)
+  - **Accepted formats:** PNG, JPG, WebP
+  - **Max upload size:** 5MB
 - **Acceptance Criteria (for this task):**
   - [ ] Drag-and-drop zone accepts image files
   - [ ] Click to browse functionality
-  - [ ] Preview shows selected/current image
+  - [ ] Preview shows selected/current image in 300x300 square container
   - [ ] Validates file type (PNG, JPG, WebP only)
   - [ ] Validates file size (max 5MB)
+  - [ ] Shows helpful text: "Recommended: Square image, 300x300px"
   - [ ] "Remove" button to clear selection/existing logo
   - [ ] Loading spinner during upload
   - [ ] Error messages for invalid files
@@ -287,22 +292,31 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 ### [ ] Task 1.3.3: Create Logo Upload API Endpoint
 
 - **Role:** Backend Developer
-- **Objective:** Create endpoint to upload agency logos to Supabase Storage
-- **Context:** Handles file upload, storage, and updates agency.logo_url
+- **Objective:** Create endpoint to upload agency logos to Supabase Storage with server-side resizing
+- **Context:** Handles file upload, resizes to 300x300, stores in Supabase, and updates agency.logo_url
 - **Key Files to Create:**
   - `app/api/admin/agencies/[id]/logo/route.ts`
   - `app/api/admin/agencies/[id]/logo/__tests__/route.test.ts`
 - **Key Files to Reference:**
   - Supabase Storage client documentation
+  - Sharp library for image resizing (npm install sharp)
   - Existing admin endpoint patterns
 - **Key Patterns to Follow:**
   - FormData handling for file upload
+  - Server-side resize to 300x300 using Sharp
   - Generate unique filename with agency ID
   - Delete old logo before uploading new
   - Return public URL after upload
+- **Logo Processing:**
+  - Resize to exactly 300x300 pixels
+  - Maintain aspect ratio with cover fit (crop to fill)
+  - Convert to WebP for optimal file size
+  - Quality: 85%
 - **Acceptance Criteria (for this task):**
   - [ ] `POST /api/admin/agencies/[id]/logo` accepts multipart form data
   - [ ] Validates file type and size server-side
+  - [ ] Resizes image to 300x300 pixels using Sharp
+  - [ ] Converts to WebP format for storage
   - [ ] Uploads to Supabase Storage in `logos/{agency_id}/` path
   - [ ] Updates agency.logo_url with public URL
   - [ ] Deletes old logo file if replacing
@@ -312,11 +326,12 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - [ ] DELETE sets logo_url to null and removes storage file
 - **Definition of Done:**
   - [ ] Upload and delete endpoints functional
+  - [ ] Image resizing tested with various input sizes
   - [ ] Unit tests cover all scenarios
   - [ ] 85%+ test coverage
   - [ ] **Final Check:** Follows existing admin API patterns
 
-**Estimated Effort:** 4 hours
+**Estimated Effort:** 5 hours
 
 ---
 
@@ -346,6 +361,38 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
   - [ ] Tests verify upload flow
   - [ ] Tests verify removal flow
   - [ ] **Final Check:** Consistent UX with other form fields
+
+**Estimated Effort:** 3 hours
+
+---
+
+### [ ] Task 1.3.5: Display Logo on Agency Cards and Profile Page
+
+- **Role:** Frontend Developer
+- **Objective:** Show agency logos on the directory listing cards and agency profile page header
+- **Context:** Logos uploaded by admin should be visible to all users browsing agencies
+- **Key Files to Modify:**
+  - `components/AgencyCard.tsx` (directory listing card)
+  - `app/recruiters/[slug]/page.tsx` (agency profile page)
+- **Key Files to Reference:**
+  - Shadcn/ui Avatar component
+  - Next.js Image component for optimization
+- **Key Patterns to Follow:**
+  - Use Next.js Image for automatic optimization
+  - Fallback to initials/placeholder if no logo
+  - Responsive sizing for different viewports
+- **Acceptance Criteria (for this task):**
+  - [ ] Agency cards show logo (if available) in top-left or header area
+  - [ ] Logo displayed at appropriate size on cards (e.g., 64x64 or 80x80)
+  - [ ] Agency profile page shows logo prominently in header (e.g., 120x120 or 150x150)
+  - [ ] Fallback placeholder shown when no logo (initials or generic icon)
+  - [ ] Images lazy-loaded for performance
+  - [ ] Alt text includes agency name for accessibility
+- **Definition of Done:**
+  - [ ] Logos display correctly on cards and profile
+  - [ ] Fallback works when no logo
+  - [ ] Tests verify logo rendering
+  - [ ] **Final Check:** Responsive and accessible
 
 **Estimated Effort:** 3 hours
 
@@ -744,13 +791,13 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ## 📊 Summary
 
-### Total Tasks: 18
+### Total Tasks: 19
 
 | Phase | Tasks | Estimated Hours |
 |-------|-------|-----------------|
-| Phase 1: Agency Full Editing | 10 tasks | 29 hours |
+| Phase 1: Agency Full Editing | 11 tasks | 33 hours |
 | Phase 2: User Management | 8 tasks | 27 hours |
-| **Total** | **18 tasks** | **56 hours** |
+| **Total** | **19 tasks** | **60 hours** |
 
 ### Dependencies Graph
 
@@ -768,7 +815,8 @@ Phase 1 (Week 1) - Agency Full Editing
     ├── 1.3.1 Create Storage Bucket
     ├── 1.3.2 Create LogoUpload Component
     ├── 1.3.3 Create Logo API ──────────────┐
-    └── 1.3.4 Integrate into Modal ─────────┘
+    ├── 1.3.4 Integrate into Modal ─────────┤
+    └── 1.3.5 Display on Cards/Profile ─────┘
 
 Phase 2 (Week 2) - User Management
 ├── Story 2.1: Create User
