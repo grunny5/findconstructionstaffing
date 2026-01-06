@@ -41,6 +41,8 @@ import {
   getFoundedYearOptions,
 } from '@/lib/validations/agency-creation';
 import type { AgencyCreationFormData } from '@/lib/validations/agency-creation';
+import { TradeSelector } from '@/components/dashboard/TradeSelector';
+import type { Trade } from '@/types/supabase';
 
 export interface AgencyFormModalProps {
   isOpen: boolean;
@@ -59,6 +61,7 @@ export interface AgencyFormModalProps {
     company_size?: string | null;
     offers_per_diem?: boolean | null;
     is_union?: boolean | null;
+    trades?: Trade[];
   };
 }
 
@@ -69,6 +72,9 @@ export function AgencyFormModal({
   agency,
 }: AgencyFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTrades, setSelectedTrades] = useState<Trade[]>(
+    agency?.trades || []
+  );
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
@@ -111,6 +117,7 @@ export function AgencyFormModal({
       is_union: agency?.is_union ?? false,
     };
     form.reset(mappedValues);
+    setSelectedTrades(agency?.trades || []);
   }, [agency, form]);
 
   const handleSubmit = async (data: AgencyCreationFormData) => {
@@ -123,12 +130,18 @@ export function AgencyFormModal({
 
       const method = isEditMode ? 'PATCH' : 'POST';
 
+      // Include trade_ids in the request body
+      const requestBody = {
+        ...data,
+        trade_ids: selectedTrades.map((t) => t.id),
+      };
+
       const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -144,6 +157,7 @@ export function AgencyFormModal({
       });
 
       form.reset();
+      setSelectedTrades([]);
       onClose();
       onSuccess?.();
     } catch (error) {
@@ -158,6 +172,7 @@ export function AgencyFormModal({
 
   const handleCancel = () => {
     form.reset();
+    setSelectedTrades(agency?.trades || []);
     onClose();
   };
 
@@ -432,6 +447,16 @@ export function AgencyFormModal({
                     </FormControl>
                   </FormItem>
                 )}
+              />
+            </div>
+
+            {/* Trade Specializations - Admin has no limit */}
+            <div className="pt-4 border-t" data-testid="trade-selector-section">
+              <TradeSelector
+                selectedTrades={selectedTrades}
+                onChange={setSelectedTrades}
+                disabled={isSubmitting}
+                maxTrades={100}
               />
             </div>
 

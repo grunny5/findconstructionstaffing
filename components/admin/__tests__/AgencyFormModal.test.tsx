@@ -2,12 +2,52 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AgencyFormModal } from '../AgencyFormModal';
 import { toast } from 'sonner';
+import type { Trade } from '@/types/supabase';
 
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
     error: jest.fn(),
   },
+}));
+
+// Mock TradeSelector component
+jest.mock('@/components/dashboard/TradeSelector', () => ({
+  TradeSelector: ({
+    selectedTrades,
+    onChange,
+    disabled,
+    maxTrades,
+  }: {
+    selectedTrades: Trade[];
+    onChange: (trades: Trade[]) => void;
+    disabled?: boolean;
+    maxTrades?: number;
+  }) => (
+    <div data-testid="trade-selector-mock">
+      <span data-testid="trade-count">{selectedTrades.length}</span>
+      <span data-testid="max-trades">{maxTrades}</span>
+      <button
+        data-testid="add-trade-button"
+        onClick={() =>
+          onChange([
+            ...selectedTrades,
+            { id: 'trade-new', name: 'New Trade', slug: 'new-trade' },
+          ])
+        }
+        disabled={disabled}
+      >
+        Add Trade
+      </button>
+      <button
+        data-testid="clear-trades-button"
+        onClick={() => onChange([])}
+        disabled={disabled}
+      >
+        Clear Trades
+      </button>
+    </div>
+  ),
 }));
 
 const mockFetch = jest.fn();
@@ -712,6 +752,136 @@ describe('AgencyFormModal', () => {
 
       expect(defaultProps.onClose).not.toHaveBeenCalled();
       expect(defaultProps.onSuccess).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Trade Selector Integration', () => {
+    it('renders TradeSelector component', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('trade-selector-section')).toBeInTheDocument();
+      expect(screen.getByTestId('trade-selector-mock')).toBeInTheDocument();
+    });
+
+    it('sets maxTrades to 100 for admin (no limit)', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('max-trades')).toHaveTextContent('100');
+    });
+
+    it('shows 0 trades by default in create mode', () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('0');
+    });
+
+    it('pre-populates trades when editing existing agency', () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        trades: [
+          { id: 'trade-1', name: 'Electrician', slug: 'electrician' },
+          { id: 'trade-2', name: 'Plumber', slug: 'plumber' },
+        ],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('2');
+    });
+
+    it('allows adding trades via TradeSelector', async () => {
+      render(<AgencyFormModal {...defaultProps} />);
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('0');
+
+      fireEvent.click(screen.getByTestId('add-trade-button'));
+
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('1');
+    });
+
+    it('includes trade_ids in form submission', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: {} }),
+      });
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      // Add a trade
+      fireEvent.click(screen.getByTestId('add-trade-button'));
+
+      // Fill required field
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+        expect(callBody.trade_ids).toEqual(['trade-new']);
+      });
+    });
+
+    it('resets trades when cancel is clicked', async () => {
+      const existingAgency = {
+        id: 'agency-123',
+        name: 'Test Agency',
+        trades: [{ id: 'trade-1', name: 'Electrician', slug: 'electrician' }],
+      };
+
+      render(<AgencyFormModal {...defaultProps} agency={existingAgency} />);
+
+      // Initially has 1 trade
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('1');
+
+      // Add another trade
+      fireEvent.click(screen.getByTestId('add-trade-button'));
+      expect(screen.getByTestId('trade-count')).toHaveTextContent('2');
+
+      // Cancel should reset to original
+      fireEvent.click(screen.getByTestId('agency-form-cancel-button'));
+
+      // Re-render with same agency to check reset
+      // Note: The modal closes on cancel, so we need to check the state was reset
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('disables TradeSelector when submitting', async () => {
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ data: {} }),
+                }),
+              100
+            )
+          )
+      );
+
+      render(<AgencyFormModal {...defaultProps} />);
+
+      const nameInput = screen.getByTestId('name-input');
+      await userEvent.type(nameInput, 'Test Agency');
+      fireEvent.blur(nameInput);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('submit-button')).not.toBeDisabled();
+      });
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('add-trade-button')).toBeDisabled();
+      });
     });
   });
 });

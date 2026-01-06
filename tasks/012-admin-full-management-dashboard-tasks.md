@@ -24,7 +24,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.1.1: Add TradeSelector Component to AgencyFormModal
+### [x] Task 1.1.1: Add TradeSelector Component to AgencyFormModal
 
 - **Role:** Frontend Developer
 - **Objective:** Integrate the existing TradeSelector component into the admin AgencyFormModal
