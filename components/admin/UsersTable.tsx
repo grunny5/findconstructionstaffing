@@ -347,7 +347,7 @@ export function UsersTable({
               variant="outline"
               size="sm"
               onClick={handleNextPage}
-              disabled={currentPage === totalPages}
+              disabled={currentPage >= totalPages || totalPages === 0}
               data-testid="pagination-next"
             >
               Next
