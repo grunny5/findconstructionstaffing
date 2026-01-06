@@ -153,7 +153,7 @@ This document breaks down Feature #012 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 1.2.2: Extend Admin Agency PATCH Endpoint for Regions
+### [x] Task 1.2.2: Extend Admin Agency PATCH Endpoint for Regions
 
 - **Role:** Backend Developer
 - **Objective:** Add region_ids support to the existing PATCH /api/admin/agencies/[id] endpoint
