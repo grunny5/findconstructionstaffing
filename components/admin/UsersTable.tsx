@@ -203,6 +203,7 @@ export function UsersTable({
   const clearFilters = () => {
     setSearchQuery('');
     setRoleFilter('all');
+    setCurrentPage(1);
   };
 
   const handleRoleChange = async (
