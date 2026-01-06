@@ -1,14 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Building2,
-  Users,
-  FileCheck,
-  CheckCircle2,
-  Clock,
-  XCircle,
-} from 'lucide-react';
+import { Building2, Users, FileCheck, CheckCircle2, Clock } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -20,6 +13,7 @@ export default async function AdminDashboardPage() {
 
   if (!user || authError) {
     redirect('/login');
+    return null; // Ensure we don't continue execution in tests
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -30,6 +24,7 @@ export default async function AdminDashboardPage() {
 
   if (profileError || !profile || profile.role !== 'admin') {
     redirect('/');
+    return null; // Ensure we don't continue execution in tests
   }
 
   // Fetch dashboard stats

@@ -107,7 +107,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="min-h-screen bg-industrial-bg-primary">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-industrial-bg-card border-r-2 border-industrial-graphite-200 min-h-screen fixed">
+        <aside className="w-64 bg-industrial-bg-card border-r-2 border-industrial-graphite-200 min-h-screen fixed relative">
           <div className="p-6 border-b-2 border-industrial-graphite-200">
             <h2 className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
               Admin Panel

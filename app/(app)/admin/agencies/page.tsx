@@ -14,6 +14,7 @@ export default async function AdminAgenciesPage() {
 
   if (!user || authError) {
     redirect('/login');
+    return null; // Ensure we don't continue execution in tests
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -24,6 +25,7 @@ export default async function AdminAgenciesPage() {
 
   if (profileError || !profile || profile.role !== 'admin') {
     redirect('/');
+    return null; // Ensure we don't continue execution in tests
   }
 
   const { data: agencies, error: agenciesError } = await supabase
