@@ -62,6 +62,24 @@ export function UsersTable({
   // Debounce search term (300ms)
   const debouncedSearch = useDebounce(searchQuery, 300);
 
+  // Re-sync users when props change
+  useEffect(() => {
+    setUsers(initialUsers);
+  }, [initialUsers]);
+
+  // Re-sync state when URL params change (browser navigation)
+  useEffect(() => {
+    const newSearch = searchParams.get('search') || '';
+    const newRole = searchParams.get('role') || 'all';
+    const pageParam = searchParams.get('page');
+    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+    const validPage = isNaN(newPage) || newPage < 1 ? 1 : newPage;
+
+    setSearchQuery(newSearch);
+    setRoleFilter(newRole);
+    setCurrentPage(validPage);
+  }, [searchParams]);
+
   // Update URL when filters change
   const updateURL = useCallback(
     (search: string, role: string, page: number) => {
@@ -82,6 +100,8 @@ export function UsersTable({
   // Track previous filter values to detect filter changes vs page changes
   const prevFiltersRef = useRef({ search: debouncedSearch, role: roleFilter });
   const isInitialMount = useRef(true);
+  // Skip the next page-only URL update (to prevent duplicate push when filters reset page)
+  const skipNextPageUpdate = useRef(false);
 
   // Single effect to handle URL updates
   useEffect(() => {
@@ -92,6 +112,12 @@ export function UsersTable({
       return;
     }
 
+    // Skip if flagged (filter change already pushed URL with page=1)
+    if (skipNextPageUpdate.current) {
+      skipNextPageUpdate.current = false;
+      return;
+    }
+
     const filtersChanged =
       prevFiltersRef.current.search !== debouncedSearch ||
       prevFiltersRef.current.role !== roleFilter;
@@ -99,6 +125,7 @@ export function UsersTable({
     if (filtersChanged) {
       // Filters changed: reset to page 1 and update URL
       prevFiltersRef.current = { search: debouncedSearch, role: roleFilter };
+      skipNextPageUpdate.current = true;
       setCurrentPage(1);
       updateURL(debouncedSearch, roleFilter, 1);
     } else {
@@ -128,7 +155,7 @@ export function UsersTable({
     return true;
   });
 
-  const hasActiveFilters = searchQuery !== '' || roleFilter !== 'all';
+  const hasActiveFilters = debouncedSearch !== '' || roleFilter !== 'all';
 
   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
   const startIndex = (currentPage - 1) * USERS_PER_PAGE;
