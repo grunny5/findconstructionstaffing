@@ -1,11 +1,18 @@
 name: Coverage Comment
 
+# DISABLED: Redundant with main CI pipeline which already runs tests with coverage
+# The main CI pipeline (ci.yml) runs the full test suite with coverage and uploads
+# coverage reports. This workflow was causing duplicate test runs (25+ minutes each).
+# Re-enable only if you need a separate coverage comment workflow.
 on:
   pull_request:
+    branches-ignore:
+      - '**'  # Disable for all branches
 
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write

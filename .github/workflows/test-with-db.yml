@@ -1,10 +1,16 @@
 name: Tests with Database
 
+# DISABLED: Redundant with main CI pipeline which already runs tests with PostgreSQL
+# The main CI pipeline (ci.yml) already includes a postgres service container and runs
+# the full test suite with database access. This workflow was causing duplicate test runs
+# (25+ minutes each). Re-enable only if you need separate database-specific testing.
 on:
   pull_request:
-    branches: [main, develop, staging]
+    branches-ignore:
+      - '**'  # Disable for all branches
   push:
-    branches: [main, develop, staging]
+    branches-ignore:
+      - '**'  # Disable for all branches
 
 permissions:
   contents: read
@@ -16,6 +22,7 @@ jobs:
   test-with-database:
     name: Run Tests with Database
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     env:
       # Global environment variables to ensure postgres user is used
