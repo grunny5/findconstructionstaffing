@@ -186,16 +186,16 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 - **Objective:** Create endpoint to retrieve agency compliance data for public display
 - **Context:** Used by agency profile page to show compliance badges
 - **Key Files to Create:**
-  - `app/api/agencies/[id]/compliance/route.ts`
-  - `app/api/agencies/[id]/compliance/__tests__/route.test.ts`
+  - `app/api/agencies/[slug]/compliance/route.ts`
+  - `app/api/agencies/[slug]/compliance/__tests__/route.test.ts`
 - **Key Files to Reference:**
-  - `app/api/agencies/[id]/route.ts` (existing agency detail pattern)
+  - `app/api/agencies/[slug]/route.ts` (existing agency detail pattern)
 - **Key Patterns to Follow:**
   - Only return is_active=true items for public
   - Include display names and expiration status
   - Handle agency not found
 - **Acceptance Criteria (for this task):**
-  - [ ] `GET /api/agencies/[id]/compliance` returns compliance data
+  - [ ] `GET /api/agencies/[slug]/compliance` returns compliance data
   - [ ] Only returns items where is_active=true
   - [ ] Each item includes: type, display_name, is_verified, expiration_date, is_expired
   - [ ] Returns empty array if no compliance data
@@ -1201,7 +1201,7 @@ Phase 6 (Days 19-22) - Expiration Tracking
 
 **API Routes:**
 
-- `app/api/agencies/[id]/compliance/route.ts`
+- `app/api/agencies/[slug]/compliance/route.ts`
 - `app/api/dashboard/compliance/route.ts`
 - `app/api/dashboard/compliance/document/route.ts`
 - `app/api/admin/agencies/[id]/compliance/route.ts`

@@ -17,6 +17,7 @@ export function createMockNextRequest(
     method?: string;
     headers?: Record<string, string>;
     searchParams?: Record<string, string | string[]>;
+    body?: FormData | Record<string, any> | string;
   } = {}
 ): NextRequest {
   const {
@@ -24,6 +25,7 @@ export function createMockNextRequest(
     method = 'GET',
     headers = {},
     searchParams = {},
+    body,
   } = options;
 
   // Create URL with search params
@@ -100,9 +102,24 @@ export function createMockNextRequest(
   });
 
   // Override body reading methods with mocks
-  mockRequest.json = jest.fn().mockResolvedValue({});
-  mockRequest.text = jest.fn().mockResolvedValue('');
-  mockRequest.formData = jest.fn().mockResolvedValue(new FormData());
+  // If a body is provided, use it; otherwise use default empty values
+  if (body instanceof FormData) {
+    mockRequest.formData = jest.fn().mockResolvedValue(body);
+    mockRequest.json = jest.fn().mockResolvedValue({});
+    mockRequest.text = jest.fn().mockResolvedValue('');
+  } else if (typeof body === 'string') {
+    mockRequest.text = jest.fn().mockResolvedValue(body);
+    mockRequest.json = jest.fn().mockResolvedValue({});
+    mockRequest.formData = jest.fn().mockResolvedValue(new FormData());
+  } else if (body && typeof body === 'object') {
+    mockRequest.json = jest.fn().mockResolvedValue(body);
+    mockRequest.text = jest.fn().mockResolvedValue(JSON.stringify(body));
+    mockRequest.formData = jest.fn().mockResolvedValue(new FormData());
+  } else {
+    mockRequest.json = jest.fn().mockResolvedValue({});
+    mockRequest.text = jest.fn().mockResolvedValue('');
+    mockRequest.formData = jest.fn().mockResolvedValue(new FormData());
+  }
   mockRequest.blob = jest.fn().mockResolvedValue(new Blob());
   mockRequest.arrayBuffer = jest.fn().mockResolvedValue(new ArrayBuffer(0));
 

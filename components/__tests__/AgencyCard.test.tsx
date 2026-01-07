@@ -587,7 +587,9 @@ describe('AgencyCard', () => {
         compliance: undefined,
       };
 
-      render(<AgencyCard agency={toAgencyCardProps(agencyWithoutCompliance)} />);
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithoutCompliance)} />
+      );
 
       // Compliance section should not be rendered
       // We can't easily test for absence of ComplianceBadges component

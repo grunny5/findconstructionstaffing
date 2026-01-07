@@ -219,51 +219,39 @@ async function applyFilters(
   if (compliance && compliance.length > 0) {
     const complianceQueryId = monitor.startQuery();
 
-    // For each compliance type, get agencies that have it active
-    // Then intersect all results (AND logic - must have ALL selected compliance types)
-    let complianceAgencyIds: Set<string> | null = null;
-
-    for (const complianceType of compliance) {
-      const { data: complianceData, error: complianceError } =
-        await queryWithRetry(async () =>
-          supabase
-            .from('agency_compliance')
-            .select('agency_id')
-            .eq('compliance_type', complianceType)
-            .eq('is_active', true)
-        );
-
-      monitor.endQuery(complianceQueryId);
-
-      if (complianceError || !complianceData) {
-        throw new Error('Failed to fetch agency compliance data');
-      }
-
-      const typeAgencyIds = new Set(
-        complianceData.map((ac) => ac.agency_id)
+    // Fetch all requested compliance types in a single query
+    const { data: complianceData, error: complianceError } =
+      await queryWithRetry(async () =>
+        supabase
+          .from('agency_compliance')
+          .select('agency_id, compliance_type')
+          .in('compliance_type', compliance)
+          .eq('is_active', true)
       );
 
-      if (complianceAgencyIds === null) {
-        // First compliance type
-        complianceAgencyIds = typeAgencyIds;
-      } else {
-        // Intersect with previous results (AND logic)
-        complianceAgencyIds = new Set(
-          Array.from(complianceAgencyIds).filter((id) =>
-            typeAgencyIds.has(id)
-          )
-        );
-      }
+    monitor.endQuery(complianceQueryId);
 
-      // If intersection is empty, no agencies match all compliance types
-      if (complianceAgencyIds.size === 0) {
-        break;
-      }
+    if (complianceError || !complianceData) {
+      throw new Error('Failed to fetch agency compliance data');
     }
 
-    const complianceAgencyIdsArray = complianceAgencyIds
-      ? Array.from(complianceAgencyIds)
-      : [];
+    // Group by agency_id and count compliance types
+    // Only keep agencies that have ALL requested compliance types (AND logic)
+    const agencyComplianceCounts = new Map<string, Set<string>>();
+
+    for (const row of complianceData) {
+      if (!agencyComplianceCounts.has(row.agency_id)) {
+        agencyComplianceCounts.set(row.agency_id, new Set());
+      }
+      agencyComplianceCounts.get(row.agency_id)!.add(row.compliance_type);
+    }
+
+    // Filter to only agencies that have all requested compliance types
+    const complianceAgencyIdsArray = Array.from(
+      agencyComplianceCounts.entries()
+    )
+      .filter(([_, types]) => types.size === compliance.length)
+      .map(([agencyId]) => agencyId);
 
     // Intersect with existing filters if needed
     if (agencyIds !== null) {

@@ -628,7 +628,10 @@ export interface ComplianceFullResponse {
  */
 export function isComplianceExpired(expirationDate: string | null): boolean {
   if (!expirationDate) return false;
-  return new Date(expirationDate) < new Date();
+  const expDate = new Date(expirationDate);
+  // Check if the date is valid
+  if (isNaN(expDate.getTime())) return false;
+  return expDate < new Date();
 }
 
 /**
@@ -640,6 +643,8 @@ export function isComplianceExpiringSoon(
 ): boolean {
   if (!expirationDate) return false;
   const expDate = new Date(expirationDate);
+  // Check if the date is valid
+  if (isNaN(expDate.getTime())) return false;
   const now = new Date();
   const diffTime = expDate.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

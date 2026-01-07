@@ -181,8 +181,7 @@ We believe that by building **comprehensive compliance tracking and display capa
 
 | Endpoint                                       | Method | Purpose                                        |
 | ---------------------------------------------- | ------ | ---------------------------------------------- |
-| `/api/agencies/[id]/compliance`                | GET    | Get agency's compliance data (public)          |
-| `/api/agencies/[id]/compliance`                | PUT    | Agency owner updates their compliance          |
+| `/api/agencies/[slug]/compliance`              | GET    | Get agency's compliance data (public)          |
 | `/api/admin/agencies/[id]/compliance`          | GET    | Admin gets agency compliance with admin fields |
 | `/api/admin/agencies/[id]/compliance`          | PUT    | Admin updates agency compliance                |
 | `/api/admin/agencies/[id]/compliance/verify`   | POST   | Admin verifies a compliance item               |
@@ -195,10 +194,10 @@ We believe that by building **comprehensive compliance tracking and display capa
 
 **Modified Endpoints:**
 
-| Endpoint             | Method | Change                                                                                                                    |
-| -------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `/api/agencies`      | GET    | Add compliance filter params: `osha`, `drug_testing`, `background_checks`, `workers_comp`, `general_liability`, `bonding` |
-| `/api/agencies/[id]` | GET    | Include compliance data in response                                                                                       |
+| Endpoint                 | Method | Change                                                      |
+| ------------------------ | ------ | ----------------------------------------------------------- |
+| `/api/agencies`          | GET    | Add compliance filter params: `compliance[]` array          |
+| `/api/agencies/[slug]`   | GET    | Include compliance data in response                         |
 
 #### Component Changes
 

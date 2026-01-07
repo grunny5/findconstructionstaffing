@@ -121,16 +121,30 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should return 404 for non-existent agency', async () => {
-    const mockQueryBuilder = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST116', message: 'No rows found' },
-      }),
-    };
-
-    supabase.from.mockReturnValue(mockQueryBuilder);
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: null,
+            error: { code: 'PGRST116', message: 'No rows found' },
+          }),
+        };
+      }
+      if (table === 'agency_compliance') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({ data: [], error: null }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/non-existent'
@@ -146,16 +160,30 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should handle database errors', async () => {
-    const mockQueryBuilder = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
-        data: null,
-        error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
-      }),
-    };
-
-    supabase.from.mockReturnValue(mockQueryBuilder);
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'agencies') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          single: jest.fn().mockResolvedValue({
+            data: null,
+            error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+          }),
+        };
+      }
+      if (table === 'agency_compliance') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({ data: [], error: null }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'

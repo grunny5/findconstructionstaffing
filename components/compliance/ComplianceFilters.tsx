@@ -54,7 +54,6 @@ export function ComplianceFilters({
 
   return (
     <div className={cn('space-y-3', className)}>
-      {/* Header with clear all button */}
       <div className="flex items-center justify-between">
         <h3 className="font-display text-sm uppercase tracking-wide text-industrial-graphite-600">
           Compliance Requirements
@@ -71,7 +70,6 @@ export function ComplianceFilters({
         )}
       </div>
 
-      {/* Selected count badge */}
       {selectedFilters.length > 0 && (
         <Badge
           variant="secondary"
@@ -81,7 +79,6 @@ export function ComplianceFilters({
         </Badge>
       )}
 
-      {/* Compliance type checkboxes */}
       <div className="space-y-3">
         {COMPLIANCE_TYPES.map((complianceType) => {
           const Icon = COMPLIANCE_ICONS[complianceType];
@@ -115,7 +112,6 @@ export function ComplianceFilters({
         })}
       </div>
 
-      {/* Help text */}
       {selectedFilters.length > 0 && (
         <p className="font-body text-xs text-industrial-graphite-400 italic">
           Showing agencies with all selected compliance certifications

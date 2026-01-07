@@ -176,10 +176,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const extension = file.name.split('.').pop()?.toLowerCase() || 'pdf';
     const filename = `${agency.id}/${complianceType}/${timestamp}.${extension}`;
 
-    // Get existing compliance record to check for old document
+    // Get existing compliance record to check for old document and preserve is_active state
     const { data: existingCompliance } = await supabase
       .from('agency_compliance')
-      .select('document_url')
+      .select('document_url, is_active')
       .eq('agency_id', agency.id)
       .eq('compliance_type', complianceType)
       .single();
@@ -223,6 +223,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filename);
 
     // Update or insert compliance record
+    // Preserve existing is_active state, or default to false for new records
     const { error: upsertError } = await supabase
       .from('agency_compliance')
       .upsert(
@@ -230,7 +231,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           agency_id: agency.id,
           compliance_type: complianceType,
           document_url: publicUrl,
-          is_active: true,
+          is_active: existingCompliance?.is_active ?? false,
         },
         {
           onConflict: 'agency_id,compliance_type',

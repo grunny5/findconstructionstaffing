@@ -344,17 +344,41 @@ describe('GET /api/agencies', () => {
         },
       ];
 
-      const mockComplianceData = [{ agency_id: '1' }];
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+      ];
 
       configureSupabaseMock(supabase, {
         defaultData: mockAgencies,
         defaultCount: 1,
-        customResponses: {
-          agency_compliance: {
-            data: mockComplianceData,
-            count: 1,
-          },
-        },
+      });
+
+      // Use mockImplementation to handle different tables
+      (supabase as any).from.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          const complianceChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: mockComplianceData, error: null }),
+            complianceChain
+          );
+        }
+        // Default agencies table behavior
+        const agenciesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+        };
+        return Object.assign(
+          Promise.resolve({ data: mockAgencies, error: null, count: 1 }),
+          agenciesChain
+        );
       });
 
       const mockRequest = createMockNextRequest({
@@ -366,10 +390,9 @@ describe('GET /api/agencies', () => {
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(data.data).toHaveLength(1);
-      expect((supabase as any).eq).toHaveBeenCalledWith(
-        'compliance_type',
-        'osha_certified'
-      );
+      expect((supabase as any).in).toHaveBeenCalledWith('compliance_type', [
+        'osha_certified',
+      ]);
       expect((supabase as any).eq).toHaveBeenCalledWith('is_active', true);
     });
 
@@ -385,22 +408,45 @@ describe('GET /api/agencies', () => {
         },
       ];
 
-      const mockOSHAData = [{ agency_id: '1' }, { agency_id: '2' }];
-      const mockDrugTestData = [{ agency_id: '1' }, { agency_id: '3' }];
+      // Agency 1 has both compliance types, Agency 2 only has OSHA, Agency 3 only has drug testing
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+        { agency_id: '1', compliance_type: 'drug_testing' },
+        { agency_id: '2', compliance_type: 'osha_certified' },
+        { agency_id: '3', compliance_type: 'drug_testing' },
+      ];
 
-      let callCount = 0;
       configureSupabaseMock(supabase, {
         defaultData: mockAgencies,
         defaultCount: 1,
-        customResponses: {
-          agency_compliance: {
-            data: () => {
-              callCount++;
-              return callCount === 1 ? mockOSHAData : mockDrugTestData;
-            },
-            count: () => (callCount === 1 ? 2 : 2),
-          },
-        },
+      });
+
+      // Use mockImplementation to handle different tables
+      (supabase as any).from.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          const complianceChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: mockComplianceData, error: null }),
+            complianceChain
+          );
+        }
+        // Default agencies table behavior
+        const agenciesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+        };
+        return Object.assign(
+          Promise.resolve({ data: mockAgencies, error: null, count: 1 }),
+          agenciesChain
+        );
       });
 
       const mockRequest = createMockNextRequest({
@@ -433,25 +479,62 @@ describe('GET /api/agencies', () => {
 
       const mockTradeData = [{ id: 't1' }];
       const mockAgencyTradeData = [{ agency_id: '1' }, { agency_id: '2' }];
-      const mockComplianceData = [{ agency_id: '1' }, { agency_id: '3' }];
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+        { agency_id: '3', compliance_type: 'osha_certified' },
+      ];
 
       configureSupabaseMock(supabase, {
         defaultData: mockAgencies,
         defaultCount: 1,
-        customResponses: {
-          trades: {
-            data: mockTradeData,
-            count: 1,
-          },
-          agency_trades: {
-            data: mockAgencyTradeData,
-            count: 2,
-          },
-          agency_compliance: {
-            data: mockComplianceData,
-            count: 2,
-          },
-        },
+      });
+
+      // Use mockImplementation to handle different tables
+      (supabase as any).from.mockImplementation((table: string) => {
+        if (table === 'trades') {
+          const tradesChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: mockTradeData, error: null }),
+            tradesChain
+          );
+        }
+        if (table === 'agency_trades') {
+          const agencyTradesChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: mockAgencyTradeData, error: null }),
+            agencyTradesChain
+          );
+        }
+        if (table === 'agency_compliance') {
+          const complianceChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: mockComplianceData, error: null }),
+            complianceChain
+          );
+        }
+        // Default agencies table behavior
+        const agenciesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+        };
+        return Object.assign(
+          Promise.resolve({ data: mockAgencies, error: null, count: 1 }),
+          agenciesChain
+        );
       });
 
       const mockRequest = createMockNextRequest({
@@ -483,12 +566,34 @@ describe('GET /api/agencies', () => {
       configureSupabaseMock(supabase, {
         defaultData: [],
         defaultCount: 0,
-        customResponses: {
-          agency_compliance: {
-            data: [],
-            count: 0,
-          },
-        },
+      });
+
+      // Use mockImplementation to handle different tables
+      (supabase as any).from.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          const complianceChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: [], error: null }),
+            complianceChain
+          );
+        }
+        // Default agencies table behavior
+        const agenciesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+        };
+        return Object.assign(
+          Promise.resolve({ data: [], error: null, count: 0 }),
+          agenciesChain
+        );
       });
 
       const mockRequest = createMockNextRequest({
@@ -504,22 +609,43 @@ describe('GET /api/agencies', () => {
     });
 
     it('should handle multiple compliance filters with no intersection', async () => {
-      const mockOSHAData = [{ agency_id: '1' }];
-      const mockDrugTestData = [{ agency_id: '2' }];
+      // Agency 1 only has OSHA, Agency 2 only has drug testing - no overlap
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+        { agency_id: '2', compliance_type: 'drug_testing' },
+      ];
 
-      let callCount = 0;
       configureSupabaseMock(supabase, {
         defaultData: [],
         defaultCount: 0,
-        customResponses: {
-          agency_compliance: {
-            data: () => {
-              callCount++;
-              return callCount === 1 ? mockOSHAData : mockDrugTestData;
-            },
-            count: () => 1,
-          },
-        },
+      });
+
+      // Use mockImplementation to handle different tables
+      (supabase as any).from.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          const complianceChain = {
+            select: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+          };
+          return Object.assign(
+            Promise.resolve({ data: mockComplianceData, error: null }),
+            complianceChain
+          );
+        }
+        // Default agencies table behavior
+        const agenciesChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          or: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+        };
+        return Object.assign(
+          Promise.resolve({ data: [], error: null, count: 0 }),
+          agenciesChain
+        );
       });
 
       const mockRequest = createMockNextRequest({

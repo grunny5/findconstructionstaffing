@@ -15,24 +15,32 @@ describe('ComplianceFilters', () => {
 
   describe('Rendering', () => {
     it('renders all 6 compliance types', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       expect(screen.getByText('OSHA Certified')).toBeInTheDocument();
       expect(screen.getByText('Drug Testing Policy')).toBeInTheDocument();
       expect(screen.getByText('Background Checks')).toBeInTheDocument();
       expect(screen.getByText("Workers' Compensation")).toBeInTheDocument();
-      expect(screen.getByText('General Liability Insurance')).toBeInTheDocument();
+      expect(
+        screen.getByText('General Liability Insurance')
+      ).toBeInTheDocument();
       expect(screen.getByText('Bonding/Surety Bond')).toBeInTheDocument();
     });
 
     it('renders header', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       expect(screen.getByText('Compliance Requirements')).toBeInTheDocument();
     });
 
     it('renders checkboxes for each compliance type', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       const checkboxes = screen.getAllByRole('checkbox');
       expect(checkboxes).toHaveLength(6);
@@ -49,7 +57,9 @@ describe('ComplianceFilters', () => {
     });
 
     it('renders descriptions for each compliance type', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       expect(
         screen.getByText(/OSHA 10\/30 safety training certification/)
@@ -60,19 +70,25 @@ describe('ComplianceFilters', () => {
     });
 
     it('does not render clear all button when no filters selected', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       expect(screen.queryByText('Clear all')).not.toBeInTheDocument();
     });
 
     it('does not render selected count badge when no filters selected', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       expect(screen.queryByText(/selected/)).not.toBeInTheDocument();
     });
 
     it('does not render help text when no filters selected', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       expect(
         screen.queryByText(/Showing agencies with all selected compliance/)
@@ -139,7 +155,9 @@ describe('ComplianceFilters', () => {
   describe('User Interactions', () => {
     it('calls onChange when checkbox is clicked', async () => {
       const user = userEvent.setup();
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       const oshaCheckbox = screen.getByLabelText(/OSHA Certified/);
       await user.click(oshaCheckbox);
@@ -248,7 +266,9 @@ describe('ComplianceFilters', () => {
 
   describe('Accessibility', () => {
     it('associates labels with checkboxes', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       const oshaCheckbox = screen.getByLabelText(/OSHA Certified/);
       expect(oshaCheckbox).toBeInTheDocument();
@@ -257,7 +277,9 @@ describe('ComplianceFilters', () => {
 
     it('renders clickable labels', async () => {
       const user = userEvent.setup();
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       // Click the label text instead of checkbox
       const label = screen.getByText('OSHA Certified');
@@ -269,7 +291,9 @@ describe('ComplianceFilters', () => {
 
   describe('Edge Cases', () => {
     it('handles empty selectedFilters array', () => {
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       const checkboxes = screen.getAllByRole('checkbox');
       checkboxes.forEach((checkbox) => {
@@ -301,7 +325,9 @@ describe('ComplianceFilters', () => {
 
     it('handles rapid toggling', async () => {
       const user = userEvent.setup();
-      render(<ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />);
+      render(
+        <ComplianceFilters selectedFilters={[]} onChange={mockOnChange} />
+      );
 
       const oshaCheckbox = screen.getByLabelText(/OSHA Certified/);
 
