@@ -128,6 +128,8 @@ export interface AgenciesQueryParams {
   trades?: string[];
   /** Filter by state codes */
   states?: string[];
+  /** Filter by compliance types */
+  compliance?: ComplianceType[];
   /** Results per page (default: 20, max: 100) */
   limit?: number;
   /** Pagination offset (default: 0) */

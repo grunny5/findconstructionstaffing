@@ -40,6 +40,12 @@ function buildQueryString(params: AgenciesQueryParams): string {
     });
   }
 
+  if (params.compliance && params.compliance.length > 0) {
+    params.compliance.forEach((complianceType) => {
+      searchParams.append('compliance[]', complianceType);
+    });
+  }
+
   if (params.limit !== undefined) {
     searchParams.set('limit', params.limit.toString());
   }
