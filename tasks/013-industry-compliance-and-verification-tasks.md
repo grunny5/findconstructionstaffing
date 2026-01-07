@@ -1237,7 +1237,7 @@ Phase 6 (Days 19-22) - Expiration Tracking
 
 **API Routes:**
 
-- `app/api/agencies/[id]/route.ts` (include compliance in response)
+- `app/api/agencies/[slug]/route.ts` (include compliance in response)
 - `app/api/agencies/route.ts` (add compliance filters)
 
 **Components:**

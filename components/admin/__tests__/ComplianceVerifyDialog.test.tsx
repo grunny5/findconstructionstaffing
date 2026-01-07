@@ -1020,7 +1020,7 @@ describe('ComplianceVerifyDialog', () => {
     });
 
     it('should reset form state when closing', async () => {
-      render(
+      const { rerender } = render(
         <ComplianceVerifyDialog
           isOpen={true}
           complianceItem={mockComplianceItem}
@@ -1060,6 +1060,36 @@ describe('ComplianceVerifyDialog', () => {
       fireEvent.click(closeButton!);
 
       expect(mockOnClose).toHaveBeenCalled();
+
+      // Reopen dialog to verify form state is reset
+      rerender(
+        <ComplianceVerifyDialog
+          isOpen={true}
+          complianceItem={mockComplianceItem}
+          agencyId={agencyId}
+          agencyName={agencyName}
+          onComplete={mockOnComplete}
+          onClose={mockOnClose}
+        />
+      );
+
+      // Verify admin notes field is empty
+      const reopenedNotesTextarea = screen.getByPlaceholderText(
+        /Add any notes about this verification/
+      );
+      expect(reopenedNotesTextarea).toHaveValue('');
+
+      // Verify reject reason field is not shown (showRejectReason is false)
+      expect(
+        screen.queryByPlaceholderText(
+          /Explain why this document is being rejected/
+        )
+      ).not.toBeInTheDocument();
+
+      // Verify Reject button is shown (not in rejection mode)
+      expect(
+        screen.getByRole('button', { name: /^Reject$/ })
+      ).toBeInTheDocument();
     });
   });
 });
