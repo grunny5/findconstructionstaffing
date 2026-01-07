@@ -7,10 +7,10 @@ name: Tests with Database
 on:
   pull_request:
     branches-ignore:
-      - '**'  # Disable for all branches
+      - '**' # Disable for all branches
   push:
     branches-ignore:
-      - '**'  # Disable for all branches
+      - '**' # Disable for all branches
 
 permissions:
   contents: read

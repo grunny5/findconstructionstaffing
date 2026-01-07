@@ -7,7 +7,7 @@ name: Coverage Comment
 on:
   pull_request:
     branches-ignore:
-      - '**'  # Disable for all branches
+      - '**' # Disable for all branches
 
 jobs:
   coverage:
