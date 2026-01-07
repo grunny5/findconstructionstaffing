@@ -142,6 +142,33 @@ jest.mock('@/components/admin/LogoUpload', () => ({
   },
 }));
 
+// Mock ComplianceSettings component
+jest.mock('@/components/compliance/ComplianceSettings', () => ({
+  ComplianceSettings: ({
+    initialData,
+    onSave,
+    isLoading,
+    isAdmin,
+  }: {
+    initialData?: any[];
+    onSave: (data: any[]) => Promise<void>;
+    isLoading?: boolean;
+    isAdmin?: boolean;
+  }) => (
+    <div data-testid="compliance-settings-mock">
+      <span data-testid="compliance-loading">{isLoading ? 'true' : 'false'}</span>
+      <span data-testid="compliance-is-admin">{isAdmin ? 'true' : 'false'}</span>
+      <span data-testid="compliance-item-count">{initialData?.length || 0}</span>
+      <button
+        data-testid="compliance-save-button"
+        onClick={() => onSave([])}
+      >
+        Save Compliance
+      </button>
+    </div>
+  ),
+}));
+
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -155,6 +182,22 @@ describe('AgencyFormModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockReset();
+
+    // Default mock for compliance data fetch (edit mode)
+    // Tests can override this by mocking fetch again after render
+    mockFetch.mockImplementation((url) => {
+      if (typeof url === 'string' && url.includes('/compliance')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ data: [] }),
+        });
+      }
+      // Return a default response for other fetch calls
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+      });
+    });
   });
 
   describe('Create Mode Rendering', () => {
@@ -611,6 +654,7 @@ describe('AgencyFormModal', () => {
     });
 
     it('shows success toast with update message', async () => {
+      // Mock agency update (compliance fetch is handled by beforeEach)
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ data: { id: 'agency-123' } }),
@@ -640,6 +684,13 @@ describe('AgencyFormModal', () => {
     });
 
     it('shows error toast with update failed message', async () => {
+      // Mock compliance fetch (successful)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      });
+
+      // Mock agency update (failed)
       mockFetch.mockResolvedValueOnce({
         ok: false,
         json: async () => ({ error: { message: 'Update failed' } }),

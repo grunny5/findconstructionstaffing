@@ -44,7 +44,10 @@ import type { AgencyCreationFormData } from '@/lib/validations/agency-creation';
 import { TradeSelector } from '@/components/dashboard/TradeSelector';
 import { RegionSelector } from '@/components/dashboard/RegionSelector';
 import { LogoUpload } from '@/components/admin/LogoUpload';
+import { ComplianceSettings } from '@/components/compliance/ComplianceSettings';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Trade, Region } from '@/types/supabase';
+import type { ComplianceItemFull } from '@/types/api';
 
 export interface AgencyFormModalProps {
   isOpen: boolean;
@@ -86,6 +89,13 @@ export function AgencyFormModal({
   const [logoRemoved, setLogoRemoved] = useState(false);
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'compliance'>(
+    'details'
+  );
+  const [complianceData, setComplianceData] = useState<ComplianceItemFull[]>(
+    []
+  );
+  const [isLoadingCompliance, setIsLoadingCompliance] = useState(false);
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
@@ -110,6 +120,65 @@ export function AgencyFormModal({
     },
   });
 
+  const fetchComplianceData = async () => {
+    if (!isEditMode || !agency?.id) return;
+
+    setIsLoadingCompliance(true);
+    try {
+      const response = await fetch(
+        `/api/admin/agencies/${agency.id}/compliance`
+      );
+      if (response.ok) {
+        const result = await response.json();
+        setComplianceData(result.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch compliance data:', error);
+    } finally {
+      setIsLoadingCompliance(false);
+    }
+  };
+
+  const saveComplianceData = async (
+    updatedCompliance: Array<{
+      type: string;
+      isActive: boolean;
+      expirationDate: string | null;
+    }>
+  ) => {
+    if (!isEditMode || !agency?.id) return;
+
+    try {
+      const response = await fetch(
+        `/api/admin/agencies/${agency.id}/compliance`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ compliance: updatedCompliance }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to save compliance data');
+      }
+
+      const result = await response.json();
+      // Update local state with the response
+      if (result.data) {
+        setComplianceData(result.data);
+      }
+
+      toast.success('Compliance Updated', {
+        description: 'Compliance settings have been saved successfully.',
+      });
+    } catch (error) {
+      toast.error('Update Failed', {
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
+      });
+    }
+  };
+
   useEffect(() => {
     const mappedValues: AgencyCreationFormData = {
       name: agency?.name || '',
@@ -133,7 +202,13 @@ export function AgencyFormModal({
     setPendingLogoFile(null);
     setLogoRemoved(false);
     setLogoUploadError(null);
-  }, [agency, form]);
+    setActiveTab('details');
+
+    // Fetch compliance data for edit mode
+    if (isEditMode) {
+      fetchComplianceData();
+    }
+  }, [agency, form, isEditMode]);
 
   const handleLogoFileSelect = (file: File | null) => {
     setLogoUploadError(null);
@@ -316,13 +391,28 @@ export function AgencyFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-            data-testid="agency-form"
-          >
-            <FormField
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'details' | 'compliance')}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details" data-testid="details-tab">
+              Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="compliance"
+              data-testid="compliance-tab"
+              disabled={!isEditMode}
+            >
+              Compliance
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="mt-6">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-4"
+                data-testid="agency-form"
+              >
+                <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -600,32 +690,45 @@ export function AgencyFormModal({
               />
             </div>
 
-            <DialogFooter className="gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                data-testid="agency-form-cancel-button"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={!form.formState.isValid || isSubmitting}
-                data-testid="submit-button"
-              >
-                {isSubmitting && (
-                  <Loader2
-                    className="mr-2 h-4 w-4 animate-spin"
-                    data-testid="loading-spinner"
-                  />
-                )}
-                {isEditMode ? 'Save Changes' : 'Create Agency'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+                <DialogFooter className="gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={isSubmitting}
+                    data-testid="agency-form-cancel-button"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={!form.formState.isValid || isSubmitting}
+                    data-testid="submit-button"
+                  >
+                    {isSubmitting && (
+                      <Loader2
+                        className="mr-2 h-4 w-4 animate-spin"
+                        data-testid="loading-spinner"
+                      />
+                    )}
+                    {isEditMode ? 'Save Changes' : 'Create Agency'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </TabsContent>
+
+          <TabsContent value="compliance" className="mt-6">
+            {isEditMode && (
+              <ComplianceSettings
+                initialData={complianceData}
+                onSave={saveComplianceData}
+                isLoading={isLoadingCompliance}
+                isAdmin={true}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
