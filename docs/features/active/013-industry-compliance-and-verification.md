@@ -194,10 +194,10 @@ We believe that by building **comprehensive compliance tracking and display capa
 
 **Modified Endpoints:**
 
-| Endpoint                 | Method | Change                                                      |
-| ------------------------ | ------ | ----------------------------------------------------------- |
-| `/api/agencies`          | GET    | Add compliance filter params: `compliance[]` array          |
-| `/api/agencies/[slug]`   | GET    | Include compliance data in response                         |
+| Endpoint               | Method | Change                                             |
+| ---------------------- | ------ | -------------------------------------------------- |
+| `/api/agencies`        | GET    | Add compliance filter params: `compliance[]` array |
+| `/api/agencies/[slug]` | GET    | Include compliance data in response                |
 
 #### Component Changes
 
