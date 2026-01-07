@@ -286,8 +286,8 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 - **Objective:** Include compliance data in the agency detail API response
 - **Context:** Agency profile page needs compliance data without separate API call
 - **Key Files to Modify:**
-  - `app/api/agencies/[id]/route.ts`
-  - `app/api/agencies/[id]/__tests__/route.test.ts`
+  - `app/api/agencies/[slug]/route.ts`
+  - `app/api/agencies/[slug]/__tests__/route.test.ts`
 - **Key Files to Reference:**
   - Task 1.2.1 compliance response format
 - **Key Patterns to Follow:**

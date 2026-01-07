@@ -286,7 +286,7 @@ describe('ComplianceVerifyDialog', () => {
       // Check for the image with the expected alt text
       const img = screen.getByAltText('OSHA Certified document');
       expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute('src', mockComplianceItem.documentUrl);
+      expect(img).toHaveAttribute('src', mockComplianceItem.documentUrl!);
 
       // Should not show PDF download link
       expect(
@@ -311,7 +311,7 @@ describe('ComplianceVerifyDialog', () => {
       expect(link).toBeInTheDocument();
       expect(link.closest('a')).toHaveAttribute(
         'href',
-        mockComplianceItemPDF.documentUrl
+        mockComplianceItemPDF.documentUrl ?? undefined
       );
     });
 
