@@ -132,6 +132,7 @@ export function useAgencies(
     search,
     trades,
     states,
+    compliance,
     limit = API_CONSTANTS.DEFAULT_LIMIT,
     offset = API_CONSTANTS.DEFAULT_OFFSET,
     enabled = true,
@@ -143,6 +144,7 @@ export function useAgencies(
     search,
     trades,
     states,
+    compliance,
     limit,
     offset,
   };

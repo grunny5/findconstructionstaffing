@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -120,7 +120,7 @@ export function AgencyFormModal({
     },
   });
 
-  const fetchComplianceData = async () => {
+  const fetchComplianceData = useCallback(async () => {
     if (!isEditMode || !agency?.id) return;
 
     setIsLoadingCompliance(true);
@@ -137,7 +137,7 @@ export function AgencyFormModal({
     } finally {
       setIsLoadingCompliance(false);
     }
-  };
+  }, [isEditMode, agency?.id]);
 
   const saveComplianceData = async (
     updatedCompliance: Array<{
@@ -208,7 +208,7 @@ export function AgencyFormModal({
     if (isEditMode) {
       fetchComplianceData();
     }
-  }, [agency, form, isEditMode]);
+  }, [agency, form, isEditMode, fetchComplianceData]);
 
   const handleLogoFileSelect = (file: File | null) => {
     setLogoUploadError(null);
@@ -391,7 +391,10 @@ export function AgencyFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'details' | 'compliance')}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as 'details' | 'compliance')}
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details" data-testid="details-tab">
               Details
@@ -413,282 +416,303 @@ export function AgencyFormModal({
                 data-testid="agency-form"
               >
                 <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Company Name <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter company name"
-                      data-testid="name-input"
-                    />
-                  </FormControl>
-                  <FormMessage data-testid="name-error" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Describe the company and its services..."
-                      rows={4}
-                      data-testid="description-input"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Brief description of the company (max 5000 characters)
-                  </FormDescription>
-                  <FormMessage data-testid="description-error" />
-                </FormItem>
-              )}
-            />
-
-            {/* Agency Logo */}
-            <div className="pt-4 border-t" data-testid="logo-upload-section">
-              <LogoUpload
-                currentLogoUrl={logoRemoved ? null : agency?.logo_url}
-                onFileSelect={handleLogoFileSelect}
-                isUploading={isUploadingLogo}
-                disabled={isSubmitting}
-                error={logoUploadError}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="url"
-                        placeholder="https://www.example.com"
-                        data-testid="website-input"
-                      />
-                    </FormControl>
-                    <FormMessage data-testid="website-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        placeholder="contact@example.com"
-                        data-testid="email-input"
-                      />
-                    </FormControl>
-                    <FormMessage data-testid="email-error" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="tel"
-                        placeholder="+12345678900"
-                        data-testid="phone-input"
-                      />
-                    </FormControl>
-                    <FormDescription>E.164 format</FormDescription>
-                    <FormMessage data-testid="phone-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="headquarters"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Headquarters</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="City, State"
-                        data-testid="headquarters-input"
-                      />
-                    </FormControl>
-                    <FormMessage data-testid="headquarters-error" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="founded_year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Founded Year</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Company Name <span className="text-destructive">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger data-testid="founded-year-select">
-                          <SelectValue placeholder="Select year" />
-                        </SelectTrigger>
+                        <Input
+                          {...field}
+                          placeholder="Enter company name"
+                          data-testid="name-input"
+                        />
                       </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {foundedYearOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage data-testid="founded-year-error" />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage data-testid="name-error" />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="employee_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employee Count</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <SelectTrigger data-testid="employee-count-select">
-                          <SelectValue placeholder="Select range" />
-                        </SelectTrigger>
+                        <Textarea
+                          {...field}
+                          placeholder="Describe the company and its services..."
+                          rows={4}
+                          data-testid="description-input"
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {EMPLOYEE_COUNT_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage data-testid="employee-count-error" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="company_size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Size</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="company-size-select">
-                        <SelectValue placeholder="Select size" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {COMPANY_SIZE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage data-testid="company-size-error" />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <FormField
-                control={form.control}
-                name="offers_per_diem"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Offers Per Diem</FormLabel>
                       <FormDescription>
-                        Agency offers per diem pay
+                        Brief description of the company (max 5000 characters)
                       </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="offers-per-diem-switch"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+                      <FormMessage data-testid="description-error" />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="is_union"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Union Agency</FormLabel>
-                      <FormDescription>
-                        Agency is union-affiliated
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="is-union-switch"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+                {/* Agency Logo */}
+                <div
+                  className="pt-4 border-t"
+                  data-testid="logo-upload-section"
+                >
+                  <LogoUpload
+                    currentLogoUrl={logoRemoved ? null : agency?.logo_url}
+                    onFileSelect={handleLogoFileSelect}
+                    isUploading={isUploadingLogo}
+                    disabled={isSubmitting}
+                    error={logoUploadError}
+                  />
+                </div>
 
-            {/* Trade Specializations - Admin has no limit */}
-            <div className="pt-4 border-t" data-testid="trade-selector-section">
-              <TradeSelector
-                selectedTrades={selectedTrades}
-                onChange={setSelectedTrades}
-                disabled={isSubmitting}
-                maxTrades={100}
-              />
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="website"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Website</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://www.example.com"
+                            data-testid="website-input"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="website-error" />
+                      </FormItem>
+                    )}
+                  />
 
-            {/* Service Regions */}
-            <div
-              className="pt-4 border-t"
-              data-testid="region-selector-section"
-            >
-              <RegionSelector
-                selectedRegions={selectedRegions}
-                onChange={setSelectedRegions}
-                disabled={isSubmitting}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder="contact@example.com"
+                            data-testid="email-input"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="email-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="+12345678900"
+                            data-testid="phone-input"
+                          />
+                        </FormControl>
+                        <FormDescription>E.164 format</FormDescription>
+                        <FormMessage data-testid="phone-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="headquarters"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Headquarters</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="City, State"
+                            data-testid="headquarters-input"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="headquarters-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="founded_year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Founded Year</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="founded-year-select">
+                              <SelectValue placeholder="Select year" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[200px]">
+                            {foundedYearOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage data-testid="founded-year-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="employee_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Employee Count</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="employee-count-select">
+                              <SelectValue placeholder="Select range" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {EMPLOYEE_COUNT_OPTIONS.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage data-testid="employee-count-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="company_size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Size</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="company-size-select">
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {COMPANY_SIZE_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage data-testid="company-size-error" />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="offers_per_diem"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel>Offers Per Diem</FormLabel>
+                          <FormDescription>
+                            Agency offers per diem pay
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="offers-per-diem-switch"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="is_union"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel>Union Agency</FormLabel>
+                          <FormDescription>
+                            Agency is union-affiliated
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="is-union-switch"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Trade Specializations - Admin has no limit */}
+                <div
+                  className="pt-4 border-t"
+                  data-testid="trade-selector-section"
+                >
+                  <TradeSelector
+                    selectedTrades={selectedTrades}
+                    onChange={setSelectedTrades}
+                    disabled={isSubmitting}
+                    maxTrades={100}
+                  />
+                </div>
+
+                {/* Service Regions */}
+                <div
+                  className="pt-4 border-t"
+                  data-testid="region-selector-section"
+                >
+                  <RegionSelector
+                    selectedRegions={selectedRegions}
+                    onChange={setSelectedRegions}
+                    disabled={isSubmitting}
+                  />
+                </div>
 
                 <DialogFooter className="gap-2 pt-4">
                   <Button

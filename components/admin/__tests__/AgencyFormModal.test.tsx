@@ -150,19 +150,39 @@ jest.mock('@/components/compliance/ComplianceSettings', () => ({
     isLoading,
     isAdmin,
   }: {
-    initialData?: any[];
-    onSave: (data: any[]) => Promise<void>;
+    initialData?: Array<{
+      id: string;
+      type: string;
+      label: string;
+      isActive: boolean;
+      expirationDate: string | null;
+      isExpired: boolean;
+      documentUrl: string | null;
+      notes: string | null;
+      verifiedBy: string | null;
+      verifiedAt: string | null;
+    }>;
+    onSave: (
+      data: Array<{
+        type: string;
+        isActive: boolean;
+        expirationDate: string | null;
+      }>
+    ) => Promise<void>;
     isLoading?: boolean;
     isAdmin?: boolean;
   }) => (
     <div data-testid="compliance-settings-mock">
-      <span data-testid="compliance-loading">{isLoading ? 'true' : 'false'}</span>
-      <span data-testid="compliance-is-admin">{isAdmin ? 'true' : 'false'}</span>
-      <span data-testid="compliance-item-count">{initialData?.length || 0}</span>
-      <button
-        data-testid="compliance-save-button"
-        onClick={() => onSave([])}
-      >
+      <span data-testid="compliance-loading">
+        {isLoading ? 'true' : 'false'}
+      </span>
+      <span data-testid="compliance-is-admin">
+        {isAdmin ? 'true' : 'false'}
+      </span>
+      <span data-testid="compliance-item-count">
+        {initialData?.length || 0}
+      </span>
+      <button data-testid="compliance-save-button" onClick={() => onSave([])}>
         Save Compliance
       </button>
     </div>
