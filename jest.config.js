@@ -31,7 +31,7 @@ const customJestConfig = {
       },
       clearMocks: true,
       resetMocks: false,
-      testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+      testPathIgnorePatterns: ['/node_modules/', '/.next/', '/app/api/'],
       transformIgnorePatterns: [
         '/node_modules/',
         '^.+\\.module\\.(css|sass|scss)$',

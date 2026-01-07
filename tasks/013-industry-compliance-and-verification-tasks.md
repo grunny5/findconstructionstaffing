@@ -946,7 +946,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 6.1.1: Create Expiration Check Scheduled Job
+### [x] Task 6.1.1: Create Expiration Check Scheduled Job
 
 - **Role:** Backend Developer
 - **Objective:** Create cron job/scheduled function to check for expiring compliance
@@ -980,7 +980,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 6.1.2: Create Expiration Reminder Email Templates
+### [x] Task 6.1.2: Create Expiration Reminder Email Templates
 
 - **Role:** Backend Developer
 - **Objective:** Create email templates for 30-day and 7-day expiration reminders
@@ -1010,7 +1010,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 6.1.3: Add last_reminder_sent Column
+### [x] Task 6.1.3: Add last_reminder_sent Column
 
 - **Role:** Backend Developer
 - **Objective:** Add column to track when reminders were sent
