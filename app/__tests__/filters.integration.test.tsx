@@ -254,6 +254,7 @@ const createMockDirectoryFilters = () => {
       search: '',
       trades: [],
       states: [],
+      compliance: [],
       perDiem: null,
       union: null,
       claimedOnly: false,

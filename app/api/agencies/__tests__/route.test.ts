@@ -357,7 +357,9 @@ describe('GET /api/agencies', () => {
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'agency_compliance') {
           const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
-          const complianceChain = {
+          // Declare with explicit type to avoid circular reference
+          let complianceResult: Promise<any> & any;
+          const complianceChain: any = {
             select: jest.fn((...args) => {
               (supabase as any).select(...args);
               return complianceResult;
@@ -371,12 +373,14 @@ describe('GET /api/agencies', () => {
               return complianceResult;
             }),
           };
-          const complianceResult = Object.assign(compliancePromise, complianceChain);
+          complianceResult = Object.assign(compliancePromise, complianceChain);
           return complianceResult;
         }
         // Default agencies table behavior
         const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
-        const agenciesChain = {
+        // Declare with explicit type to avoid circular reference
+        let agenciesResult: Promise<any> & any;
+        const agenciesChain: any = {
           select: jest.fn((...args) => {
             (supabase as any).select(...args);
             return agenciesResult;
@@ -402,7 +406,7 @@ describe('GET /api/agencies', () => {
             return agenciesResult;
           }),
         };
-        const agenciesResult = Object.assign(agenciesPromise, agenciesChain);
+        agenciesResult = Object.assign(agenciesPromise, agenciesChain);
         return agenciesResult;
       });
 
@@ -450,7 +454,9 @@ describe('GET /api/agencies', () => {
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'agency_compliance') {
           const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
-          const complianceChain = {
+          // Declare with explicit type to avoid circular reference
+          let complianceResult: Promise<any> & any;
+          const complianceChain: any = {
             select: jest.fn((...args) => {
               (supabase as any).select(...args);
               return complianceResult;
@@ -464,12 +470,14 @@ describe('GET /api/agencies', () => {
               return complianceResult;
             }),
           };
-          const complianceResult = Object.assign(compliancePromise, complianceChain);
+          complianceResult = Object.assign(compliancePromise, complianceChain);
           return complianceResult;
         }
         // Default agencies table behavior
         const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
-        const agenciesChain = {
+        // Declare with explicit type to avoid circular reference
+        let agenciesResult: Promise<any> & any;
+        const agenciesChain: any = {
           select: jest.fn((...args) => {
             (supabase as any).select(...args);
             return agenciesResult;
@@ -495,7 +503,7 @@ describe('GET /api/agencies', () => {
             return agenciesResult;
           }),
         };
-        const agenciesResult = Object.assign(agenciesPromise, agenciesChain);
+        agenciesResult = Object.assign(agenciesPromise, agenciesChain);
         return agenciesResult;
       });
 
@@ -543,7 +551,9 @@ describe('GET /api/agencies', () => {
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'trades') {
           const tradesPromise = Promise.resolve({ data: mockTradeData, error: null });
-          const tradesChain = {
+          // Declare with explicit type to avoid circular reference
+          let tradesResult: Promise<any> & any;
+          const tradesChain: any = {
             select: jest.fn((...args) => {
               (supabase as any).select(...args);
               return tradesResult;
@@ -553,12 +563,14 @@ describe('GET /api/agencies', () => {
               return tradesResult;
             }),
           };
-          const tradesResult = Object.assign(tradesPromise, tradesChain);
+          tradesResult = Object.assign(tradesPromise, tradesChain);
           return tradesResult;
         }
         if (table === 'agency_trades') {
           const agencyTradesPromise = Promise.resolve({ data: mockAgencyTradeData, error: null });
-          const agencyTradesChain = {
+          // Declare with explicit type to avoid circular reference
+          let agencyTradesResult: Promise<any> & any;
+          const agencyTradesChain: any = {
             select: jest.fn((...args) => {
               (supabase as any).select(...args);
               return agencyTradesResult;
@@ -568,12 +580,14 @@ describe('GET /api/agencies', () => {
               return agencyTradesResult;
             }),
           };
-          const agencyTradesResult = Object.assign(agencyTradesPromise, agencyTradesChain);
+          agencyTradesResult = Object.assign(agencyTradesPromise, agencyTradesChain);
           return agencyTradesResult;
         }
         if (table === 'agency_compliance') {
           const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
-          const complianceChain = {
+          // Declare with explicit type to avoid circular reference
+          let complianceResult: Promise<any> & any;
+          const complianceChain: any = {
             select: jest.fn((...args) => {
               (supabase as any).select(...args);
               return complianceResult;
@@ -587,12 +601,14 @@ describe('GET /api/agencies', () => {
               return complianceResult;
             }),
           };
-          const complianceResult = Object.assign(compliancePromise, complianceChain);
+          complianceResult = Object.assign(compliancePromise, complianceChain);
           return complianceResult;
         }
         // Default agencies table behavior
         const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
-        const agenciesChain = {
+        // Declare with explicit type to avoid circular reference
+        let agenciesResult: Promise<any> & any;
+        const agenciesChain: any = {
           select: jest.fn((...args) => {
             (supabase as any).select(...args);
             return agenciesResult;
@@ -618,7 +634,7 @@ describe('GET /api/agencies', () => {
             return agenciesResult;
           }),
         };
-        const agenciesResult = Object.assign(agenciesPromise, agenciesChain);
+        agenciesResult = Object.assign(agenciesPromise, agenciesChain);
         return agenciesResult;
       });
 

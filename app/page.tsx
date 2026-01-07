@@ -34,9 +34,15 @@ import {
 } from 'lucide-react';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useDebounce } from '@/hooks/use-debounce';
-import { Agency } from '@/types/api';
+import { Agency, ComplianceType, COMPLIANCE_TYPES } from '@/types/api';
 import Link from 'next/link';
 import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
+
+// Helper to validate and filter compliance query parameters
+function validateComplianceParams(params: string[]): ComplianceType[] {
+  const validTypes = new Set(COMPLIANCE_TYPES);
+  return params.filter((p): p is ComplianceType => validTypes.has(p as ComplianceType));
+}
 
 function HomePageContent() {
   const router = useRouter();
@@ -46,7 +52,7 @@ function HomePageContent() {
     search: searchParams.get('search') || '',
     trades: searchParams.getAll('trades[]') || [],
     states: searchParams.getAll('states[]') || [],
-    compliance: (searchParams.getAll('compliance[]') as any) || [],
+    compliance: validateComplianceParams(searchParams.getAll('compliance[]')),
     perDiem: null,
     union: null,
     claimedOnly: false,
