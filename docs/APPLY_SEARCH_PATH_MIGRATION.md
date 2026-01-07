@@ -9,7 +9,8 @@ Due to migration history conflicts in the Supabase CLI (duplicate version number
 ## Issue with Automated Application
 
 The CLI detected conflicts:
-```
+
+```text
 ERROR: duplicate key value violates unique constraint "schema_migrations_pkey"
 Key (version)=(20260105) already exists.
 ```
@@ -27,7 +28,7 @@ This prevents the automated `supabase db push` from working correctly.
 ### Option 1: Supabase Dashboard SQL Editor (RECOMMENDED)
 
 1. **Open Supabase Dashboard**
-   - Go to: https://supabase.com/dashboard/project/chyaqualjbhkykgofcov
+   - Go to: [Supabase Dashboard → SQL Editor](https://supabase.com/dashboard/project/chyaqualjbhkykgofcov)
    - Navigate to: **SQL Editor**
 
 2. **Copy the SQL**
@@ -116,7 +117,7 @@ If you have direct database access:
 
 ```bash
 # Export connection string (get from Supabase Dashboard → Settings → Database)
-export DATABASE_URL="postgresql://postgres:[PASSWORD]@db.chyaqualjbhkykgofcov.supabase.co:5432/postgres"
+export DATABASE_URL="<YOUR_POSTGRES_CONNECTION_STRING>"
 
 # Apply the migration
 psql $DATABASE_URL -f supabase/migrations/20260121_001_fix_function_search_path.sql
