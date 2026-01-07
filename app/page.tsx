@@ -46,6 +46,7 @@ function HomePageContent() {
     search: searchParams.get('search') || '',
     trades: searchParams.getAll('trades[]') || [],
     states: searchParams.getAll('states[]') || [],
+    compliance: (searchParams.getAll('compliance[]') as any) || [],
     perDiem: null,
     union: null,
     claimedOnly: false,
@@ -74,6 +75,7 @@ function HomePageContent() {
     search: debouncedSearchQuery,
     trades: filters.trades,
     states: filters.states,
+    compliance: filters.compliance,
     limit,
     offset,
   });
@@ -109,12 +111,23 @@ function HomePageContent() {
       params.delete('states[]');
     }
 
+    // Handle compliance filter
+    if (filters.compliance.length > 0) {
+      params.delete('compliance[]'); // Clear existing
+      filters.compliance.forEach((compliance) => {
+        params.append('compliance[]', compliance);
+      });
+    } else {
+      params.delete('compliance[]');
+    }
+
     // Use replace to avoid adding to browser history on every change
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [
     debouncedSearchQuery,
     filters.trades,
     filters.states,
+    filters.compliance,
     router,
     searchParams,
   ]);
@@ -122,7 +135,7 @@ function HomePageContent() {
   // Reset pagination when filters change
   useEffect(() => {
     setOffset(0);
-  }, [debouncedSearchQuery, filters.trades, filters.states]);
+  }, [debouncedSearchQuery, filters.trades, filters.states, filters.compliance]);
 
   // Process API data and accumulate results for pagination
   const [allAgencies, setAllAgencies] = useState<Agency[]>([]);
@@ -214,6 +227,7 @@ function HomePageContent() {
   const activeFilterCount =
     filters.trades.length +
     filters.states.length +
+    filters.compliance.length +
     (filters.perDiem !== null ? 1 : 0) +
     (filters.union !== null ? 1 : 0) +
     (filters.claimedOnly ? 1 : 0) +
@@ -227,6 +241,7 @@ function HomePageContent() {
       search: '',
       trades: [],
       states: [],
+      compliance: [],
       perDiem: null,
       union: null,
       claimedOnly: false,

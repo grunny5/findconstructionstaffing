@@ -339,6 +339,7 @@ describe('HomePage Integration Tests', () => {
         search: '',
         trades: ['electrician'],
         states: ['TX'],
+        compliance: [],
         limit: 20,
         offset: 0,
       });
@@ -439,6 +440,7 @@ describe('HomePage Integration Tests', () => {
         search: 'test',
         trades: ['electrician'],
         states: ['TX'],
+        compliance: [],
         limit: 20,
         offset: 0,
       });
