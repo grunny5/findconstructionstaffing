@@ -637,15 +637,16 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 4: Search Filtering (Sprint 3-4)
+## 📦 Phase 4: Search Filtering (Sprint 3-4) ✅ COMPLETE
 
 **Goal:** Enable contractors to filter agencies by compliance requirements
 **Estimated Duration:** 2-3 days
 **Dependencies:** Phase 1 complete
+**Completed:** 2026-01-07
 
 ---
 
-### [ ] ➡️ Story 4.1: Filter Agencies by Compliance
+### [x] ➡️ Story 4.1: Filter Agencies by Compliance
 
 > As a **Contractor**, I want **to filter search results by compliance requirements**, so that **I can quickly find agencies that meet my project's specific compliance needs**.
 
@@ -653,7 +654,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 4.1.1: Add Compliance Filters to Agencies API
+### [x] Task 4.1.1: Add Compliance Filters to Agencies API
 
 - **Role:** Backend Developer
 - **Objective:** Extend agencies list API to support compliance filtering
@@ -668,23 +669,23 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Join to agency_compliance table
   - Only match is_active=true
 - **Acceptance Criteria (for this task):**
-  - [ ] Accepts filter params: `osha`, `drug_testing`, `background_checks`, `workers_comp`, `general_liability`, `bonding`
-  - [ ] Each param is boolean (true to filter)
-  - [ ] Multiple params use AND logic (must have all selected)
-  - [ ] Only matches agencies with is_active=true for those types
-  - [ ] Can combine with existing filters (trades, states, search)
-  - [ ] Performance: query uses proper indexes
+  - [x] Accepts filter params: `osha`, `drug_testing`, `background_checks`, `workers_comp`, `general_liability`, `bonding`
+  - [x] Each param is boolean (true to filter)
+  - [x] Multiple params use AND logic (must have all selected)
+  - [x] Only matches agencies with is_active=true for those types
+  - [x] Can combine with existing filters (trades, states, search)
+  - [x] Performance: query uses proper indexes
 - **Definition of Done:**
-  - [ ] Filtering works correctly
-  - [ ] Unit tests cover filter combinations
-  - [ ] 85%+ test coverage
-  - [ ] **Final Check:** No performance regression
+  - [x] Filtering works correctly
+  - [x] Unit tests cover filter combinations
+  - [x] 85%+ test coverage
+  - [x] **Final Check:** No performance regression
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] Task 4.1.2: Create ComplianceFilters Component
+### [x] Task 4.1.2: Create ComplianceFilters Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build filter checkboxes for compliance types
@@ -700,22 +701,22 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - URL state management
   - Debounced updates
 - **Acceptance Criteria (for this task):**
-  - [ ] Displays checkbox for each compliance type
-  - [ ] Each checkbox has label and icon
-  - [ ] Checkbox state reflects URL params
-  - [ ] Changes update URL params
-  - [ ] "Clear all" functionality
-  - [ ] Props: `selectedFilters`, `onChange`
+  - [x] Displays checkbox for each compliance type
+  - [x] Each checkbox has label and icon
+  - [x] Checkbox state reflects URL params
+  - [x] Changes update URL params
+  - [x] "Clear all" functionality
+  - [x] Props: `selectedFilters`, `onChange`
 - **Definition of Done:**
-  - [ ] Component complete
-  - [ ] Tests verify interactions
-  - [ ] **Final Check:** Matches existing filter patterns
+  - [x] Component complete
+  - [x] Tests verify interactions
+  - [x] **Final Check:** Matches existing filter patterns
 
 **Estimated Effort:** 2 hours
 
 ---
 
-### [ ] Task 4.1.3: Integrate Compliance Filters into Search Page
+### [x] Task 4.1.3: Integrate Compliance Filters into Search Page
 
 - **Role:** Frontend Developer
 - **Objective:** Add ComplianceFilters to the agency search/directory page
@@ -730,31 +731,32 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - URL param persistence
   - Combined with other filters
 - **Acceptance Criteria (for this task):**
-  - [ ] ComplianceFilters added to filter sidebar
-  - [ ] Section heading: "Compliance Requirements"
-  - [ ] Collapsible section (expanded by default)
-  - [ ] Filters persist in URL as query params
-  - [ ] Filters apply to search results
-  - [ ] "Clear Filters" button clears compliance filters too
-  - [ ] Mobile-friendly filter panel
+  - [x] ComplianceFilters added to filter sidebar
+  - [x] Section heading: "Compliance Requirements"
+  - [x] Collapsible section (expanded by default)
+  - [x] Filters persist in URL as query params
+  - [x] Filters apply to search results
+  - [x] "Clear Filters" button clears compliance filters too
+  - [x] Mobile-friendly filter panel
 - **Definition of Done:**
-  - [ ] Filters integrated and functional
-  - [ ] Tests verify URL persistence
-  - [ ] **Final Check:** Consistent with existing filters UX
+  - [x] Filters integrated and functional
+  - [x] Tests verify URL persistence
+  - [x] **Final Check:** Consistent with existing filters UX
 
 **Estimated Effort:** 2 hours
 
 ---
 
-## 📦 Phase 5: Admin Verification (Sprint 4)
+## 📦 Phase 5: Admin Verification (Sprint 4) ✅ COMPLETE
 
 **Goal:** Enable admins to verify compliance documents and manage any agency's compliance
 **Estimated Duration:** 3-4 days
 **Dependencies:** Phase 1-2 complete
+**Completed:** 2026-01-07
 
 ---
 
-### [ ] ➡️ Story 5.1: Admin Manages Agency Compliance
+### [x] ➡️ Story 5.1: Admin Manages Agency Compliance
 
 > As a **Site Administrator**, I want **to add, edit, and remove compliance items from any agency's profile**, so that **I can assist agencies with their profiles or correct inaccurate compliance information**.
 
@@ -762,7 +764,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 5.1.1: Add ComplianceSettings to AgencyFormModal
+### [x] Task 5.1.1: Add ComplianceSettings to AgencyFormModal
 
 - **Role:** Frontend Developer
 - **Objective:** Integrate compliance settings into admin agency edit modal
@@ -777,23 +779,23 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Pass isAdmin=true to enable admin features
   - Fetch compliance data with agency
 - **Acceptance Criteria (for this task):**
-  - [ ] ComplianceSettings rendered in AgencyFormModal
-  - [ ] New tab: "Compliance" in modal tabs
-  - [ ] isAdmin=true passed to component
-  - [ ] Current compliance pre-populated in edit mode
-  - [ ] Changes saved with agency update
-  - [ ] Admin can set is_verified flag
-  - [ ] Admin can add notes
+  - [x] ComplianceSettings rendered in AgencyFormModal
+  - [x] New tab: "Compliance" in modal tabs
+  - [x] isAdmin=true passed to component
+  - [x] Current compliance pre-populated in edit mode
+  - [x] Changes saved with agency update
+  - [x] Admin can set is_verified flag
+  - [x] Admin can add notes
 - **Definition of Done:**
-  - [ ] Integration complete
-  - [ ] Tests verify compliance tab
-  - [ ] **Final Check:** Consistent with other modal tabs
+  - [x] Integration complete
+  - [x] Tests verify compliance tab
+  - [x] **Final Check:** Consistent with other modal tabs
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] ➡️ Story 5.2: Admin Verifies Compliance Documents
+### [x] ➡️ Story 5.2: Admin Verifies Compliance Documents
 
 > As a **Site Administrator**, I want **to verify agency compliance claims by reviewing uploaded documents**, so that **contractors can trust that verified badges represent genuine credentials**.
 
@@ -801,7 +803,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 5.2.1: Create Admin Document Upload Endpoint
+### [x] Task 5.2.1: Create Admin Document Upload Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint for admin to upload/manage compliance documents
@@ -816,16 +818,16 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Admin role required
   - Can upload for any agency
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies/[id]/compliance/document` handles upload
-  - [ ] Same validation as owner endpoint
-  - [ ] Admin can upload for any agency
-  - [ ] `DELETE /api/admin/agencies/[id]/compliance/document` removes
-  - [ ] Returns 401/403 for non-admin
-  - [ ] Returns 404 if agency not found
+  - [x] `POST /api/admin/agencies/[id]/compliance/document` handles upload
+  - [x] Same validation as owner endpoint
+  - [x] Admin can upload for any agency
+  - [x] `DELETE /api/admin/agencies/[id]/compliance/document` removes
+  - [x] Returns 401/403 for non-admin
+  - [x] Returns 404 if agency not found
 - **Definition of Done:**
-  - [ ] Endpoints functional
-  - [ ] Unit tests cover scenarios
-  - [ ] **Final Check:** Follows admin API patterns
+  - [x] Endpoints functional
+  - [x] Unit tests cover scenarios
+  - [x] **Final Check:** Follows admin API patterns
 
 **Estimated Effort:** 2 hours
 
