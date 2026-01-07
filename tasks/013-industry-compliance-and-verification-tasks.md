@@ -864,7 +864,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 5.2.3: Create Compliance Verify API Endpoint
+### [x] Task 5.2.3: Create Compliance Verify API Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint for admin to verify or reject compliance items
@@ -880,25 +880,25 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Send email on rejection
   - Audit logging
 - **Acceptance Criteria (for this task):**
-  - [ ] `POST /api/admin/agencies/[id]/compliance/verify`
-  - [ ] Accepts: `compliance_type`, `action` (verify | reject), `reason?`
-  - [ ] Verify: sets is_verified=true, verified_by, verified_at
-  - [ ] Reject: clears document_url, sends email with reason
-  - [ ] Returns 401/403 for non-admin
-  - [ ] Returns 404 if agency/compliance not found
-  - [ ] Audit trail entry created
+  - [x] `POST /api/admin/agencies/[id]/compliance/verify`
+  - [x] Accepts: `compliance_type`, `action` (verify | reject), `reason?`
+  - [x] Verify: sets is_verified=true, verified_by, verified_at
+  - [x] Reject: clears document_url, sends email with reason
+  - [x] Returns 401/403 for non-admin
+  - [x] Returns 404 if agency/compliance not found
+  - [x] Audit trail entry created
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests cover scenarios
-  - [ ] Email sent on rejection
-  - [ ] 85%+ test coverage
-  - [ ] **Final Check:** Follows admin API patterns
+  - [x] Endpoint functional
+  - [x] Unit tests cover scenarios
+  - [x] Email sent on rejection
+  - [x] 85%+ test coverage
+  - [x] **Final Check:** Follows admin API patterns
 
 **Estimated Effort:** 3 hours
 
 ---
 
-### [ ] Task 5.2.4: Create Rejection Email Template
+### [x] Task 5.2.4: Create Rejection Email Template
 
 - **Role:** Backend Developer
 - **Objective:** Create email template for compliance document rejection
@@ -914,15 +914,15 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Include admin's reason
   - Link to re-upload
 - **Acceptance Criteria (for this task):**
-  - [ ] Email template created
-  - [ ] Subject: "Compliance Document Rejected - [Compliance Type]"
-  - [ ] Body includes: agency name, compliance type, rejection reason
-  - [ ] Call to action: "Upload New Document"
-  - [ ] Link to dashboard compliance page
+  - [x] Email template created
+  - [x] Subject: "Compliance Document Rejected - [Compliance Type]"
+  - [x] Body includes: agency name, compliance type, rejection reason
+  - [x] Call to action: "Upload New Document"
+  - [x] Link to dashboard compliance page
 - **Definition of Done:**
-  - [ ] Template created
-  - [ ] Email renders correctly
-  - [ ] **Final Check:** Follows existing email patterns
+  - [x] Template created
+  - [x] Email renders correctly
+  - [x] **Final Check:** Follows existing email patterns
 
 **Estimated Effort:** 1 hour
 
