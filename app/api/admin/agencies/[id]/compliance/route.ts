@@ -101,19 +101,8 @@ export async function GET(
       .eq('id', agencyId)
       .single();
 
-    if (agencyError?.code === 'PGRST116' || !agency) {
-      return NextResponse.json(
-        {
-          error: {
-            code: ERROR_CODES.NOT_FOUND,
-            message: 'Agency not found',
-          },
-        },
-        { status: HTTP_STATUS.NOT_FOUND }
-      );
-    }
-
-    if (agencyError) {
+    // Check for database errors first (but not "not found" which is expected)
+    if (agencyError && agencyError.code !== 'PGRST116') {
       console.error('Error fetching agency:', agencyError);
       return NextResponse.json(
         {
@@ -123,6 +112,19 @@ export async function GET(
           },
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
+
+    // Check for not found
+    if (agencyError?.code === 'PGRST116' || !agency) {
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.NOT_FOUND,
+            message: 'Agency not found',
+          },
+        },
+        { status: HTTP_STATUS.NOT_FOUND }
       );
     }
 
@@ -247,19 +249,8 @@ export async function PUT(
       .eq('id', agencyId)
       .single();
 
-    if (agencyError?.code === 'PGRST116' || !agency) {
-      return NextResponse.json(
-        {
-          error: {
-            code: ERROR_CODES.NOT_FOUND,
-            message: 'Agency not found',
-          },
-        },
-        { status: HTTP_STATUS.NOT_FOUND }
-      );
-    }
-
-    if (agencyError) {
+    // Check for database errors first (but not "not found" which is expected)
+    if (agencyError && agencyError.code !== 'PGRST116') {
       console.error('Error fetching agency:', agencyError);
       return NextResponse.json(
         {
@@ -269,6 +260,19 @@ export async function PUT(
           },
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
+
+    // Check for not found
+    if (agencyError?.code === 'PGRST116' || !agency) {
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.NOT_FOUND,
+            message: 'Agency not found',
+          },
+        },
+        { status: HTTP_STATUS.NOT_FOUND }
       );
     }
 
@@ -363,7 +367,8 @@ export async function PUT(
     }
 
     // Upsert compliance items (admin can modify all fields including verification)
-    for (const item of body.items) {
+    // Use batched upsert to avoid partial updates
+    const upsertPayload = body.items.map((item) => {
       const upsertData: Record<string, unknown> = {
         agency_id: agencyId,
         compliance_type: item.type,
@@ -391,25 +396,27 @@ export async function PUT(
         upsertData.document_url = item.documentUrl || null;
       }
 
-      const { error: upsertError } = await supabase
-        .from('agency_compliance')
-        .upsert(upsertData, {
-          onConflict: 'agency_id,compliance_type',
-          ignoreDuplicates: false,
-        });
+      return upsertData;
+    });
 
-      if (upsertError) {
-        console.error('Error upserting compliance item:', upsertError);
-        return NextResponse.json(
-          {
-            error: {
-              code: ERROR_CODES.DATABASE_ERROR,
-              message: 'Failed to update compliance data',
-            },
+    const { error: upsertError } = await supabase
+      .from('agency_compliance')
+      .upsert(upsertPayload, {
+        onConflict: 'agency_id,compliance_type',
+        ignoreDuplicates: false,
+      });
+
+    if (upsertError) {
+      console.error('Error upserting compliance items:', upsertError);
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to update compliance data',
           },
-          { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-        );
-      }
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
     }
 
     // Fetch updated compliance state

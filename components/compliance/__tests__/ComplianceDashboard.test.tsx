@@ -79,8 +79,10 @@ describe('ComplianceDashboard', () => {
       );
 
       // OSHA should be toggled on (based on initial data)
-      const switches = screen.getAllByRole('switch');
-      expect(switches[0]).toHaveAttribute('data-state', 'checked');
+      const oshaSwitch = screen.getByRole('switch', {
+        name: /OSHA Certified/i,
+      });
+      expect(oshaSwitch).toHaveAttribute('data-state', 'checked');
     });
 
     it('renders all 6 compliance types', () => {
@@ -118,8 +120,10 @@ describe('ComplianceDashboard', () => {
       render(<ComplianceDashboard agencyId={mockAgencyId} initialData={[]} />);
 
       // Turn on OSHA switch
-      const switches = screen.getAllByRole('switch');
-      await user.click(switches[0]);
+      const oshaSwitch = screen.getByRole('switch', {
+        name: /OSHA Certified/i,
+      });
+      await user.click(oshaSwitch);
 
       // Click save
       const saveButton = screen.getByRole('button', { name: /save changes/i });
@@ -154,9 +158,11 @@ describe('ComplianceDashboard', () => {
 
       render(<ComplianceDashboard agencyId={mockAgencyId} initialData={[]} />);
 
-      // Turn on a switch
-      const switches = screen.getAllByRole('switch');
-      await user.click(switches[0]);
+      // Turn on OSHA switch
+      const oshaSwitch = screen.getByRole('switch', {
+        name: /OSHA Certified/i,
+      });
+      await user.click(oshaSwitch);
 
       // Click save
       const saveButton = screen.getByRole('button', { name: /save changes/i });
@@ -177,9 +183,11 @@ describe('ComplianceDashboard', () => {
 
       render(<ComplianceDashboard agencyId={mockAgencyId} initialData={[]} />);
 
-      // Turn on a switch
-      const switches = screen.getAllByRole('switch');
-      await user.click(switches[0]);
+      // Turn on OSHA switch
+      const oshaSwitch = screen.getByRole('switch', {
+        name: /OSHA Certified/i,
+      });
+      await user.click(oshaSwitch);
 
       // Click save
       const saveButton = screen.getByRole('button', { name: /save changes/i });
@@ -204,8 +212,10 @@ describe('ComplianceDashboard', () => {
       render(<ComplianceDashboard agencyId={mockAgencyId} initialData={[]} />);
 
       // Turn on OSHA switch
-      const switches = screen.getAllByRole('switch');
-      await user.click(switches[0]);
+      const oshaSwitch = screen.getByRole('switch', {
+        name: /OSHA Certified/i,
+      });
+      await user.click(oshaSwitch);
 
       // Click save
       const saveButton = screen.getByRole('button', { name: /save changes/i });
@@ -244,9 +254,11 @@ describe('ComplianceDashboard', () => {
 
       render(<ComplianceDashboard agencyId={mockAgencyId} initialData={[]} />);
 
-      // Turn on a switch
-      const switches = screen.getAllByRole('switch');
-      await user.click(switches[0]);
+      // Turn on OSHA switch
+      const oshaSwitch = screen.getByRole('switch', {
+        name: /OSHA Certified/i,
+      });
+      await user.click(oshaSwitch);
 
       // Click save
       const saveButton = screen.getByRole('button', { name: /save changes/i });

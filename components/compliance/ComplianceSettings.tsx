@@ -24,6 +24,8 @@ import {
   type ComplianceItemFull,
 } from '@/types/api';
 import { cn } from '@/lib/utils';
+import { ComplianceDocumentUpload } from './ComplianceDocumentUpload';
+import { useToast } from '@/hooks/use-toast';
 
 const COMPLIANCE_ICONS: Record<ComplianceType, React.ElementType> = {
   osha_certified: ShieldCheck,
@@ -75,6 +77,21 @@ export function ComplianceSettings({
 
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingType, setUploadingType] = useState<ComplianceType | null>(
+    null
+  );
+  const [documentUrls, setDocumentUrls] = useState<
+    Partial<Record<ComplianceType, string | null>>
+  >(() => {
+    const urls: Partial<Record<ComplianceType, string | null>> = {};
+    for (const item of initialData) {
+      if (item.documentUrl) {
+        urls[item.type] = item.documentUrl;
+      }
+    }
+    return urls;
+  });
+  const { toast } = useToast();
 
   useEffect(() => {
     const initial: Record<ComplianceType, ComplianceFormData> = {} as Record<
@@ -93,6 +110,14 @@ export function ComplianceSettings({
 
     setFormData(initial);
     setIsDirty(false);
+
+    const urls: Partial<Record<ComplianceType, string | null>> = {};
+    for (const item of initialData) {
+      if (item.documentUrl) {
+        urls[item.type] = item.documentUrl;
+      }
+    }
+    setDocumentUrls(urls);
   }, [initialData]);
 
   const handleToggle = (type: ComplianceType, checked: boolean) => {
@@ -116,6 +141,83 @@ export function ComplianceSettings({
       },
     }));
     setIsDirty(true);
+  };
+
+  const handleDocumentUpload = async (type: ComplianceType, file: File) => {
+    setUploadingType(type);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('compliance_type', type);
+
+      const response = await fetch('/api/dashboard/compliance/document', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Upload failed');
+      }
+
+      const data = await response.json();
+      setDocumentUrls((prev) => ({
+        ...prev,
+        [type]: data.data.document_url,
+      }));
+
+      toast({
+        title: 'Document uploaded',
+        description: 'Your compliance document has been uploaded successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to upload document',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingType(null);
+    }
+  };
+
+  const handleDocumentRemove = async (type: ComplianceType) => {
+    setUploadingType(type);
+
+    try {
+      const response = await fetch(
+        `/api/dashboard/compliance/document?compliance_type=${type}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Delete failed');
+      }
+
+      setDocumentUrls((prev) => ({
+        ...prev,
+        [type]: null,
+      }));
+
+      toast({
+        title: 'Document removed',
+        description: 'Your compliance document has been removed.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Delete failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to delete document',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingType(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -219,28 +321,42 @@ export function ComplianceSettings({
 
                     {/* Expiration Date - Only show when active */}
                     {item.isActive && (
-                      <div className="mt-4">
-                        <Label
-                          htmlFor={`expiration-${type}`}
-                          className="font-body text-xs font-semibold uppercase tracking-widest text-industrial-graphite-400 mb-2 block"
-                        >
-                          Expiration Date (optional)
-                        </Label>
-                        <Input
-                          id={`expiration-${type}`}
-                          type="date"
-                          value={item.expirationDate ?? ''}
-                          onChange={(e) =>
-                            handleDateChange(type, e.target.value)
-                          }
-                          disabled={isLoading || isSaving}
-                          className={cn(
-                            'max-w-[200px] font-body',
-                            'border-2 border-industrial-graphite-300 rounded-industrial-sharp',
-                            'focus:border-industrial-orange focus:ring-1 focus:ring-industrial-orange',
-                            expired && 'border-industrial-orange-400'
-                          )}
-                        />
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <Label
+                            htmlFor={`expiration-${type}`}
+                            className="font-body text-xs font-semibold uppercase tracking-widest text-industrial-graphite-400 mb-2 block"
+                          >
+                            Expiration Date (optional)
+                          </Label>
+                          <Input
+                            id={`expiration-${type}`}
+                            type="date"
+                            value={item.expirationDate ?? ''}
+                            onChange={(e) =>
+                              handleDateChange(type, e.target.value)
+                            }
+                            disabled={isLoading || isSaving}
+                            className={cn(
+                              'max-w-[200px] font-body',
+                              'border-2 border-industrial-graphite-300 rounded-industrial-sharp',
+                              'focus:border-industrial-orange focus:ring-1 focus:ring-industrial-orange',
+                              expired && 'border-industrial-orange-400'
+                            )}
+                          />
+                        </div>
+
+                        {/* Document Upload */}
+                        <div>
+                          <ComplianceDocumentUpload
+                            complianceType={type}
+                            currentUrl={documentUrls[type]}
+                            onUpload={(file) => handleDocumentUpload(type, file)}
+                            onRemove={() => handleDocumentRemove(type)}
+                            isUploading={uploadingType === type}
+                            disabled={isLoading || isSaving}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>

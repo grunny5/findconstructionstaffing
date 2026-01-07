@@ -516,15 +516,17 @@ describe('/api/admin/agencies/[id]/compliance', () => {
 
         expect(response.status).toBe(HTTP_STATUS.OK);
         expect(upsertMock).toHaveBeenCalledWith(
-          expect.objectContaining({
-            agency_id: mockAgencyId,
-            compliance_type: 'osha_certified',
-            is_active: true,
-            expiration_date: '2026-12-31',
-            is_verified: true,
-            verified_by: 'admin-123',
-            notes: 'Verified by admin',
-          }),
+          [
+            expect.objectContaining({
+              agency_id: mockAgencyId,
+              compliance_type: 'osha_certified',
+              is_active: true,
+              expiration_date: '2026-12-31',
+              is_verified: true,
+              verified_by: 'admin-123',
+              notes: 'Verified by admin',
+            }),
+          ],
           expect.anything()
         );
       });
@@ -581,11 +583,13 @@ describe('/api/admin/agencies/[id]/compliance', () => {
         );
 
         expect(upsertMock).toHaveBeenCalledWith(
-          expect.objectContaining({
-            is_verified: false,
-            verified_by: null,
-            verified_at: null,
-          }),
+          [
+            expect.objectContaining({
+              is_verified: false,
+              verified_by: null,
+              verified_at: null,
+            }),
+          ],
           expect.anything()
         );
       });
@@ -646,9 +650,11 @@ describe('/api/admin/agencies/[id]/compliance', () => {
         );
 
         expect(upsertMock).toHaveBeenCalledWith(
-          expect.objectContaining({
-            document_url: 'https://storage/workers-comp.pdf',
-          }),
+          [
+            expect.objectContaining({
+              document_url: 'https://storage/workers-comp.pdf',
+            }),
+          ],
           expect.anything()
         );
       });

@@ -402,7 +402,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 2.2: Agency Uploads Compliance Documents
+### [x] ➡️ Story 2.2: Agency Uploads Compliance Documents
 
 > As an **Agency Owner**, I want **to upload documentation supporting my compliance claims**, so that **my agency can be verified and display trusted badges**.
 
@@ -410,7 +410,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.1: Create ComplianceDocumentUpload Component
+### [x] Task 2.2.1: Create ComplianceDocumentUpload Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build file upload component for compliance documents
@@ -447,7 +447,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.2: Create Document Upload API Endpoint
+### [x] Task 2.2.2: Create Document Upload API Endpoint
 
 - **Role:** Backend Developer
 - **Objective:** Create endpoint to upload compliance documents to Supabase Storage
@@ -485,7 +485,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.2.3: Integrate Document Upload into ComplianceSettings
+### [x] Task 2.2.3: Integrate Document Upload into ComplianceSettings
 
 - **Role:** Frontend Developer
 - **Objective:** Add document upload capability to each compliance item

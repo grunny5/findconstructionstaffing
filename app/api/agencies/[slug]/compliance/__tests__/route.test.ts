@@ -49,9 +49,7 @@ describe('GET /api/agencies/[slug]/compliance', () => {
   describe('Success cases', () => {
     it('returns compliance items for agency with active compliance', async () => {
       // Configure mock for agency lookup followed by compliance lookup
-      let callCount = 0;
       (supabase.from as jest.Mock).mockImplementation((table: string) => {
-        callCount++;
         if (table === 'agencies') {
           return {
             select: jest.fn().mockReturnThis(),
