@@ -831,7 +831,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 5.2.2: Create ComplianceVerifyDialog Component
+### [x] Task 5.2.2: Create ComplianceVerifyDialog Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build dialog for admin to review and verify/reject compliance documents
@@ -847,18 +847,18 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Approve/Reject buttons
   - Notes field for admin comments
 - **Acceptance Criteria (for this task):**
-  - [ ] Dialog shows document preview (image) or download link (PDF)
-  - [ ] Shows compliance type and agency name
-  - [ ] "Verify" button marks as verified
-  - [ ] "Reject" button opens rejection reason field
-  - [ ] Notes textarea for admin comments
-  - [ ] Loading state during actions
-  - [ ] Success toast on completion
-  - [ ] Props: `complianceItem`, `agencyId`, `onComplete`
+  - [x] Dialog shows document preview (image) or download link (PDF)
+  - [x] Shows compliance type and agency name
+  - [x] "Verify" button marks as verified
+  - [x] "Reject" button opens rejection reason field
+  - [x] Notes textarea for admin comments
+  - [x] Loading state during actions
+  - [x] Success toast on completion
+  - [x] Props: `complianceItem`, `agencyId`, `onComplete`
 - **Definition of Done:**
-  - [ ] Component complete
-  - [ ] Tests verify all states
-  - [ ] **Final Check:** Accessible and user-friendly
+  - [x] Component complete
+  - [x] Tests verify all states
+  - [x] **Final Check:** Accessible and user-friendly
 
 **Estimated Effort:** 3 hours
 
