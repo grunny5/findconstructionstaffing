@@ -41,7 +41,9 @@ import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
 // Helper to validate and filter compliance query parameters
 function validateComplianceParams(params: string[]): ComplianceType[] {
   const validTypes = new Set(COMPLIANCE_TYPES);
-  return params.filter((p): p is ComplianceType => validTypes.has(p as ComplianceType));
+  return params.filter((p): p is ComplianceType =>
+    validTypes.has(p as ComplianceType)
+  );
 }
 
 function HomePageContent() {
@@ -141,7 +143,12 @@ function HomePageContent() {
   // Reset pagination when filters change
   useEffect(() => {
     setOffset(0);
-  }, [debouncedSearchQuery, filters.trades, filters.states, filters.compliance]);
+  }, [
+    debouncedSearchQuery,
+    filters.trades,
+    filters.states,
+    filters.compliance,
+  ]);
 
   // Process API data and accumulate results for pagination
   const [allAgencies, setAllAgencies] = useState<Agency[]>([]);

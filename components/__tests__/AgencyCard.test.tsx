@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
-import { Agency, ComplianceItemFull } from '@/types/api';
+import { Agency, ComplianceItem } from '@/types/api';
 import { US_STATE_CODES } from '@/lib/utils';
 
 // Helper to convert Agency type to AgencyCard props
 function toAgencyCardProps(
-  agency: Agency & { compliance?: ComplianceItemFull[] }
+  agency: Agency & { compliance?: ComplianceItem[] }
 ): Parameters<typeof AgencyCard>[0]['agency'] {
   return {
     id: agency.id,
@@ -537,32 +537,20 @@ describe('AgencyCard', () => {
   });
 
   describe('Compliance Indicators', () => {
-    const mockCompliance: ComplianceItemFull[] = [
+    const mockCompliance: ComplianceItem[] = [
       {
-        id: '1',
         type: 'osha_certified',
         displayName: 'OSHA Certified',
-        isActive: true,
         isVerified: true,
         expirationDate: '2026-12-31',
         isExpired: false,
-        documentUrl: null,
-        notes: null,
-        verifiedBy: null,
-        verifiedAt: null,
       },
       {
-        id: '2',
         type: 'drug_testing',
         displayName: 'Drug Testing Policy',
-        isActive: true,
         isVerified: false,
         expirationDate: null,
         isExpired: false,
-        documentUrl: null,
-        notes: null,
-        verifiedBy: null,
-        verifiedAt: null,
       },
     ];
 

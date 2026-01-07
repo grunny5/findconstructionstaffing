@@ -356,7 +356,10 @@ describe('GET /api/agencies', () => {
       // Use mockImplementation to handle different tables
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'agency_compliance') {
-          const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
+          const compliancePromise = Promise.resolve({
+            data: mockComplianceData,
+            error: null,
+          });
           // Declare with explicit type to avoid circular reference
           let complianceResult: Promise<any> & any;
           const complianceChain: any = {
@@ -377,7 +380,11 @@ describe('GET /api/agencies', () => {
           return complianceResult;
         }
         // Default agencies table behavior
-        const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
+        const agenciesPromise = Promise.resolve({
+          data: mockAgencies,
+          error: null,
+          count: 1,
+        });
         // Declare with explicit type to avoid circular reference
         let agenciesResult: Promise<any> & any;
         const agenciesChain: any = {
@@ -453,7 +460,10 @@ describe('GET /api/agencies', () => {
       // Use mockImplementation to handle different tables
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'agency_compliance') {
-          const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
+          const compliancePromise = Promise.resolve({
+            data: mockComplianceData,
+            error: null,
+          });
           // Declare with explicit type to avoid circular reference
           let complianceResult: Promise<any> & any;
           const complianceChain: any = {
@@ -474,7 +484,11 @@ describe('GET /api/agencies', () => {
           return complianceResult;
         }
         // Default agencies table behavior
-        const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
+        const agenciesPromise = Promise.resolve({
+          data: mockAgencies,
+          error: null,
+          count: 1,
+        });
         // Declare with explicit type to avoid circular reference
         let agenciesResult: Promise<any> & any;
         const agenciesChain: any = {
@@ -550,7 +564,10 @@ describe('GET /api/agencies', () => {
       // Use mockImplementation to handle different tables
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'trades') {
-          const tradesPromise = Promise.resolve({ data: mockTradeData, error: null });
+          const tradesPromise = Promise.resolve({
+            data: mockTradeData,
+            error: null,
+          });
           // Declare with explicit type to avoid circular reference
           let tradesResult: Promise<any> & any;
           const tradesChain: any = {
@@ -567,7 +584,10 @@ describe('GET /api/agencies', () => {
           return tradesResult;
         }
         if (table === 'agency_trades') {
-          const agencyTradesPromise = Promise.resolve({ data: mockAgencyTradeData, error: null });
+          const agencyTradesPromise = Promise.resolve({
+            data: mockAgencyTradeData,
+            error: null,
+          });
           // Declare with explicit type to avoid circular reference
           let agencyTradesResult: Promise<any> & any;
           const agencyTradesChain: any = {
@@ -580,11 +600,17 @@ describe('GET /api/agencies', () => {
               return agencyTradesResult;
             }),
           };
-          agencyTradesResult = Object.assign(agencyTradesPromise, agencyTradesChain);
+          agencyTradesResult = Object.assign(
+            agencyTradesPromise,
+            agencyTradesChain
+          );
           return agencyTradesResult;
         }
         if (table === 'agency_compliance') {
-          const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
+          const compliancePromise = Promise.resolve({
+            data: mockComplianceData,
+            error: null,
+          });
           // Declare with explicit type to avoid circular reference
           let complianceResult: Promise<any> & any;
           const complianceChain: any = {
@@ -605,7 +631,11 @@ describe('GET /api/agencies', () => {
           return complianceResult;
         }
         // Default agencies table behavior
-        const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
+        const agenciesPromise = Promise.resolve({
+          data: mockAgencies,
+          error: null,
+          count: 1,
+        });
         // Declare with explicit type to avoid circular reference
         let agenciesResult: Promise<any> & any;
         const agenciesChain: any = {

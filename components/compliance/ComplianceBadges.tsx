@@ -21,7 +21,7 @@ import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
   type ComplianceType,
-  type ComplianceItemFull,
+  type ComplianceItem,
 } from '@/types/api';
 import { cn } from '@/lib/utils';
 
@@ -35,7 +35,7 @@ const COMPLIANCE_ICONS: Record<ComplianceType, React.ElementType> = {
 };
 
 export interface ComplianceBadgesProps {
-  compliance: ComplianceItemFull[];
+  compliance: ComplianceItem[];
   variant?: 'default' | 'compact';
 }
 

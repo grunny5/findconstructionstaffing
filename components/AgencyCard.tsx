@@ -25,7 +25,7 @@ import {
   ArrowUpRight,
   CheckCircle2,
 } from 'lucide-react';
-import type { Region, ComplianceItemFull } from '@/types/api';
+import type { Region, ComplianceItem } from '@/types/api';
 
 interface AgencyCardProps {
   agency: {
@@ -42,7 +42,7 @@ interface AgencyCardProps {
     is_union: boolean;
     trades?: string[];
     regions?: Region[];
-    compliance?: ComplianceItemFull[];
+    compliance?: ComplianceItem[];
     rating?: number;
     reviewCount?: number;
     projectCount?: number;
