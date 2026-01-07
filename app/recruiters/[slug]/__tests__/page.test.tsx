@@ -69,7 +69,11 @@ describe('Agency Profile Page API Tests', () => {
               ...mockAgency,
               agency_trades: [
                 {
-                  trade: { id: 't1', name: 'Electricians', slug: 'electricians' },
+                  trade: {
+                    id: 't1',
+                    name: 'Electricians',
+                    slug: 'electricians',
+                  },
                 },
               ],
               agency_regions: [

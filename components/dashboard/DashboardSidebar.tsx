@@ -14,6 +14,7 @@ import {
   Building2,
   Settings,
   BarChart3,
+  ShieldCheck,
   Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,11 @@ export function DashboardSidebar({
       name: 'Services',
       href: `/dashboard/agency/${agencySlug}/services`,
       icon: Settings,
+    },
+    {
+      name: 'Compliance',
+      href: `/dashboard/agency/${agencySlug}/compliance`,
+      icon: ShieldCheck,
     },
     {
       name: 'Analytics',

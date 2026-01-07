@@ -316,7 +316,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 2.1: Agency Owner Manages Compliance Settings
+### [x] ➡️ Story 2.1: Agency Owner Manages Compliance Settings
 
 > As an **Agency Owner**, I want **to add, edit, and remove compliance certifications from my agency profile**, so that **contractors can see my agency's qualifications and compliance status at a glance**.
 
@@ -324,7 +324,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.1.1: Create ComplianceSettings Component
+### [x] Task 2.1.1: Create ComplianceSettings Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build the main compliance settings form component
@@ -366,7 +366,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 2.1.2: Create Compliance Dashboard Page
+### [x] Task 2.1.2: Create Compliance Dashboard Page
 
 - **Role:** Frontend Developer
 - **Objective:** Add compliance settings page to agency dashboard
