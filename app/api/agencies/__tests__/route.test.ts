@@ -356,29 +356,54 @@ describe('GET /api/agencies', () => {
       // Use mockImplementation to handle different tables
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'agency_compliance') {
+          const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
           const complianceChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
+            select: jest.fn((...args) => {
+              (supabase as any).select(...args);
+              return complianceResult;
+            }),
+            in: jest.fn((...args) => {
+              (supabase as any).in(...args);
+              return complianceResult;
+            }),
+            eq: jest.fn((...args) => {
+              (supabase as any).eq(...args);
+              return complianceResult;
+            }),
           };
-          return Object.assign(
-            Promise.resolve({ data: mockComplianceData, error: null }),
-            complianceChain
-          );
+          const complianceResult = Object.assign(compliancePromise, complianceChain);
+          return complianceResult;
         }
         // Default agencies table behavior
+        const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
         const agenciesChain = {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          in: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
-          range: jest.fn().mockReturnThis(),
-          order: jest.fn().mockReturnThis(),
+          select: jest.fn((...args) => {
+            (supabase as any).select(...args);
+            return agenciesResult;
+          }),
+          eq: jest.fn((...args) => {
+            (supabase as any).eq(...args);
+            return agenciesResult;
+          }),
+          in: jest.fn((...args) => {
+            (supabase as any).in(...args);
+            return agenciesResult;
+          }),
+          or: jest.fn((...args) => {
+            (supabase as any).or(...args);
+            return agenciesResult;
+          }),
+          range: jest.fn((...args) => {
+            (supabase as any).range(...args);
+            return agenciesResult;
+          }),
+          order: jest.fn((...args) => {
+            (supabase as any).order(...args);
+            return agenciesResult;
+          }),
         };
-        return Object.assign(
-          Promise.resolve({ data: mockAgencies, error: null, count: 1 }),
-          agenciesChain
-        );
+        const agenciesResult = Object.assign(agenciesPromise, agenciesChain);
+        return agenciesResult;
       });
 
       const mockRequest = createMockNextRequest({
@@ -424,29 +449,54 @@ describe('GET /api/agencies', () => {
       // Use mockImplementation to handle different tables
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'agency_compliance') {
+          const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
           const complianceChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
+            select: jest.fn((...args) => {
+              (supabase as any).select(...args);
+              return complianceResult;
+            }),
+            in: jest.fn((...args) => {
+              (supabase as any).in(...args);
+              return complianceResult;
+            }),
+            eq: jest.fn((...args) => {
+              (supabase as any).eq(...args);
+              return complianceResult;
+            }),
           };
-          return Object.assign(
-            Promise.resolve({ data: mockComplianceData, error: null }),
-            complianceChain
-          );
+          const complianceResult = Object.assign(compliancePromise, complianceChain);
+          return complianceResult;
         }
         // Default agencies table behavior
+        const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
         const agenciesChain = {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          in: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
-          range: jest.fn().mockReturnThis(),
-          order: jest.fn().mockReturnThis(),
+          select: jest.fn((...args) => {
+            (supabase as any).select(...args);
+            return agenciesResult;
+          }),
+          eq: jest.fn((...args) => {
+            (supabase as any).eq(...args);
+            return agenciesResult;
+          }),
+          in: jest.fn((...args) => {
+            (supabase as any).in(...args);
+            return agenciesResult;
+          }),
+          or: jest.fn((...args) => {
+            (supabase as any).or(...args);
+            return agenciesResult;
+          }),
+          range: jest.fn((...args) => {
+            (supabase as any).range(...args);
+            return agenciesResult;
+          }),
+          order: jest.fn((...args) => {
+            (supabase as any).order(...args);
+            return agenciesResult;
+          }),
         };
-        return Object.assign(
-          Promise.resolve({ data: mockAgencies, error: null, count: 1 }),
-          agenciesChain
-        );
+        const agenciesResult = Object.assign(agenciesPromise, agenciesChain);
+        return agenciesResult;
       });
 
       const mockRequest = createMockNextRequest({
@@ -492,49 +542,84 @@ describe('GET /api/agencies', () => {
       // Use mockImplementation to handle different tables
       (supabase as any).from.mockImplementation((table: string) => {
         if (table === 'trades') {
+          const tradesPromise = Promise.resolve({ data: mockTradeData, error: null });
           const tradesChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
+            select: jest.fn((...args) => {
+              (supabase as any).select(...args);
+              return tradesResult;
+            }),
+            in: jest.fn((...args) => {
+              (supabase as any).in(...args);
+              return tradesResult;
+            }),
           };
-          return Object.assign(
-            Promise.resolve({ data: mockTradeData, error: null }),
-            tradesChain
-          );
+          const tradesResult = Object.assign(tradesPromise, tradesChain);
+          return tradesResult;
         }
         if (table === 'agency_trades') {
+          const agencyTradesPromise = Promise.resolve({ data: mockAgencyTradeData, error: null });
           const agencyTradesChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
+            select: jest.fn((...args) => {
+              (supabase as any).select(...args);
+              return agencyTradesResult;
+            }),
+            in: jest.fn((...args) => {
+              (supabase as any).in(...args);
+              return agencyTradesResult;
+            }),
           };
-          return Object.assign(
-            Promise.resolve({ data: mockAgencyTradeData, error: null }),
-            agencyTradesChain
-          );
+          const agencyTradesResult = Object.assign(agencyTradesPromise, agencyTradesChain);
+          return agencyTradesResult;
         }
         if (table === 'agency_compliance') {
+          const compliancePromise = Promise.resolve({ data: mockComplianceData, error: null });
           const complianceChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
+            select: jest.fn((...args) => {
+              (supabase as any).select(...args);
+              return complianceResult;
+            }),
+            in: jest.fn((...args) => {
+              (supabase as any).in(...args);
+              return complianceResult;
+            }),
+            eq: jest.fn((...args) => {
+              (supabase as any).eq(...args);
+              return complianceResult;
+            }),
           };
-          return Object.assign(
-            Promise.resolve({ data: mockComplianceData, error: null }),
-            complianceChain
-          );
+          const complianceResult = Object.assign(compliancePromise, complianceChain);
+          return complianceResult;
         }
         // Default agencies table behavior
+        const agenciesPromise = Promise.resolve({ data: mockAgencies, error: null, count: 1 });
         const agenciesChain = {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          in: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
-          range: jest.fn().mockReturnThis(),
-          order: jest.fn().mockReturnThis(),
+          select: jest.fn((...args) => {
+            (supabase as any).select(...args);
+            return agenciesResult;
+          }),
+          eq: jest.fn((...args) => {
+            (supabase as any).eq(...args);
+            return agenciesResult;
+          }),
+          in: jest.fn((...args) => {
+            (supabase as any).in(...args);
+            return agenciesResult;
+          }),
+          or: jest.fn((...args) => {
+            (supabase as any).or(...args);
+            return agenciesResult;
+          }),
+          range: jest.fn((...args) => {
+            (supabase as any).range(...args);
+            return agenciesResult;
+          }),
+          order: jest.fn((...args) => {
+            (supabase as any).order(...args);
+            return agenciesResult;
+          }),
         };
-        return Object.assign(
-          Promise.resolve({ data: mockAgencies, error: null, count: 1 }),
-          agenciesChain
-        );
+        const agenciesResult = Object.assign(agenciesPromise, agenciesChain);
+        return agenciesResult;
       });
 
       const mockRequest = createMockNextRequest({
