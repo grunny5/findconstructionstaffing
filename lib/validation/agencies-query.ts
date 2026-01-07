@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { API_CONSTANTS } from '@/types/api';
+import { API_CONSTANTS, COMPLIANCE_TYPES, ComplianceType } from '@/types/api';
 
 /**
  * Schema for validating agencies API query parameters
@@ -43,6 +43,26 @@ export const AgenciesQuerySchema = z.object({
             .transform((s) => s.toUpperCase())
         )
         .max(API_CONSTANTS.MAX_STATE_FILTERS, 'Too many state filters')
+    )
+    .optional(),
+
+  // Compliance filters - array of compliance types
+  compliance: z
+    .union([z.string(), z.array(z.string())])
+    .transform((val) => (Array.isArray(val) ? val : [val]))
+    .pipe(
+      z
+        .array(
+          z
+            .string()
+            .trim()
+            .refine(
+              (val): val is ComplianceType =>
+                COMPLIANCE_TYPES.includes(val as ComplianceType),
+              'Invalid compliance type'
+            )
+        )
+        .max(6, 'Too many compliance filters')
     )
     .optional(),
 

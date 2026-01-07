@@ -112,13 +112,14 @@ async function queryWithRetry<T>(
 }
 
 /**
- * Apply trade and state filters to get matching agency IDs
+ * Apply trade, state, and compliance filters to get matching agency IDs
  * @returns Array of agency IDs that match the filters, or null if no filters applied
  */
 async function applyFilters(
   monitor: PerformanceMonitor,
   trades?: string[],
-  states?: string[]
+  states?: string[],
+  compliance?: string[]
 ): Promise<string[] | null> {
   if (!supabase) {
     throw new Error('Database connection not initialized');
@@ -211,6 +212,66 @@ async function applyFilters(
         // If we already have trade filters, this intersection results in empty set
         agencyIds = [];
       }
+    }
+  }
+
+  // Apply compliance filter
+  if (compliance && compliance.length > 0) {
+    const complianceQueryId = monitor.startQuery();
+
+    // For each compliance type, get agencies that have it active
+    // Then intersect all results (AND logic - must have ALL selected compliance types)
+    let complianceAgencyIds: Set<string> | null = null;
+
+    for (const complianceType of compliance) {
+      const { data: complianceData, error: complianceError } =
+        await queryWithRetry(async () =>
+          supabase
+            .from('agency_compliance')
+            .select('agency_id')
+            .eq('compliance_type', complianceType)
+            .eq('is_active', true)
+        );
+
+      monitor.endQuery(complianceQueryId);
+
+      if (complianceError || !complianceData) {
+        throw new Error('Failed to fetch agency compliance data');
+      }
+
+      const typeAgencyIds = new Set(
+        complianceData.map((ac) => ac.agency_id)
+      );
+
+      if (complianceAgencyIds === null) {
+        // First compliance type
+        complianceAgencyIds = typeAgencyIds;
+      } else {
+        // Intersect with previous results (AND logic)
+        complianceAgencyIds = new Set(
+          Array.from(complianceAgencyIds).filter((id) =>
+            typeAgencyIds.has(id)
+          )
+        );
+      }
+
+      // If intersection is empty, no agencies match all compliance types
+      if (complianceAgencyIds.size === 0) {
+        break;
+      }
+    }
+
+    const complianceAgencyIdsArray = complianceAgencyIds
+      ? Array.from(complianceAgencyIds)
+      : [];
+
+    // Intersect with existing filters if needed
+    if (agencyIds !== null) {
+      agencyIds = agencyIds.filter((id) =>
+        complianceAgencyIdsArray.includes(id)
+      );
+    } else {
+      agencyIds = complianceAgencyIdsArray;
     }
   }
 
@@ -361,7 +422,8 @@ export async function GET(request: NextRequest) {
       return response;
     }
 
-    const { search, trades, states, limit, offset } = queryParseResult.data;
+    const { search, trades, states, compliance, limit, offset } =
+      queryParseResult.data;
 
     // Sanitize search input if provided
     const sanitizedSearch = search ? sanitizeSearchInput(search) : undefined;
@@ -399,8 +461,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Apply trade and state filters
-    const filteredAgencyIds = await applyFilters(monitor, trades, states);
+    // Apply trade, state, and compliance filters
+    const filteredAgencyIds = await applyFilters(
+      monitor,
+      trades,
+      states,
+      compliance
+    );
 
     if (filteredAgencyIds !== null) {
       // Apply the filter to the query
