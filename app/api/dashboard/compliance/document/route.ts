@@ -122,7 +122,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if (!complianceType || !COMPLIANCE_TYPES.includes(complianceType as ComplianceType)) {
+  if (
+    !complianceType ||
+    !COMPLIANCE_TYPES.includes(complianceType as ComplianceType)
+  ) {
     return NextResponse.json(
       {
         success: false,
@@ -321,7 +324,10 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const complianceType = searchParams.get('compliance_type');
 
-  if (!complianceType || !COMPLIANCE_TYPES.includes(complianceType as ComplianceType)) {
+  if (
+    !complianceType ||
+    !COMPLIANCE_TYPES.includes(complianceType as ComplianceType)
+  ) {
     return NextResponse.json(
       {
         success: false,
@@ -357,9 +363,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
   // Delete document from storage if exists
   if (complianceRecord?.document_url) {
-    const urlParts = complianceRecord.document_url.split(
-      `/${STORAGE_BUCKET}/`
-    );
+    const urlParts = complianceRecord.document_url.split(`/${STORAGE_BUCKET}/`);
     if (urlParts.length > 1) {
       const filePath = urlParts[1];
       const { error: deleteError } = await supabase.storage

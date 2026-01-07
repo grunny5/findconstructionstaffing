@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Agency, AgencyResponse, isErrorResponse } from '@/types/api';
 import { SendMessageButton } from '@/components/messages/SendMessageButton';
+import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import Link from 'next/link';
 
 interface PageProps {
@@ -368,8 +369,21 @@ export default async function AgencyProfilePage({ params }: PageProps) {
             </Tabs>
           </div>
 
-          {/* Right Column - Contact Info */}
+          {/* Right Column - Contact Info & Compliance */}
           <div className="space-y-6">
+            {/* Compliance & Certifications Section */}
+            {agency.compliance && agency.compliance.length > 0 && (
+              <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
+                <CardContent className="p-6">
+                  <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
+                    Compliance & Certifications
+                  </h2>
+                  <ComplianceBadges compliance={agency.compliance} />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contact Information */}
             <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
               <CardContent className="p-6">
                 <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">

@@ -243,9 +243,13 @@ describe('POST /api/dashboard/compliance/document', () => {
     });
 
     it('returns 400 when file is too large', async () => {
-      const largeFile = new File([new ArrayBuffer(11 * 1024 * 1024)], 'test.pdf', {
-        type: 'application/pdf',
-      });
+      const largeFile = new File(
+        [new ArrayBuffer(11 * 1024 * 1024)],
+        'test.pdf',
+        {
+          type: 'application/pdf',
+        }
+      );
       const formData = createFormData(largeFile, 'osha_certified');
 
       const request = createMockNextRequest({
@@ -307,7 +311,7 @@ describe('POST /api/dashboard/compliance/document', () => {
         return {};
       });
 
-      (mockStorageFrom).mockReturnValue({
+      mockStorageFrom.mockReturnValue({
         upload: jest.fn().mockResolvedValue({ error: null }),
         remove: jest.fn().mockResolvedValue({ error: null }),
         getPublicUrl: jest.fn().mockReturnValue({
@@ -328,7 +332,9 @@ describe('POST /api/dashboard/compliance/document', () => {
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(json.success).toBe(true);
-      expect(json.data.document_url).toBe('https://storage.example.com/doc.pdf');
+      expect(json.data.document_url).toBe(
+        'https://storage.example.com/doc.pdf'
+      );
     });
 
     it('uploads image file successfully', async () => {
@@ -462,7 +468,7 @@ describe('POST /api/dashboard/compliance/document', () => {
     });
 
     it('returns 500 when storage upload fails', async () => {
-      (mockStorageFrom).mockReturnValue({
+      mockStorageFrom.mockReturnValue({
         upload: jest.fn().mockResolvedValue({
           error: { message: 'Storage error' },
         }),
@@ -485,7 +491,7 @@ describe('POST /api/dashboard/compliance/document', () => {
     });
 
     it('returns 500 when compliance upsert fails', async () => {
-      (mockStorageFrom).mockReturnValue({
+      mockStorageFrom.mockReturnValue({
         upload: jest.fn().mockResolvedValue({ error: null }),
         remove: jest.fn().mockResolvedValue({ error: null }),
         getPublicUrl: jest.fn().mockReturnValue({
@@ -694,7 +700,7 @@ describe('DELETE /api/dashboard/compliance/document', () => {
         return {};
       });
 
-      (mockStorageFrom).mockReturnValue({
+      mockStorageFrom.mockReturnValue({
         remove: jest.fn().mockResolvedValue({ error: null }),
       });
     });
@@ -812,7 +818,7 @@ describe('DELETE /api/dashboard/compliance/document', () => {
         return {};
       });
 
-      (mockStorageFrom).mockReturnValue({
+      mockStorageFrom.mockReturnValue({
         remove: jest.fn().mockResolvedValue({ error: null }),
       });
     });
@@ -862,7 +868,7 @@ describe('DELETE /api/dashboard/compliance/document', () => {
     });
 
     it('continues if storage deletion fails', async () => {
-      (mockStorageFrom).mockReturnValue({
+      mockStorageFrom.mockReturnValue({
         remove: jest.fn().mockResolvedValue({
           error: { message: 'Storage error' },
         }),

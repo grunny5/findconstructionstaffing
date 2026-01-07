@@ -44,7 +44,9 @@ function isValidFileType(file: File): boolean {
 }
 
 function isPdfFile(file: File): boolean {
-  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  return (
+    file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+  );
 }
 
 function formatFileSize(bytes: number): string {
@@ -73,7 +75,9 @@ export function ComplianceDocumentUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const error = externalError || validationError;
-  const isPdf = selectedFile ? isPdfFile(selectedFile) : currentUrl?.toLowerCase().endsWith('.pdf');
+  const isPdf = selectedFile
+    ? isPdfFile(selectedFile)
+    : currentUrl?.toLowerCase().endsWith('.pdf');
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -192,7 +196,10 @@ export function ComplianceDocumentUpload({
   const isInteractive = !hasDocument && !disabled && !isUploading;
 
   return (
-    <div className="space-y-3" data-testid={`document-upload-${complianceType}`}>
+    <div
+      className="space-y-3"
+      data-testid={`document-upload-${complianceType}`}
+    >
       <div className="text-sm font-medium">Supporting Documentation</div>
 
       <div

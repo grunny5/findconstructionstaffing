@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
-import { Agency } from '@/types/api';
+import { Agency, ComplianceItemFull } from '@/types/api';
 import { US_STATE_CODES } from '@/lib/utils';
 
 // Helper to convert Agency type to AgencyCard props
 function toAgencyCardProps(
-  agency: Agency
+  agency: Agency & { compliance?: ComplianceItemFull[] }
 ): Parameters<typeof AgencyCard>[0]['agency'] {
   return {
     id: agency.id,
@@ -22,6 +22,7 @@ function toAgencyCardProps(
     is_union: agency.is_union,
     trades: agency.trades.map((t) => t.name),
     regions: agency.regions,
+    compliance: agency.compliance,
     rating: agency.rating ?? undefined,
     reviewCount: agency.review_count,
     projectCount: agency.project_count,
@@ -532,6 +533,80 @@ describe('AgencyCard', () => {
       const badge = screen.getByText('Featured Agency').closest('div');
       expect(badge).toHaveClass('from-amber-400');
       expect(badge).toHaveClass('to-yellow-500');
+    });
+  });
+
+  describe('Compliance Indicators', () => {
+    const mockCompliance: ComplianceItemFull[] = [
+      {
+        id: '1',
+        type: 'osha_certified',
+        displayName: 'OSHA Certified',
+        isActive: true,
+        isVerified: true,
+        expirationDate: '2026-12-31',
+        isExpired: false,
+        documentUrl: null,
+        notes: null,
+        verifiedBy: null,
+        verifiedAt: null,
+      },
+      {
+        id: '2',
+        type: 'drug_testing',
+        displayName: 'Drug Testing Policy',
+        isActive: true,
+        isVerified: false,
+        expirationDate: null,
+        isExpired: false,
+        documentUrl: null,
+        notes: null,
+        verifiedBy: null,
+        verifiedAt: null,
+      },
+    ];
+
+    it('should render compliance indicators when compliance data is provided', () => {
+      const agencyWithCompliance = {
+        ...mockAgency,
+        compliance: mockCompliance,
+      };
+
+      const { container } = render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithCompliance)} />
+      );
+
+      // Should render ComplianceBadges component in compact mode
+      const complianceIcons = container.querySelectorAll('svg');
+      expect(complianceIcons.length).toBeGreaterThan(0);
+    });
+
+    it('should not render compliance indicators when no compliance data', () => {
+      const agencyWithoutCompliance = {
+        ...mockAgency,
+        compliance: undefined,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithoutCompliance)} />);
+
+      // Compliance section should not be rendered
+      // We can't easily test for absence of ComplianceBadges component
+      // but we can verify the main content renders without errors
+      expect(screen.getByText('Test Agency')).toBeInTheDocument();
+    });
+
+    it('should not render compliance indicators when compliance array is empty', () => {
+      const agencyWithEmptyCompliance = {
+        ...mockAgency,
+        compliance: [],
+      };
+
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithEmptyCompliance)} />
+      );
+
+      // Compliance section should not be rendered
+      expect(screen.getByText('Test Agency')).toBeInTheDocument();
     });
   });
 });

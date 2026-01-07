@@ -524,7 +524,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] ➡️ Story 3.1: Display Compliance Badges on Agency Profile
+### [x] ➡️ Story 3.1: Display Compliance Badges on Agency Profile
 
 > As a **Contractor**, I want **to see compliance badges on agency profiles**, so that **I can quickly assess whether an agency meets my project's compliance requirements**.
 
@@ -532,7 +532,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.1.1: Create ComplianceBadges Component
+### [x] Task 3.1.1: Create ComplianceBadges Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build component to display compliance badges on agency profiles
@@ -576,7 +576,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.1.2: Add Compliance Section to Agency Profile Page
+### [x] Task 3.1.2: Add Compliance Section to Agency Profile Page
 
 - **Role:** Frontend Developer
 - **Objective:** Display ComplianceBadges on the agency profile page
@@ -607,7 +607,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 3.1.3: Add Compliance Indicators to Agency Cards
+### [x] Task 3.1.3: Add Compliance Indicators to Agency Cards
 
 - **Role:** Frontend Developer
 - **Objective:** Show compliance summary on agency cards in directory listing

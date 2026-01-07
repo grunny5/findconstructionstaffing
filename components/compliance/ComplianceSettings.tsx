@@ -351,7 +351,9 @@ export function ComplianceSettings({
                           <ComplianceDocumentUpload
                             complianceType={type}
                             currentUrl={documentUrls[type]}
-                            onUpload={(file) => handleDocumentUpload(type, file)}
+                            onUpload={(file) =>
+                              handleDocumentUpload(type, file)
+                            }
                             onRemove={() => handleDocumentRemove(type)}
                             isUploading={uploadingType === type}
                             disabled={isLoading || isSaving}

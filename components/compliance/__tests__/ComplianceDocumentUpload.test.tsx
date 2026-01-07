@@ -52,9 +52,7 @@ describe('ComplianceDocumentUpload', () => {
       );
 
       expect(screen.getByText('Supporting Documentation')).toBeInTheDocument();
-      expect(
-        screen.getByText('Drag and drop a document')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Drag and drop a document')).toBeInTheDocument();
       expect(
         screen.getByText('PDF, PNG, or JPG (max 10MB)')
       ).toBeInTheDocument();
@@ -186,7 +184,9 @@ describe('ComplianceDocumentUpload', () => {
       await user.upload(input, largeFile);
 
       await waitFor(() => {
-        expect(screen.getByTestId('document-error-message')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('document-error-message')
+        ).toBeInTheDocument();
         expect(
           screen.getByText(/File too large. Maximum size is 10MB/)
         ).toBeInTheDocument();
@@ -220,7 +220,9 @@ describe('ComplianceDocumentUpload', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId('document-error-message')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('document-error-message')
+        ).toBeInTheDocument();
       });
 
       expect(screen.getByText(/Invalid file type/)).toBeInTheDocument();
@@ -247,7 +249,9 @@ describe('ComplianceDocumentUpload', () => {
         expect(mockOnUpload).toHaveBeenCalledWith(pdfFile);
       });
 
-      expect(screen.queryByTestId('document-error-message')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('document-error-message')
+      ).not.toBeInTheDocument();
     });
 
     it('accepts PNG files', async () => {
@@ -269,7 +273,9 @@ describe('ComplianceDocumentUpload', () => {
         expect(mockOnUpload).toHaveBeenCalledWith(pngFile);
       });
 
-      expect(screen.queryByTestId('document-error-message')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('document-error-message')
+      ).not.toBeInTheDocument();
     });
 
     it('accepts JPG files', async () => {
@@ -293,7 +299,9 @@ describe('ComplianceDocumentUpload', () => {
         expect(mockOnUpload).toHaveBeenCalledWith(jpgFile);
       });
 
-      expect(screen.queryByTestId('document-error-message')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('document-error-message')
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -402,7 +410,9 @@ describe('ComplianceDocumentUpload', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Drag and drop a document')).toBeInTheDocument();
+        expect(
+          screen.getByText('Drag and drop a document')
+        ).toBeInTheDocument();
       });
     });
 
@@ -429,7 +439,9 @@ describe('ComplianceDocumentUpload', () => {
       await user.click(removeButton);
 
       await waitFor(() => {
-        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith(
+          'blob:mock-url'
+        );
       });
     });
   });
@@ -601,7 +613,9 @@ describe('ComplianceDocumentUpload', () => {
       await user.upload(input, imageFile);
 
       await waitFor(() => {
-        expect(screen.getByTestId('document-preview-image')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('document-preview-image')
+        ).toBeInTheDocument();
       });
     });
   });
