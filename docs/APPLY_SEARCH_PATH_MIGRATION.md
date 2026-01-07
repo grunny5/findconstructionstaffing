@@ -16,6 +16,7 @@ Key (version)=(20260105) already exists.
 ```
 
 There are two local migrations with the same version:
+
 - `20260105_001_add_integration_columns_to_agencies.sql` (already on remote)
 - `20260105_001_create_agency_logos_bucket.sql` (not on remote)
 
@@ -32,6 +33,7 @@ This prevents the automated `supabase db push` from working correctly.
    - Navigate to: **SQL Editor**
 
 2. **Copy the SQL**
+
    ```sql
    -- Fix search_path security issue in get_admin_integrations_summary function
    -- Issue: Function has SECURITY DEFINER without explicit search_path, making it vulnerable
@@ -88,6 +90,7 @@ This prevents the automated `supabase db push` from working correctly.
    - Verify: "Success. No rows returned"
 
 4. **Record the migration**
+
    ```sql
    -- Mark the migration as applied in the history
    INSERT INTO supabase_migrations.schema_migrations (version, name, statements)
@@ -133,6 +136,7 @@ psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (versio
 After applying the migration, verify it worked:
 
 1. **Check function definition:**
+
    ```sql
    SELECT
      proname as function_name,
@@ -151,6 +155,7 @@ After applying the migration, verify it worked:
    - The "Function Search Path Mutable" warning should be **RESOLVED**
 
 3. **Test the function:**
+
    ```sql
    SELECT * FROM get_admin_integrations_summary() LIMIT 1;
    ```
@@ -164,18 +169,21 @@ After applying the migration, verify it worked:
 To avoid version conflicts in the future:
 
 1. **Always use unique timestamps:**
+
    ```bash
    # Generate new migration with current timestamp
    supabase migration new migration_name
    ```
 
 2. **Check for conflicts before creating:**
+
    ```bash
    # List existing migrations
    ls -1 supabase/migrations/ | grep "^2026"
    ```
 
 3. **Sync migration history regularly:**
+
    ```bash
    # Pull remote migrations
    supabase db pull
