@@ -7,7 +7,6 @@
  * This endpoint performs the following operations:
  * - Verify: Sets is_verified=true, verified_by, verified_at
  * - Reject: Clears document_url, sends rejection email
- * - Creates audit log entry
  */
 
 import { NextRequest, NextResponse } from 'next/server';

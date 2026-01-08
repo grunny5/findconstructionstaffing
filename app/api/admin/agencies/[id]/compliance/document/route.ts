@@ -236,10 +236,30 @@ export async function POST(
       );
     }
 
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filename);
+    // Get signed URL (7 days expiry for compliance documents)
+    const SIGNED_URL_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
+    const { data: signedUrlData, error: signedUrlError } =
+      await supabase.storage
+        .from(STORAGE_BUCKET)
+        .createSignedUrl(filename, SIGNED_URL_EXPIRY_SECONDS);
+
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      console.error('Failed to create signed URL:', signedUrlError);
+      // Clean up uploaded file
+      await supabase.storage.from(STORAGE_BUCKET).remove([filename]);
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to generate document URL',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
+
+    const documentUrl = signedUrlData.signedUrl;
 
     // Update or insert compliance record
     // Preserve existing is_active state, or default to false for new records
@@ -249,7 +269,7 @@ export async function POST(
         {
           agency_id: agencyId,
           compliance_type: complianceType,
-          document_url: publicUrl,
+          document_url: documentUrl,
           is_active: existingCompliance?.is_active ?? false,
         },
         {
@@ -276,7 +296,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       data: {
-        document_url: publicUrl,
+        document_url: documentUrl,
       },
     });
   } catch (error) {

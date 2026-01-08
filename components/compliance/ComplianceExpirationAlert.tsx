@@ -70,22 +70,41 @@ export function ComplianceExpirationAlert({
 
   // Load dismissed state from localStorage on mount
   useEffect(() => {
-    const dismissed = localStorage.getItem(storageKey);
-    if (dismissed) {
-      const dismissedDate = new Date(dismissed);
-      const now = new Date();
-      // Reset dismissed state if it's been more than 24 hours
-      if (now.getTime() - dismissedDate.getTime() > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(storageKey);
-        setIsDismissed(false);
-      } else {
-        setIsDismissed(true);
+    try {
+      const dismissed = localStorage.getItem(storageKey);
+      if (dismissed) {
+        const dismissedDate = new Date(dismissed);
+        // Validate the date is valid before using it
+        if (!isNaN(dismissedDate.getTime())) {
+          const now = new Date();
+          // Reset dismissed state if it's been more than 24 hours
+          if (now.getTime() - dismissedDate.getTime() > 24 * 60 * 60 * 1000) {
+            localStorage.removeItem(storageKey);
+            setIsDismissed(false);
+          } else {
+            setIsDismissed(true);
+          }
+        } else {
+          // Invalid date stored, remove it and treat as not dismissed
+          localStorage.removeItem(storageKey);
+          setIsDismissed(false);
+        }
       }
+    } catch (error) {
+      // localStorage not available (private mode, etc.) - treat as not dismissed
+      console.warn('localStorage access failed:', error);
+      setIsDismissed(false);
     }
   }, [storageKey]);
 
   const handleDismiss = () => {
-    localStorage.setItem(storageKey, new Date().toISOString());
+    try {
+      localStorage.setItem(storageKey, new Date().toISOString());
+    } catch (error) {
+      // localStorage not available (private mode, quota errors, etc.)
+      console.warn('Failed to persist dismiss state:', error);
+    }
+    // Always update state even if storage fails
     setIsDismissed(true);
   };
 

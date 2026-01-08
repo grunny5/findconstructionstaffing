@@ -12,7 +12,6 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import type { ComplianceType } from '@/types/api';
 
 const ACCEPTED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
@@ -269,12 +268,12 @@ export function ComplianceDocumentUpload({
                 )}
               </div>
             ) : displayUrl ? (
-              <div className="relative w-full h-full">
-                <Image
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Use native img for blob URLs - next/Image doesn't support blob: protocol */}
+                <img
                   src={displayUrl}
                   alt="Document preview"
-                  fill
-                  className="object-contain rounded-lg"
+                  className="max-w-full max-h-full object-contain rounded-lg"
                   data-testid="document-preview-image"
                 />
               </div>

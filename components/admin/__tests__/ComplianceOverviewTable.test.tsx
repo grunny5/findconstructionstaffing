@@ -31,9 +31,10 @@ function createMockRow(
         })()
       : null;
 
+  const slug = agencyName.toLowerCase().replace(/\s+/g, '-');
   return {
     id: `${agencyName}-${complianceType}`,
-    agency_id: `agency-${agencyName}`,
+    agency_id: `agency-${slug}`,
     compliance_type: complianceType,
     is_active: true,
     is_verified: isVerified,
@@ -43,9 +44,9 @@ function createMockRow(
     expiration_date: expirationDate,
     notes: null,
     agencies: {
-      id: `agency-${agencyName}`,
+      id: `agency-${slug}`,
       name: agencyName,
-      slug: agencyName.toLowerCase().replace(/\s+/g, '-'),
+      slug: slug,
       is_active: true,
     },
   };
@@ -375,11 +376,11 @@ describe('ComplianceOverviewTable', () => {
 
       render(<ComplianceOverviewTable complianceData={data} />);
 
-      const viewButton = screen.getByRole('button', { name: 'View Agency' });
-      const link = viewButton.closest('a');
+      // Button asChild renders as a Link (anchor element)
+      const link = screen.getByRole('link', { name: /View Agency/i });
       expect(link).toHaveAttribute(
         'href',
-        '/admin/agencies/agency-ABC Staffing'
+        '/admin/agencies/agency-abc-staffing'
       );
     });
 
@@ -391,10 +392,11 @@ describe('ComplianceOverviewTable', () => {
 
       render(<ComplianceOverviewTable complianceData={data} />);
 
-      const viewButtons = screen.getAllByRole('button', {
-        name: 'View Agency',
+      // Button asChild renders as Links (anchor elements)
+      const viewLinks = screen.getAllByRole('link', {
+        name: /View Agency/i,
       });
-      expect(viewButtons).toHaveLength(2);
+      expect(viewLinks).toHaveLength(2);
     });
   });
 
