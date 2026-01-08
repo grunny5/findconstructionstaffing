@@ -268,15 +268,22 @@ export function ComplianceDocumentUpload({
                   </Button>
                 )}
               </div>
-            ) : (
+            ) : displayUrl ? (
               <div className="relative w-full h-full">
                 <Image
-                  src={displayUrl!}
+                  src={displayUrl}
                   alt="Document preview"
                   fill
                   className="object-contain rounded-lg"
                   data-testid="document-preview-image"
                 />
+              </div>
+            ) : (
+              <div
+                className="flex items-center justify-center h-full"
+                data-testid="document-preview-image"
+              >
+                <FileText className="h-12 w-12 text-muted-foreground" />
               </div>
             )}
             {!isUploading && !disabled && (

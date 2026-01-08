@@ -71,11 +71,8 @@ function isExactlyNDaysFromNow(dateStr: string, days: number): boolean {
 
   const targetUTC = nowUTC + days * 24 * 60 * 60 * 1000;
 
-  // Check if date is within 24 hours of target
-  const diffMs = Math.abs(dateUTC - targetUTC);
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-  return diffDays <= 1;
+  // Check if date exactly matches target day (within 24-hour tolerance)
+  return Math.abs(dateUTC - targetUTC) < 24 * 60 * 60 * 1000;
 }
 
 /**

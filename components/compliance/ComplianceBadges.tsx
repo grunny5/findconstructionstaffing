@@ -34,9 +34,20 @@ export function ComplianceBadges({
   const formatExpirationDate = (dateString: string | null): string | null => {
     if (!dateString) return null;
 
-    const date = new Date(dateString);
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
-    const year = date.getFullYear();
+    // Parse date-only strings as UTC to avoid timezone shifts
+    let date: Date;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      // Date-only ISO string - parse as UTC
+      date = new Date(dateString + 'T00:00:00Z');
+    } else {
+      date = new Date(dateString);
+    }
+
+    const month = date.toLocaleDateString('en-US', {
+      month: 'short',
+      timeZone: 'UTC',
+    });
+    const year = date.getUTCFullYear();
     return `${month} ${year}`;
   };
 

@@ -15,11 +15,12 @@ jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(),
 }));
 
-// Mock Resend
+// Mock Resend with controllable send mock
+const mockEmailSend = jest.fn().mockResolvedValue({ id: 'email-123' });
 jest.mock('resend', () => ({
   Resend: jest.fn().mockImplementation(() => ({
     emails: {
-      send: jest.fn().mockResolvedValue({ id: 'email-123' }),
+      send: mockEmailSend,
     },
   })),
 }));
@@ -725,12 +726,7 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
     });
 
     it('should handle email sending failure gracefully', async () => {
-      const { Resend } = require('resend');
-      Resend.mockImplementationOnce(() => ({
-        emails: {
-          send: jest.fn().mockRejectedValue(new Error('Email failed')),
-        },
-      }));
+      mockEmailSend.mockRejectedValueOnce(new Error('Email failed'));
 
       let callCount = 0;
       mockSupabaseClient.from.mockImplementation((table: string) => {
