@@ -200,11 +200,30 @@ async function sendReminder(
         ? 'last_30_day_reminder_sent'
         : 'last_7_day_reminder_sent';
 
+    const failedUpdates: Array<{ itemId: string; error: any }> = [];
+
     for (const item of items) {
-      await supabase
+      const { error: updateError } = await supabase
         .from('agency_compliance')
         .update({ [updateField]: now })
         .eq('id', item.id);
+
+      if (updateError) {
+        failedUpdates.push({ itemId: item.id, error: updateError });
+        console.error(
+          `[Cron] Failed to update ${updateField} for item ${item.id}:`,
+          updateError
+        );
+      }
+    }
+
+    // If any updates failed, return false to indicate partial failure
+    if (failedUpdates.length > 0) {
+      console.error(
+        `[Cron] Failed to update tracking for ${failedUpdates.length}/${items.length} items for ${owner.email}. Failed items:`,
+        failedUpdates.map((f) => f.itemId)
+      );
+      return false;
     }
 
     console.log(
