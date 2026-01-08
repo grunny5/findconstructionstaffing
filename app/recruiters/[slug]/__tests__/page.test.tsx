@@ -3,22 +3,30 @@
  */
 import { GET } from '@/app/api/agencies/[slug]/route';
 import { Agency } from '@/types/api';
+import {
+  createMultiTableMock,
+  type SupabaseMock,
+} from '@/__tests__/utils/multi-table-mock';
 
 // Mock Supabase before any imports
 jest.mock('@/lib/supabase', () => {
-  const mockFrom = jest.fn(() => ({
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(() => Promise.resolve({ data: null, error: null })),
-        })),
-      })),
-    })),
-  }));
+  const mockFrom = jest.fn();
 
   return {
     supabase: {
       from: mockFrom,
+      select: jest.fn(),
+      eq: jest.fn(),
+      in: jest.fn(),
+      not: jest.fn(),
+      or: jest.fn(),
+      range: jest.fn(),
+      order: jest.fn(),
+      single: jest.fn(),
+      update: jest.fn(),
+      upsert: jest.fn(),
+      insert: jest.fn(),
+      delete: jest.fn(),
       _error: true, // Signal this is a mock to the API code
     },
   };
@@ -51,54 +59,18 @@ const mockAgency: Agency = {
   regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
 };
 
-/**
- * Creates a reusable mock factory for supabase.from() that handles multiple tables
- */
-interface TableMockOverrides {
-  agencies?: { data: unknown; error: unknown };
-  agency_compliance?: { data: unknown; error: unknown };
-}
-
-function createMultiTableMock(overrides: TableMockOverrides = {}) {
-  return (table: string) => {
-    if (table === 'agencies' && overrides.agencies) {
-      return {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue(overrides.agencies),
-      };
-    }
-    if (table === 'agency_compliance') {
-      const complianceData = overrides.agency_compliance || {
-        data: [],
-        error: null,
-      };
-      return {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue(complianceData),
-      };
-    }
-    return {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: null, error: null }),
-    };
-  };
-}
-
 describe('Agency Profile Page API Tests', () => {
-  const { supabase } = require('@/lib/supabase');
+  const { supabase } = require('@/lib/supabase') as { supabase: SupabaseMock };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should fetch agency by slug successfully', async () => {
-    supabase.from.mockImplementation(
-      createMultiTableMock({
-        agencies: {
-          data: {
+    createMultiTableMock(supabase, {
+      agencies: {
+        data: [
+          {
             ...mockAgency,
             agency_trades: [
               {
@@ -120,15 +92,15 @@ describe('Agency Profile Page API Tests', () => {
               },
             ],
           },
-          error: null,
-        },
-      })
-    );
+        ],
+      },
+      agency_compliance: { data: [] },
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as any, {
+    const response = await GET(request as unknown as Request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -141,19 +113,18 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should return 404 for non-existent agency', async () => {
-    supabase.from.mockImplementation(
-      createMultiTableMock({
-        agencies: {
-          data: null,
-          error: { code: 'PGRST116', message: 'No rows found' },
-        },
-      })
-    );
+    createMultiTableMock(supabase, {
+      agencies: {
+        data: [],
+        error: { code: 'PGRST116', message: 'No rows found' },
+      },
+      agency_compliance: { data: [] },
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/non-existent'
     );
-    const response = await GET(request as any, {
+    const response = await GET(request as unknown as Request, {
       params: { slug: 'non-existent' },
     });
 
@@ -164,19 +135,18 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should handle database errors', async () => {
-    supabase.from.mockImplementation(
-      createMultiTableMock({
-        agencies: {
-          data: null,
-          error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
-        },
-      })
-    );
+    createMultiTableMock(supabase, {
+      agencies: {
+        data: [],
+        error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+      },
+      agency_compliance: { data: [] },
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as any, {
+    const response = await GET(request as unknown as Request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -188,7 +158,9 @@ describe('Agency Profile Page API Tests', () => {
 
   it('should validate slug parameter', async () => {
     const request = new Request('http://localhost:3000/api/agencies/');
-    const response = await GET(request as any, { params: { slug: '' } });
+    const response = await GET(request as unknown as Request, {
+      params: { slug: '' },
+    });
 
     expect(response.status).toBe(400);
     const data = await response.json();
@@ -197,27 +169,67 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should include cache headers on success', async () => {
-    supabase.from.mockImplementation(
-      createMultiTableMock({
-        agencies: {
-          data: {
+    createMultiTableMock(supabase, {
+      agencies: {
+        data: [
+          {
             ...mockAgency,
             agency_trades: [],
             agency_regions: [],
           },
-          error: null,
-        },
-      })
-    );
+        ],
+      },
+      agency_compliance: { data: [] },
+    });
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as any, {
+    const response = await GET(request as unknown as Request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
     expect(response.headers.get('Cache-Control')).toContain('public');
     expect(response.headers.get('Cache-Control')).toContain('s-maxage=60');
+  });
+
+  it('should include compliance data in response', async () => {
+    createMultiTableMock(supabase, {
+      agencies: {
+        data: [
+          {
+            ...mockAgency,
+            agency_trades: [],
+            agency_regions: [],
+          },
+        ],
+      },
+      agency_compliance: {
+        data: [
+          {
+            id: 'comp-1',
+            agency_id: '1',
+            compliance_type: 'osha_certified',
+            is_active: true,
+            is_verified: true,
+            expiration_date: '2026-12-31',
+          },
+        ],
+      },
+    });
+
+    const request = new Request(
+      'http://localhost:3000/api/agencies/elite-construction-staffing'
+    );
+    const response = await GET(request as unknown as Request, {
+      params: { slug: 'elite-construction-staffing' },
+    });
+
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.data).toBeDefined();
+    expect(data.data.compliance).toBeDefined();
+    expect(data.data.compliance).toHaveLength(1);
+    expect(data.data.compliance[0].type).toBe('osha_certified');
   });
 });

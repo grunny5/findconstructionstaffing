@@ -138,7 +138,7 @@ export function ComplianceExpirationAlert({
   // Determine overall severity (show most severe)
   const hasExpired = expiredItems.length > 0;
   const hasUrgent = urgentItems.length > 0;
-  const variant = hasExpired || hasUrgent ? 'destructive' : 'warning';
+  const variant = hasExpired || hasUrgent ? 'destructive' : 'default';
   const Icon = hasExpired || hasUrgent ? AlertCircle : AlertTriangle;
 
   return (
