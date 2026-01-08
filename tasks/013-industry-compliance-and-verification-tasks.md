@@ -932,15 +932,16 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 6: Expiration Tracking (Sprint 5)
+## 📦 Phase 6: Expiration Tracking (Sprint 5) ✅ COMPLETE
 
 **Goal:** Track compliance expiration dates and send reminder notifications
 **Estimated Duration:** 3-4 days
 **Dependencies:** Phase 1-2 complete, Email service
+**Completed:** 2026-01-07
 
 ---
 
-### [ ] ➡️ Story 6.1: Compliance Expiration Tracking
+### [x] ➡️ Story 6.1: Compliance Expiration Tracking ✅ COMPLETE
 
 > As a **Site Administrator**, I want **the system to track compliance expiration dates and send reminders**, so that **agencies maintain up-to-date certifications**.
 
@@ -1035,7 +1036,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-### [ ] Task 6.1.4: Create ComplianceExpirationAlert Component
+### [x] Task 6.1.4: Create ComplianceExpirationAlert Component
 
 - **Role:** Frontend Developer
 - **Objective:** Build alert component for expiring compliance items
@@ -1050,29 +1051,29 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Error styling for 7 days or expired
   - Dismissible
 - **Acceptance Criteria (for this task):**
-  - [ ] Shows alert for items expiring within 30 days
-  - [ ] Warning (yellow) for 30-7 days
-  - [ ] Error (red) for <7 days or expired
-  - [ ] Lists affected compliance types
-  - [ ] "Update Now" button links to compliance settings
-  - [ ] Dismissible (dismissed state stored in localStorage)
-  - [ ] Props: `expiringItems: ComplianceItem[]`
+  - [x] Shows alert for items expiring within 30 days
+  - [x] Warning (yellow) for 30-7 days
+  - [x] Error (red) for <7 days or expired
+  - [x] Lists affected compliance types
+  - [x] "Update Now" button links to compliance settings
+  - [x] Dismissible (dismissed state stored in localStorage)
+  - [x] Props: `expiringItems: ComplianceItem[]`
 - **Definition of Done:**
-  - [ ] Component complete
-  - [ ] Tests verify all states
-  - [ ] **Final Check:** Accessible and noticeable
+  - [x] Component complete
+  - [x] Tests verify all states
+  - [x] **Final Check:** Accessible and noticeable
 
 **Estimated Effort:** 2 hours
 
 ---
 
-### [ ] Task 6.1.5: Add Expiration Alert to Agency Dashboard
+### [x] Task 6.1.5: Add Expiration Alert to Agency Dashboard
 
 - **Role:** Frontend Developer
 - **Objective:** Display ComplianceExpirationAlert on agency dashboard
 - **Context:** Alert owners about expiring compliance items
 - **Key Files to Modify:**
-  - `app/(app)/dashboard/page.tsx`
+  - `app/(app)/dashboard/agency/[slug]/page.tsx`
 - **Key Files to Reference:**
   - Dashboard layout patterns
 - **Key Patterns to Follow:**
@@ -1080,27 +1081,28 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Show alert at top of dashboard
   - Only show if items are expiring
 - **Acceptance Criteria (for this task):**
-  - [ ] Alert shown at top of dashboard
-  - [ ] Only shown if there are expiring/expired items
-  - [ ] Fetches compliance data on mount
-  - [ ] Alert can be dismissed
+  - [x] Alert shown at top of dashboard
+  - [x] Only shown if there are expiring/expired items
+  - [x] Fetches compliance data on mount
+  - [x] Alert can be dismissed
 - **Definition of Done:**
-  - [ ] Alert integrated
-  - [ ] Tests verify rendering
-  - [ ] **Final Check:** Non-intrusive but noticeable
+  - [x] Alert integrated
+  - [x] Tests verify rendering
+  - [x] **Final Check:** Non-intrusive but noticeable
 
 **Estimated Effort:** 1 hour
 
 ---
 
-### [ ] Task 6.1.6: Create Admin Compliance Overview Page
+### [x] Task 6.1.6: Create Admin Compliance Overview Page
 
 - **Role:** Frontend Developer
 - **Objective:** Build admin page showing compliance status across all agencies
 - **Context:** Admin can see which agencies have expiring/expired compliance
 - **Key Files to Create:**
   - `app/(app)/admin/compliance/page.tsx`
-  - `app/(app)/admin/compliance/__tests__/page.test.tsx`
+  - `components/admin/ComplianceOverviewTable.tsx`
+  - `components/admin/__tests__/ComplianceOverviewTable.test.tsx`
 - **Key Files to Modify:**
   - `app/(app)/admin/layout.tsx` (add nav link)
 - **Key Files to Reference:**
@@ -1110,17 +1112,17 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Status indicators
   - Links to agency detail
 - **Acceptance Criteria (for this task):**
-  - [ ] Page at /admin/compliance
-  - [ ] Navigation link added to admin sidebar
-  - [ ] Table showing agencies with compliance issues
-  - [ ] Columns: Agency Name, Type, Status, Expiration Date, Actions
-  - [ ] Filter by: Expired, Expiring Soon, Pending Verification
-  - [ ] "View Agency" link to agency detail page
-  - [ ] Empty state when no issues
+  - [x] Page at /admin/compliance
+  - [x] Navigation link added to admin sidebar
+  - [x] Table showing agencies with compliance issues
+  - [x] Columns: Agency Name, Type, Status, Expiration Date, Actions
+  - [x] Filter by: Expired, Expiring Soon, Pending Verification
+  - [x] "View Agency" link to agency detail page
+  - [x] Empty state when no issues
 - **Definition of Done:**
-  - [ ] Page functional
-  - [ ] Tests verify table rendering
-  - [ ] **Final Check:** Useful for admin monitoring
+  - [x] Page functional
+  - [x] Tests verify table rendering
+  - [x] **Final Check:** Useful for admin monitoring
 
 **Estimated Effort:** 4 hours
 

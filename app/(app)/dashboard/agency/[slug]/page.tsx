@@ -9,6 +9,8 @@ import { redirect, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
+import { ComplianceExpirationAlert } from '@/components/compliance/ComplianceExpirationAlert';
+import { toComplianceItemFull } from '@/types/api';
 
 interface DashboardPageProps {
   params: { slug: string };
@@ -81,8 +83,25 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     return null;
   }
 
+  // Fetch compliance data for expiration alerts
+  const { data: complianceData } = await supabase
+    .from('agency_compliance')
+    .select('*')
+    .eq('agency_id', agency.id)
+    .eq('is_active', true)
+    .not('expiration_date', 'is', null);
+
+  const complianceItems = (complianceData || []).map(toComplianceItemFull);
+
   return (
     <div className="space-y-6">
+      {/* Compliance Expiration Alert */}
+      <ComplianceExpirationAlert
+        expiringItems={complianceItems}
+        complianceUrl={`/dashboard/agency/${agency.slug}/compliance`}
+        agencyId={agency.id}
+      />
+
       {/* Header */}
       <div className="flex items-start gap-4">
         {agency.logo_url && (
