@@ -18,7 +18,7 @@ type ChainMethods = Record<
   jest.Mock
 >;
 
-interface SupabaseMock {
+export interface SupabaseMock {
   from: jest.Mock;
   select: jest.Mock;
   eq: jest.Mock;

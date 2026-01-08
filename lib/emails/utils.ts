@@ -46,26 +46,29 @@ export function validateSiteUrl(
 
     // Only allow http and https schemes
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      const fallbackUrl = new URL(fallback);
       console.warn(
-        `[Email Security] Unsafe URL scheme detected: ${url.protocol} on host ${url.hostname}. Falling back to: ${fallback}`
+        `[Email Security] Unsafe URL scheme detected: ${url.protocol} on host ${url.hostname}. Falling back to: ${fallbackUrl.origin}`
       );
-      return fallback;
+      return fallbackUrl.origin;
     }
 
     // For production, enforce HTTPS
     if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
+      const fallbackUrl = new URL(fallback);
       console.warn(
-        `[Email Security] Non-HTTPS URL in production: ${url.origin}. Falling back to: ${fallback}`
+        `[Email Security] Non-HTTPS URL in production: ${url.origin}. Falling back to: ${fallbackUrl.origin}`
       );
-      return fallback;
+      return fallbackUrl.origin;
     }
 
     // Return the validated URL origin
     return url.origin;
   } catch (error) {
+    const fallbackUrl = new URL(fallback);
     console.warn(
-      `[Email Security] Invalid URL provided. Falling back to: ${fallback}`
+      `[Email Security] Invalid URL provided. Falling back to: ${fallbackUrl.origin}`
     );
-    return fallback;
+    return fallbackUrl.origin;
   }
 }

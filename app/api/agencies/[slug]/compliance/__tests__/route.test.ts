@@ -7,8 +7,16 @@
  */
 
 import { createMockNextRequest } from '@/__tests__/utils/api-mocks';
-import { supabase } from '@/lib/supabase';
 import { HTTP_STATUS, ERROR_CODES } from '@/types/api';
+
+// Mock the supabase module
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(),
+  },
+}));
+
+import { supabase } from '@/lib/supabase';
 
 // Mock NextResponse
 jest.mock('next/server', () => ({

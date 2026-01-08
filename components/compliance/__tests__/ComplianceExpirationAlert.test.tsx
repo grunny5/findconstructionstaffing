@@ -34,7 +34,7 @@ Object.defineProperty(window, 'localStorage', {
 
 // Helper to create mock compliance items
 function createMockItem(
-  type: string,
+  type: ComplianceType,
   daysUntilExpiration: number
 ): ComplianceItemFull {
   const today = new Date();
@@ -43,8 +43,8 @@ function createMockItem(
 
   return {
     id: `item-${type}-${daysUntilExpiration}`,
-    type: type as ComplianceType,
-    displayName: COMPLIANCE_DISPLAY_NAMES[type as ComplianceType],
+    type: type,
+    displayName: COMPLIANCE_DISPLAY_NAMES[type],
     isActive: true,
     isVerified: true,
     expirationDate: expirationDate.toISOString().split('T')[0],

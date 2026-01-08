@@ -966,18 +966,18 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Send appropriate emails
   - Log actions
 - **Acceptance Criteria (for this task):**
-  - [ ] `GET /api/cron/compliance-expiration` runs expiration check
-  - [ ] Requires CRON_SECRET header for auth
-  - [ ] Finds items expiring in exactly 30 days
-  - [ ] Finds items expiring in exactly 7 days
-  - [ ] Sends reminder emails to agency owners
-  - [ ] Does not send duplicate emails (track last_reminder_sent)
-  - [ ] Returns summary of actions taken
+  - [x] `GET /api/cron/compliance-expiration` runs expiration check
+  - [x] Requires CRON_SECRET header for auth
+  - [x] Finds items expiring in exactly 30 days
+  - [x] Finds items expiring in exactly 7 days
+  - [x] Sends reminder emails to agency owners
+  - [x] Does not send duplicate emails (track last_reminder_sent)
+  - [x] Returns summary of actions taken
 - **Definition of Done:**
-  - [ ] Endpoint functional
-  - [ ] Unit tests cover scenarios
-  - [ ] Cron configured in vercel.json
-  - [ ] **Final Check:** Proper rate limiting
+  - [x] Endpoint functional
+  - [x] Unit tests cover scenarios
+  - [x] Cron configured in vercel.json
+  - [x] **Final Check:** Proper rate limiting
 
 **Estimated Effort:** 3 hours
 
@@ -998,16 +998,16 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - List expiring items
   - Link to update compliance
 - **Acceptance Criteria (for this task):**
-  - [ ] 30-day template created
-  - [ ] 7-day template created (more urgent styling)
-  - [ ] Subject includes days remaining
-  - [ ] Body lists expiring compliance items
-  - [ ] Call to action: "Update Your Certifications"
-  - [ ] Link to dashboard compliance page
+  - [x] 30-day template created
+  - [x] 7-day template created (more urgent styling)
+  - [x] Subject includes days remaining
+  - [x] Body lists expiring compliance items
+  - [x] Call to action: "Update Your Certifications"
+  - [x] Link to dashboard compliance page
 - **Definition of Done:**
-  - [ ] Templates created
-  - [ ] Emails render correctly
-  - [ ] **Final Check:** Follows existing email patterns
+  - [x] Templates created
+  - [x] Emails render correctly
+  - [x] **Final Check:** Follows existing email patterns
 
 **Estimated Effort:** 2 hours
 
@@ -1024,13 +1024,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Nullable timestamp column
   - Migration only adds column
 - **Acceptance Criteria (for this task):**
-  - [ ] `last_30_day_reminder_sent` TIMESTAMPTZ column added
-  - [ ] `last_7_day_reminder_sent` TIMESTAMPTZ column added
-  - [ ] Both nullable (no reminder sent yet)
-  - [ ] Cron job updates these after sending
+  - [x] `last_30_day_reminder_sent` TIMESTAMPTZ column added
+  - [x] `last_7_day_reminder_sent` TIMESTAMPTZ column added
+  - [x] Both nullable (no reminder sent yet)
+  - [x] Cron job updates these after sending
 - **Definition of Done:**
-  - [ ] Migration created
-  - [ ] **Final Check:** No breaking changes
+  - [x] Migration created
+  - [x] **Final Check:** No breaking changes
 
 **Estimated Effort:** 1 hour
 

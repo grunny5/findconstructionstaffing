@@ -270,6 +270,7 @@ export function ComplianceOverviewTable({
                           {status === 'expiring_soon' && 'Expiring Soon'}
                           {status === 'pending_verification' &&
                             'Pending Verification'}
+                          {status === 'ok' && 'Active'}
                         </Badge>
                         {days !== null && status !== 'pending_verification' && (
                           <span className="text-xs text-industrial-graphite-400">
@@ -294,12 +295,15 @@ export function ComplianceOverviewTable({
 
                     {/* Actions */}
                     <TableCell className="text-right">
-                      <Link href={`/admin/agencies/${item.agency_id}`}>
-                        <Button variant="outline" size="sm" className="gap-2">
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          href={`/admin/agencies/${item.agency_id}`}
+                          className="gap-2"
+                        >
                           View Agency
                           <ExternalLink className="h-3 w-3" />
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

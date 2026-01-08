@@ -5,7 +5,7 @@
  * Includes rejection reason, resubmission instructions, and support contact.
  */
 
-import { escapeHtml } from './utils';
+import { escapeHtml, validateSiteUrl } from './utils';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
@@ -54,7 +54,8 @@ export function generateComplianceRejectedHTML(
   const safeRejectionReason = escapeHtml(rejectionReason);
   const complianceDisplayName = COMPLIANCE_DISPLAY_NAMES[complianceType];
   const complianceDescription = COMPLIANCE_DESCRIPTIONS[complianceType];
-  const dashboardUrl = `${siteUrl}/dashboard/compliance`;
+  const validatedSiteUrl = validateSiteUrl(siteUrl);
+  const dashboardUrl = `${validatedSiteUrl}/dashboard/compliance`;
 
   return `
 <!DOCTYPE html>

@@ -238,6 +238,19 @@ export async function POST(
       );
     }
 
+    // Validate that a supporting document exists before verification
+    if (!compliance.document_url) {
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: 'Cannot verify compliance without a supporting document',
+          },
+        },
+        { status: HTTP_STATUS.BAD_REQUEST }
+      );
+    }
+
     // ========================================================================
     // 6. PERFORM VERIFY OR REJECT ACTION
     // ========================================================================

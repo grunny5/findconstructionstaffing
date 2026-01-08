@@ -46,25 +46,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   // Get user's claimed agency
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profileError || !profile) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: ERROR_CODES.DATABASE_ERROR,
-          message: 'Failed to fetch user profile',
-        },
-      },
-      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-    );
-  }
-
   const { data: agency, error: agencyError } = await supabase
     .from('agencies')
     .select('id')

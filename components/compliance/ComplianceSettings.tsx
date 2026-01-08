@@ -147,13 +147,13 @@ export function ComplianceSettings({
     setUploadingType(type);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('compliance_type', type);
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('compliance_type', type);
 
       const response = await fetch('/api/dashboard/compliance/document', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
 
       if (!response.ok) {
