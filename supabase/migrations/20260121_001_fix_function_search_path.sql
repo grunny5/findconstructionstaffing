@@ -1,7 +1,7 @@
 -- Fix search_path security issue in get_admin_integrations_summary function
 -- Issue: Function has SECURITY DEFINER without explicit search_path, making it vulnerable
 -- to search path manipulation attacks.
--- Remediation: https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable
+-- Remediation: https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0011_function_search_path_mutable
 
 -- Drop the existing function
 DROP FUNCTION IF EXISTS get_admin_integrations_summary();

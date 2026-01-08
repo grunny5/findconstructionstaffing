@@ -45,7 +45,8 @@ function daysUntilExpiration(expirationDate: string): number {
   );
 
   const diffTime = expDateUTC - todayUTC;
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const days = diffTime / (1000 * 60 * 60 * 24);
+  return days < 0 ? Math.floor(days) : Math.ceil(days);
 }
 
 /**

@@ -673,7 +673,7 @@ export function isComplianceExpiringSoon(
 
   const MS_PER_DAY = 1000 * 60 * 60 * 24;
   const diffDays = Math.floor((expUTC - todayUTC) / MS_PER_DAY);
-  return diffDays > 0 && diffDays <= withinDays;
+  return diffDays >= 0 && diffDays <= withinDays;
 }
 
 /**

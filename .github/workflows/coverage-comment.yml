@@ -1,7 +1,0 @@
-# Disabled: redundant with ci.yml which already runs tests with coverage
-name: Coverage Comment
-
-on:
-  pull_request:
-    branches-ignore:
-      - '**'

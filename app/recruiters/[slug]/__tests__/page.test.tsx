@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/agencies/[slug]/route';
 import { Agency } from '@/types/api';
 import {
@@ -100,7 +101,7 @@ describe('Agency Profile Page API Tests', () => {
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as Request, {
+    const response = await GET(request as unknown as NextRequest, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -124,7 +125,7 @@ describe('Agency Profile Page API Tests', () => {
     const request = new Request(
       'http://localhost:3000/api/agencies/non-existent'
     );
-    const response = await GET(request as unknown as Request, {
+    const response = await GET(request as unknown as NextRequest, {
       params: { slug: 'non-existent' },
     });
 
@@ -146,7 +147,7 @@ describe('Agency Profile Page API Tests', () => {
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as Request, {
+    const response = await GET(request as unknown as NextRequest, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -158,7 +159,7 @@ describe('Agency Profile Page API Tests', () => {
 
   it('should validate slug parameter', async () => {
     const request = new Request('http://localhost:3000/api/agencies/');
-    const response = await GET(request as unknown as Request, {
+    const response = await GET(request as unknown as NextRequest, {
       params: { slug: '' },
     });
 
@@ -185,7 +186,7 @@ describe('Agency Profile Page API Tests', () => {
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as Request, {
+    const response = await GET(request as unknown as NextRequest, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -221,7 +222,7 @@ describe('Agency Profile Page API Tests', () => {
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as Request, {
+    const response = await GET(request as unknown as NextRequest, {
       params: { slug: 'elite-construction-staffing' },
     });
 

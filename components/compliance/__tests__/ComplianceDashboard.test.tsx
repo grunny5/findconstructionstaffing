@@ -257,6 +257,7 @@ describe('ComplianceDashboard', () => {
           resolve({
             ok: true,
             json: async () => ({ data: [] }),
+            text: async () => JSON.stringify({ data: [] }),
           } as Response);
       });
       mockFetch.mockReturnValueOnce(promise);
