@@ -332,16 +332,39 @@ export async function PUT(
         );
       }
 
-      // Validate expiration date format if provided
+      // Validate expiration date format and validity if provided
       if (item.expirationDate) {
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(item.expirationDate)) {
+        const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+        const match = item.expirationDate.match(dateRegex);
+        if (!match) {
           return NextResponse.json(
             {
               error: {
                 code: ERROR_CODES.INVALID_PARAMS,
                 message:
                   'expirationDate must be in YYYY-MM-DD format if provided',
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
+
+        // Parse and validate date components to reject impossible dates like 2026-02-30
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
+        const date = new Date(year, month - 1, day);
+
+        if (
+          date.getFullYear() !== year ||
+          date.getMonth() !== month - 1 ||
+          date.getDate() !== day
+        ) {
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.INVALID_PARAMS,
+                message: `Invalid calendar date: ${item.expirationDate}`,
               },
             },
             { status: HTTP_STATUS.BAD_REQUEST }

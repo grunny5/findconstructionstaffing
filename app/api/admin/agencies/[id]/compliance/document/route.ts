@@ -192,6 +192,14 @@ export async function POST(
       if (lastSegment && lastSegment !== '') {
         extension = lastSegment.toLowerCase();
       }
+    } else {
+      // Fallback to MIME type mapping when filename has no extension
+      const mimeExtensions: Record<string, string> = {
+        'application/pdf': 'pdf',
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+      };
+      extension = mimeExtensions[file.type] || 'pdf';
     }
     const filename = `${agencyId}/${complianceType}/${timestamp}.${extension}`;
 
