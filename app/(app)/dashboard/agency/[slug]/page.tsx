@@ -84,14 +84,24 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   }
 
   // Fetch compliance data for expiration alerts
-  const { data: complianceData } = await supabase
+  const { data: complianceData, error: complianceError } = await supabase
     .from('agency_compliance')
     .select('*')
     .eq('agency_id', agency.id)
     .eq('is_active', true)
     .not('expiration_date', 'is', null);
 
-  const complianceItems = (complianceData || []).map(toComplianceItemFull);
+  if (complianceError) {
+    console.error(
+      `Failed to fetch compliance data for agency ${agency.id}:`,
+      complianceError
+    );
+  }
+
+  const complianceItems =
+    !complianceError && complianceData
+      ? complianceData.map(toComplianceItemFull)
+      : [];
 
   return (
     <div className="space-y-6">

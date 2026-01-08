@@ -15,7 +15,10 @@ import {
   type ComplianceItem,
 } from '@/types/api';
 import { cn } from '@/lib/utils';
-import { COMPLIANCE_ICONS } from '@/lib/constants/compliance';
+import {
+  COMPLIANCE_ICONS,
+  DEFAULT_COMPLIANCE_ICON,
+} from '@/lib/constants/compliance';
 
 export interface ComplianceBadgesProps {
   compliance: ComplianceItem[];
@@ -56,7 +59,7 @@ export function ComplianceBadges({
     return (
       <div className="flex items-center gap-1.5 flex-wrap">
         {compliance.slice(0, 3).map((item) => {
-          const Icon = COMPLIANCE_ICONS[item.type];
+          const Icon = COMPLIANCE_ICONS[item.type] || DEFAULT_COMPLIANCE_ICON;
           return (
             <TooltipProvider key={item.type}>
               <Tooltip>
@@ -97,7 +100,7 @@ export function ComplianceBadges({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {compliance.map((item) => {
-        const Icon = COMPLIANCE_ICONS[item.type];
+        const Icon = COMPLIANCE_ICONS[item.type] || DEFAULT_COMPLIANCE_ICON;
         const formattedExpiration = formatExpirationDate(item.expirationDate);
 
         return (

@@ -50,9 +50,11 @@ interface ProcessingResult {
   processedAgencies: string[];
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 /**
- * Check if a date is exactly N days from now (within a 24-hour window)
- * Uses UTC to avoid timezone issues
+ * Check if a date is exactly N days from now
+ * Uses UTC to avoid timezone issues and half-open range for exact day matching
  */
 function isExactlyNDaysFromNow(dateStr: string, days: number): boolean {
   const date = new Date(dateStr);
@@ -69,10 +71,13 @@ function isExactlyNDaysFromNow(dateStr: string, days: number): boolean {
     now.getUTCDate()
   );
 
-  const targetUTC = nowUTC + days * 24 * 60 * 60 * 1000;
+  // Target day's UTC start (midnight)
+  const targetStart = nowUTC + days * MS_PER_DAY;
+  // Next day's UTC start (half-open range: [targetStart, targetEnd))
+  const targetEnd = targetStart + MS_PER_DAY;
 
-  // Check if date exactly matches target day (within 24-hour tolerance)
-  return Math.abs(dateUTC - targetUTC) < 24 * 60 * 60 * 1000;
+  // Check if date falls exactly on target day
+  return dateUTC >= targetStart && dateUTC < targetEnd;
 }
 
 /**

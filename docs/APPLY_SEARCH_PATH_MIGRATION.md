@@ -126,7 +126,7 @@ export DATABASE_URL="<YOUR_POSTGRES_CONNECTION_STRING>"
 psql $DATABASE_URL -f supabase/migrations/20260121_001_fix_function_search_path.sql
 
 # Record in migration history
-psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('20260121', '20260121_001_fix_function_search_path') ON CONFLICT DO NOTHING;"
+psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name, statements) VALUES ('20260121', '20260121_001_fix_function_search_path', ARRAY['DROP FUNCTION IF EXISTS get_admin_integrations_summary()', 'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() ...', 'GRANT EXECUTE ON FUNCTION get_admin_integrations_summary() TO authenticated', 'COMMENT ON FUNCTION get_admin_integrations_summary() ...']) ON CONFLICT DO NOTHING;"
 ```
 
 ---

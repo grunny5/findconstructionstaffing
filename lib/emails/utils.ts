@@ -45,10 +45,7 @@ export function validateSiteUrl(
   let validatedFallbackOrigin: string;
   try {
     const fallbackUrl = new URL(fallback);
-    if (
-      fallbackUrl.protocol !== 'http:' &&
-      fallbackUrl.protocol !== 'https:'
-    ) {
+    if (fallbackUrl.protocol !== 'http:' && fallbackUrl.protocol !== 'https:') {
       validatedFallbackOrigin = 'https://findconstructionstaffing.com';
     } else {
       validatedFallbackOrigin = fallbackUrl.origin;

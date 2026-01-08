@@ -83,7 +83,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
@@ -121,11 +123,13 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
-      expect(data.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
       expect(data.error.message).toBe('Forbidden: Admin access required');
     });
   });
@@ -162,7 +166,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -181,7 +187,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -201,7 +209,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -220,7 +230,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -242,7 +254,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -264,7 +278,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -287,7 +303,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -348,7 +366,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
@@ -409,7 +429,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: '123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
@@ -513,7 +535,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: 'agency-123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -599,7 +623,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: 'agency-123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -716,7 +742,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: 'agency-123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(HTTP_STATUS.OK);
@@ -809,7 +837,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         }
       );
 
-      const response = await POST(request, { params: { id: 'agency-123' } });
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
       const data = await response.json();
 
       // Should still succeed even if email fails

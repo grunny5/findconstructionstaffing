@@ -1255,6 +1255,6 @@ Phase 6 (Days 19-22) - Expiration Tracking
 
 - `app/recruiters/[slug]/page.tsx` (add compliance section)
 - `app/page.tsx` (add compliance filters)
-- `app/(app)/dashboard/page.tsx` (add expiration alert)
+- `app/(app)/dashboard/agency/[slug]/page.tsx` (add expiration alert)
 - `app/(app)/dashboard/layout.tsx` (add compliance nav link)
 - `app/(app)/admin/layout.tsx` (add compliance nav link)

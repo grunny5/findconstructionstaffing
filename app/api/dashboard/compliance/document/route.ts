@@ -149,9 +149,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const lastSegment = file.name.split('.').pop();
-    const extension =
-      lastSegment && lastSegment !== '' ? lastSegment.toLowerCase() : 'pdf';
+    let extension = 'pdf';
+    if (file.name.includes('.')) {
+      const lastSegment = file.name.split('.').pop();
+      if (lastSegment && lastSegment !== '') {
+        extension = lastSegment.toLowerCase();
+      }
+    } else {
+      // Fallback to MIME type mapping when filename has no extension
+      const mimeExtensions: Record<string, string> = {
+        'application/pdf': 'pdf',
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+      };
+      extension = mimeExtensions[file.type] || 'pdf';
+    }
     const filename = `${agency.id}/${complianceType}/${timestamp}.${extension}`;
 
     // Get existing compliance record to check for old document and preserve is_active state

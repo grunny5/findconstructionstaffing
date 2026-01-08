@@ -12,8 +12,14 @@ import {
   HeartHandshake,
   Shield,
   BadgeCheck,
+  HelpCircle,
 } from 'lucide-react';
 import type { ComplianceType } from '@/types/api';
+
+/**
+ * Default icon for unknown or invalid compliance types
+ */
+export const DEFAULT_COMPLIANCE_ICON = HelpCircle;
 
 /**
  * Icon mapping for each compliance type

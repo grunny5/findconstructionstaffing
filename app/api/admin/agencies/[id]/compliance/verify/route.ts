@@ -17,7 +17,6 @@ import {
   HTTP_STATUS,
   type ComplianceType,
   COMPLIANCE_TYPES,
-  type SyncRouteContext,
 } from '@/types/api';
 import { Resend } from 'resend';
 import {
@@ -38,12 +37,13 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   request: NextRequest,
-  context: SyncRouteContext<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
+    const { id: agencyId } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -88,8 +88,6 @@ export async function POST(
     // ========================================================================
     // 3. VALIDATE AGENCY ID
     // ========================================================================
-    const { id: agencyId } = context.params;
-
     if (!agencyId) {
       return NextResponse.json(
         {
