@@ -4,6 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FileCheck } from 'lucide-react';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
@@ -65,7 +66,8 @@ export function ComplianceFilters({
 
       <div className="space-y-3">
         {COMPLIANCE_TYPES.map((complianceType) => {
-          const Icon = COMPLIANCE_ICONS[complianceType];
+          // Fallback to generic icon if specific icon not found
+          const Icon = COMPLIANCE_ICONS[complianceType] ?? FileCheck;
           const isChecked = selectedFilters.includes(complianceType);
 
           return (

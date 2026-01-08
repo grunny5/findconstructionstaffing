@@ -350,15 +350,16 @@ export async function PUT(
         }
 
         // Parse and validate date components to reject impossible dates like 2026-02-30
+        // Use UTC to avoid timezone-related date rollover issues
         const year = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
         const day = parseInt(match[3], 10);
-        const date = new Date(year, month - 1, day);
+        const date = new Date(Date.UTC(year, month - 1, day));
 
         if (
-          date.getFullYear() !== year ||
-          date.getMonth() !== month - 1 ||
-          date.getDate() !== day
+          date.getUTCFullYear() !== year ||
+          date.getUTCMonth() !== month - 1 ||
+          date.getUTCDate() !== day
         ) {
           return NextResponse.json(
             {

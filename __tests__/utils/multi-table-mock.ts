@@ -7,7 +7,7 @@
 
 interface TableMockConfig<T = unknown> {
   data: T[];
-  error?: any;
+  error?: unknown;
   count?: number;
 }
 
@@ -88,20 +88,20 @@ export function createMultiTableMock(
 
     const { data, error = null, count } = tableConfig;
 
-    type PromiseResult = Promise<{
-      data: unknown[];
-      error: any;
+    type PromiseResult<T> = Promise<{
+      data: T[];
+      error: unknown | null;
       count?: number;
     }>;
 
-    const promiseResult: PromiseResult = Promise.resolve({
+    const promiseResult: PromiseResult<typeof data[number]> = Promise.resolve({
       data,
       error,
       ...(count !== undefined && { count }),
     });
 
     // Declare result first to avoid circular reference
-    let result: PromiseResult & ChainMethods;
+    let result: PromiseResult<typeof data[number]> & ChainMethods;
 
     // Create the chain methods that delegate to the global mock
     const chainMethods: ChainMethods = {

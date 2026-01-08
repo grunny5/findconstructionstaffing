@@ -93,9 +93,10 @@ This prevents the automated `supabase db push` from working correctly.
 
    ```sql
    -- Mark the migration as applied in the history
+   -- Use 14-digit timestamp format: YYYYMMDDHHMMSS
    INSERT INTO supabase_migrations.schema_migrations (version, name, statements)
    VALUES (
-     '20260121',
+     '20260121173000',
      '20260121_001_fix_function_search_path',
      ARRAY[
        'DROP FUNCTION IF EXISTS get_admin_integrations_summary()',
@@ -110,7 +111,7 @@ This prevents the automated `supabase db push` from working correctly.
 5. **Verify the fix**
    - Navigate to: **Database** → **Reports** → **Database Health**
    - Check that the "Function Search Path Mutable" warning is resolved
-   - Or run: `SELECT * FROM supabase_migrations.schema_migrations WHERE version = '20260121';`
+   - Or run: `SELECT * FROM supabase_migrations.schema_migrations WHERE version = '20260121173000';`
 
 ---
 
@@ -125,8 +126,8 @@ export DATABASE_URL="<YOUR_POSTGRES_CONNECTION_STRING>"
 # Apply the migration
 psql $DATABASE_URL -f supabase/migrations/20260121_001_fix_function_search_path.sql
 
-# Record in migration history
-psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name, statements) VALUES ('20260121', '20260121_001_fix_function_search_path', ARRAY['DROP FUNCTION IF EXISTS get_admin_integrations_summary()', 'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() ...', 'GRANT EXECUTE ON FUNCTION get_admin_integrations_summary() TO authenticated', 'COMMENT ON FUNCTION get_admin_integrations_summary() ...']) ON CONFLICT DO NOTHING;"
+# Record in migration history (use 14-digit timestamp format: YYYYMMDDHHMMSS)
+psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name, statements) VALUES ('20260121173000', '20260121_001_fix_function_search_path', ARRAY['DROP FUNCTION IF EXISTS get_admin_integrations_summary()', 'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() ...', 'GRANT EXECUTE ON FUNCTION get_admin_integrations_summary() TO authenticated', 'COMMENT ON FUNCTION get_admin_integrations_summary() ...']) ON CONFLICT DO NOTHING;"
 ```
 
 ---

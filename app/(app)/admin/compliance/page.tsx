@@ -80,10 +80,13 @@ export default async function AdminCompliancePage() {
 
   // Transform the data to match ComplianceDataRow interface
   // Supabase returns agencies as an array due to the join, but we need a single object
-  const transformedData = (complianceData || []).map((row) => ({
-    ...row,
-    agencies: Array.isArray(row.agencies) ? row.agencies[0] : row.agencies,
-  }));
+  // Filter out any rows where the agency join produced an empty array (shouldn't happen with !inner, but be safe)
+  const transformedData = (complianceData || [])
+    .map((row) => ({
+      ...row,
+      agencies: Array.isArray(row.agencies) ? row.agencies[0] : row.agencies,
+    }))
+    .filter((row) => row.agencies !== undefined);
 
   return (
     <div className="container mx-auto p-6 min-h-screen">

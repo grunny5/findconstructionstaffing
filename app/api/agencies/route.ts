@@ -194,15 +194,16 @@ async function applyFilters(
         throw new Error('Failed to fetch agency region data');
       }
 
-      const stateAgencyIds = Array.from(
-        new Set(agencyRegionData.map((ar) => ar.agency_id))
+      // Use Set for O(1) lookups when intersecting
+      const stateAgencyIdSet = new Set(
+        agencyRegionData.map((ar) => ar.agency_id)
       );
 
       // Intersect with existing filter if needed
       if (agencyIds !== null) {
-        agencyIds = agencyIds.filter((id) => stateAgencyIds.includes(id));
+        agencyIds = agencyIds.filter((id) => stateAgencyIdSet.has(id));
       } else {
-        agencyIds = stateAgencyIds;
+        agencyIds = Array.from(stateAgencyIdSet);
       }
     } else {
       // No matching regions
@@ -247,19 +248,19 @@ async function applyFilters(
     }
 
     // Filter to only agencies that have all requested compliance types
-    const complianceAgencyIdsArray = Array.from(
-      agencyComplianceCounts.entries()
-    )
-      .filter(([_, types]) => types.size === compliance.length)
-      .map(([agencyId]) => agencyId);
+    // Use Set for O(1) lookups when intersecting
+    const complianceAgencyIdSet = new Set<string>();
+    agencyComplianceCounts.forEach((types, agencyId) => {
+      if (types.size === compliance.length) {
+        complianceAgencyIdSet.add(agencyId);
+      }
+    });
 
     // Intersect with existing filters if needed
     if (agencyIds !== null) {
-      agencyIds = agencyIds.filter((id) =>
-        complianceAgencyIdsArray.includes(id)
-      );
+      agencyIds = agencyIds.filter((id) => complianceAgencyIdSet.has(id));
     } else {
-      agencyIds = complianceAgencyIdsArray;
+      agencyIds = Array.from(complianceAgencyIdSet);
     }
   }
 

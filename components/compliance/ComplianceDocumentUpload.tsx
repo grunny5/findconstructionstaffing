@@ -272,6 +272,7 @@ export function ComplianceDocumentUpload({
             ) : displayUrl ? (
               <div className="relative w-full h-full flex items-center justify-center">
                 {/* Use native img for blob URLs - next/Image doesn't support blob: protocol */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={displayUrl}
                   alt="Document preview"

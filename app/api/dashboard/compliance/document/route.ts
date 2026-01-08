@@ -176,14 +176,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Delete old document if exists
     if (existingCompliance?.document_url) {
+      // Handle both old signed URLs (full URLs) and new storage paths (just filename)
+      let oldPath: string;
       const urlParts = existingCompliance.document_url.split(
         `/${STORAGE_BUCKET}/`
       );
       if (urlParts.length > 1) {
-        // Strip query parameters from signed URLs
-        const oldPath = urlParts[1].split('?')[0];
-        await supabase.storage.from(STORAGE_BUCKET).remove([oldPath]);
+        // Old format: full signed URL - extract path and strip query parameters
+        oldPath = urlParts[1].split('?')[0];
+      } else {
+        // New format: just the storage path
+        oldPath = existingCompliance.document_url;
       }
+      await supabase.storage.from(STORAGE_BUCKET).remove([oldPath]);
     }
 
     // Upload to Supabase Storage
@@ -231,7 +236,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const documentUrl = signedUrlData.signedUrl;
+    // Store the permanent storage path (filename), not the time-limited signed URL
+    // Signed URLs expire after 7 days, so we generate fresh ones on-demand when reading
+    const storagePath = filename;
 
     // Update or insert compliance record
     // Preserve existing is_active state, or default to false for new records
@@ -241,7 +248,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           agency_id: agency.id,
           compliance_type: complianceType,
-          document_url: documentUrl,
+          document_url: storagePath,
           is_active: existingCompliance?.is_active ?? false,
         },
         {
@@ -268,7 +275,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       success: true,
       data: {
-        document_url: documentUrl,
+        // Return the signed URL for immediate client display
+        document_url: signedUrlData.signedUrl,
       },
     });
   } catch (error) {
@@ -375,18 +383,24 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
   // Delete document from storage if exists
   if (complianceRecord?.document_url) {
+    // Handle both old signed URLs (full URLs) and new storage paths (just filename)
+    let filePath: string;
     const urlParts = complianceRecord.document_url.split(`/${STORAGE_BUCKET}/`);
     if (urlParts.length > 1) {
-      // Strip query parameters from signed URLs
-      const filePath = urlParts[1].split('?')[0];
-      const { error: deleteError } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .remove([filePath]);
+      // Old format: full signed URL - extract path and strip query parameters
+      filePath = urlParts[1].split('?')[0];
+    } else {
+      // New format: just the storage path (e.g., "agency-id/type/timestamp.pdf")
+      filePath = complianceRecord.document_url;
+    }
 
-      if (deleteError) {
-        console.error('Storage delete error:', deleteError);
-        // Continue anyway to clear document_url
-      }
+    const { error: deleteError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .remove([filePath]);
+
+    if (deleteError) {
+      console.error('Storage delete error:', deleteError);
+      // Continue anyway to clear document_url
     }
   }
 
