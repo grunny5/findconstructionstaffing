@@ -407,7 +407,7 @@ describe('ComplianceOverviewTable', () => {
       render(<ComplianceOverviewTable complianceData={data} />);
 
       expect(screen.getByText('Expiring Soon')).toBeInTheDocument();
-      expect(screen.getByText('1 days remaining')).toBeInTheDocument();
+      expect(screen.getByText('1 day remaining')).toBeInTheDocument();
     });
 
     it('should handle items expiring today (0 days)', () => {
@@ -425,7 +425,7 @@ describe('ComplianceOverviewTable', () => {
       render(<ComplianceOverviewTable complianceData={data} />);
 
       expect(screen.getByText('Expired')).toBeInTheDocument();
-      expect(screen.getByText('1 days ago')).toBeInTheDocument();
+      expect(screen.getByText('1 day ago')).toBeInTheDocument();
     });
 
     it('should handle unverified items without documents', () => {

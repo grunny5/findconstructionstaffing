@@ -5,14 +5,27 @@
  * without repeating brittle any-heavy patterns in each test.
  */
 
-interface TableMockConfig {
-  data: any[];
+interface TableMockConfig<T = unknown> {
+  data: T[];
   error?: any;
   count?: number;
 }
 
-interface MultiTableMockConfig {
-  [tableName: string]: TableMockConfig;
+type MultiTableMockConfig = Record<string, TableMockConfig>;
+
+type ChainMethods = Record<
+  'select' | 'eq' | 'in' | 'or' | 'range' | 'order',
+  jest.Mock
+>;
+
+interface SupabaseMock {
+  from: jest.Mock;
+  select: jest.Mock;
+  eq: jest.Mock;
+  in: jest.Mock;
+  or: jest.Mock;
+  range: jest.Mock;
+  order: jest.Mock;
 }
 
 /**
@@ -28,11 +41,11 @@ interface MultiTableMockConfig {
  * });
  */
 export function createMultiTableMock(
-  supabaseMock: any,
+  supabaseMock: SupabaseMock,
   config: MultiTableMockConfig
 ): void {
   supabaseMock.from.mockImplementation((table: string) => {
-    const tableConfig = config[table];
+    const tableConfig: TableMockConfig | undefined = config[table];
 
     if (!tableConfig) {
       // Return default empty response for unconfigured tables
@@ -52,38 +65,44 @@ export function createMultiTableMock(
 
     const { data, error = null, count } = tableConfig;
 
-    const promiseResult = Promise.resolve({
+    type PromiseResult = Promise<{
+      data: unknown[];
+      error: any;
+      count?: number;
+    }>;
+
+    const promiseResult: PromiseResult = Promise.resolve({
       data,
       error,
       ...(count !== undefined && { count }),
     });
 
     // Declare result first to avoid circular reference
-    let result: Promise<any> & any;
+    let result: PromiseResult & ChainMethods;
 
     // Create the chain methods that delegate to the global mock
-    const chainMethods: any = {
-      select: jest.fn((...args: any[]) => {
+    const chainMethods: ChainMethods = {
+      select: jest.fn((...args: unknown[]) => {
         supabaseMock.select(...args);
         return result;
       }),
-      eq: jest.fn((...args: any[]) => {
+      eq: jest.fn((...args: unknown[]) => {
         supabaseMock.eq(...args);
         return result;
       }),
-      in: jest.fn((...args: any[]) => {
+      in: jest.fn((...args: unknown[]) => {
         supabaseMock.in(...args);
         return result;
       }),
-      or: jest.fn((...args: any[]) => {
+      or: jest.fn((...args: unknown[]) => {
         supabaseMock.or(...args);
         return result;
       }),
-      range: jest.fn((...args: any[]) => {
+      range: jest.fn((...args: unknown[]) => {
         supabaseMock.range(...args);
         return result;
       }),
-      order: jest.fn((...args: any[]) => {
+      order: jest.fn((...args: unknown[]) => {
         supabaseMock.order(...args);
         return result;
       }),

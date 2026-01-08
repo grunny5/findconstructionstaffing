@@ -206,7 +206,7 @@ describe('ComplianceExpirationAlert', () => {
   });
 
   describe('Dismiss Functionality', () => {
-    it('should hide alert when dismiss button is clicked', () => {
+    it('should hide alert when dismiss button is clicked', async () => {
       const items = [createMockItem('osha_certified', 15)];
 
       const { container } = render(
@@ -224,7 +224,7 @@ describe('ComplianceExpirationAlert', () => {
       fireEvent.click(dismissButton);
 
       // Alert should be hidden
-      waitFor(() => {
+      await waitFor(() => {
         expect(container.firstChild).toBeNull();
       });
     });

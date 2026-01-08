@@ -27,14 +27,24 @@ interface ComplianceExpirationAlertProps {
 }
 
 /**
- * Calculate days until expiration
+ * Calculate days until expiration using UTC to avoid timezone issues
  */
 function daysUntilExpiration(expirationDate: string): number {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayUTC = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate()
+  );
+
   const expDate = new Date(expirationDate);
-  expDate.setHours(0, 0, 0, 0);
-  const diffTime = expDate.getTime() - today.getTime();
+  const expDateUTC = Date.UTC(
+    expDate.getUTCFullYear(),
+    expDate.getUTCMonth(),
+    expDate.getUTCDate()
+  );
+
+  const diffTime = expDateUTC - todayUTC;
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
@@ -130,13 +140,17 @@ export function ComplianceExpirationAlert({
                 Expired ({expiredItems.length}):
               </p>
               <ul className="list-disc list-inside text-sm ml-4">
-                {expiredItems.map((item) => (
-                  <li key={item.id}>
-                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expired{' '}
-                    {Math.abs(daysUntilExpiration(item.expirationDate!))} days
-                    ago
-                  </li>
-                ))}
+                {expiredItems.map((item) => {
+                  const days = Math.abs(
+                    daysUntilExpiration(item.expirationDate!)
+                  );
+                  return (
+                    <li key={item.id}>
+                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expired {days}{' '}
+                      {days === 1 ? 'day' : 'days'} ago
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -171,7 +185,7 @@ export function ComplianceExpirationAlert({
                   return (
                     <li key={item.id}>
                       {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
-                      days
+                      {days === 1 ? 'day' : 'days'}
                     </li>
                   );
                 })}

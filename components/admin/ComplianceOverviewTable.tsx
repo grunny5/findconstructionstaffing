@@ -61,14 +61,24 @@ type FilterStatus =
   | 'pending_verification';
 
 /**
- * Calculate days until expiration
+ * Calculate days until expiration using UTC to avoid timezone issues
  */
 function daysUntilExpiration(expirationDate: string): number {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayUTC = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate()
+  );
+
   const expDate = new Date(expirationDate);
-  expDate.setHours(0, 0, 0, 0);
-  const diffTime = expDate.getTime() - today.getTime();
+  const expDateUTC = Date.UTC(
+    expDate.getUTCFullYear(),
+    expDate.getUTCMonth(),
+    expDate.getUTCDate()
+  );
+
+  const diffTime = expDateUTC - todayUTC;
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
@@ -264,8 +274,8 @@ export function ComplianceOverviewTable({
                         {days !== null && status !== 'pending_verification' && (
                           <span className="text-xs text-industrial-graphite-400">
                             {days < 0
-                              ? `${Math.abs(days)} days ago`
-                              : `${days} days remaining`}
+                              ? `${Math.abs(days)} ${Math.abs(days) === 1 ? 'day' : 'days'} ago`
+                              : `${days} ${days === 1 ? 'day' : 'days'} remaining`}
                           </span>
                         )}
                       </div>

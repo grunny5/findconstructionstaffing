@@ -25,7 +25,17 @@ export function escapeHtml(unsafe: string): string {
  *
  * @param siteUrl - The site URL to validate
  * @param fallback - Fallback URL if validation fails (default: https://findconstructionstaffing.com)
- * @returns A safe, validated URL
+ * @returns The URL origin (scheme + host + port) only, without path, query string, or fragment.
+ *          Returns the fallback origin if validation fails.
+ * @example
+ * validateSiteUrl('https://example.com/path?query=1#hash')
+ * // Returns: 'https://example.com'
+ *
+ * validateSiteUrl('http://localhost:3000/dashboard')
+ * // Returns: 'http://localhost:3000' (in development)
+ *
+ * validateSiteUrl('javascript:alert(1)')
+ * // Returns: 'https://findconstructionstaffing.com' (fallback)
  */
 export function validateSiteUrl(
   siteUrl: string,
@@ -37,7 +47,7 @@ export function validateSiteUrl(
     // Only allow http and https schemes
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       console.warn(
-        `[Email Security] Unsafe URL scheme detected: ${url.protocol}. Falling back to: ${fallback}`
+        `[Email Security] Unsafe URL scheme detected: ${url.protocol} on host ${url.hostname}. Falling back to: ${fallback}`
       );
       return fallback;
     }
@@ -45,7 +55,7 @@ export function validateSiteUrl(
     // For production, enforce HTTPS
     if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
       console.warn(
-        `[Email Security] Non-HTTPS URL in production: ${siteUrl}. Falling back to: ${fallback}`
+        `[Email Security] Non-HTTPS URL in production: ${url.origin}. Falling back to: ${fallback}`
       );
       return fallback;
     }
@@ -54,7 +64,7 @@ export function validateSiteUrl(
     return url.origin;
   } catch (error) {
     console.warn(
-      `[Email Security] Invalid URL: ${siteUrl}. Falling back to: ${fallback}`
+      `[Email Security] Invalid URL provided. Falling back to: ${fallback}`
     );
     return fallback;
   }
