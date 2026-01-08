@@ -16,7 +16,6 @@ interface ComplianceRejectedEmailParams {
   recipientEmail: string;
   recipientName?: string;
   agencyName: string;
-  agencySlug: string;
   complianceType: ComplianceType;
   rejectionReason: string;
   siteUrl: string;
@@ -29,7 +28,6 @@ interface ComplianceRejectedEmailParams {
  *   - recipientEmail: recipient's email address
  *   - recipientName: optional recipient name used in the greeting
  *   - agencyName: name of the agency
- *   - agencySlug: agency path segment used to build the dashboard URL
  *   - complianceType: type of compliance document that was rejected
  *   - rejectionReason: reason shown in the rejection section
  *   - siteUrl: base site URL used for links
@@ -41,7 +39,6 @@ export function generateComplianceRejectedHTML(
   const {
     recipientName,
     agencyName,
-    agencySlug,
     complianceType,
     rejectionReason,
     siteUrl,

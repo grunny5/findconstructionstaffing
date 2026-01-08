@@ -47,6 +47,11 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         getUser: jest.fn(),
       },
       from: jest.fn(),
+      storage: {
+        from: jest.fn().mockReturnValue({
+          remove: jest.fn().mockResolvedValue({ error: null }),
+        }),
+      },
     };
 
     mockedCreateClient.mockResolvedValue(mockSupabaseClient);

@@ -129,6 +129,11 @@ async function groupItemsByAgency(
     return new Map();
   }
 
+  // No claimed agencies - return empty Map
+  if (agencies.length === 0) {
+    return new Map();
+  }
+
   // Create agency lookup map
   const agencyMap = new Map(agencies.map((a) => [a.id, a]));
 
@@ -136,6 +141,11 @@ async function groupItemsByAgency(
   const ownerIds = Array.from(
     new Set(agencies.map((a) => a.claimed_by).filter(Boolean))
   ) as string[];
+
+  // No owners to notify - return empty Map
+  if (ownerIds.length === 0) {
+    return new Map();
+  }
 
   // Fetch all profiles in one query
   const { data: profiles, error: profileError } = await supabase
@@ -204,7 +214,6 @@ async function sendReminder(
     }));
 
     const emailParams = {
-      recipientEmail: owner.email,
       recipientName: owner.full_name || undefined,
       agencyName: owner.agency_name,
       expiringItems,
@@ -234,35 +243,24 @@ async function sendReminder(
       text,
     });
 
-    // Update tracking for all items
+    // Update tracking for all items in a single batch query
     const now = new Date().toISOString();
     const updateField =
       reminderType === '30'
         ? 'last_30_day_reminder_sent'
         : 'last_7_day_reminder_sent';
 
-    const failedUpdates: Array<{ itemId: string; error: any }> = [];
+    const itemIds = items.map((item) => item.id);
+    const { error: updateError } = await supabase
+      .from('agency_compliance')
+      .update({ [updateField]: now })
+      .in('id', itemIds);
 
-    for (const item of items) {
-      const { error: updateError } = await supabase
-        .from('agency_compliance')
-        .update({ [updateField]: now })
-        .eq('id', item.id);
-
-      if (updateError) {
-        failedUpdates.push({ itemId: item.id, error: updateError });
-        console.error(
-          `[Cron] Failed to update ${updateField} for item ${item.id}:`,
-          updateError
-        );
-      }
-    }
-
-    // If any updates failed, return false to indicate partial failure
-    if (failedUpdates.length > 0) {
+    if (updateError) {
       console.error(
-        `[Cron] Failed to update tracking for ${failedUpdates.length}/${items.length} items for ${owner.email}. Failed items:`,
-        failedUpdates.map((f) => f.itemId)
+        `[Cron] Failed to update ${updateField} for items:`,
+        itemIds,
+        updateError
       );
       return false;
     }

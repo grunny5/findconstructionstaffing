@@ -18,7 +18,6 @@ interface ComplianceExpiringItem {
 }
 
 interface ComplianceExpiring7EmailParams {
-  recipientEmail: string;
   recipientName?: string;
   agencyName: string;
   expiringItems: ComplianceExpiringItem[];

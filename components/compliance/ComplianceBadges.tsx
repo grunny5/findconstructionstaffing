@@ -46,6 +46,9 @@ export function ComplianceBadges({
       date = new Date(dateString);
     }
 
+    // Guard against invalid dates
+    if (isNaN(date.getTime())) return null;
+
     const month = date.toLocaleDateString('en-US', {
       month: 'short',
       timeZone: 'UTC',

@@ -7,7 +7,10 @@ import {
   supabaseMockHelpers,
   resetSupabaseMock,
 } from '@/__tests__/utils/supabase-mock';
-import { createMultiTableMock } from '@/__tests__/utils/multi-table-mock';
+import {
+  createMultiTableMock,
+  type SupabaseMock,
+} from '@/__tests__/utils/multi-table-mock';
 import { supabase } from '@/lib/supabase';
 import {
   isErrorResponse,
@@ -355,7 +358,7 @@ describe('GET /api/agencies', () => {
       });
 
       // Use helper to create multi-table mock
-      createMultiTableMock(supabase, {
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
         agency_compliance: { data: mockComplianceData },
         agencies: { data: mockAgencies, count: 1 },
       });
@@ -401,7 +404,7 @@ describe('GET /api/agencies', () => {
       });
 
       // Use helper to create multi-table mock
-      createMultiTableMock(supabase, {
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
         agency_compliance: { data: mockComplianceData },
         agencies: { data: mockAgencies, count: 1 },
       });
@@ -447,7 +450,7 @@ describe('GET /api/agencies', () => {
       });
 
       // Use helper to create multi-table mock
-      createMultiTableMock(supabase, {
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
         trades: { data: mockTradeData },
         agency_trades: { data: mockAgencyTradeData },
         agency_compliance: { data: mockComplianceData },
@@ -486,7 +489,7 @@ describe('GET /api/agencies', () => {
       });
 
       // Use helper to create multi-table mock
-      createMultiTableMock(supabase, {
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
         agency_compliance: { data: [] },
         agencies: { data: [], count: 0 },
       });
@@ -516,7 +519,7 @@ describe('GET /api/agencies', () => {
       });
 
       // Use helper to create multi-table mock
-      createMultiTableMock(supabase, {
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
         agency_compliance: { data: mockComplianceData },
         agencies: { data: [], count: 0 },
       });

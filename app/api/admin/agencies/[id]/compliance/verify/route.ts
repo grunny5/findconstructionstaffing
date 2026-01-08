@@ -196,7 +196,6 @@ export async function POST(
         `
         id,
         name,
-        slug,
         claimed_by
       `
       )
@@ -294,7 +293,23 @@ export async function POST(
         { status: HTTP_STATUS.OK }
       );
     } else {
-      // REJECT ACTION: Clear document and send email
+      // REJECT ACTION: Delete storage file, clear document_url, and send email
+
+      // Delete the document from storage if it exists
+      if (compliance.document_url) {
+        const { error: deleteError } = await supabase.storage
+          .from('compliance-documents')
+          .remove([compliance.document_url]);
+
+        if (deleteError) {
+          console.warn(
+            `Failed to delete storage file ${compliance.document_url}:`,
+            deleteError
+          );
+          // Continue with rejection even if storage delete fails
+        }
+      }
+
       const { data: updatedCompliance, error: updateError } = await supabase
         .from('agency_compliance')
         .update({
@@ -352,7 +367,6 @@ export async function POST(
               recipientEmail: owner.email,
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
-              agencySlug: agency.slug,
               complianceType: complianceType as ComplianceType,
               rejectionReason: reason.trim(),
               siteUrl,
@@ -362,7 +376,6 @@ export async function POST(
               recipientEmail: owner.email,
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
-              agencySlug: agency.slug,
               complianceType: complianceType as ComplianceType,
               rejectionReason: reason.trim(),
               siteUrl,

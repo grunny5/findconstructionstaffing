@@ -228,37 +228,39 @@ describe('GET /api/cron/compliance-expiration', () => {
         }),
       });
 
-      // Mock fetching agency
+      // Mock fetching agencies (uses .in().not() for batch query)
       const mockAgencySelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
-              id: 'agency-1',
-              name: 'Test Agency',
-              claimed_by: 'owner-1',
-            },
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [
+              {
+                id: 'agency-1',
+                name: 'Test Agency',
+                claimed_by: 'owner-1',
+              },
+            ],
             error: null,
           }),
         }),
       });
 
-      // Mock fetching profile
+      // Mock fetching profiles (uses .in() for batch query)
       const mockProfileSelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
               id: 'owner-1',
               email: 'owner@test.com',
               full_name: 'Test Owner',
             },
-            error: null,
-          }),
+          ],
+          error: null,
         }),
       });
 
-      // Mock update
+      // Mock update (uses .in() for batch updates)
       const mockUpdate = jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: {},
           error: null,
         }),
@@ -386,37 +388,39 @@ describe('GET /api/cron/compliance-expiration', () => {
         }),
       });
 
-      // Mock fetching agency
+      // Mock fetching agencies (uses .in().not() for batch query)
       const mockAgencySelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
-              id: 'agency-1',
-              name: 'Test Agency',
-              claimed_by: 'owner-1',
-            },
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [
+              {
+                id: 'agency-1',
+                name: 'Test Agency',
+                claimed_by: 'owner-1',
+              },
+            ],
             error: null,
           }),
         }),
       });
 
-      // Mock fetching profile
+      // Mock fetching profiles (uses .in() for batch query)
       const mockProfileSelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
               id: 'owner-1',
               email: 'owner@test.com',
               full_name: 'Test Owner',
             },
-            error: null,
-          }),
+          ],
+          error: null,
         }),
       });
 
-      // Mock update
+      // Mock update (uses .in() for batch updates)
       const mockUpdate = jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: {},
           error: null,
         }),
@@ -508,37 +512,39 @@ describe('GET /api/cron/compliance-expiration', () => {
         }),
       });
 
-      // Mock fetching agency
+      // Mock fetching agencies (uses .in().not() for batch query)
       const mockAgencySelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
-              id: 'agency-1',
-              name: 'Test Agency',
-              claimed_by: 'owner-1',
-            },
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [
+              {
+                id: 'agency-1',
+                name: 'Test Agency',
+                claimed_by: 'owner-1',
+              },
+            ],
             error: null,
           }),
         }),
       });
 
-      // Mock fetching profile
+      // Mock fetching profiles (uses .in() for batch query)
       const mockProfileSelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
               id: 'owner-1',
               email: 'owner@test.com',
               full_name: 'Test Owner',
             },
-            error: null,
-          }),
+          ],
+          error: null,
         }),
       });
 
-      // Mock update
+      // Mock update (uses .in() for batch updates)
       const mockUpdate = jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
+        in: jest.fn().mockResolvedValue({
           data: {},
           error: null,
         }),
@@ -581,8 +587,8 @@ describe('GET /api/cron/compliance-expiration', () => {
       // Verify only one email was sent (grouped)
       expect(mockResendSend).toHaveBeenCalledTimes(1);
 
-      // Verify both items were updated
-      expect(mockUpdate).toHaveBeenCalledTimes(2);
+      // Verify items were updated in one batch call
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -611,15 +617,11 @@ describe('GET /api/cron/compliance-expiration', () => {
         }),
       });
 
-      // Mock unclaimed agency
+      // Mock unclaimed agency (uses .in().not() - returns empty array since claimed_by is null)
       const mockAgencySelect = jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
-              id: 'agency-1',
-              name: 'Unclaimed Agency',
-              claimed_by: null, // Not claimed
-            },
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [], // Empty because unclaimed agencies are filtered out
             error: null,
           }),
         }),

@@ -286,7 +286,7 @@ export async function PUT(
         );
       }
 
-      // Validate expiration date format if provided
+      // Validate expiration date format and semantics if provided
       if (item.expirationDate) {
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(item.expirationDate)) {
@@ -296,6 +296,20 @@ export async function PUT(
                 code: ERROR_CODES.INVALID_PARAMS,
                 message:
                   'expirationDate must be in YYYY-MM-DD format if provided',
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
+
+        // Validate that the date is semantically valid (e.g., 2026-02-31 is invalid)
+        const parsedDate = new Date(item.expirationDate + 'T00:00:00Z');
+        if (isNaN(parsedDate.getTime())) {
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.INVALID_PARAMS,
+                message: `Invalid date: ${item.expirationDate}`,
               },
             },
             { status: HTTP_STATUS.BAD_REQUEST }
