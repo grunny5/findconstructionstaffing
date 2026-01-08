@@ -24,6 +24,7 @@ import {
   generateComplianceRejectedHTML,
   generateComplianceRejectedText,
 } from '@/lib/emails/compliance-rejected';
+import { validateSiteUrl } from '@/lib/emails/utils';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
@@ -257,12 +258,19 @@ export async function POST(
         .single();
 
       if (updateError || !updatedCompliance) {
+        console.error(
+          'Failed to verify compliance document:',
+          updateError,
+          'Agency ID:',
+          agencyId,
+          'Compliance Type:',
+          complianceType
+        );
         return NextResponse.json(
           {
             error: {
               code: ERROR_CODES.DATABASE_ERROR,
               message: 'Failed to verify compliance document',
-              details: updateError,
             },
           },
           { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
@@ -292,12 +300,19 @@ export async function POST(
         .single();
 
       if (updateError || !updatedCompliance) {
+        console.error(
+          'Failed to reject compliance document:',
+          updateError,
+          'Agency ID:',
+          agencyId,
+          'Compliance Type:',
+          complianceType
+        );
         return NextResponse.json(
           {
             error: {
               code: ERROR_CODES.DATABASE_ERROR,
               message: 'Failed to reject compliance document',
-              details: updateError,
             },
           },
           { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
@@ -312,8 +327,7 @@ export async function POST(
 
         if (resendApiKey && agency.claimed_by) {
           const resend = new Resend(resendApiKey);
-          const siteUrl =
-            process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+          const siteUrl = validateSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 
           // Fetch agency owner's email
           const { data: owner, error: ownerError } = await supabase
@@ -352,7 +366,7 @@ export async function POST(
             });
 
             console.log(
-              `Rejection email sent to ${owner.email} for compliance ${complianceType} on agency ${agencyId}`
+              `Rejection email sent to owner ${agency.claimed_by} for compliance ${complianceType} on agency ${agencyId}`
             );
           } else {
             console.warn(
