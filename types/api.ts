@@ -631,7 +631,20 @@ export function isComplianceExpired(expirationDate: string | null): boolean {
   const expDate = new Date(expirationDate);
   // Check if the date is valid
   if (isNaN(expDate.getTime())) return false;
-  return expDate < new Date();
+
+  // Extract date components for UTC comparison
+  const expYear = expDate.getUTCFullYear();
+  const expMonth = expDate.getUTCMonth();
+  const expDay = expDate.getUTCDate();
+  const expUTC = Date.UTC(expYear, expMonth, expDay);
+
+  const today = new Date();
+  const todayYear = today.getUTCFullYear();
+  const todayMonth = today.getUTCMonth();
+  const todayDay = today.getUTCDate();
+  const todayUTC = Date.UTC(todayYear, todayMonth, todayDay);
+
+  return expUTC < todayUTC;
 }
 
 /**
@@ -645,9 +658,21 @@ export function isComplianceExpiringSoon(
   const expDate = new Date(expirationDate);
   // Check if the date is valid
   if (isNaN(expDate.getTime())) return false;
-  const now = new Date();
-  const diffTime = expDate.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Extract date components for UTC comparison
+  const expYear = expDate.getUTCFullYear();
+  const expMonth = expDate.getUTCMonth();
+  const expDay = expDate.getUTCDate();
+  const expUTC = Date.UTC(expYear, expMonth, expDay);
+
+  const today = new Date();
+  const todayYear = today.getUTCFullYear();
+  const todayMonth = today.getUTCMonth();
+  const todayDay = today.getUTCDate();
+  const todayUTC = Date.UTC(todayYear, todayMonth, todayDay);
+
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+  const diffDays = Math.floor((expUTC - todayUTC) / MS_PER_DAY);
   return diffDays > 0 && diffDays <= withinDays;
 }
 

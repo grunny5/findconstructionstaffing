@@ -41,34 +41,48 @@ export function validateSiteUrl(
   siteUrl: string,
   fallback = 'https://findconstructionstaffing.com'
 ): string {
+  // Validate and normalize the fallback first
+  let validatedFallbackOrigin: string;
+  try {
+    const fallbackUrl = new URL(fallback);
+    if (
+      fallbackUrl.protocol !== 'http:' &&
+      fallbackUrl.protocol !== 'https:'
+    ) {
+      validatedFallbackOrigin = 'https://findconstructionstaffing.com';
+    } else {
+      validatedFallbackOrigin = fallbackUrl.origin;
+    }
+  } catch {
+    // If provided fallback is malformed, use hard-coded safe default
+    validatedFallbackOrigin = 'https://findconstructionstaffing.com';
+  }
+
   try {
     const url = new URL(siteUrl);
 
     // Only allow http and https schemes
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      const fallbackUrl = new URL(fallback);
       console.warn(
-        `[Email Security] Unsafe URL scheme detected: ${url.protocol} on host ${url.hostname}. Falling back to: ${fallbackUrl.origin}`
+        `[Email Security] Unsafe URL scheme detected: ${url.protocol} on host ${url.hostname}. Falling back to: ${validatedFallbackOrigin}`
       );
-      return fallbackUrl.origin;
+      return validatedFallbackOrigin;
     }
 
     // For production, enforce HTTPS
     if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
-      const fallbackUrl = new URL(fallback);
       console.warn(
-        `[Email Security] Non-HTTPS URL in production: ${url.origin}. Falling back to: ${fallbackUrl.origin}`
+        `[Email Security] Non-HTTPS URL in production: ${url.origin}. Falling back to: ${validatedFallbackOrigin}`
       );
-      return fallbackUrl.origin;
+      return validatedFallbackOrigin;
     }
 
     // Return the validated URL origin
     return url.origin;
   } catch (error) {
-    const fallbackUrl = new URL(fallback);
     console.warn(
-      `[Email Security] Invalid URL provided. Falling back to: ${fallbackUrl.origin}`
+      `[Email Security] Invalid URL provided. Falling back to: ${validatedFallbackOrigin}`
     );
-    return fallbackUrl.origin;
+    return validatedFallbackOrigin;
   }
 }

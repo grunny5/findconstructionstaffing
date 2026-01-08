@@ -5,29 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  ShieldCheck,
-  FlaskConical,
-  UserCheck,
-  HeartHandshake,
-  Shield,
-  BadgeCheck,
-} from 'lucide-react';
-import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
   COMPLIANCE_TYPES,
   type ComplianceType,
 } from '@/types/api';
 import { cn } from '@/lib/utils';
-
-const COMPLIANCE_ICONS: Record<ComplianceType, React.ElementType> = {
-  osha_certified: ShieldCheck,
-  drug_testing: FlaskConical,
-  background_checks: UserCheck,
-  workers_comp: HeartHandshake,
-  general_liability: Shield,
-  bonding: BadgeCheck,
-};
+import { COMPLIANCE_ICONS } from '@/lib/constants/compliance';
 
 export interface ComplianceFiltersProps {
   selectedFilters: ComplianceType[];

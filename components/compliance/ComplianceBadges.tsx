@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  ShieldCheck,
-  FlaskConical,
-  UserCheck,
-  HeartHandshake,
-  Shield,
-  BadgeCheck,
-  CheckCircle2,
-  AlertCircle,
-} from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -24,15 +15,7 @@ import {
   type ComplianceItem,
 } from '@/types/api';
 import { cn } from '@/lib/utils';
-
-const COMPLIANCE_ICONS: Record<ComplianceType, React.ElementType> = {
-  osha_certified: ShieldCheck,
-  drug_testing: FlaskConical,
-  background_checks: UserCheck,
-  workers_comp: HeartHandshake,
-  general_liability: Shield,
-  bonding: BadgeCheck,
-};
+import { COMPLIANCE_ICONS } from '@/lib/constants/compliance';
 
 export interface ComplianceBadgesProps {
   compliance: ComplianceItem[];

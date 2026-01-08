@@ -106,9 +106,9 @@ function getComplianceStatus(
  */
 function getStatusBadgeVariant(
   status: string
-): 'destructive' | 'orange' | 'secondary' {
+): 'destructive' | 'outline' | 'secondary' {
   if (status === 'expired') return 'destructive';
-  if (status === 'expiring_soon') return 'orange';
+  if (status === 'expiring_soon') return 'outline';
   return 'secondary';
 }
 

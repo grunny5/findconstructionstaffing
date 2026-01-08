@@ -29,7 +29,7 @@ This prevents the automated `supabase db push` from working correctly.
 ### Option 1: Supabase Dashboard SQL Editor (RECOMMENDED)
 
 1. **Open Supabase Dashboard**
-   - Go to: [Supabase Dashboard → SQL Editor](https://supabase.com/dashboard/project/chyaqualjbhkykgofcov)
+   - Go to: https://supabase.com/dashboard/project/<project_ref>
    - Navigate to: **SQL Editor**
 
 2. **Copy the SQL**

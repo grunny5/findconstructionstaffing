@@ -5,17 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import {
-  ShieldCheck,
-  FlaskConical,
-  UserCheck,
-  HeartHandshake,
-  Shield,
-  BadgeCheck,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import {
   COMPLIANCE_TYPES,
   COMPLIANCE_DISPLAY_NAMES,
@@ -26,15 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ComplianceDocumentUpload } from './ComplianceDocumentUpload';
 import { useToast } from '@/hooks/use-toast';
-
-const COMPLIANCE_ICONS: Record<ComplianceType, React.ElementType> = {
-  osha_certified: ShieldCheck,
-  drug_testing: FlaskConical,
-  background_checks: UserCheck,
-  workers_comp: HeartHandshake,
-  general_liability: Shield,
-  bonding: BadgeCheck,
-};
+import { COMPLIANCE_ICONS } from '@/lib/constants/compliance';
 
 export interface ComplianceFormData {
   type: ComplianceType;

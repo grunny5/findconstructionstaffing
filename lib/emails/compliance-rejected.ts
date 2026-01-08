@@ -156,7 +156,7 @@ export function generateComplianceRejectedHTML(
                 You're receiving this email because you manage <strong>${safeAgencyName}</strong> on FindConstructionStaffing.
               </p>
               <p style="margin: 8px 0 0 0; font-size: 14px; color: #6b7280;">
-                <a href="${siteUrl}" style="color: #2563eb; text-decoration: none;">FindConstructionStaffing</a>
+                <a href="${validatedSiteUrl}" style="color: #2563eb; text-decoration: none;">FindConstructionStaffing</a>
               </p>
             </td>
           </tr>
@@ -188,7 +188,8 @@ export function generateComplianceRejectedText(
 
   const complianceDisplayName = COMPLIANCE_DISPLAY_NAMES[complianceType];
   const complianceDescription = COMPLIANCE_DESCRIPTIONS[complianceType];
-  const dashboardUrl = `${siteUrl}/dashboard/compliance`;
+  const validatedSiteUrl = validateSiteUrl(siteUrl);
+  const dashboardUrl = `${validatedSiteUrl}/dashboard/compliance`;
 
   return `
 FindConstructionStaffing - Compliance Document Update
