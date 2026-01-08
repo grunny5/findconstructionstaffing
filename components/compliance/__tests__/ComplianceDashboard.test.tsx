@@ -16,6 +16,7 @@ jest.mock('@/hooks/use-toast', () => ({
 
 // Mock fetch
 const mockFetch = jest.fn();
+const originalFetch = global.fetch;
 global.fetch = mockFetch;
 
 describe('ComplianceDashboard', () => {
@@ -54,6 +55,14 @@ describe('ComplianceDashboard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    mockFetch.mockReset();
+  });
+
+  afterAll(() => {
+    global.fetch = originalFetch;
   });
 
   describe('Rendering', () => {

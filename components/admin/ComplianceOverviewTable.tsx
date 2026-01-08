@@ -182,6 +182,7 @@ export function ComplianceOverviewTable({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
+            aria-label="Search by agency or compliance type"
           />
         </div>
 
@@ -190,7 +191,10 @@ export function ComplianceOverviewTable({
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as FilterStatus)}
         >
-          <SelectTrigger className="w-full sm:w-[250px]">
+          <SelectTrigger
+            className="w-full sm:w-[250px]"
+            aria-label="Filter compliance status"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

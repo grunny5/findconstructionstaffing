@@ -5,11 +5,23 @@
 /**
  * Format date as "Month DD, YYYY" (e.g., "January 15, 2026")
  *
- * @param isoDate - ISO date string (YYYY-MM-DD format)
+ * @param isoDate - ISO date string (YYYY-MM-DD or full ISO format)
  * @returns Formatted date string, or 'Invalid Date' if parsing fails
  */
 export function formatDate(isoDate: string): string {
-  const date = new Date(isoDate);
+  // Detect date-only format (YYYY-MM-DD) to avoid timezone off-by-one issues
+  const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
+  let date: Date;
+
+  if (dateOnlyPattern.test(isoDate)) {
+    // Parse as local date to avoid UTC midnight interpretation issues
+    const [year, month, day] = isoDate.split('-').map(Number);
+    date = new Date(year, month - 1, day);
+  } else {
+    // Full ISO string - parse normally
+    date = new Date(isoDate);
+  }
+
   if (isNaN(date.getTime())) {
     return 'Invalid Date';
   }

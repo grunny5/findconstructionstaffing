@@ -38,7 +38,7 @@ This prevents the automated `supabase db push` from working correctly.
    -- Fix search_path security issue in get_admin_integrations_summary function
    -- Issue: Function has SECURITY DEFINER without explicit search_path, making it vulnerable
    -- to search path manipulation attacks.
-   -- Remediation: https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable
+   -- Remediation: https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0011_function_search_path_mutable
 
    -- Drop the existing function
    DROP FUNCTION IF EXISTS get_admin_integrations_summary();
@@ -89,7 +89,11 @@ This prevents the automated `supabase db push` from working correctly.
    - Click **Run** or press **Ctrl+Enter**
    - Verify: "Success. No rows returned"
 
-4. **Record the migration**
+4. **Record the migration** _(Optional - for tracking purposes only)_
+
+   > **Note:** This step is optional. The migration has already been applied in step 2-3 above.
+   > This INSERT only records the migration in the history table for tracking.
+   > The `statements` array below is abbreviated for readability since the actual SQL was executed above.
 
    ```sql
    -- Mark the migration as applied in the history
@@ -100,9 +104,9 @@ This prevents the automated `supabase db push` from working correctly.
      '20260121_001_fix_function_search_path',
      ARRAY[
        'DROP FUNCTION IF EXISTS get_admin_integrations_summary()',
-       'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() ...',
+       'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() RETURNS TABLE (...) AS $$ BEGIN ... END; $$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public',
        'GRANT EXECUTE ON FUNCTION get_admin_integrations_summary() TO authenticated',
-       'COMMENT ON FUNCTION get_admin_integrations_summary() ...'
+       'COMMENT ON FUNCTION get_admin_integrations_summary() IS ''Returns all agencies with integration configuration for admin dashboard. Uses explicit search_path for security.'''
      ]
    )
    ON CONFLICT (version) DO NOTHING;
@@ -210,4 +214,4 @@ To avoid version conflicts in the future:
 2. Verify the warning is resolved in Database Health
 3. Mark this task as complete
 
-For questions, refer to the [Supabase Database Linter Documentation](https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable).
+For questions, refer to the [Supabase Database Advisors Documentation](https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0011_function_search_path_mutable).

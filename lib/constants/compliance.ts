@@ -5,6 +5,7 @@
  * for compliance features across the application.
  */
 
+import type React from 'react';
 import {
   ShieldCheck,
   FlaskConical,

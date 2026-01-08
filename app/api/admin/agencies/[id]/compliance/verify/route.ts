@@ -298,19 +298,27 @@ export async function POST(
       // Delete the document from storage if it exists
       if (compliance.document_url) {
         // Extract file path from signed URL (strip bucket prefix and query params)
+        // Handles both full signed URLs and plain storage paths
         const STORAGE_BUCKET = 'compliance-documents';
         const urlParts = compliance.document_url.split(`/${STORAGE_BUCKET}/`);
+        let filePath: string;
         if (urlParts.length > 1) {
-          // Strip query parameters from signed URLs
-          const filePath = urlParts[1].split('?')[0];
-          const { error: deleteError } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .remove([filePath]);
+          // Full URL with bucket prefix - extract path after bucket name
+          filePath = urlParts[1].split('?')[0];
+        } else {
+          // Plain storage path - strip query params only
+          filePath = compliance.document_url.split('?')[0];
+        }
+        const { error: deleteError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .remove([filePath]);
 
-          if (deleteError) {
-            console.warn(`Failed to delete storage file ${filePath}:`, deleteError);
-            // Continue with rejection even if storage delete fails
-          }
+        if (deleteError) {
+          console.warn(
+            `Failed to delete storage file ${filePath}:`,
+            deleteError
+          );
+          // Continue with rejection even if storage delete fails
         }
       }
 
