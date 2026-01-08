@@ -73,9 +73,11 @@ export function ComplianceDocumentUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const error = externalError || validationError;
+  // Strip query parameters from signed URLs before checking extension
+  const urlWithoutQuery = currentUrl?.split('?')[0];
   const isPdf = selectedFile
     ? isPdfFile(selectedFile)
-    : currentUrl?.toLowerCase().endsWith('.pdf');
+    : urlWithoutQuery?.toLowerCase().endsWith('.pdf');
 
   const handleFileSelect = useCallback(
     (file: File) => {

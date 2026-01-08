@@ -303,8 +303,18 @@ export async function PUT(
         }
 
         // Validate that the date is semantically valid (e.g., 2026-02-31 is invalid)
+        // JavaScript Date rolls invalid dates forward, so we must compare components
+        const [inputYear, inputMonth, inputDay] = item.expirationDate
+          .split('-')
+          .map(Number);
         const parsedDate = new Date(item.expirationDate + 'T00:00:00Z');
-        if (isNaN(parsedDate.getTime())) {
+
+        if (
+          isNaN(parsedDate.getTime()) ||
+          parsedDate.getUTCFullYear() !== inputYear ||
+          parsedDate.getUTCMonth() + 1 !== inputMonth ||
+          parsedDate.getUTCDate() !== inputDay
+        ) {
           return NextResponse.json(
             {
               error: {

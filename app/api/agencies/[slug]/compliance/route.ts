@@ -65,11 +65,12 @@ export async function GET(
       );
     }
 
-    // Find the agency by slug
+    // Find the agency by slug (only active agencies)
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
       .select('id')
       .eq('slug', slug)
+      .eq('is_active', true)
       .single();
 
     if (agencyError || !agency) {

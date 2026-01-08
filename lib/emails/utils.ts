@@ -3,6 +3,24 @@
  */
 
 /**
+ * Format date as "Month DD, YYYY" (e.g., "January 15, 2026")
+ *
+ * @param isoDate - ISO date string (YYYY-MM-DD format)
+ * @returns Formatted date string, or 'Invalid Date' if parsing fails
+ */
+export function formatDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+/**
  * Escapes HTML special characters to prevent HTML injection.
  *
  * @param unsafe - The string to escape

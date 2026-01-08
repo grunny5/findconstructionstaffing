@@ -21,7 +21,6 @@ export default async function AdminCompliancePage() {
 
   if (!user || authError) {
     redirect('/login');
-    return null;
   }
 
   // Verify admin role
@@ -33,7 +32,6 @@ export default async function AdminCompliancePage() {
 
   if (profileError || !profile || profile.role !== 'admin') {
     redirect('/');
-    return null;
   }
 
   // Fetch all compliance items with expiration dates or pending verification

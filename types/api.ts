@@ -709,3 +709,14 @@ export function toComplianceItemFull(
     verifiedAt: row.verified_at,
   };
 }
+
+/**
+ * Item representing a compliance certification that is expiring
+ * Used by email templates for expiration reminders
+ */
+export interface ComplianceExpiringItem {
+  /** Type of compliance that is expiring */
+  complianceType: ComplianceType;
+  /** Expiration date in ISO format (YYYY-MM-DD) */
+  expirationDate: string;
+}

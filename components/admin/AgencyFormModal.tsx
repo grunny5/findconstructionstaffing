@@ -131,9 +131,19 @@ export function AgencyFormModal({
       if (response.ok) {
         const result = await response.json();
         setComplianceData(result.data || []);
+      } else {
+        const result = await response.json().catch(() => ({}));
+        console.error('Failed to fetch compliance data:', result.error);
+        toast.error('Failed to Load Compliance', {
+          description:
+            result.error?.message || 'Unable to load compliance data.',
+        });
       }
     } catch (error) {
       console.error('Failed to fetch compliance data:', error);
+      toast.error('Failed to Load Compliance', {
+        description: 'A network error occurred while loading compliance data.',
+      });
     } finally {
       setIsLoadingCompliance(false);
     }

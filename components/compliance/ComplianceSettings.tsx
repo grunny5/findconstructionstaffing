@@ -206,7 +206,9 @@ export function ComplianceSettings({
       await onSave(data);
       setIsDirty(false);
     } catch (error) {
-      console.error('Failed to save compliance settings:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to save compliance settings:', errorMessage);
       toast({
         title: 'Save failed',
         description:

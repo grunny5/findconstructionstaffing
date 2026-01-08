@@ -180,7 +180,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         `/${STORAGE_BUCKET}/`
       );
       if (urlParts.length > 1) {
-        const oldPath = urlParts[1];
+        // Strip query parameters from signed URLs
+        const oldPath = urlParts[1].split('?')[0];
         await supabase.storage.from(STORAGE_BUCKET).remove([oldPath]);
       }
     }
@@ -376,7 +377,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   if (complianceRecord?.document_url) {
     const urlParts = complianceRecord.document_url.split(`/${STORAGE_BUCKET}/`);
     if (urlParts.length > 1) {
-      const filePath = urlParts[1];
+      // Strip query parameters from signed URLs
+      const filePath = urlParts[1].split('?')[0];
       const { error: deleteError } = await supabase.storage
         .from(STORAGE_BUCKET)
         .remove([filePath]);

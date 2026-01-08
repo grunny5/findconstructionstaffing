@@ -5,35 +5,18 @@
  * Provides advance notice to allow time for renewal.
  */
 
-import { escapeHtml, validateSiteUrl } from './utils';
+import { escapeHtml, formatDate, validateSiteUrl } from './utils';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
-  type ComplianceType,
+  type ComplianceExpiringItem,
 } from '@/types/api';
-
-interface ComplianceExpiringItem {
-  complianceType: ComplianceType;
-  expirationDate: string; // ISO date string
-}
 
 interface ComplianceExpiring30EmailParams {
   recipientName?: string;
   agencyName: string;
   expiringItems: ComplianceExpiringItem[];
   siteUrl: string;
-}
-
-/**
- * Format date as "Month DD, YYYY" (e.g., "January 15, 2026")
- */
-function formatDate(isoDate: string): string {
-  const date = new Date(isoDate);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 }
 
 /**

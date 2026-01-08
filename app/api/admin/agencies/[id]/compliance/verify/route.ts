@@ -297,16 +297,20 @@ export async function POST(
 
       // Delete the document from storage if it exists
       if (compliance.document_url) {
-        const { error: deleteError } = await supabase.storage
-          .from('compliance-documents')
-          .remove([compliance.document_url]);
+        // Extract file path from signed URL (strip bucket prefix and query params)
+        const STORAGE_BUCKET = 'compliance-documents';
+        const urlParts = compliance.document_url.split(`/${STORAGE_BUCKET}/`);
+        if (urlParts.length > 1) {
+          // Strip query parameters from signed URLs
+          const filePath = urlParts[1].split('?')[0];
+          const { error: deleteError } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .remove([filePath]);
 
-        if (deleteError) {
-          console.warn(
-            `Failed to delete storage file ${compliance.document_url}:`,
-            deleteError
-          );
-          // Continue with rejection even if storage delete fails
+          if (deleteError) {
+            console.warn(`Failed to delete storage file ${filePath}:`, deleteError);
+            // Continue with rejection even if storage delete fails
+          }
         }
       }
 
@@ -364,7 +368,6 @@ export async function POST(
 
           if (!ownerError && owner) {
             const emailHtml = generateComplianceRejectedHTML({
-              recipientEmail: owner.email,
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
               complianceType: complianceType as ComplianceType,
@@ -373,7 +376,6 @@ export async function POST(
             });
 
             const emailText = generateComplianceRejectedText({
-              recipientEmail: owner.email,
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
               complianceType: complianceType as ComplianceType,

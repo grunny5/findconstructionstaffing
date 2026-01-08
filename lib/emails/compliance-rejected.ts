@@ -13,7 +13,6 @@ import {
 } from '@/types/api';
 
 interface ComplianceRejectedEmailParams {
-  recipientEmail: string;
   recipientName?: string;
   agencyName: string;
   complianceType: ComplianceType;
@@ -25,7 +24,6 @@ interface ComplianceRejectedEmailParams {
  * Create an HTML email body notifying an agency owner that their compliance document was rejected.
  *
  * @param params - Parameters for the email:
- *   - recipientEmail: recipient's email address
  *   - recipientName: optional recipient name used in the greeting
  *   - agencyName: name of the agency
  *   - complianceType: type of compliance document that was rejected

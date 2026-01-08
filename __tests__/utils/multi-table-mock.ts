@@ -14,7 +14,18 @@ interface TableMockConfig<T = unknown> {
 type MultiTableMockConfig = Record<string, TableMockConfig>;
 
 type ChainMethods = Record<
-  'select' | 'eq' | 'in' | 'or' | 'range' | 'order' | 'single',
+  | 'select'
+  | 'eq'
+  | 'in'
+  | 'not'
+  | 'or'
+  | 'range'
+  | 'order'
+  | 'single'
+  | 'update'
+  | 'upsert'
+  | 'insert'
+  | 'delete',
   jest.Mock
 >;
 
@@ -23,10 +34,15 @@ export interface SupabaseMock {
   select: jest.Mock;
   eq: jest.Mock;
   in: jest.Mock;
+  not: jest.Mock;
   or: jest.Mock;
   range: jest.Mock;
   order: jest.Mock;
   single: jest.Mock;
+  update: jest.Mock;
+  upsert: jest.Mock;
+  insert: jest.Mock;
+  delete: jest.Mock;
 }
 
 /**
@@ -54,10 +70,15 @@ export function createMultiTableMock(
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         in: jest.fn().mockReturnThis(),
+        not: jest.fn().mockReturnThis(),
         or: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         single: jest.fn().mockReturnThis(),
+        update: jest.fn().mockReturnThis(),
+        upsert: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockReturnThis(),
+        delete: jest.fn().mockReturnThis(),
       };
       return Object.assign(
         Promise.resolve({ data: [], error: null, count: 0 }),
@@ -96,6 +117,10 @@ export function createMultiTableMock(
         supabaseMock.in(...args);
         return result;
       }),
+      not: jest.fn((...args: unknown[]) => {
+        supabaseMock.not(...args);
+        return result;
+      }),
       or: jest.fn((...args: unknown[]) => {
         supabaseMock.or(...args);
         return result;
@@ -110,6 +135,22 @@ export function createMultiTableMock(
       }),
       single: jest.fn((...args: unknown[]) => {
         supabaseMock.single(...args);
+        return result;
+      }),
+      update: jest.fn((...args: unknown[]) => {
+        supabaseMock.update(...args);
+        return result;
+      }),
+      upsert: jest.fn((...args: unknown[]) => {
+        supabaseMock.upsert(...args);
+        return result;
+      }),
+      insert: jest.fn((...args: unknown[]) => {
+        supabaseMock.insert(...args);
+        return result;
+      }),
+      delete: jest.fn((...args: unknown[]) => {
+        supabaseMock.delete(...args);
         return result;
       }),
     };

@@ -55,8 +55,10 @@ const formatDate = (dateString: string | null): string => {
 
 const isImageFile = (url: string | null): boolean => {
   if (!url) return false;
+  // Strip query parameters for signed URLs before checking extension
+  const urlWithoutQuery = url.split('?')[0];
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-  return imageExtensions.some((ext) => url.toLowerCase().endsWith(ext));
+  return imageExtensions.some((ext) => urlWithoutQuery.toLowerCase().endsWith(ext));
 };
 
 /**
