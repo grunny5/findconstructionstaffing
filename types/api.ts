@@ -540,6 +540,19 @@ export interface AgencyComplianceRow {
 }
 
 /**
+ * Subset of AgencyComplianceRow returned by partial SELECT queries
+ */
+export type ComplianceQueryResult = Pick<
+  AgencyComplianceRow,
+  | 'id'
+  | 'agency_id'
+  | 'compliance_type'
+  | 'is_active'
+  | 'is_verified'
+  | 'expiration_date'
+>;
+
+/**
  * Public compliance item for display on agency profiles
  */
 export interface ComplianceItem {
@@ -677,9 +690,12 @@ export function isComplianceExpiringSoon(
 }
 
 /**
- * Transform database row to public ComplianceItem
+ * Transform database row to public ComplianceItem.
+ * Accepts either full AgencyComplianceRow or partial ComplianceQueryResult.
  */
-export function toComplianceItem(row: AgencyComplianceRow): ComplianceItem {
+export function toComplianceItem(
+  row: AgencyComplianceRow | ComplianceQueryResult
+): ComplianceItem {
   return {
     type: row.compliance_type,
     displayName: getComplianceDisplayName(row.compliance_type),

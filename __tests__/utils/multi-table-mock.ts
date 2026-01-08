@@ -7,17 +7,19 @@
 
 import { NextRequest } from 'next/server';
 
+type NextRequestInit = ConstructorParameters<typeof NextRequest>[1];
+
 /**
  * Creates a NextRequest instance for testing API route handlers.
- * Uses the NextRequest constructor which accepts a Request object.
+ * Uses the NextRequest constructor which accepts a URL and optional init.
  *
  * @param url - The URL string for the request
- * @param init - Optional RequestInit options
+ * @param init - Optional NextRequest init options
  * @returns A NextRequest instance
  */
 export function createTestRequest(
   url: string,
-  init?: RequestInit
+  init?: NextRequestInit
 ): NextRequest {
   return new NextRequest(url, init);
 }

@@ -109,31 +109,33 @@ export function ComplianceExpirationAlert({
     setIsDismissed(true);
   };
 
-  const relevantItems = expiringItems.filter((item) => {
-    if (!item.expirationDate) return false;
-    const days = daysUntilExpiration(item.expirationDate);
-    const severity = getSeverity(days);
-    return severity !== 'none';
-  });
+  type Severity = 'expired' | 'urgent' | 'warning' | 'none';
+  interface EnrichedItem {
+    item: ComplianceItemFull;
+    days: number;
+    severity: Severity;
+  }
+
+  const enrichedItems: EnrichedItem[] = expiringItems
+    .filter(
+      (item): item is ComplianceItemFull & { expirationDate: string } =>
+        item.expirationDate !== null
+    )
+    .map((item) => {
+      const days = daysUntilExpiration(item.expirationDate);
+      return { item, days, severity: getSeverity(days) };
+    })
+    .filter((enriched) => enriched.severity !== 'none');
 
   // Don't render if no relevant items or dismissed
-  if (relevantItems.length === 0 || isDismissed) {
+  if (enrichedItems.length === 0 || isDismissed) {
     return null;
   }
 
   // Categorize items by severity
-  const expiredItems = relevantItems.filter(
-    (item) =>
-      getSeverity(daysUntilExpiration(item.expirationDate!)) === 'expired'
-  );
-  const urgentItems = relevantItems.filter(
-    (item) =>
-      getSeverity(daysUntilExpiration(item.expirationDate!)) === 'urgent'
-  );
-  const warningItems = relevantItems.filter(
-    (item) =>
-      getSeverity(daysUntilExpiration(item.expirationDate!)) === 'warning'
-  );
+  const expiredItems = enrichedItems.filter((e) => e.severity === 'expired');
+  const urgentItems = enrichedItems.filter((e) => e.severity === 'urgent');
+  const warningItems = enrichedItems.filter((e) => e.severity === 'warning');
 
   // Determine overall severity (show most severe)
   const hasExpired = expiredItems.length > 0;
@@ -159,17 +161,12 @@ export function ComplianceExpirationAlert({
                 Expired ({expiredItems.length}):
               </p>
               <ul className="list-disc list-inside text-sm ml-4">
-                {expiredItems.map((item) => {
-                  const days = Math.abs(
-                    daysUntilExpiration(item.expirationDate!)
-                  );
-                  return (
-                    <li key={item.id}>
-                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expired {days}{' '}
-                      {days === 1 ? 'day' : 'days'} ago
-                    </li>
-                  );
-                })}
+                {expiredItems.map(({ item, days }) => (
+                  <li key={item.id}>
+                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expired{' '}
+                    {Math.abs(days)} {Math.abs(days) === 1 ? 'day' : 'days'} ago
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -180,15 +177,12 @@ export function ComplianceExpirationAlert({
                 Expiring within 7 days ({urgentItems.length}):
               </p>
               <ul className="list-disc list-inside text-sm ml-4">
-                {urgentItems.map((item) => {
-                  const days = daysUntilExpiration(item.expirationDate!);
-                  return (
-                    <li key={item.id}>
-                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
-                      {days === 1 ? 'day' : 'days'}
-                    </li>
-                  );
-                })}
+                {urgentItems.map(({ item, days }) => (
+                  <li key={item.id}>
+                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
+                    {days === 1 ? 'day' : 'days'}
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -199,15 +193,12 @@ export function ComplianceExpirationAlert({
                 Expiring within 30 days ({warningItems.length}):
               </p>
               <ul className="list-disc list-inside text-sm ml-4">
-                {warningItems.map((item) => {
-                  const days = daysUntilExpiration(item.expirationDate!);
-                  return (
-                    <li key={item.id}>
-                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
-                      {days === 1 ? 'day' : 'days'}
-                    </li>
-                  );
-                })}
+                {warningItems.map(({ item, days }) => (
+                  <li key={item.id}>
+                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
+                    {days === 1 ? 'day' : 'days'}
+                  </li>
+                ))}
               </ul>
             </div>
           )}

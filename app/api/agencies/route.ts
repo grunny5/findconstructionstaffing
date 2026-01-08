@@ -7,7 +7,7 @@ import {
   ERROR_CODES,
   API_CONSTANTS,
   toComplianceItem,
-  type AgencyComplianceRow,
+  type ComplianceQueryResult,
   type ComplianceItem,
 } from '@/types/api';
 import { createHash } from 'crypto';
@@ -557,7 +557,7 @@ export async function GET(request: NextRequest) {
 
       // Build compliance map by agency ID
       if (complianceData) {
-        for (const row of complianceData as AgencyComplianceRow[]) {
+        for (const row of complianceData as ComplianceQueryResult[]) {
           if (!complianceMap.has(row.agency_id)) {
             complianceMap.set(row.agency_id, []);
           }
