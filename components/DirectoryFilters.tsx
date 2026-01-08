@@ -37,7 +37,7 @@ import {
   companySizes,
   focusAreas,
 } from '@/lib/mock-data';
-import { ComplianceType } from '@/types/api';
+import { ComplianceType, COMPLIANCE_DISPLAY_NAMES } from '@/types/api';
 import { ComplianceFilters } from '@/components/compliance/ComplianceFilters';
 
 // Helper function to convert trade names to slugs
@@ -574,7 +574,7 @@ export default function DirectoryFilters({
                 variant="secondary"
                 className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
               >
-                {complianceType.replace(/_/g, ' ')}
+                {COMPLIANCE_DISPLAY_NAMES[complianceType]}
                 <button
                   onClick={() => removeFilter('compliance', complianceType)}
                   className="ml-2 hover:text-industrial-graphite-200"

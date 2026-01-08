@@ -113,7 +113,7 @@ function getStatusBadgeVariant(
 }
 
 /**
- * Format date for display
+ * Format date for display (using UTC to match daysUntilExpiration)
  */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -121,6 +121,7 @@ function formatDate(dateString: string): string {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 }
 

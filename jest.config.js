@@ -83,14 +83,13 @@ const customJestConfig = {
     '!**/tests/load/**',
     '!**/__mocks__/**',
   ],
-  // Coverage thresholds temporarily lowered while fixing tests
-  // TODO: Gradually increase these back to 80% as we add more tests
+  // Coverage thresholds set to 85% minimum
   coverageThreshold: {
     global: {
-      branches: 15,
-      functions: 15,
-      lines: 15,
-      statements: 15,
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
     },
   },
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],

@@ -65,14 +65,14 @@ describe('POST /api/dashboard/compliance/document', () => {
       expect(json.error.code).toBe(ERROR_CODES.UNAUTHORIZED);
     });
 
-    it('returns 500 when profile fetch fails', async () => {
+    it('returns 403 when user has no claimed agency (database error)', async () => {
       mockGetUser.mockResolvedValue({
         data: { user: mockUser },
         error: null,
       });
 
       mockFrom.mockImplementation((table: string) => {
-        if (table === 'profiles') {
+        if (table === 'agencies') {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
@@ -94,8 +94,8 @@ describe('POST /api/dashboard/compliance/document', () => {
       const response = await POST(request);
       const json = await response.json();
 
-      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      expect(json.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(json.error.code).toBe(ERROR_CODES.FORBIDDEN);
     });
 
     it('returns 403 when user has no claimed agency', async () => {
@@ -314,8 +314,9 @@ describe('POST /api/dashboard/compliance/document', () => {
       mockStorageFrom.mockReturnValue({
         upload: jest.fn().mockResolvedValue({ error: null }),
         remove: jest.fn().mockResolvedValue({ error: null }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: 'https://storage.example.com/doc.pdf' },
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: { signedUrl: 'https://storage.example.com/doc.pdf?token=abc' },
+          error: null,
         }),
       });
     });
@@ -333,7 +334,7 @@ describe('POST /api/dashboard/compliance/document', () => {
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(json.success).toBe(true);
       expect(json.data.document_url).toBe(
-        'https://storage.example.com/doc.pdf'
+        'https://storage.example.com/doc.pdf?token=abc'
       );
     });
 
@@ -472,8 +473,9 @@ describe('POST /api/dashboard/compliance/document', () => {
         upload: jest.fn().mockResolvedValue({
           error: { message: 'Storage error' },
         }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: 'https://storage.example.com/doc.pdf' },
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: { signedUrl: 'https://storage.example.com/doc.pdf?token=abc' },
+          error: null,
         }),
       });
 
@@ -490,12 +492,42 @@ describe('POST /api/dashboard/compliance/document', () => {
       expect(json.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
     });
 
+    it('returns 500 when signed URL creation fails', async () => {
+      mockStorageFrom.mockReturnValue({
+        upload: jest.fn().mockResolvedValue({ error: null }),
+        remove: jest.fn().mockResolvedValue({ error: null }),
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Failed to create signed URL' },
+        }),
+      });
+
+      const formData = createFormData(createPdfFile(), 'osha_certified');
+      const request = createMockNextRequest({
+        method: 'POST',
+        body: formData,
+      });
+
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(json.error.code).toBe(ERROR_CODES.DATABASE_ERROR);
+      expect(json.error.message).toBe('Failed to generate document URL');
+
+      // Verify uploaded file was cleaned up
+      const storageFrom = mockStorageFrom;
+      const mockStorage = storageFrom();
+      expect(mockStorage.remove).toHaveBeenCalled();
+    });
+
     it('returns 500 when compliance upsert fails', async () => {
       mockStorageFrom.mockReturnValue({
         upload: jest.fn().mockResolvedValue({ error: null }),
         remove: jest.fn().mockResolvedValue({ error: null }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: 'https://storage.example.com/doc.pdf' },
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: { signedUrl: 'https://storage.example.com/doc.pdf?token=abc' },
+          error: null,
         }),
       });
 

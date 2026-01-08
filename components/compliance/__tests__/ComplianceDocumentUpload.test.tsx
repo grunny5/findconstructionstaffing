@@ -54,7 +54,7 @@ describe('ComplianceDocumentUpload', () => {
       expect(screen.getByText('Supporting Documentation')).toBeInTheDocument();
       expect(screen.getByText('Drag and drop a document')).toBeInTheDocument();
       expect(
-        screen.getByText('PDF, PNG, or JPG (max 10MB)')
+        screen.getByText('PDF, PNG, or JPEG (max 10MB)')
       ).toBeInTheDocument();
     });
 

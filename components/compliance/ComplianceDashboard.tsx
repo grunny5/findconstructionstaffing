@@ -60,8 +60,22 @@ export function ComplianceDashboard({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to save changes');
+        let errorMessage = 'Failed to save changes';
+        try {
+          const text = await response.text();
+          if (text) {
+            const errorData = JSON.parse(text);
+            if (errorData?.error?.message) {
+              errorMessage = errorData.error.message;
+            }
+          }
+        } catch {
+          // JSON parsing failed, use statusText or default
+          if (response.statusText) {
+            errorMessage = response.statusText;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -81,7 +95,6 @@ export function ComplianceDashboard({
             : 'Failed to save changes. Please try again.',
         variant: 'destructive',
       });
-      throw error;
     } finally {
       setIsLoading(false);
     }
