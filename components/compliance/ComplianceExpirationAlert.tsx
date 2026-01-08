@@ -194,14 +194,13 @@ export function ComplianceExpirationAlert({
           )}
 
           <div className="mt-4">
-            <Link href={complianceUrl}>
-              <Button
-                size="sm"
-                variant={hasExpired || hasUrgent ? 'default' : 'outline'}
-              >
-                Update Now
-              </Button>
-            </Link>
+            <Button
+              asChild
+              size="sm"
+              variant={hasExpired || hasUrgent ? 'default' : 'outline'}
+            >
+              <Link href={complianceUrl}>Update Now</Link>
+            </Button>
           </div>
         </div>
       </AlertDescription>

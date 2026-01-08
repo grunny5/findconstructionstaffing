@@ -80,6 +80,13 @@ export default async function AdminCompliancePage() {
     );
   }
 
+  // Transform the data to match ComplianceDataRow interface
+  // Supabase returns agencies as an array due to the join, but we need a single object
+  const transformedData = (complianceData || []).map((row) => ({
+    ...row,
+    agencies: Array.isArray(row.agencies) ? row.agencies[0] : row.agencies,
+  }));
+
   return (
     <div className="container mx-auto p-6 min-h-screen">
       <div className="mb-6">
@@ -90,7 +97,7 @@ export default async function AdminCompliancePage() {
           Monitor and manage agency compliance certifications
         </p>
       </div>
-      <ComplianceOverviewTable complianceData={complianceData || []} />
+      <ComplianceOverviewTable complianceData={transformedData} />
     </div>
   );
 }

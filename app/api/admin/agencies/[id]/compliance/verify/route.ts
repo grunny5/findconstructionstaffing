@@ -327,7 +327,9 @@ export async function POST(
 
         if (resendApiKey && agency.claimed_by) {
           const resend = new Resend(resendApiKey);
-          const siteUrl = validateSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
+          const siteUrl = validateSiteUrl(
+            process.env.NEXT_PUBLIC_SITE_URL || ''
+          );
 
           // Fetch agency owner's email
           const { data: owner, error: ownerError } = await supabase

@@ -18,9 +18,16 @@ function createMockRow(
   const expirationDate =
     daysUntilExpiration !== null
       ? (() => {
-          const date = new Date(today);
-          date.setDate(today.getDate() + daysUntilExpiration);
-          return date.toISOString().split('T')[0];
+          // Use UTC to avoid timezone issues
+          const todayUTC = Date.UTC(
+            today.getUTCFullYear(),
+            today.getUTCMonth(),
+            today.getUTCDate()
+          );
+          const targetUTC =
+            todayUTC + daysUntilExpiration * 24 * 60 * 60 * 1000;
+          const targetDate = new Date(targetUTC);
+          return targetDate.toISOString().split('T')[0];
         })()
       : null;
 

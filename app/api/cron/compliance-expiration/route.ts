@@ -22,6 +22,7 @@ import {
   generateComplianceExpiring7Text,
 } from '@/lib/emails/compliance-expiring-7';
 import { COMPLIANCE_DISPLAY_NAMES, type ComplianceType } from '@/types/api';
+import { validateSiteUrl } from '@/lib/emails/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,15 +52,27 @@ interface ProcessingResult {
 
 /**
  * Check if a date is exactly N days from now (within a 24-hour window)
+ * Uses UTC to avoid timezone issues
  */
 function isExactlyNDaysFromNow(dateStr: string, days: number): boolean {
   const date = new Date(dateStr);
+  const dateUTC = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate()
+  );
+
   const now = new Date();
-  const targetDate = new Date(now);
-  targetDate.setDate(now.getDate() + days);
+  const nowUTC = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  );
+
+  const targetUTC = nowUTC + days * 24 * 60 * 60 * 1000;
 
   // Check if date is within 24 hours of target
-  const diffMs = Math.abs(date.getTime() - targetDate.getTime());
+  const diffMs = Math.abs(dateUTC - targetUTC);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
   return diffDays <= 1;
@@ -82,6 +95,7 @@ function wasRecentlySent(lastSentStr: string | null): boolean {
 
 /**
  * Group expiring items by agency and owner
+ * Optimized to avoid N+1 queries by fetching all agencies and profiles in bulk
  */
 async function groupItemsByAgency(
   items: ComplianceExpiringItem[],
@@ -89,41 +103,72 @@ async function groupItemsByAgency(
 ): Promise<
   Map<string, { owner: AgencyOwner; items: ComplianceExpiringItem[] }>
 > {
+  // Filter items that need reminders sent
+  const filteredItems = items.filter((item) => {
+    const lastSent =
+      reminderType === '30'
+        ? item.last_30_day_reminder_sent
+        : item.last_7_day_reminder_sent;
+    return !wasRecentlySent(lastSent);
+  });
+
+  if (filteredItems.length === 0) {
+    return new Map();
+  }
+
+  // Get unique agency IDs
+  const agencyIds = Array.from(
+    new Set(filteredItems.map((item) => item.agency_id))
+  );
+
+  // Fetch all agencies in one query
+  const { data: agencies, error: agencyError } = await supabase
+    .from('agencies')
+    .select('id, name, claimed_by')
+    .in('id', agencyIds)
+    .not('claimed_by', 'is', null);
+
+  if (agencyError || !agencies) {
+    console.error('[Cron] Error fetching agencies:', agencyError);
+    return new Map();
+  }
+
+  // Create agency lookup map
+  const agencyMap = new Map(agencies.map((a) => [a.id, a]));
+
+  // Get unique owner IDs
+  const ownerIds = Array.from(
+    new Set(agencies.map((a) => a.claimed_by).filter(Boolean))
+  ) as string[];
+
+  // Fetch all profiles in one query
+  const { data: profiles, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, email, full_name')
+    .in('id', ownerIds);
+
+  if (profileError || !profiles) {
+    console.error('[Cron] Error fetching profiles:', profileError);
+    return new Map();
+  }
+
+  // Create profile lookup map
+  const profileMap = new Map(profiles.map((p) => [p.id, p]));
+
+  // Group items by agency
   const grouped = new Map<
     string,
     { owner: AgencyOwner; items: ComplianceExpiringItem[] }
   >();
 
-  for (const item of items) {
-    // Skip if reminder was recently sent
-    const lastSent =
-      reminderType === '30'
-        ? item.last_30_day_reminder_sent
-        : item.last_7_day_reminder_sent;
-
-    if (wasRecentlySent(lastSent)) {
-      continue;
-    }
-
-    // Fetch agency and owner info
-    const { data: agency, error: agencyError } = await supabase
-      .from('agencies')
-      .select('id, name, claimed_by')
-      .eq('id', item.agency_id)
-      .single();
-
-    if (agencyError || !agency || !agency.claimed_by) {
+  for (const item of filteredItems) {
+    const agency = agencyMap.get(item.agency_id);
+    if (!agency || !agency.claimed_by) {
       continue; // Skip unclaimed agencies
     }
 
-    // Fetch owner profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email, full_name')
-      .eq('id', agency.claimed_by)
-      .single();
-
-    if (profileError || !profile) {
+    const profile = profileMap.get(agency.claimed_by);
+    if (!profile) {
       continue; // Skip if owner not found
     }
 
@@ -281,7 +326,7 @@ export async function GET(request: NextRequest) {
     }
 
     const resend = new Resend(resendApiKey);
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const siteUrl = validateSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || '');
 
     // ========================================================================
     // 3. FETCH EXPIRING COMPLIANCE ITEMS
@@ -348,7 +393,7 @@ export async function GET(request: NextRequest) {
         result.processedAgencies.push(agencyId);
       } else {
         console.error(
-          `[Cron] Failed to send 30-day reminder to ${owner.email} for agency ${agencyId}`
+          `[Cron] Failed to send 30-day reminder for agency ${agencyId}`
         );
         result.errors.push(
           `Failed to send 30-day reminder for agency ${agencyId}`
@@ -373,7 +418,7 @@ export async function GET(request: NextRequest) {
         }
       } else {
         console.error(
-          `[Cron] Failed to send 7-day reminder to ${owner.email} for agency ${agencyId}`
+          `[Cron] Failed to send 7-day reminder for agency ${agencyId}`
         );
         result.errors.push(
           `Failed to send 7-day reminder for agency ${agencyId}`
@@ -406,7 +451,6 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );

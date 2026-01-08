@@ -4,7 +4,11 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ComplianceExpirationAlert } from '../ComplianceExpirationAlert';
-import { type ComplianceItemFull } from '@/types/api';
+import {
+  type ComplianceItemFull,
+  type ComplianceType,
+  COMPLIANCE_DISPLAY_NAMES,
+} from '@/types/api';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -39,7 +43,8 @@ function createMockItem(
 
   return {
     id: `item-${type}-${daysUntilExpiration}`,
-    type: type as any,
+    type: type as ComplianceType,
+    displayName: COMPLIANCE_DISPLAY_NAMES[type as ComplianceType],
     isActive: true,
     isVerified: true,
     expirationDate: expirationDate.toISOString().split('T')[0],
@@ -82,6 +87,7 @@ describe('ComplianceExpirationAlert', () => {
         {
           id: 'item-1',
           type: 'osha_certified',
+          displayName: COMPLIANCE_DISPLAY_NAMES['osha_certified'],
           isActive: true,
           isVerified: true,
           expirationDate: null,
@@ -299,12 +305,9 @@ describe('ComplianceExpirationAlert', () => {
 
       render(<ComplianceExpirationAlert expiringItems={items} />);
 
-      const button = screen.getByRole('button', { name: 'Update Now' });
-      expect(button).toBeInTheDocument();
-      expect(button.closest('a')).toHaveAttribute(
-        'href',
-        '/dashboard/compliance'
-      );
+      const link = screen.getByRole('link', { name: 'Update Now' });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', '/dashboard/compliance');
     });
 
     it('should render Update Now button with custom link', () => {
@@ -317,8 +320,8 @@ describe('ComplianceExpirationAlert', () => {
         />
       );
 
-      const button = screen.getByRole('button', { name: 'Update Now' });
-      expect(button.closest('a')).toHaveAttribute('href', '/custom/compliance');
+      const link = screen.getByRole('link', { name: 'Update Now' });
+      expect(link).toHaveAttribute('href', '/custom/compliance');
     });
 
     it('should use default variant for urgent/expired items', () => {
@@ -326,9 +329,10 @@ describe('ComplianceExpirationAlert', () => {
 
       render(<ComplianceExpirationAlert expiringItems={items} />);
 
-      const button = screen.getByRole('button', { name: 'Update Now' });
-      // Default variant doesn't have 'outline' class
-      expect(button).not.toHaveClass('outline');
+      const link = screen.getByRole('link', { name: 'Update Now' });
+      // Default variant has orange background, not transparent
+      expect(link.className).toContain('bg-industrial-orange');
+      expect(link.className).not.toContain('bg-transparent');
     });
 
     it('should use outline variant for warning items', () => {
@@ -336,9 +340,10 @@ describe('ComplianceExpirationAlert', () => {
 
       render(<ComplianceExpirationAlert expiringItems={items} />);
 
-      const button = screen.getByRole('button', { name: 'Update Now' });
-      // Outline variant should be present
-      expect(button.className).toContain('outline');
+      const link = screen.getByRole('link', { name: 'Update Now' });
+      // Outline variant has transparent background and border
+      expect(link.className).toContain('bg-transparent');
+      expect(link.className).toContain('border-2');
     });
   });
 
