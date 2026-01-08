@@ -49,6 +49,46 @@ export interface ComplianceSettingsProps {
   isAdmin?: boolean;
 }
 
+/**
+ * Initialize form data from compliance items.
+ * Creates a record for all compliance types with existing values or defaults.
+ */
+function initializeFormData(
+  initialData: ComplianceItemFull[]
+): Record<ComplianceType, ComplianceFormData> {
+  const initial: Record<ComplianceType, ComplianceFormData> = {} as Record<
+    ComplianceType,
+    ComplianceFormData
+  >;
+
+  for (const type of COMPLIANCE_TYPES) {
+    const existing = initialData.find((item) => item.type === type);
+    initial[type] = {
+      type,
+      isActive: existing?.isActive ?? false,
+      expirationDate: existing?.expirationDate ?? null,
+    };
+  }
+
+  return initial;
+}
+
+/**
+ * Initialize document URLs from compliance items.
+ * Only includes items that have a document URL.
+ */
+function initializeDocumentUrls(
+  initialData: ComplianceItemFull[]
+): Partial<Record<ComplianceType, string | null>> {
+  const urls: Partial<Record<ComplianceType, string | null>> = {};
+  for (const item of initialData) {
+    if (item.documentUrl) {
+      urls[item.type] = item.documentUrl;
+    }
+  }
+  return urls;
+}
+
 export function ComplianceSettings({
   initialData = [],
   onSave,
@@ -57,23 +97,7 @@ export function ComplianceSettings({
 }: ComplianceSettingsProps) {
   const [formData, setFormData] = useState<
     Record<ComplianceType, ComplianceFormData>
-  >(() => {
-    const initial: Record<ComplianceType, ComplianceFormData> = {} as Record<
-      ComplianceType,
-      ComplianceFormData
-    >;
-
-    for (const type of COMPLIANCE_TYPES) {
-      const existing = initialData.find((item) => item.type === type);
-      initial[type] = {
-        type,
-        isActive: existing?.isActive ?? false,
-        expirationDate: existing?.expirationDate ?? null,
-      };
-    }
-
-    return initial;
-  });
+  >(() => initializeFormData(initialData));
 
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,42 +106,13 @@ export function ComplianceSettings({
   );
   const [documentUrls, setDocumentUrls] = useState<
     Partial<Record<ComplianceType, string | null>>
-  >(() => {
-    const urls: Partial<Record<ComplianceType, string | null>> = {};
-    for (const item of initialData) {
-      if (item.documentUrl) {
-        urls[item.type] = item.documentUrl;
-      }
-    }
-    return urls;
-  });
+  >(() => initializeDocumentUrls(initialData));
   const { toast } = useToast();
 
   useEffect(() => {
-    const initial: Record<ComplianceType, ComplianceFormData> = {} as Record<
-      ComplianceType,
-      ComplianceFormData
-    >;
-
-    for (const type of COMPLIANCE_TYPES) {
-      const existing = initialData.find((item) => item.type === type);
-      initial[type] = {
-        type,
-        isActive: existing?.isActive ?? false,
-        expirationDate: existing?.expirationDate ?? null,
-      };
-    }
-
-    setFormData(initial);
+    setFormData(initializeFormData(initialData));
     setIsDirty(false);
-
-    const urls: Partial<Record<ComplianceType, string | null>> = {};
-    for (const item of initialData) {
-      if (item.documentUrl) {
-        urls[item.type] = item.documentUrl;
-      }
-    }
-    setDocumentUrls(urls);
+    setDocumentUrls(initializeDocumentUrls(initialData));
   }, [initialData]);
 
   const handleToggle = (type: ComplianceType, checked: boolean) => {

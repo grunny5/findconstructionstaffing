@@ -149,7 +149,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const extension = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+    const lastSegment = file.name.split('.').pop();
+    const extension =
+      lastSegment && lastSegment !== '' ? lastSegment.toLowerCase() : 'pdf';
     const filename = `${agency.id}/${complianceType}/${timestamp}.${extension}`;
 
     // Get existing compliance record to check for old document and preserve is_active state

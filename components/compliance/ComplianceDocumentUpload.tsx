@@ -34,7 +34,11 @@ function isValidFileType(file: File): boolean {
   if (ACCEPTED_MIME_TYPES.includes(file.type)) {
     return true;
   }
-  const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const lastSegment = file.name.split('.').pop();
+  if (!lastSegment || lastSegment === '') {
+    return false;
+  }
+  const extension = '.' + lastSegment.toLowerCase();
   return ACCEPTED_EXTENSIONS.includes(extension);
 }
 
