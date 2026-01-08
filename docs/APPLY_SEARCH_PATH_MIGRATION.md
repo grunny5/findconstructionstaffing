@@ -89,10 +89,10 @@ This prevents the automated `supabase db push` from working correctly.
    - Click **Run** or press **Ctrl+Enter**
    - Verify: "Success. No rows returned"
 
-4. **Record the migration** _(Optional - for tracking purposes only)_
+4. **Record the migration** _(Required for Supabase CLI tracking)_
 
-   > **Note:** This step is optional. The migration has already been applied in step 2-3 above.
-   > This INSERT only records the migration in the history table for tracking.
+   > **Important:** While the SQL was executed in steps 2-3 above, this INSERT is required so the
+   > Supabase CLI recognizes the migration as applied and won't attempt to re-run it on future deployments.
    > The `statements` array below is abbreviated for readability since the actual SQL was executed above.
 
    ```sql
@@ -122,6 +122,11 @@ This prevents the automated `supabase db push` from working correctly.
 ### Option 2: psql Command Line
 
 If you have direct database access:
+
+> **Security Note:** Avoid leaving credentials in shell history. Either:
+>
+> - Store DATABASE_URL in a `.env` file and use `source .env` to load it
+> - Clear shell history after use with `history -c` or `history -d <line_number>`
 
 ```bash
 # Export connection string (get from Supabase Dashboard → Settings → Database)

@@ -196,6 +196,7 @@ export async function POST(
         `
         id,
         name,
+        slug,
         claimed_by
       `
       )
@@ -378,6 +379,7 @@ export async function POST(
             const emailHtml = generateComplianceRejectedHTML({
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
+              agencySlug: agency.slug,
               complianceType: complianceType as ComplianceType,
               rejectionReason: reason.trim(),
               siteUrl,
@@ -386,6 +388,7 @@ export async function POST(
             const emailText = generateComplianceRejectedText({
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
+              agencySlug: agency.slug,
               complianceType: complianceType as ComplianceType,
               rejectionReason: reason.trim(),
               siteUrl,

@@ -328,35 +328,32 @@ export async function PUT(
       }
     }
 
-    // Upsert compliance items (owner cannot modify verification fields)
-    for (const item of body.items) {
-      const { error: upsertError } = await supabase
-        .from('agency_compliance')
-        .upsert(
-          {
-            agency_id: agency.id,
-            compliance_type: item.type,
-            is_active: item.isActive,
-            expiration_date: item.expirationDate || null,
-          },
-          {
-            onConflict: 'agency_id,compliance_type',
-            ignoreDuplicates: false,
-          }
-        );
+    // Upsert compliance items atomically (owner cannot modify verification fields)
+    const records = body.items.map((item) => ({
+      agency_id: agency.id,
+      compliance_type: item.type,
+      is_active: item.isActive,
+      expiration_date: item.expirationDate || null,
+    }));
 
-      if (upsertError) {
-        console.error('Error upserting compliance item:', upsertError);
-        return NextResponse.json(
-          {
-            error: {
-              code: ERROR_CODES.DATABASE_ERROR,
-              message: 'Failed to update compliance data',
-            },
+    const { error: upsertError } = await supabase
+      .from('agency_compliance')
+      .upsert(records, {
+        onConflict: 'agency_id,compliance_type',
+        ignoreDuplicates: false,
+      });
+
+    if (upsertError) {
+      console.error('Error upserting compliance items:', upsertError);
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to update compliance data',
           },
-          { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-        );
-      }
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
     }
 
     // Fetch updated compliance state

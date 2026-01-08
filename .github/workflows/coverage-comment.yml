@@ -1,68 +1,7 @@
+# Disabled: redundant with ci.yml which already runs tests with coverage
 name: Coverage Comment
 
-# DISABLED: Redundant with main CI pipeline which already runs tests with coverage
-# The main CI pipeline (ci.yml) runs the full test suite with coverage and uploads
-# coverage reports. This workflow was causing duplicate test runs (25+ minutes each).
-# Re-enable only if you need a separate coverage comment workflow.
 on:
   pull_request:
     branches-ignore:
-      - '**' # Disable for all branches
-
-jobs:
-  coverage:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pull-requests: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check environment variables
-        run: |
-          echo "=== Checking CI Environment Variables ==="
-          echo "NEXT_PUBLIC_SUPABASE_URL is: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL && 'set ✓' || 'not set ✗' }}"
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY is: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY && 'set ✓' || 'not set ✗' }}"
-          echo "SUPABASE_SERVICE_ROLE_KEY is: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY && 'set ✓' || 'not set ✗' }}"
-
-          if [[ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]] || [[ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]]; then
-            echo ""
-            echo "⚠️  Warning: Supabase environment variables are not set!"
-            echo "Tests will run with mock values, but integration tests may fail."
-            echo "See docs/CI_CD_ENV_SETUP.md for setup instructions."
-          fi
-
-      - name: Run tests with coverage
-        run: npm test -- --coverage --ci --passWithNoTests
-        env:
-          NODE_ENV: test
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}
-          # Force test environment to ensure mocks are used
-          FORCE_TEST_MOCKS: true
-          CI: true
-          # Set database user to prevent defaulting to root
-          PGUSER: postgres
-          USER: postgres
-
-      - name: Jest Coverage Comment
-        uses: MishaKav/jest-coverage-comment@main
-        with:
-          coverage-summary-path: coverage/coverage-summary.json
-          junitxml-path: test-results/junit.xml
-          title: Test Coverage Report
-          summary-title: Coverage Summary
-          badge-title: Coverage
-          create-new-comment: false
+      - '**'

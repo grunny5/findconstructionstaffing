@@ -51,6 +51,42 @@ const mockAgency: Agency = {
   regions: [{ id: 'r1', name: 'Texas', code: 'TX' }],
 };
 
+/**
+ * Creates a reusable mock factory for supabase.from() that handles multiple tables
+ */
+interface TableMockOverrides {
+  agencies?: { data: unknown; error: unknown };
+  agency_compliance?: { data: unknown; error: unknown };
+}
+
+function createMultiTableMock(overrides: TableMockOverrides = {}) {
+  return (table: string) => {
+    if (table === 'agencies' && overrides.agencies) {
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue(overrides.agencies),
+      };
+    }
+    if (table === 'agency_compliance') {
+      const complianceData = overrides.agency_compliance || {
+        data: [],
+        error: null,
+      };
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue(complianceData),
+      };
+    }
+    return {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    };
+  };
+}
+
 describe('Agency Profile Page API Tests', () => {
   const { supabase } = require('@/lib/supabase');
 
@@ -59,51 +95,35 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should fetch agency by slug successfully', async () => {
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'agencies') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: {
-              ...mockAgency,
-              agency_trades: [
-                {
-                  trade: {
-                    id: 't1',
-                    name: 'Electricians',
-                    slug: 'electricians',
-                  },
+    supabase.from.mockImplementation(
+      createMultiTableMock({
+        agencies: {
+          data: {
+            ...mockAgency,
+            agency_trades: [
+              {
+                trade: {
+                  id: 't1',
+                  name: 'Electricians',
+                  slug: 'electricians',
                 },
-              ],
-              agency_regions: [
-                {
-                  region: {
-                    id: 'r1',
-                    name: 'Texas',
-                    state_code: 'TX',
-                    slug: 'texas',
-                  },
+              },
+            ],
+            agency_regions: [
+              {
+                region: {
+                  id: 'r1',
+                  name: 'Texas',
+                  state_code: 'TX',
+                  slug: 'texas',
                 },
-              ],
-            },
-            error: null,
-          }),
-        };
-      }
-      if (table === 'agency_compliance') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          order: jest.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    });
+              },
+            ],
+          },
+          error: null,
+        },
+      })
+    );
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
@@ -121,30 +141,14 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should return 404 for non-existent agency', async () => {
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'agencies') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: null,
-            error: { code: 'PGRST116', message: 'No rows found' },
-          }),
-        };
-      }
-      if (table === 'agency_compliance') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          order: jest.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    });
+    supabase.from.mockImplementation(
+      createMultiTableMock({
+        agencies: {
+          data: null,
+          error: { code: 'PGRST116', message: 'No rows found' },
+        },
+      })
+    );
 
     const request = new Request(
       'http://localhost:3000/api/agencies/non-existent'
@@ -160,30 +164,14 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should handle database errors', async () => {
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'agencies') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: null,
-            error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
-          }),
-        };
-      }
-      if (table === 'agency_compliance') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          order: jest.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    });
+    supabase.from.mockImplementation(
+      createMultiTableMock({
+        agencies: {
+          data: null,
+          error: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+        },
+      })
+    );
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
@@ -209,34 +197,18 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should include cache headers on success', async () => {
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'agencies') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: {
-              ...mockAgency,
-              agency_trades: [],
-              agency_regions: [],
-            },
-            error: null,
-          }),
-        };
-      }
-      if (table === 'agency_compliance') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          order: jest.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    });
+    supabase.from.mockImplementation(
+      createMultiTableMock({
+        agencies: {
+          data: {
+            ...mockAgency,
+            agency_trades: [],
+            agency_regions: [],
+          },
+          error: null,
+        },
+      })
+    );
 
     const request = new Request(
       'http://localhost:3000/api/agencies/elite-construction-staffing'

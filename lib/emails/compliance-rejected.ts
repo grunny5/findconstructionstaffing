@@ -15,6 +15,7 @@ import {
 interface ComplianceRejectedEmailParams {
   recipientName?: string;
   agencyName: string;
+  agencySlug: string;
   complianceType: ComplianceType;
   rejectionReason: string;
   siteUrl: string;
@@ -37,6 +38,7 @@ export function generateComplianceRejectedHTML(
   const {
     recipientName,
     agencyName,
+    agencySlug,
     complianceType,
     rejectionReason,
     siteUrl,
@@ -50,7 +52,7 @@ export function generateComplianceRejectedHTML(
   const complianceDisplayName = COMPLIANCE_DISPLAY_NAMES[complianceType];
   const complianceDescription = COMPLIANCE_DESCRIPTIONS[complianceType];
   const validatedSiteUrl = validateSiteUrl(siteUrl);
-  const dashboardUrl = `${validatedSiteUrl}/dashboard/compliance`;
+  const dashboardUrl = `${validatedSiteUrl}/dashboard/agency/${encodeURIComponent(agencySlug)}/compliance`;
 
   return `
 <!DOCTYPE html>
@@ -176,6 +178,7 @@ export function generateComplianceRejectedText(
   const {
     recipientName,
     agencyName,
+    agencySlug,
     complianceType,
     rejectionReason,
     siteUrl,
@@ -184,7 +187,7 @@ export function generateComplianceRejectedText(
   const complianceDisplayName = COMPLIANCE_DISPLAY_NAMES[complianceType];
   const complianceDescription = COMPLIANCE_DESCRIPTIONS[complianceType];
   const validatedSiteUrl = validateSiteUrl(siteUrl);
-  const dashboardUrl = `${validatedSiteUrl}/dashboard/compliance`;
+  const dashboardUrl = `${validatedSiteUrl}/dashboard/agency/${encodeURIComponent(agencySlug)}/compliance`;
 
   return `
 FindConstructionStaffing - Compliance Document Update
