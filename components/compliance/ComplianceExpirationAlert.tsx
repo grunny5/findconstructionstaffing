@@ -109,7 +109,6 @@ export function ComplianceExpirationAlert({
     setIsDismissed(true);
   };
 
-  // Filter out items that aren't expiring within 30 days or are already expired
   const relevantItems = expiringItems.filter((item) => {
     if (!item.expirationDate) return false;
     const days = daysUntilExpiration(item.expirationDate);

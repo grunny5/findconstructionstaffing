@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  */
-import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/agencies/[slug]/route';
 import { Agency } from '@/types/api';
 import {
   createMultiTableMock,
+  createTestRequest,
   type SupabaseMock,
 } from '@/__tests__/utils/multi-table-mock';
 
@@ -98,10 +98,10 @@ describe('Agency Profile Page API Tests', () => {
       agency_compliance: { data: [] },
     });
 
-    const request = new Request(
+    const request = createTestRequest(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as NextRequest, {
+    const response = await GET(request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -122,10 +122,10 @@ describe('Agency Profile Page API Tests', () => {
       agency_compliance: { data: [] },
     });
 
-    const request = new Request(
+    const request = createTestRequest(
       'http://localhost:3000/api/agencies/non-existent'
     );
-    const response = await GET(request as unknown as NextRequest, {
+    const response = await GET(request, {
       params: { slug: 'non-existent' },
     });
 
@@ -144,10 +144,10 @@ describe('Agency Profile Page API Tests', () => {
       agency_compliance: { data: [] },
     });
 
-    const request = new Request(
+    const request = createTestRequest(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as NextRequest, {
+    const response = await GET(request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -158,8 +158,8 @@ describe('Agency Profile Page API Tests', () => {
   });
 
   it('should validate slug parameter', async () => {
-    const request = new Request('http://localhost:3000/api/agencies/');
-    const response = await GET(request as unknown as NextRequest, {
+    const request = createTestRequest('http://localhost:3000/api/agencies/');
+    const response = await GET(request, {
       params: { slug: '' },
     });
 
@@ -183,10 +183,10 @@ describe('Agency Profile Page API Tests', () => {
       agency_compliance: { data: [] },
     });
 
-    const request = new Request(
+    const request = createTestRequest(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as NextRequest, {
+    const response = await GET(request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -219,10 +219,10 @@ describe('Agency Profile Page API Tests', () => {
       },
     });
 
-    const request = new Request(
+    const request = createTestRequest(
       'http://localhost:3000/api/agencies/elite-construction-staffing'
     );
-    const response = await GET(request as unknown as NextRequest, {
+    const response = await GET(request, {
       params: { slug: 'elite-construction-staffing' },
     });
 
@@ -231,6 +231,12 @@ describe('Agency Profile Page API Tests', () => {
     expect(data.data).toBeDefined();
     expect(data.data.compliance).toBeDefined();
     expect(data.data.compliance).toHaveLength(1);
-    expect(data.data.compliance[0].type).toBe('osha_certified');
+    expect(data.data.compliance[0]).toEqual({
+      type: 'osha_certified',
+      displayName: 'OSHA Certified',
+      isVerified: true,
+      expirationDate: '2026-12-31',
+      isExpired: false,
+    });
   });
 });

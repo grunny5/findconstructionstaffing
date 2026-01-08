@@ -357,7 +357,12 @@ const createMockDirectoryFilters = () => {
 
         <button
           onClick={() =>
-            updateFilters({ search: '', trades: [], states: [], compliance: [] })
+            updateFilters({
+              search: '',
+              trades: [],
+              states: [],
+              compliance: [],
+            })
           }
           data-testid="clear-all-filters-button"
           aria-label="Clear all applied filters"

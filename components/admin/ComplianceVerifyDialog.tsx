@@ -58,7 +58,9 @@ const isImageFile = (url: string | null): boolean => {
   // Strip query parameters for signed URLs before checking extension
   const urlWithoutQuery = url.split('?')[0];
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-  return imageExtensions.some((ext) => urlWithoutQuery.toLowerCase().endsWith(ext));
+  return imageExtensions.some((ext) =>
+    urlWithoutQuery.toLowerCase().endsWith(ext)
+  );
 };
 
 /**

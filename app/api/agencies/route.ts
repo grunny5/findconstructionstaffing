@@ -642,7 +642,12 @@ export async function GET(request: NextRequest) {
     const metrics = monitor.complete(HTTP_STATUS.OK, undefined, {
       resultCount: agenciesWithCompliance.length,
       totalCount: totalCount || 0,
-      hasFilters: !!(sanitizedSearch || trades?.length || states?.length || compliance?.length),
+      hasFilters: !!(
+        sanitizedSearch ||
+        trades?.length ||
+        states?.length ||
+        compliance?.length
+      ),
     });
     errorTracker.recordRequest('/api/agencies', false);
 

@@ -5,6 +5,23 @@
  * without repeating brittle any-heavy patterns in each test.
  */
 
+import { NextRequest } from 'next/server';
+
+/**
+ * Creates a NextRequest instance for testing API route handlers.
+ * Uses the NextRequest constructor which accepts a Request object.
+ *
+ * @param url - The URL string for the request
+ * @param init - Optional RequestInit options
+ * @returns A NextRequest instance
+ */
+export function createTestRequest(
+  url: string,
+  init?: RequestInit
+): NextRequest {
+  return new NextRequest(url, init);
+}
+
 interface TableMockConfig<T = unknown> {
   data: T[];
   error?: unknown;
@@ -89,18 +106,29 @@ export function createMultiTableMock(
     const { data, error = null, count } = tableConfig;
 
     type PromiseResult<T> = Promise<{
-      data: T[];
+      data: T[] | T | null;
       error: unknown | null;
       count?: number;
     }>;
 
-    const promiseResult: PromiseResult<(typeof data)[number]> = Promise.resolve(
-      {
+    // Track whether .single() was called
+    let isSingleQuery = false;
+
+    const getPromiseResult = (): PromiseResult<(typeof data)[number]> => {
+      if (isSingleQuery) {
+        // .single() returns the first element or null, not an array
+        return Promise.resolve({
+          data: data.length > 0 ? data[0] : null,
+          error,
+          ...(count !== undefined && { count }),
+        });
+      }
+      return Promise.resolve({
         data,
         error,
         ...(count !== undefined && { count }),
-      }
-    );
+      });
+    };
 
     // Declare result first to avoid circular reference
     let result: PromiseResult<(typeof data)[number]> & ChainMethods;
@@ -137,7 +165,9 @@ export function createMultiTableMock(
       }),
       single: jest.fn((...args: unknown[]) => {
         supabaseMock.single(...args);
-        return result;
+        isSingleQuery = true;
+        // Return a new promise that resolves with single data
+        return Object.assign(getPromiseResult(), chainMethods);
       }),
       update: jest.fn((...args: unknown[]) => {
         supabaseMock.update(...args);
@@ -158,7 +188,7 @@ export function createMultiTableMock(
     };
 
     // Combine promise with chain methods
-    result = Object.assign(promiseResult, chainMethods);
+    result = Object.assign(getPromiseResult(), chainMethods);
     return result;
   });
 }
