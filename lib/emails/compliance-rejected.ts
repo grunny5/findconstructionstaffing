@@ -227,6 +227,6 @@ If you have questions about this decision or need assistance, please contact our
 
 You're receiving this email because you manage ${agencyName} on FindConstructionStaffing.
 
-${siteUrl}
+${validatedSiteUrl}
   `.trim();
 }

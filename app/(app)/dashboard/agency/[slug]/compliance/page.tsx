@@ -56,11 +56,18 @@ export default async function CompliancePage({ params }: CompliancePageProps) {
   }
 
   // Fetch compliance data
-  const { data: complianceData } = await supabase
+  const { data: complianceData, error: complianceError } = await supabase
     .from('agency_compliance')
     .select('*')
     .eq('agency_id', agency.id)
     .order('compliance_type');
+
+  if (complianceError) {
+    console.error(
+      `Failed to fetch compliance data for agency ${agency.id}:`,
+      complianceError
+    );
+  }
 
   return (
     <div className="space-y-6">

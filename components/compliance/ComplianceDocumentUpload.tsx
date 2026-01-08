@@ -16,7 +16,7 @@ import Image from 'next/image';
 import type { ComplianceType } from '@/types/api';
 
 const ACCEPTED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
-const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpeg'];
+const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpeg', '.jpg'];
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
