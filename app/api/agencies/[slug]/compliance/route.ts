@@ -107,7 +107,7 @@ export async function GET(
 
     // Transform database rows to public ComplianceItem format
     const complianceItems: ComplianceItem[] = (
-      complianceRows as AgencyComplianceRow[]
+      (complianceRows || []) as AgencyComplianceRow[]
     ).map(toComplianceItem);
 
     // Return with cache headers (5 minutes)

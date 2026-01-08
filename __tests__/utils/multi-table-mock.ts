@@ -14,7 +14,7 @@ interface TableMockConfig<T = unknown> {
 type MultiTableMockConfig = Record<string, TableMockConfig>;
 
 type ChainMethods = Record<
-  'select' | 'eq' | 'in' | 'or' | 'range' | 'order',
+  'select' | 'eq' | 'in' | 'or' | 'range' | 'order' | 'single',
   jest.Mock
 >;
 
@@ -26,6 +26,7 @@ interface SupabaseMock {
   or: jest.Mock;
   range: jest.Mock;
   order: jest.Mock;
+  single: jest.Mock;
 }
 
 /**
@@ -56,6 +57,7 @@ export function createMultiTableMock(
         or: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
+        single: jest.fn().mockReturnThis(),
       };
       return Object.assign(
         Promise.resolve({ data: [], error: null, count: 0 }),
@@ -104,6 +106,10 @@ export function createMultiTableMock(
       }),
       order: jest.fn((...args: unknown[]) => {
         supabaseMock.order(...args);
+        return result;
+      }),
+      single: jest.fn((...args: unknown[]) => {
+        supabaseMock.single(...args);
         return result;
       }),
     };

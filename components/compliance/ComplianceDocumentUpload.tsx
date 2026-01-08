@@ -15,13 +15,8 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import type { ComplianceType } from '@/types/api';
 
-const ACCEPTED_MIME_TYPES = [
-  'application/pdf',
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-];
-const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg'];
+const ACCEPTED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpeg'];
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
@@ -85,7 +80,7 @@ export function ComplianceDocumentUpload({
 
       if (!isValidFileType(file)) {
         setValidationError(
-          'Invalid file type. Please upload a PDF, PNG, or JPG file.'
+          'Invalid file type. Please upload a PDF, PNG, or JPEG file.'
         );
         return;
       }
@@ -312,7 +307,7 @@ export function ComplianceDocumentUpload({
               or click to browse
             </p>
             <p className="text-xs text-muted-foreground">
-              PDF, PNG, or JPG (max {MAX_FILE_SIZE_MB}MB)
+              PDF, PNG, or JPEG (max {MAX_FILE_SIZE_MB}MB)
             </p>
           </div>
         )}

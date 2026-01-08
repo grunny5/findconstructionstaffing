@@ -35,7 +35,9 @@ CREATE INDEX IF NOT EXISTS idx_agency_compliance_expiration ON agency_compliance
 
 -- Create trigger to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_agency_compliance_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = pg_catalog, public
+AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;

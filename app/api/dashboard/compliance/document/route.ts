@@ -15,12 +15,7 @@ import type { ComplianceType } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
 
-const ACCEPTED_MIME_TYPES = [
-  'application/pdf',
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-];
+const ACCEPTED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 const STORAGE_BUCKET = 'compliance-documents';
 
@@ -145,7 +140,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: {
           code: ERROR_CODES.VALIDATION_ERROR,
-          message: 'Invalid file type. Accepted types: PDF, PNG, JPG',
+          message: 'Invalid file type. Accepted types: PDF, PNG, JPEG',
         },
       },
       { status: HTTP_STATUS.BAD_REQUEST }

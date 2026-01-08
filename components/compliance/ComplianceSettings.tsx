@@ -228,6 +228,16 @@ export function ComplianceSettings({
       const data = Object.values(formData);
       await onSave(data);
       setIsDirty(false);
+    } catch (error) {
+      console.error('Failed to save compliance settings:', error);
+      toast({
+        title: 'Save failed',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to save compliance settings',
+        variant: 'destructive',
+      });
     } finally {
       setIsSaving(false);
     }
