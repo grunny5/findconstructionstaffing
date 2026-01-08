@@ -347,7 +347,12 @@ export async function GET(request: NextRequest) {
         result.sent30DayReminders += items.length;
         result.processedAgencies.push(agencyId);
       } else {
-        result.errors.push(`Failed to send 30-day reminder to ${owner.email}`);
+        console.error(
+          `[Cron] Failed to send 30-day reminder to ${owner.email} for agency ${agencyId}`
+        );
+        result.errors.push(
+          `Failed to send 30-day reminder for agency ${agencyId}`
+        );
       }
     }
 
@@ -367,7 +372,12 @@ export async function GET(request: NextRequest) {
           result.processedAgencies.push(agencyId);
         }
       } else {
-        result.errors.push(`Failed to send 7-day reminder to ${owner.email}`);
+        console.error(
+          `[Cron] Failed to send 7-day reminder to ${owner.email} for agency ${agencyId}`
+        );
+        result.errors.push(
+          `Failed to send 7-day reminder for agency ${agencyId}`
+        );
       }
     }
 
