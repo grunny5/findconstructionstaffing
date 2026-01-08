@@ -76,7 +76,7 @@ export async function POST(
       return NextResponse.json(
         {
           error: {
-            code: ERROR_CODES.UNAUTHORIZED,
+            code: ERROR_CODES.FORBIDDEN,
             message: 'Forbidden: Admin access required',
           },
         },

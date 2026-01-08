@@ -5,7 +5,7 @@
  * Uses urgent styling to emphasize the approaching deadline.
  */
 
-import { escapeHtml } from './utils';
+import { escapeHtml, validateSiteUrl } from './utils';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
@@ -49,7 +49,8 @@ export function generateComplianceExpiring7HTML(
   const safeRecipientName = recipientName
     ? escapeHtml(recipientName)
     : undefined;
-  const dashboardUrl = `${siteUrl}/dashboard/compliance`;
+  const safeSiteUrl = validateSiteUrl(siteUrl);
+  const dashboardUrl = `${safeSiteUrl}/dashboard/compliance`;
 
   // Build list of expiring items
   const itemsList = expiringItems
@@ -166,7 +167,7 @@ export function generateComplianceExpiring7HTML(
                 Need help? Contact us at <a href="mailto:support@findconstructionstaffing.com" style="color: #2563eb; text-decoration: none;">support@findconstructionstaffing.com</a>
               </p>
               <p style="margin: 8px 0 0 0; font-size: 14px; color: #6b7280;">
-                <a href="${siteUrl}" style="color: #2563eb; text-decoration: none;">FindConstructionStaffing</a>
+                <a href="${safeSiteUrl}" style="color: #2563eb; text-decoration: none;">FindConstructionStaffing</a>
               </p>
             </td>
           </tr>
@@ -187,7 +188,8 @@ export function generateComplianceExpiring7Text(
 ): string {
   const { recipientName, agencyName, expiringItems, siteUrl } = params;
 
-  const dashboardUrl = `${siteUrl}/dashboard/compliance`;
+  const safeSiteUrl = validateSiteUrl(siteUrl);
+  const dashboardUrl = `${safeSiteUrl}/dashboard/compliance`;
   const itemCount = expiringItems.length;
   const itemWord = itemCount === 1 ? 'certification' : 'certifications';
 
@@ -231,6 +233,6 @@ You're receiving this email because you manage ${agencyName} on FindConstruction
 
 Need help? Contact us at support@findconstructionstaffing.com
 
-${siteUrl}
+${safeSiteUrl}
   `.trim();
 }

@@ -7,6 +7,7 @@ import {
   supabaseMockHelpers,
   resetSupabaseMock,
 } from '@/__tests__/utils/supabase-mock';
+import { createMultiTableMock } from '@/__tests__/utils/multi-table-mock';
 import { supabase } from '@/lib/supabase';
 import {
   isErrorResponse,
@@ -353,68 +354,10 @@ describe('GET /api/agencies', () => {
         defaultCount: 1,
       });
 
-      // Use mockImplementation to handle different tables
-      (supabase as any).from.mockImplementation((table: string) => {
-        if (table === 'agency_compliance') {
-          const compliancePromise = Promise.resolve({
-            data: mockComplianceData,
-            error: null,
-          });
-          // Declare with explicit type to avoid circular reference
-          let complianceResult: Promise<any> & any;
-          const complianceChain: any = {
-            select: jest.fn((...args) => {
-              (supabase as any).select(...args);
-              return complianceResult;
-            }),
-            in: jest.fn((...args) => {
-              (supabase as any).in(...args);
-              return complianceResult;
-            }),
-            eq: jest.fn((...args) => {
-              (supabase as any).eq(...args);
-              return complianceResult;
-            }),
-          };
-          complianceResult = Object.assign(compliancePromise, complianceChain);
-          return complianceResult;
-        }
-        // Default agencies table behavior
-        const agenciesPromise = Promise.resolve({
-          data: mockAgencies,
-          error: null,
-          count: 1,
-        });
-        // Declare with explicit type to avoid circular reference
-        let agenciesResult: Promise<any> & any;
-        const agenciesChain: any = {
-          select: jest.fn((...args) => {
-            (supabase as any).select(...args);
-            return agenciesResult;
-          }),
-          eq: jest.fn((...args) => {
-            (supabase as any).eq(...args);
-            return agenciesResult;
-          }),
-          in: jest.fn((...args) => {
-            (supabase as any).in(...args);
-            return agenciesResult;
-          }),
-          or: jest.fn((...args) => {
-            (supabase as any).or(...args);
-            return agenciesResult;
-          }),
-          range: jest.fn((...args) => {
-            (supabase as any).range(...args);
-            return agenciesResult;
-          }),
-          order: jest.fn((...args) => {
-            (supabase as any).order(...args);
-            return agenciesResult;
-          }),
-        };
-        agenciesResult = Object.assign(agenciesPromise, agenciesChain);
-        return agenciesResult;
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase, {
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: mockAgencies, count: 1 },
       });
 
       const mockRequest = createMockNextRequest({
@@ -457,68 +400,10 @@ describe('GET /api/agencies', () => {
         defaultCount: 1,
       });
 
-      // Use mockImplementation to handle different tables
-      (supabase as any).from.mockImplementation((table: string) => {
-        if (table === 'agency_compliance') {
-          const compliancePromise = Promise.resolve({
-            data: mockComplianceData,
-            error: null,
-          });
-          // Declare with explicit type to avoid circular reference
-          let complianceResult: Promise<any> & any;
-          const complianceChain: any = {
-            select: jest.fn((...args) => {
-              (supabase as any).select(...args);
-              return complianceResult;
-            }),
-            in: jest.fn((...args) => {
-              (supabase as any).in(...args);
-              return complianceResult;
-            }),
-            eq: jest.fn((...args) => {
-              (supabase as any).eq(...args);
-              return complianceResult;
-            }),
-          };
-          complianceResult = Object.assign(compliancePromise, complianceChain);
-          return complianceResult;
-        }
-        // Default agencies table behavior
-        const agenciesPromise = Promise.resolve({
-          data: mockAgencies,
-          error: null,
-          count: 1,
-        });
-        // Declare with explicit type to avoid circular reference
-        let agenciesResult: Promise<any> & any;
-        const agenciesChain: any = {
-          select: jest.fn((...args) => {
-            (supabase as any).select(...args);
-            return agenciesResult;
-          }),
-          eq: jest.fn((...args) => {
-            (supabase as any).eq(...args);
-            return agenciesResult;
-          }),
-          in: jest.fn((...args) => {
-            (supabase as any).in(...args);
-            return agenciesResult;
-          }),
-          or: jest.fn((...args) => {
-            (supabase as any).or(...args);
-            return agenciesResult;
-          }),
-          range: jest.fn((...args) => {
-            (supabase as any).range(...args);
-            return agenciesResult;
-          }),
-          order: jest.fn((...args) => {
-            (supabase as any).order(...args);
-            return agenciesResult;
-          }),
-        };
-        agenciesResult = Object.assign(agenciesPromise, agenciesChain);
-        return agenciesResult;
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase, {
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: mockAgencies, count: 1 },
       });
 
       const mockRequest = createMockNextRequest({
@@ -561,111 +446,12 @@ describe('GET /api/agencies', () => {
         defaultCount: 1,
       });
 
-      // Use mockImplementation to handle different tables
-      (supabase as any).from.mockImplementation((table: string) => {
-        if (table === 'trades') {
-          const tradesPromise = Promise.resolve({
-            data: mockTradeData,
-            error: null,
-          });
-          // Declare with explicit type to avoid circular reference
-          let tradesResult: Promise<any> & any;
-          const tradesChain: any = {
-            select: jest.fn((...args) => {
-              (supabase as any).select(...args);
-              return tradesResult;
-            }),
-            in: jest.fn((...args) => {
-              (supabase as any).in(...args);
-              return tradesResult;
-            }),
-          };
-          tradesResult = Object.assign(tradesPromise, tradesChain);
-          return tradesResult;
-        }
-        if (table === 'agency_trades') {
-          const agencyTradesPromise = Promise.resolve({
-            data: mockAgencyTradeData,
-            error: null,
-          });
-          // Declare with explicit type to avoid circular reference
-          let agencyTradesResult: Promise<any> & any;
-          const agencyTradesChain: any = {
-            select: jest.fn((...args) => {
-              (supabase as any).select(...args);
-              return agencyTradesResult;
-            }),
-            in: jest.fn((...args) => {
-              (supabase as any).in(...args);
-              return agencyTradesResult;
-            }),
-          };
-          agencyTradesResult = Object.assign(
-            agencyTradesPromise,
-            agencyTradesChain
-          );
-          return agencyTradesResult;
-        }
-        if (table === 'agency_compliance') {
-          const compliancePromise = Promise.resolve({
-            data: mockComplianceData,
-            error: null,
-          });
-          // Declare with explicit type to avoid circular reference
-          let complianceResult: Promise<any> & any;
-          const complianceChain: any = {
-            select: jest.fn((...args) => {
-              (supabase as any).select(...args);
-              return complianceResult;
-            }),
-            in: jest.fn((...args) => {
-              (supabase as any).in(...args);
-              return complianceResult;
-            }),
-            eq: jest.fn((...args) => {
-              (supabase as any).eq(...args);
-              return complianceResult;
-            }),
-          };
-          complianceResult = Object.assign(compliancePromise, complianceChain);
-          return complianceResult;
-        }
-        // Default agencies table behavior
-        const agenciesPromise = Promise.resolve({
-          data: mockAgencies,
-          error: null,
-          count: 1,
-        });
-        // Declare with explicit type to avoid circular reference
-        let agenciesResult: Promise<any> & any;
-        const agenciesChain: any = {
-          select: jest.fn((...args) => {
-            (supabase as any).select(...args);
-            return agenciesResult;
-          }),
-          eq: jest.fn((...args) => {
-            (supabase as any).eq(...args);
-            return agenciesResult;
-          }),
-          in: jest.fn((...args) => {
-            (supabase as any).in(...args);
-            return agenciesResult;
-          }),
-          or: jest.fn((...args) => {
-            (supabase as any).or(...args);
-            return agenciesResult;
-          }),
-          range: jest.fn((...args) => {
-            (supabase as any).range(...args);
-            return agenciesResult;
-          }),
-          order: jest.fn((...args) => {
-            (supabase as any).order(...args);
-            return agenciesResult;
-          }),
-        };
-        agenciesResult = Object.assign(agenciesPromise, agenciesChain);
-        return agenciesResult;
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase, {
+        trades: { data: mockTradeData },
+        agency_trades: { data: mockAgencyTradeData },
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: mockAgencies, count: 1 },
       });
 
       const mockRequest = createMockNextRequest({
@@ -699,32 +485,10 @@ describe('GET /api/agencies', () => {
         defaultCount: 0,
       });
 
-      // Use mockImplementation to handle different tables
-      (supabase as any).from.mockImplementation((table: string) => {
-        if (table === 'agency_compliance') {
-          const complianceChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-          };
-          return Object.assign(
-            Promise.resolve({ data: [], error: null }),
-            complianceChain
-          );
-        }
-        // Default agencies table behavior
-        const agenciesChain = {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          in: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
-          range: jest.fn().mockReturnThis(),
-          order: jest.fn().mockReturnThis(),
-        };
-        return Object.assign(
-          Promise.resolve({ data: [], error: null, count: 0 }),
-          agenciesChain
-        );
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase, {
+        agency_compliance: { data: [] },
+        agencies: { data: [], count: 0 },
       });
 
       const mockRequest = createMockNextRequest({
@@ -751,32 +515,10 @@ describe('GET /api/agencies', () => {
         defaultCount: 0,
       });
 
-      // Use mockImplementation to handle different tables
-      (supabase as any).from.mockImplementation((table: string) => {
-        if (table === 'agency_compliance') {
-          const complianceChain = {
-            select: jest.fn().mockReturnThis(),
-            in: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-          };
-          return Object.assign(
-            Promise.resolve({ data: mockComplianceData, error: null }),
-            complianceChain
-          );
-        }
-        // Default agencies table behavior
-        const agenciesChain = {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          in: jest.fn().mockReturnThis(),
-          or: jest.fn().mockReturnThis(),
-          range: jest.fn().mockReturnThis(),
-          order: jest.fn().mockReturnThis(),
-        };
-        return Object.assign(
-          Promise.resolve({ data: [], error: null, count: 0 }),
-          agenciesChain
-        );
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase, {
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: [], count: 0 },
       });
 
       const mockRequest = createMockNextRequest({

@@ -5,7 +5,7 @@
  * Provides advance notice to allow time for renewal.
  */
 
-import { escapeHtml } from './utils';
+import { escapeHtml, validateSiteUrl } from './utils';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   COMPLIANCE_DESCRIPTIONS,
@@ -49,7 +49,8 @@ export function generateComplianceExpiring30HTML(
   const safeRecipientName = recipientName
     ? escapeHtml(recipientName)
     : undefined;
-  const dashboardUrl = `${siteUrl}/dashboard/compliance`;
+  const safeSiteUrl = validateSiteUrl(siteUrl);
+  const dashboardUrl = `${safeSiteUrl}/dashboard/compliance`;
 
   // Build list of expiring items
   const itemsList = expiringItems
@@ -162,7 +163,7 @@ export function generateComplianceExpiring30HTML(
                 You're receiving this email because you manage <strong>${safeAgencyName}</strong> on FindConstructionStaffing.
               </p>
               <p style="margin: 8px 0 0 0; font-size: 14px; color: #6b7280;">
-                <a href="${siteUrl}" style="color: #2563eb; text-decoration: none;">FindConstructionStaffing</a>
+                <a href="${safeSiteUrl}" style="color: #2563eb; text-decoration: none;">FindConstructionStaffing</a>
               </p>
             </td>
           </tr>
@@ -183,7 +184,8 @@ export function generateComplianceExpiring30Text(
 ): string {
   const { recipientName, agencyName, expiringItems, siteUrl } = params;
 
-  const dashboardUrl = `${siteUrl}/dashboard/compliance`;
+  const safeSiteUrl = validateSiteUrl(siteUrl);
+  const dashboardUrl = `${safeSiteUrl}/dashboard/compliance`;
   const itemCount = expiringItems.length;
   const itemWord = itemCount === 1 ? 'certification' : 'certifications';
 
@@ -223,6 +225,6 @@ Maintaining current compliance certifications helps contractors find your agency
 
 You're receiving this email because you manage ${agencyName} on FindConstructionStaffing.
 
-${siteUrl}
+${safeSiteUrl}
   `.trim();
 }
