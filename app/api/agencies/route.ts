@@ -6,6 +6,9 @@ import {
   HTTP_STATUS,
   ERROR_CODES,
   API_CONSTANTS,
+  toComplianceItem,
+  type AgencyComplianceRow,
+  type ComplianceItem,
 } from '@/types/api';
 import { createHash } from 'crypto';
 import {
@@ -535,6 +538,40 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Fetch compliance data for all returned agencies
+    const agencyIds = transformedAgencies.map((a) => a.id);
+    let complianceMap = new Map<string, ComplianceItem[]>();
+
+    if (agencyIds.length > 0) {
+      const complianceQueryId = monitor.startQuery();
+      const { data: complianceData } = await queryWithRetry(async () =>
+        supabase
+          .from('agency_compliance')
+          .select(
+            'id, agency_id, compliance_type, is_active, is_verified, expiration_date'
+          )
+          .in('agency_id', agencyIds)
+          .eq('is_active', true)
+      );
+      monitor.endQuery(complianceQueryId);
+
+      // Build compliance map by agency ID
+      if (complianceData) {
+        for (const row of complianceData as AgencyComplianceRow[]) {
+          if (!complianceMap.has(row.agency_id)) {
+            complianceMap.set(row.agency_id, []);
+          }
+          complianceMap.get(row.agency_id)!.push(toComplianceItem(row));
+        }
+      }
+    }
+
+    // Attach compliance data to each agency
+    const agenciesWithCompliance = transformedAgencies.map((agency) => ({
+      ...agency,
+      compliance: complianceMap.get(agency.id) || [],
+    }));
+
     // Get total count for pagination with same filters applied
     const countQueryId = monitor.startQuery();
     let countQuery = supabase
@@ -562,7 +599,7 @@ export async function GET(request: NextRequest) {
 
     // Build the response
     const response: AgenciesApiResponse = {
-      data: transformedAgencies,
+      data: agenciesWithCompliance,
       pagination: {
         total: totalCount || 0,
         limit,
@@ -603,9 +640,9 @@ export async function GET(request: NextRequest) {
 
     // Complete monitoring with success metrics
     const metrics = monitor.complete(HTTP_STATUS.OK, undefined, {
-      resultCount: transformedAgencies.length,
+      resultCount: agenciesWithCompliance.length,
       totalCount: totalCount || 0,
-      hasFilters: !!(sanitizedSearch || trades?.length || states?.length),
+      hasFilters: !!(sanitizedSearch || trades?.length || states?.length || compliance?.length),
     });
     errorTracker.recordRequest('/api/agencies', false);
 

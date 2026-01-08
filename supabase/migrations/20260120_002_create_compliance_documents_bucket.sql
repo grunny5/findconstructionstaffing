@@ -37,7 +37,7 @@ USING (
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(name))[1] = agencies.id::text
+    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
   )
 );
 
@@ -65,7 +65,7 @@ WITH CHECK (
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(name))[1] = agencies.id::text
+    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
   )
 );
 
@@ -93,7 +93,7 @@ USING (
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(name))[1] = agencies.id::text
+    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
   )
 )
 WITH CHECK (
@@ -101,7 +101,7 @@ WITH CHECK (
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(name))[1] = agencies.id::text
+    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
   )
 );
 
@@ -137,7 +137,7 @@ USING (
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(name))[1] = agencies.id::text
+    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
   )
 );
 

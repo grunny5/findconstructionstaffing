@@ -94,14 +94,16 @@ export function createMultiTableMock(
       count?: number;
     }>;
 
-    const promiseResult: PromiseResult<typeof data[number]> = Promise.resolve({
-      data,
-      error,
-      ...(count !== undefined && { count }),
-    });
+    const promiseResult: PromiseResult<(typeof data)[number]> = Promise.resolve(
+      {
+        data,
+        error,
+        ...(count !== undefined && { count }),
+      }
+    );
 
     // Declare result first to avoid circular reference
-    let result: PromiseResult<typeof data[number]> & ChainMethods;
+    let result: PromiseResult<(typeof data)[number]> & ChainMethods;
 
     // Create the chain methods that delegate to the global mock
     const chainMethods: ChainMethods = {

@@ -124,8 +124,12 @@ async function groupItemsByAgency(
     .in('id', agencyIds)
     .not('claimed_by', 'is', null);
 
-  if (agencyError || !agencies) {
+  if (agencyError) {
     console.error('[Cron] Error fetching agencies:', agencyError);
+    throw new Error(`Failed to fetch agencies: ${agencyError.message}`);
+  }
+
+  if (!agencies) {
     return new Map();
   }
 
@@ -153,8 +157,12 @@ async function groupItemsByAgency(
     .select('id, email, full_name')
     .in('id', ownerIds);
 
-  if (profileError || !profiles) {
+  if (profileError) {
     console.error('[Cron] Error fetching profiles:', profileError);
+    throw new Error(`Failed to fetch profiles: ${profileError.message}`);
+  }
+
+  if (!profiles) {
     return new Map();
   }
 
@@ -199,6 +207,13 @@ async function groupItemsByAgency(
 
 /**
  * Send reminder email and update tracking
+ *
+ * Uses idempotent update-then-send pattern:
+ * 1. Update tracking timestamp FIRST (prevents duplicate sends on retry)
+ * 2. Send email after tracking is updated
+ *
+ * If tracking update fails: email is not sent (no duplicates)
+ * If email fails after tracking: wasRecentlySent() prevents retry within 24h
  */
 async function sendReminder(
   owner: AgencyOwner,
@@ -207,7 +222,30 @@ async function sendReminder(
   resend: Resend,
   siteUrl: string
 ): Promise<boolean> {
+  const now = new Date().toISOString();
+  const updateField =
+    reminderType === '30'
+      ? 'last_30_day_reminder_sent'
+      : 'last_7_day_reminder_sent';
+  const itemIds = items.map((item) => item.id);
+
   try {
+    // STEP 1: Update tracking FIRST (idempotent - prevents duplicate sends on retry)
+    const { error: updateError } = await supabase
+      .from('agency_compliance')
+      .update({ [updateField]: now })
+      .in('id', itemIds);
+
+    if (updateError) {
+      console.error(
+        `[Cron] Failed to update ${updateField} for items (email NOT sent):`,
+        itemIds,
+        updateError
+      );
+      return false;
+    }
+
+    // STEP 2: Send email AFTER tracking is updated
     const expiringItems = items.map((item) => ({
       complianceType: item.compliance_type,
       expirationDate: item.expiration_date,
@@ -243,33 +281,13 @@ async function sendReminder(
       text,
     });
 
-    // Update tracking for all items in a single batch query
-    const now = new Date().toISOString();
-    const updateField =
-      reminderType === '30'
-        ? 'last_30_day_reminder_sent'
-        : 'last_7_day_reminder_sent';
-
-    const itemIds = items.map((item) => item.id);
-    const { error: updateError } = await supabase
-      .from('agency_compliance')
-      .update({ [updateField]: now })
-      .in('id', itemIds);
-
-    if (updateError) {
-      console.error(
-        `[Cron] Failed to update ${updateField} for items:`,
-        itemIds,
-        updateError
-      );
-      return false;
-    }
-
     console.log(
       `[Cron] Sent ${reminderType}-day reminder to ${owner.email} for ${items.length} items`
     );
     return true;
   } catch (error) {
+    // If email send fails after tracking update, wasRecentlySent() will prevent
+    // retry within 24 hours, avoiding duplicate sends
     console.error(
       `[Cron] Failed to send ${reminderType}-day reminder to ${owner.email}:`,
       error

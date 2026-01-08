@@ -29,19 +29,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, ExternalLink, FileWarning } from 'lucide-react';
-import { COMPLIANCE_DISPLAY_NAMES, type ComplianceType } from '@/types/api';
+import {
+  COMPLIANCE_DISPLAY_NAMES,
+  type ComplianceType,
+  type AgencyComplianceRow,
+} from '@/types/api';
 
-interface ComplianceDataRow {
-  id: string;
-  agency_id: string;
-  compliance_type: ComplianceType;
-  is_active: boolean;
-  is_verified: boolean;
-  verified_by: string | null;
-  verified_at: string | null;
-  document_url: string | null;
-  expiration_date: string | null;
-  notes: string | null;
+/**
+ * Extended compliance row type that includes joined agency data
+ * Reuses AgencyComplianceRow from types/api.ts and adds the nested agencies object
+ */
+interface ComplianceDataRow
+  extends Omit<AgencyComplianceRow, 'created_at' | 'updated_at'> {
   agencies: {
     id: string;
     name: string;
@@ -84,18 +83,22 @@ function daysUntilExpiration(expirationDate: string): number {
 
 /**
  * Determine status of compliance item
+ * Priority: expired > expiring_soon > pending_verification > ok
+ * Expiration is more urgent than verification status
  */
 function getComplianceStatus(
   item: ComplianceDataRow
 ): 'expired' | 'expiring_soon' | 'pending_verification' | 'ok' {
-  if (!item.is_verified && item.document_url) {
-    return 'pending_verification';
-  }
-
+  // Check expiration first - expired items are highest priority
   if (item.expiration_date) {
     const days = daysUntilExpiration(item.expiration_date);
     if (days < 0) return 'expired';
     if (days <= 30) return 'expiring_soon';
+  }
+
+  // Check verification status after expiration
+  if (!item.is_verified && item.document_url) {
+    return 'pending_verification';
   }
 
   return 'ok';
