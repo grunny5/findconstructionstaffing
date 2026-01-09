@@ -594,12 +594,14 @@ describe('/api/dashboard/compliance', () => {
 
         expect(response.status).toBe(HTTP_STATUS.OK);
         expect(upsertMock).toHaveBeenCalledWith(
-          {
-            agency_id: 'agency-123',
-            compliance_type: 'osha_certified',
-            is_active: true,
-            expiration_date: '2026-12-31',
-          },
+          [
+            {
+              agency_id: 'agency-123',
+              compliance_type: 'osha_certified',
+              is_active: true,
+              expiration_date: '2026-12-31',
+            },
+          ],
           {
             onConflict: 'agency_id,compliance_type',
             ignoreDuplicates: false,
@@ -656,7 +658,16 @@ describe('/api/dashboard/compliance', () => {
         const data = await response.json();
 
         expect(response.status).toBe(HTTP_STATUS.OK);
-        expect(upsertMock).toHaveBeenCalledTimes(3);
+        // Batched upsert is called once with an array of all items
+        expect(upsertMock).toHaveBeenCalledTimes(1);
+        expect(upsertMock).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ compliance_type: 'osha_certified' }),
+            expect.objectContaining({ compliance_type: 'drug_testing' }),
+            expect.objectContaining({ compliance_type: 'workers_comp' }),
+          ]),
+          expect.any(Object)
+        );
       });
 
       it('sets expiration_date to null when not provided', async () => {
@@ -698,9 +709,11 @@ describe('/api/dashboard/compliance', () => {
         );
 
         expect(upsertMock).toHaveBeenCalledWith(
-          expect.objectContaining({
-            expiration_date: null,
-          }),
+          [
+            expect.objectContaining({
+              expiration_date: null,
+            }),
+          ],
           expect.anything()
         );
       });

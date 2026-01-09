@@ -160,9 +160,8 @@ describe('ComplianceDashboard', () => {
       const user = userEvent.setup();
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        json: async () => ({
-          error: { message: 'Failed to update' },
-        }),
+        text: async () =>
+          JSON.stringify({ error: { message: 'Failed to update' } }),
       });
 
       render(<ComplianceDashboard agencyId={mockAgencyId} initialData={[]} />);

@@ -6,10 +6,18 @@ import { redirect, notFound } from 'next/navigation';
 import CompliancePage from '../page';
 import { createClient } from '@/lib/supabase/server';
 
-// Mock dependencies
+// Mock dependencies - redirect/notFound throw like Next.js does
 jest.mock('next/navigation', () => ({
-  redirect: jest.fn(),
-  notFound: jest.fn(),
+  redirect: jest.fn((url: string) => {
+    const error = new Error(`NEXT_REDIRECT: ${url}`);
+    error.name = 'RedirectError';
+    throw error;
+  }),
+  notFound: jest.fn(() => {
+    const error = new Error('NEXT_NOT_FOUND');
+    error.name = 'NotFoundError';
+    throw error;
+  }),
 }));
 
 jest.mock('@/lib/supabase/server', () => ({
@@ -72,7 +80,9 @@ describe('CompliancePage', () => {
       },
     } as any);
 
-    await CompliancePage({ params: Promise.resolve({ slug: 'test-agency' }) });
+    await expect(
+      CompliancePage({ params: Promise.resolve({ slug: 'test-agency' }) })
+    ).rejects.toThrow('NEXT_REDIRECT: /login');
 
     expect(mockRedirect).toHaveBeenCalledWith('/login');
   });
@@ -97,7 +107,9 @@ describe('CompliancePage', () => {
       }),
     } as any);
 
-    await CompliancePage({ params: Promise.resolve({ slug: 'test-agency' }) });
+    await expect(
+      CompliancePage({ params: Promise.resolve({ slug: 'test-agency' }) })
+    ).rejects.toThrow('NEXT_REDIRECT: /');
 
     expect(mockRedirect).toHaveBeenCalledWith('/');
   });
@@ -138,9 +150,11 @@ describe('CompliancePage', () => {
       }),
     } as any);
 
-    await CompliancePage({
-      params: Promise.resolve({ slug: 'nonexistent-agency' }),
-    });
+    await expect(
+      CompliancePage({
+        params: Promise.resolve({ slug: 'nonexistent-agency' }),
+      })
+    ).rejects.toThrow('NEXT_NOT_FOUND');
 
     expect(mockNotFound).toHaveBeenCalled();
   });
@@ -186,7 +200,9 @@ describe('CompliancePage', () => {
       }),
     } as any);
 
-    await CompliancePage({ params: Promise.resolve({ slug: 'test-agency' }) });
+    await expect(
+      CompliancePage({ params: Promise.resolve({ slug: 'test-agency' }) })
+    ).rejects.toThrow('NEXT_REDIRECT: /');
 
     expect(mockRedirect).toHaveBeenCalledWith('/');
   });
