@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
-import { timingSafeEqual, randomUUID } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 import {
   generateComplianceExpiring30HTML,
   generateComplianceExpiring30Text,
@@ -284,10 +284,10 @@ async function sendReminder(
       : 'last_7_day_reminder_sent';
   const itemIds = items.map((item) => item.id);
 
-  // Generate idempotency key based on agency, reminder type, and date
+  // Generate deterministic idempotency key based on agency, owner, reminder type, and date
   // This prevents duplicate sends if cron runs multiple times on same day
   const today = new Date().toISOString().split('T')[0];
-  const idempotencyKey = `${owner.agency_id}-${reminderType}day-${today}-${randomUUID().slice(0, 8)}`;
+  const idempotencyKey = `${owner.agency_id}-${owner.id}-${reminderType}day-${today}`;
 
   try {
     // STEP 1: Update tracking FIRST (idempotent - prevents duplicate sends on retry)

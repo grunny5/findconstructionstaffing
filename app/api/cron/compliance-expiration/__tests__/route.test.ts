@@ -44,12 +44,6 @@ jest.mock('@/lib/emails/compliance-expiring-7', () => ({
     .mockReturnValue('7 day reminder text'),
 }));
 
-// Mock crypto for randomUUID
-jest.mock('crypto', () => ({
-  ...jest.requireActual('crypto'),
-  randomUUID: jest.fn(() => 'test-uuid-1234-5678'),
-}));
-
 describe('GET /api/cron/compliance-expiration', () => {
   let mockResendSend: jest.Mock;
 
