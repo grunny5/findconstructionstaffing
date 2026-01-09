@@ -10,6 +10,36 @@ import {
   type ComplianceItemFull,
 } from '@/types/api';
 
+// Mock useToast to prevent global state issues in tests
+jest.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: jest.fn(),
+    toasts: [],
+    dismiss: jest.fn(),
+  }),
+}));
+
+// Mock ComplianceDocumentUpload to speed up tests
+jest.mock('../ComplianceDocumentUpload', () => ({
+  ComplianceDocumentUpload: ({ complianceType }: { complianceType: string }) => (
+    <div data-testid={`document-upload-${complianceType}`}>Document Upload Mock</div>
+  ),
+}));
+
+// Mock lucide-react icons to avoid potential rendering issues
+jest.mock('lucide-react', () => ({
+  CheckCircle2: () => <span data-testid="icon-check" />,
+  AlertCircle: () => <span data-testid="icon-alert" />,
+  Loader2: () => <span data-testid="icon-loader" />,
+  ShieldCheck: () => <span data-testid="icon-shield-check" />,
+  BadgeCheck: () => <span data-testid="icon-badge" />,
+  FlaskConical: () => <span data-testid="icon-flask" />,
+  UserCheck: () => <span data-testid="icon-user" />,
+  HeartHandshake: () => <span data-testid="icon-heart" />,
+  Shield: () => <span data-testid="icon-shield" />,
+  HelpCircle: () => <span data-testid="icon-help" />,
+}));
+
 describe('ComplianceSettings', () => {
   const mockOnSave = jest.fn();
 
