@@ -4,21 +4,23 @@
 
 import { GET } from '../route';
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabase';
 import { Resend } from 'resend';
 
-// Mock Supabase
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn(),
-  },
+// Mock @supabase/supabase-js createClient
+const mockSupabaseFrom = jest.fn();
+jest.mock('@supabase/supabase-js', () => ({
+  createClient: jest.fn(() => ({
+    from: mockSupabaseFrom,
+  })),
 }));
 
 // Mock Resend
 jest.mock('resend', () => ({
   Resend: jest.fn().mockImplementation(() => ({
     emails: {
-      send: jest.fn().mockResolvedValue({ id: 'email-123' }),
+      send: jest
+        .fn()
+        .mockResolvedValue({ data: { id: 'email-123' }, error: null }),
     },
   })),
 }));
@@ -42,8 +44,13 @@ jest.mock('@/lib/emails/compliance-expiring-7', () => ({
     .mockReturnValue('7 day reminder text'),
 }));
 
+// Mock crypto for randomUUID
+jest.mock('crypto', () => ({
+  ...jest.requireActual('crypto'),
+  randomUUID: jest.fn(() => 'test-uuid-1234-5678'),
+}));
+
 describe('GET /api/cron/compliance-expiration', () => {
-  let mockSupabaseFrom: jest.Mock;
   let mockResendSend: jest.Mock;
 
   const originalEnv = process.env;
@@ -57,14 +64,14 @@ describe('GET /api/cron/compliance-expiration', () => {
       CRON_SECRET: 'test-cron-secret',
       RESEND_API_KEY: 'test-resend-key',
       NEXT_PUBLIC_SITE_URL: 'https://test.com',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
     };
 
-    // Set up Supabase mock
-    mockSupabaseFrom = jest.fn();
-    (supabase.from as jest.Mock) = mockSupabaseFrom;
-
     // Set up Resend mock
-    mockResendSend = jest.fn().mockResolvedValue({ id: 'email-123' });
+    mockResendSend = jest
+      .fn()
+      .mockResolvedValue({ data: { id: 'email-123' }, error: null });
     (Resend as jest.Mock).mockImplementation(() => ({
       emails: { send: mockResendSend },
     }));
@@ -118,8 +125,39 @@ describe('GET /api/cron/compliance-expiration', () => {
       expect(data.error).toBe('Unauthorized');
     });
 
+    it('should return 500 if SUPABASE_SERVICE_ROLE_KEY is not configured', async () => {
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/cron/compliance-expiration',
+        {
+          headers: {
+            authorization: 'Bearer test-cron-secret',
+          },
+        }
+      );
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Database configuration error');
+    });
+
     it('should return 500 if RESEND_API_KEY is not configured', async () => {
       delete process.env.RESEND_API_KEY;
+
+      // Mock empty compliance items to get past DB check
+      mockSupabaseFrom.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            not: jest.fn().mockResolvedValue({
+              data: [],
+              error: null,
+            }),
+          }),
+        }),
+      });
 
       const request = new NextRequest(
         'http://localhost:3000/api/cron/compliance-expiration',
@@ -143,7 +181,7 @@ describe('GET /api/cron/compliance-expiration', () => {
       mockSupabaseFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
-            not: jest.fn().mockReturnValue({
+            not: jest.fn().mockResolvedValue({
               data: null,
               error: { message: 'Database error' },
             }),
@@ -236,6 +274,7 @@ describe('GET /api/cron/compliance-expiration', () => {
               {
                 id: 'agency-1',
                 name: 'Test Agency',
+                slug: 'test-agency',
                 claimed_by: 'owner-1',
               },
             ],
@@ -333,15 +372,62 @@ describe('GET /api/cron/compliance-expiration', () => {
         last_7_day_reminder_sent: null,
       };
 
-      mockSupabaseFrom.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            not: jest.fn().mockResolvedValue({
-              data: [mockComplianceItem],
-              error: null,
-            }),
+      // Mock fetching compliance items - returns item with recent reminder
+      const mockSelect = jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [mockComplianceItem],
+            error: null,
           }),
         }),
+      });
+
+      // Mock agencies - return the agency even though reminder won't be sent
+      // (the filtering happens in groupItemsByAgency based on wasRecentlySent)
+      const mockAgencySelect = jest.fn().mockReturnValue({
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [
+              {
+                id: 'agency-1',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                claimed_by: 'owner-1',
+              },
+            ],
+            error: null,
+          }),
+        }),
+      });
+
+      // Mock profiles
+      const mockProfileSelect = jest.fn().mockReturnValue({
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              id: 'owner-1',
+              email: 'owner@test.com',
+              full_name: 'Test Owner',
+            },
+          ],
+          error: null,
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          return {
+            select: mockSelect,
+          };
+        } else if (table === 'agencies') {
+          return {
+            select: mockAgencySelect,
+          };
+        } else if (table === 'profiles') {
+          return {
+            select: mockProfileSelect,
+          };
+        }
       });
 
       const request = new NextRequest(
@@ -396,6 +482,7 @@ describe('GET /api/cron/compliance-expiration', () => {
               {
                 id: 'agency-1',
                 name: 'Test Agency',
+                slug: 'test-agency',
                 claimed_by: 'owner-1',
               },
             ],
@@ -520,6 +607,7 @@ describe('GET /api/cron/compliance-expiration', () => {
               {
                 id: 'agency-1',
                 name: 'Test Agency',
+                slug: 'test-agency',
                 claimed_by: 'owner-1',
               },
             ],
@@ -656,6 +744,208 @@ describe('GET /api/cron/compliance-expiration', () => {
       expect(data.summary.sent30DayReminders).toBe(0);
       expect(data.summary.totalAgenciesNotified).toBe(0);
       expect(mockResendSend).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Invalid Email', () => {
+    it('should skip owners with invalid email addresses', async () => {
+      const now = new Date();
+      const expirationDate = new Date(now);
+      expirationDate.setDate(now.getDate() + 30);
+
+      const mockComplianceItem = {
+        id: 'comp-1',
+        agency_id: 'agency-1',
+        compliance_type: 'osha_certified',
+        expiration_date: expirationDate.toISOString().split('T')[0],
+        last_30_day_reminder_sent: null,
+        last_7_day_reminder_sent: null,
+      };
+
+      // Mock fetching compliance items
+      const mockSelect = jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [mockComplianceItem],
+            error: null,
+          }),
+        }),
+      });
+
+      // Mock agencies
+      const mockAgencySelect = jest.fn().mockReturnValue({
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [
+              {
+                id: 'agency-1',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                claimed_by: 'owner-1',
+              },
+            ],
+            error: null,
+          }),
+        }),
+      });
+
+      // Mock profiles with invalid email
+      const mockProfileSelect = jest.fn().mockReturnValue({
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              id: 'owner-1',
+              email: null, // Invalid email
+              full_name: 'Test Owner',
+            },
+          ],
+          error: null,
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          return {
+            select: mockSelect,
+          };
+        } else if (table === 'agencies') {
+          return {
+            select: mockAgencySelect,
+          };
+        } else if (table === 'profiles') {
+          return {
+            select: mockProfileSelect,
+          };
+        }
+      });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/cron/compliance-expiration',
+        {
+          headers: {
+            authorization: 'Bearer test-cron-secret',
+          },
+        }
+      );
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.summary.sent30DayReminders).toBe(0);
+      expect(mockResendSend).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Email Send Failure', () => {
+    it('should rollback tracking timestamp when email send fails', async () => {
+      const now = new Date();
+      const expirationDate = new Date(now);
+      expirationDate.setDate(now.getDate() + 30);
+
+      const mockComplianceItem = {
+        id: 'comp-1',
+        agency_id: 'agency-1',
+        compliance_type: 'osha_certified',
+        expiration_date: expirationDate.toISOString().split('T')[0],
+        last_30_day_reminder_sent: null,
+        last_7_day_reminder_sent: null,
+      };
+
+      // Mock fetching compliance items
+      const mockSelect = jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [mockComplianceItem],
+            error: null,
+          }),
+        }),
+      });
+
+      // Mock agencies
+      const mockAgencySelect = jest.fn().mockReturnValue({
+        in: jest.fn().mockReturnValue({
+          not: jest.fn().mockResolvedValue({
+            data: [
+              {
+                id: 'agency-1',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                claimed_by: 'owner-1',
+              },
+            ],
+            error: null,
+          }),
+        }),
+      });
+
+      // Mock profiles
+      const mockProfileSelect = jest.fn().mockReturnValue({
+        in: jest.fn().mockResolvedValue({
+          data: [
+            {
+              id: 'owner-1',
+              email: 'owner@test.com',
+              full_name: 'Test Owner',
+            },
+          ],
+          error: null,
+        }),
+      });
+
+      // Track update calls
+      const mockUpdateIn = jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null }),
+      });
+      mockUpdateIn.mockResolvedValueOnce({ error: null }); // First call succeeds (set timestamp)
+
+      const mockUpdate = jest.fn().mockReturnValue({
+        in: mockUpdateIn,
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'agency_compliance') {
+          return {
+            select: mockSelect,
+            update: mockUpdate,
+          };
+        } else if (table === 'agencies') {
+          return {
+            select: mockAgencySelect,
+          };
+        } else if (table === 'profiles') {
+          return {
+            select: mockProfileSelect,
+          };
+        }
+      });
+
+      // Make Resend fail
+      mockResendSend.mockResolvedValue({
+        data: null,
+        error: { message: 'Email service unavailable' },
+      });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/cron/compliance-expiration',
+        {
+          headers: {
+            authorization: 'Bearer test-cron-secret',
+          },
+        }
+      );
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.summary.sent30DayReminders).toBe(0);
+      expect(data.summary.errors).toHaveLength(1);
+
+      // Verify update was called twice (set timestamp, then rollback)
+      expect(mockUpdate).toHaveBeenCalledTimes(2);
     });
   });
 });

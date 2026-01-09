@@ -29,12 +29,19 @@ export default async function CompliancePage({ params }: CompliancePageProps) {
   }
 
   // Check user role
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
+  // Handle database errors separately from permission issues
+  if (profileError) {
+    console.error('Failed to fetch user profile:', profileError);
+    throw new Error('Unable to verify user permissions');
+  }
+
+  // User exists but is not an agency owner
   if (!profile || profile.role !== 'agency_owner') {
     redirect('/');
   }

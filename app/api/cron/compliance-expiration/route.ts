@@ -11,8 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { timingSafeEqual, randomUUID } from 'crypto';
 import {
   generateComplianceExpiring30HTML,
   generateComplianceExpiring30Text,
@@ -21,7 +22,7 @@ import {
   generateComplianceExpiring7HTML,
   generateComplianceExpiring7Text,
 } from '@/lib/emails/compliance-expiring-7';
-import { COMPLIANCE_DISPLAY_NAMES, type ComplianceType } from '@/types/api';
+import { type ComplianceType } from '@/types/api';
 import { validateSiteUrl } from '@/lib/emails/utils';
 
 export const dynamic = 'force-dynamic';
@@ -51,11 +52,60 @@ interface ProcessingResult {
   processedAgencies: string[];
 }
 
+// Simple email format validation
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email: unknown): email is string {
+  return typeof email === 'string' && EMAIL_REGEX.test(email);
+}
+
 /**
- * Check if a date is exactly N days from now
- * Compares UTC midnight-to-midnight day values for exact matching
+ * Timing-safe comparison of authorization header against expected secret
+ * Protects against timing attacks on the cron secret
  */
-function isExactlyNDaysFromNow(dateStr: string, days: number): boolean {
+function isValidAuthHeader(
+  authHeader: string | null,
+  expectedSecret: string
+): boolean {
+  if (!authHeader) return false;
+
+  // Extract token from "Bearer <token>" format
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  if (!token) return false;
+
+  const tokenBuffer = Buffer.from(token, 'utf8');
+  const expectedBuffer = Buffer.from(expectedSecret, 'utf8');
+
+  // If lengths differ, compare against same-length buffer to maintain constant time
+  if (tokenBuffer.length !== expectedBuffer.length) {
+    // Create a buffer of same length as token filled with the expected value repeated
+    const paddedExpected = Buffer.alloc(tokenBuffer.length);
+    expectedBuffer.copy(
+      paddedExpected,
+      0,
+      0,
+      Math.min(expectedBuffer.length, tokenBuffer.length)
+    );
+    timingSafeEqual(tokenBuffer, paddedExpected);
+    return false;
+  }
+
+  return timingSafeEqual(tokenBuffer, expectedBuffer);
+}
+
+/**
+ * Check if a date is within N days from now (with a small window for flexibility)
+ * Uses a window to allow for slight timing variations in cron execution
+ *
+ * For 30-day reminders: matches days 28-30
+ * For 7-day reminders: matches days 5-7
+ */
+function isDaysFromNowInWindow(
+  dateStr: string,
+  targetDays: number,
+  windowStart: number,
+  windowEnd: number
+): boolean {
   const date = new Date(dateStr);
   const dateUTC = Date.UTC(
     date.getUTCFullYear(),
@@ -64,15 +114,16 @@ function isExactlyNDaysFromNow(dateStr: string, days: number): boolean {
   );
 
   const now = new Date();
-  // Compute UTC midnight for target day by adding days to today's UTC date
-  const targetUTC = Date.UTC(
+  const nowUTC = Date.UTC(
     now.getUTCFullYear(),
     now.getUTCMonth(),
-    now.getUTCDate() + days
+    now.getUTCDate()
   );
 
-  // Check exact equality of UTC midnight values
-  return dateUTC === targetUTC;
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysUntil = Math.floor((dateUTC - nowUTC) / msPerDay);
+
+  return daysUntil >= windowStart && daysUntil <= windowEnd;
 }
 
 /**
@@ -95,6 +146,7 @@ function wasRecentlySent(lastSentStr: string | null): boolean {
  * Optimized to avoid N+1 queries by fetching all agencies and profiles in bulk
  */
 async function groupItemsByAgency(
+  supabaseAdmin: SupabaseClient,
   items: ComplianceExpiringItem[],
   reminderType: '30' | '7'
 ): Promise<
@@ -119,7 +171,7 @@ async function groupItemsByAgency(
   );
 
   // Fetch all agencies in one query
-  const { data: agencies, error: agencyError } = await supabase
+  const { data: agencies, error: agencyError } = await supabaseAdmin
     .from('agencies')
     .select('id, name, slug, claimed_by')
     .in('id', agencyIds)
@@ -130,12 +182,7 @@ async function groupItemsByAgency(
     throw new Error(`Failed to fetch agencies: ${agencyError.message}`);
   }
 
-  if (!agencies) {
-    return new Map();
-  }
-
-  // No claimed agencies - return empty Map
-  if (agencies.length === 0) {
+  if (!agencies || agencies.length === 0) {
     return new Map();
   }
 
@@ -147,13 +194,12 @@ async function groupItemsByAgency(
     new Set(agencies.map((a) => a.claimed_by).filter(Boolean))
   ) as string[];
 
-  // No owners to notify - return empty Map
   if (ownerIds.length === 0) {
     return new Map();
   }
 
   // Fetch all profiles in one query
-  const { data: profiles, error: profileError } = await supabase
+  const { data: profiles, error: profileError } = await supabaseAdmin
     .from('profiles')
     .select('id, email, full_name')
     .in('id', ownerIds);
@@ -187,6 +233,14 @@ async function groupItemsByAgency(
       continue; // Skip if owner not found
     }
 
+    // Validate email before adding to grouped results
+    if (!isValidEmail(profile.email)) {
+      console.error(
+        `[Cron] Skipping agency ${agency.id}: owner ${profile.id} has invalid email`
+      );
+      continue;
+    }
+
     const owner: AgencyOwner = {
       id: profile.id,
       email: profile.email,
@@ -210,14 +264,13 @@ async function groupItemsByAgency(
 /**
  * Send reminder email and update tracking
  *
- * Uses idempotent update-then-send pattern:
+ * Uses idempotent update-then-send pattern with rollback on email failure:
  * 1. Update tracking timestamp FIRST (prevents duplicate sends on retry)
- * 2. Send email after tracking is updated
- *
- * If tracking update fails: email is not sent (no duplicates)
- * If email fails after tracking: wasRecentlySent() prevents retry within 24h
+ * 2. Send email with idempotencyKey for Resend deduplication
+ * 3. If email fails, rollback the tracking timestamp
  */
 async function sendReminder(
+  supabaseAdmin: SupabaseClient,
   owner: AgencyOwner,
   items: ComplianceExpiringItem[],
   reminderType: '30' | '7',
@@ -231,9 +284,14 @@ async function sendReminder(
       : 'last_7_day_reminder_sent';
   const itemIds = items.map((item) => item.id);
 
+  // Generate idempotency key based on agency, reminder type, and date
+  // This prevents duplicate sends if cron runs multiple times on same day
+  const today = new Date().toISOString().split('T')[0];
+  const idempotencyKey = `${owner.agency_id}-${reminderType}day-${today}-${randomUUID().slice(0, 8)}`;
+
   try {
     // STEP 1: Update tracking FIRST (idempotent - prevents duplicate sends on retry)
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('agency_compliance')
       .update({ [updateField]: now })
       .in('id', itemIds);
@@ -276,25 +334,64 @@ async function sendReminder(
         ? generateComplianceExpiring30Text(emailParams)
         : generateComplianceExpiring7Text(emailParams);
 
-    await resend.emails.send({
+    // Send email with idempotency key and check response
+    const { data: emailData, error: emailError } = await resend.emails.send({
       from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
       to: owner.email,
       subject,
       html,
       text,
+      headers: {
+        'X-Idempotency-Key': idempotencyKey,
+      },
     });
 
+    if (emailError) {
+      // STEP 3: Rollback tracking timestamp on email failure
+      console.error(
+        `[Cron] Email send failed for ${owner.email}, rolling back tracking:`,
+        emailError
+      );
+
+      const { error: rollbackError } = await supabaseAdmin
+        .from('agency_compliance')
+        .update({ [updateField]: null })
+        .in('id', itemIds)
+        .eq(updateField, now);
+
+      if (rollbackError) {
+        console.error(
+          `[Cron] Failed to rollback ${updateField} for items:`,
+          itemIds,
+          rollbackError
+        );
+      }
+
+      return false;
+    }
+
     console.log(
-      `[Cron] Sent ${reminderType}-day reminder to ${owner.email} for ${items.length} items`
+      `[Cron] Sent ${reminderType}-day reminder to ${owner.email} for ${items.length} items (id: ${emailData?.id})`
     );
     return true;
   } catch (error) {
-    // If email send fails after tracking update, wasRecentlySent() will prevent
-    // retry within 24 hours, avoiding duplicate sends
+    // Unexpected error - attempt rollback
     console.error(
-      `[Cron] Failed to send ${reminderType}-day reminder to ${owner.email}:`,
+      `[Cron] Unexpected error sending ${reminderType}-day reminder to ${owner.email}:`,
       error
     );
+
+    // Attempt rollback
+    try {
+      await supabaseAdmin
+        .from('agency_compliance')
+        .update({ [updateField]: null })
+        .in('id', itemIds)
+        .eq(updateField, now);
+    } catch (rollbackError) {
+      console.error('[Cron] Rollback also failed:', rollbackError);
+    }
+
     return false;
   }
 }
@@ -307,7 +404,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // ========================================================================
-    // 1. AUTHENTICATION CHECK
+    // 1. AUTHENTICATION CHECK (timing-safe)
     // ========================================================================
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
@@ -320,13 +417,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (authHeader !== `Bearer ${cronSecret}`) {
+    if (!isValidAuthHeader(authHeader, cronSecret)) {
       console.error('[Cron] Invalid authorization header');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // ========================================================================
-    // 2. INITIALIZE EMAIL SERVICE
+    // 2. INITIALIZE SUPABASE ADMIN CLIENT (bypasses RLS)
+    // ========================================================================
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('[Cron] Supabase configuration missing');
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database configuration error',
+        },
+        { status: 500 }
+      );
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { persistSession: false },
+    });
+
+    // ========================================================================
+    // 3. INITIALIZE EMAIL SERVICE
     // ========================================================================
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
@@ -344,17 +462,10 @@ export async function GET(request: NextRequest) {
     const siteUrl = validateSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || '');
 
     // ========================================================================
-    // 3. FETCH EXPIRING COMPLIANCE ITEMS
+    // 4. FETCH EXPIRING COMPLIANCE ITEMS
     // ========================================================================
-    const now = new Date();
-    const date30DaysFromNow = new Date(now);
-    date30DaysFromNow.setDate(now.getDate() + 30);
-
-    const date7DaysFromNow = new Date(now);
-    date7DaysFromNow.setDate(now.getDate() + 7);
-
     // Fetch all active items with expiration dates
-    const { data: allItems, error: fetchError } = await supabase
+    const { data: allItems, error: fetchError } = await supabaseAdmin
       .from('agency_compliance')
       .select(
         'id, agency_id, compliance_type, expiration_date, last_30_day_reminder_sent, last_7_day_reminder_sent'
@@ -373,21 +484,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Filter items by expiration timeframe
+    // Filter items by expiration timeframe (with windows for flexibility)
+    // 30-day reminders: 28-30 days out
     const items30Days = (allItems || []).filter((item) =>
-      isExactlyNDaysFromNow(item.expiration_date, 30)
+      isDaysFromNowInWindow(item.expiration_date, 30, 28, 30)
     ) as ComplianceExpiringItem[];
 
+    // 7-day reminders: 5-7 days out
     const items7Days = (allItems || []).filter((item) =>
-      isExactlyNDaysFromNow(item.expiration_date, 7)
+      isDaysFromNowInWindow(item.expiration_date, 7, 5, 7)
     ) as ComplianceExpiringItem[];
 
     console.log(
-      `[Cron] Found ${items30Days.length} items expiring in 30 days, ${items7Days.length} items expiring in 7 days`
+      `[Cron] Found ${items30Days.length} items expiring in ~30 days, ${items7Days.length} items expiring in ~7 days`
     );
 
     // ========================================================================
-    // 4. PROCESS 30-DAY REMINDERS
+    // 5. PROCESS 30-DAY REMINDERS
     // ========================================================================
     const result: ProcessingResult = {
       sent30DayReminders: 0,
@@ -396,12 +509,23 @@ export async function GET(request: NextRequest) {
       processedAgencies: [],
     };
 
-    const grouped30Day = await groupItemsByAgency(items30Days, '30');
+    const grouped30Day = await groupItemsByAgency(
+      supabaseAdmin,
+      items30Days,
+      '30'
+    );
 
     for (const [agencyId, { owner, items }] of Array.from(
       grouped30Day.entries()
     )) {
-      const success = await sendReminder(owner, items, '30', resend, siteUrl);
+      const success = await sendReminder(
+        supabaseAdmin,
+        owner,
+        items,
+        '30',
+        resend,
+        siteUrl
+      );
 
       if (success) {
         result.sent30DayReminders += items.length;
@@ -417,14 +541,25 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================================================
-    // 5. PROCESS 7-DAY REMINDERS
+    // 6. PROCESS 7-DAY REMINDERS
     // ========================================================================
-    const grouped7Day = await groupItemsByAgency(items7Days, '7');
+    const grouped7Day = await groupItemsByAgency(
+      supabaseAdmin,
+      items7Days,
+      '7'
+    );
 
     for (const [agencyId, { owner, items }] of Array.from(
       grouped7Day.entries()
     )) {
-      const success = await sendReminder(owner, items, '7', resend, siteUrl);
+      const success = await sendReminder(
+        supabaseAdmin,
+        owner,
+        items,
+        '7',
+        resend,
+        siteUrl
+      );
 
       if (success) {
         result.sent7DayReminders += items.length;
@@ -442,7 +577,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================================================
-    // 6. RETURN SUMMARY
+    // 7. RETURN SUMMARY
     // ========================================================================
     const duration = Date.now() - startTime;
 
