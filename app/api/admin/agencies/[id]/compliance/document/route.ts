@@ -211,24 +211,23 @@ export async function POST(
       .eq('compliance_type', complianceType)
       .single();
 
-    // Delete old document if exists
+    // Store old document path for cleanup AFTER successful upload
+    let oldDocumentPath: string | null = null;
     if (existingCompliance?.document_url) {
       // Handle both old signed URLs (full URLs) and new storage paths (just filename)
-      let oldPath: string;
       const urlParts = existingCompliance.document_url.split(
         `/${STORAGE_BUCKET}/`
       );
       if (urlParts.length > 1) {
         // Old format: full signed URL - extract path and strip query parameters
-        oldPath = urlParts[1].split('?')[0];
+        oldDocumentPath = urlParts[1].split('?')[0];
       } else {
         // New format: just the storage path
-        oldPath = existingCompliance.document_url;
+        oldDocumentPath = existingCompliance.document_url;
       }
-      await supabase.storage.from(STORAGE_BUCKET).remove([oldPath]);
     }
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage (before deleting old file)
     const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(filename, buffer, {
@@ -307,6 +306,12 @@ export async function POST(
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
       );
+    }
+
+    // Delete old document AFTER successful upload and database update
+    // This ensures we don't lose the old file if something fails
+    if (oldDocumentPath) {
+      await supabase.storage.from(STORAGE_BUCKET).remove([oldDocumentPath]);
     }
 
     return NextResponse.json({

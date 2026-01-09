@@ -18,8 +18,8 @@ import {
   type ComplianceItemFull,
   type ComplianceUpdateRequest,
   type ComplianceFullResponse,
-  toComplianceItemFull,
 } from '@/types/api';
+import { transformComplianceWithSignedUrls } from '@/lib/supabase/compliance-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,10 +128,11 @@ export async function GET(
       );
     }
 
-    // Transform database rows to full ComplianceItemFull format
-    const complianceItems: ComplianceItemFull[] = (
+    // Transform database rows to full ComplianceItemFull format with signed URLs
+    const complianceItems = await transformComplianceWithSignedUrls(
+      supabase,
       complianceRows as AgencyComplianceRow[]
-    ).map(toComplianceItemFull);
+    );
 
     return NextResponse.json(
       { data: complianceItems },
@@ -376,9 +377,11 @@ export async function PUT(
       );
     }
 
-    const complianceItems: ComplianceItemFull[] = (
+    // Transform with signed URLs for any documents
+    const complianceItems = await transformComplianceWithSignedUrls(
+      supabase,
       updatedRows as AgencyComplianceRow[]
-    ).map(toComplianceItemFull);
+    );
 
     return NextResponse.json(
       { data: complianceItems },
