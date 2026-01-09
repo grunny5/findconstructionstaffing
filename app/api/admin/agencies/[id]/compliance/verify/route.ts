@@ -375,7 +375,7 @@ export async function POST(
             .eq('id', agency.claimed_by)
             .single();
 
-          if (!ownerError && owner) {
+          if (!ownerError && owner && owner.email) {
             const emailHtml = generateComplianceRejectedHTML({
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
@@ -407,7 +407,7 @@ export async function POST(
             );
           } else {
             console.warn(
-              `Unable to send rejection email for agency ${agencyId}: owner not found`
+              `Unable to send rejection email for agency ${agencyId}: owner not found or missing email`
             );
           }
         } else {

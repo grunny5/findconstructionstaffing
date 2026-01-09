@@ -892,7 +892,6 @@ describe('GET /api/cron/compliance-expiration', () => {
       const mockUpdateIn = jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({ error: null }),
       });
-      mockUpdateIn.mockResolvedValueOnce({ error: null }); // First call succeeds (set timestamp)
 
       const mockUpdate = jest.fn().mockReturnValue({
         in: mockUpdateIn,
