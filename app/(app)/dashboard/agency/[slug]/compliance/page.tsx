@@ -74,6 +74,7 @@ export default async function CompliancePage({ params }: CompliancePageProps) {
       `Failed to fetch compliance data for agency ${agency.id}:`,
       complianceError
     );
+    throw new Error('Failed to load compliance data');
   }
 
   return (

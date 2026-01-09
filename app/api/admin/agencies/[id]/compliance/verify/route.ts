@@ -359,6 +359,7 @@ export async function POST(
       // ========================================================================
       // 7. SEND REJECTION EMAIL
       // ========================================================================
+      let emailSent = false;
       try {
         const resendApiKey = process.env.RESEND_API_KEY;
 
@@ -402,6 +403,7 @@ export async function POST(
               text: emailText,
             });
 
+            emailSent = true;
             console.log(
               `Rejection email sent to owner ${agency.claimed_by} for compliance ${complianceType} on agency ${agencyId}`
             );
@@ -423,8 +425,7 @@ export async function POST(
       return NextResponse.json(
         {
           data: updatedCompliance,
-          message:
-            'Compliance document rejected successfully. Agency owner will be notified.',
+          message: `Compliance document rejected successfully.${emailSent ? ' Agency owner has been notified.' : ''}`,
         },
         { status: HTTP_STATUS.OK }
       );

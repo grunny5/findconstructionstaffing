@@ -86,7 +86,7 @@ export default async function AdminCompliancePage() {
       ...row,
       agencies: Array.isArray(row.agencies) ? row.agencies[0] : row.agencies,
     }))
-    .filter((row) => row.agencies !== undefined);
+    .filter((row) => row.agencies != null);
 
   return (
     <div className="container mx-auto p-6 min-h-screen">
