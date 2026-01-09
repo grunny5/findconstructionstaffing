@@ -41,6 +41,7 @@ interface AgencyOwner {
   full_name: string | null;
   agency_id: string;
   agency_name: string;
+  agency_slug: string;
 }
 
 interface ProcessingResult {
@@ -120,7 +121,7 @@ async function groupItemsByAgency(
   // Fetch all agencies in one query
   const { data: agencies, error: agencyError } = await supabase
     .from('agencies')
-    .select('id, name, claimed_by')
+    .select('id, name, slug, claimed_by')
     .in('id', agencyIds)
     .not('claimed_by', 'is', null);
 
@@ -192,6 +193,7 @@ async function groupItemsByAgency(
       full_name: profile.full_name,
       agency_id: agency.id,
       agency_name: agency.name,
+      agency_slug: agency.slug,
     };
 
     // Group items by agency
@@ -254,6 +256,7 @@ async function sendReminder(
     const emailParams = {
       recipientName: owner.full_name || undefined,
       agencyName: owner.agency_name,
+      agencySlug: owner.agency_slug,
       expiringItems,
       siteUrl,
     };

@@ -190,6 +190,8 @@ export const API_CONSTANTS = {
   MAX_TRADE_FILTERS: 10,
   /** Maximum number of state filters allowed in a single request */
   MAX_STATE_FILTERS: 10,
+  /** Maximum number of compliance filters allowed in a single request */
+  MAX_COMPLIANCE_FILTERS: 6,
 } as const;
 
 /**

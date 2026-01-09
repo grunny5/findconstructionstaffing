@@ -15,6 +15,7 @@ import {
 interface ComplianceExpiring30EmailParams {
   recipientName?: string;
   agencyName: string;
+  agencySlug: string;
   expiringItems: ComplianceExpiringItem[];
   siteUrl: string;
 }
@@ -25,14 +26,15 @@ interface ComplianceExpiring30EmailParams {
 export function generateComplianceExpiring30HTML(
   params: ComplianceExpiring30EmailParams
 ): string {
-  const { recipientName, agencyName, expiringItems, siteUrl } = params;
+  const { recipientName, agencyName, agencySlug, expiringItems, siteUrl } =
+    params;
 
   const safeAgencyName = escapeHtml(agencyName);
   const safeRecipientName = recipientName
     ? escapeHtml(recipientName)
     : undefined;
   const safeSiteUrl = validateSiteUrl(siteUrl);
-  const dashboardUrl = `${safeSiteUrl}/dashboard/compliance`;
+  const dashboardUrl = `${safeSiteUrl}/dashboard/agency/${encodeURIComponent(agencySlug)}/compliance`;
 
   // Build list of expiring items
   const itemsList = expiringItems
@@ -164,10 +166,11 @@ export function generateComplianceExpiring30HTML(
 export function generateComplianceExpiring30Text(
   params: ComplianceExpiring30EmailParams
 ): string {
-  const { recipientName, agencyName, expiringItems, siteUrl } = params;
+  const { recipientName, agencyName, agencySlug, expiringItems, siteUrl } =
+    params;
 
   const safeSiteUrl = validateSiteUrl(siteUrl);
-  const dashboardUrl = `${safeSiteUrl}/dashboard/compliance`;
+  const dashboardUrl = `${safeSiteUrl}/dashboard/agency/${encodeURIComponent(agencySlug)}/compliance`;
   const itemCount = expiringItems.length;
   const itemWord = itemCount === 1 ? 'certification' : 'certifications';
 

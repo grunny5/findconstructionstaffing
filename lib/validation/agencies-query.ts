@@ -62,7 +62,10 @@ export const AgenciesQuerySchema = z.object({
               'Invalid compliance type'
             )
         )
-        .max(6, 'Too many compliance filters')
+        .max(
+          API_CONSTANTS.MAX_COMPLIANCE_FILTERS,
+          'Too many compliance filters'
+        )
     )
     .optional(),
 

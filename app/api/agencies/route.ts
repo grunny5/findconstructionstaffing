@@ -254,7 +254,7 @@ async function applyFilters(
     // Use Set for O(1) lookups when intersecting
     const complianceAgencyIdSet = new Set<string>();
     agencyComplianceCounts.forEach((types, agencyId) => {
-      if (types.size === compliance.length) {
+      if (compliance.every((t) => types.has(t))) {
         complianceAgencyIdSet.add(agencyId);
       }
     });
