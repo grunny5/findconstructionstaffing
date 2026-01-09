@@ -316,7 +316,7 @@ describe('POST /api/admin/agencies/[id]/compliance/document', () => {
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(json.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
       expect(json.error.message).toBe(
-        'Invalid file type. Accepted types: PDF, PNG, JPG'
+        'Invalid file type. Accepted types: PDF, PNG, JPEG'
       );
     });
 
@@ -393,8 +393,9 @@ describe('POST /api/admin/agencies/[id]/compliance/document', () => {
           data: { path: 'test-path' },
           error: null,
         }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: mockPublicUrl },
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: { signedUrl: mockPublicUrl },
+          error: null,
         }),
         remove: jest.fn().mockResolvedValue({
           data: null,
@@ -492,8 +493,9 @@ describe('POST /api/admin/agencies/[id]/compliance/document', () => {
           data: { path: 'test-path' },
           error: null,
         }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: mockPublicUrl },
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: { signedUrl: mockPublicUrl },
+          error: null,
         }),
         remove: mockRemove,
       });
@@ -587,8 +589,9 @@ describe('POST /api/admin/agencies/[id]/compliance/document', () => {
           data: { path: 'test-path' },
           error: null,
         }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: 'https://test.com/doc.pdf' },
+        createSignedUrl: jest.fn().mockResolvedValue({
+          data: { signedUrl: 'https://test.com/doc.pdf' },
+          error: null,
         }),
         remove: jest.fn().mockResolvedValue({
           data: null,
