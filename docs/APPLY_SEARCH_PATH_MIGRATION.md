@@ -93,21 +93,14 @@ This prevents the automated `supabase db push` from working correctly.
 
    > **Important:** While the SQL was executed in steps 2-3 above, this INSERT is required so the
    > Supabase CLI recognizes the migration as applied and won't attempt to re-run it on future deployments.
-   > The `statements` array below is abbreviated for readability since the actual SQL was executed above.
 
    ```sql
    -- Mark the migration as applied in the history
    -- Use 14-digit timestamp format: YYYYMMDDHHMMSS
-   INSERT INTO supabase_migrations.schema_migrations (version, name, statements)
+   INSERT INTO supabase_migrations.schema_migrations (version, name)
    VALUES (
-     '20260121_001_fix_function_search_path',
-     '20260121_001_fix_function_search_path',
-     ARRAY[
-       'DROP FUNCTION IF EXISTS get_admin_integrations_summary()',
-       'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() RETURNS TABLE (...) AS $$ BEGIN ... END; $$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public',
-       'GRANT EXECUTE ON FUNCTION get_admin_integrations_summary() TO authenticated',
-       'COMMENT ON FUNCTION get_admin_integrations_summary() IS ''Returns all agencies with integration configuration for admin dashboard. Uses explicit search_path for security.'''
-     ]
+     '20260121120000',
+     '20260121_001_fix_function_search_path'
    )
    ON CONFLICT (version) DO NOTHING;
    ```
@@ -115,7 +108,7 @@ This prevents the automated `supabase db push` from working correctly.
 5. **Verify the fix**
    - Navigate to: **Database** → **Reports** → **Database Health**
    - Check that the "Function Search Path Mutable" warning is resolved
-   - Or run: `SELECT * FROM supabase_migrations.schema_migrations WHERE version = '20260121_001_fix_function_search_path';`
+   - Or run: `SELECT * FROM supabase_migrations.schema_migrations WHERE version = '20260121120000';`
 
 ---
 
@@ -136,7 +129,7 @@ export DATABASE_URL="<YOUR_POSTGRES_CONNECTION_STRING>"
 psql $DATABASE_URL -f supabase/migrations/20260121_001_fix_function_search_path.sql
 
 # Record in migration history (use 14-digit timestamp format: YYYYMMDDHHMMSS)
-psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name, statements) VALUES ('20260121_001_fix_function_search_path', '20260121_001_fix_function_search_path', ARRAY['DROP FUNCTION IF EXISTS get_admin_integrations_summary()', 'CREATE OR REPLACE FUNCTION get_admin_integrations_summary() ...', 'GRANT EXECUTE ON FUNCTION get_admin_integrations_summary() TO authenticated', 'COMMENT ON FUNCTION get_admin_integrations_summary() ...']) ON CONFLICT DO NOTHING;"
+psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('20260121120000', '20260121_001_fix_function_search_path') ON CONFLICT DO NOTHING;"
 ```
 
 ---

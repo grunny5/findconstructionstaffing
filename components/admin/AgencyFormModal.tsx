@@ -164,7 +164,7 @@ export function AgencyFormModal({
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ compliance: updatedCompliance }),
+          body: JSON.stringify({ items: updatedCompliance }),
         }
       );
 

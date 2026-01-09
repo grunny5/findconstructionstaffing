@@ -21,8 +21,14 @@ jest.mock('@/hooks/use-toast', () => ({
 
 // Mock ComplianceDocumentUpload to speed up tests
 jest.mock('../ComplianceDocumentUpload', () => ({
-  ComplianceDocumentUpload: ({ complianceType }: { complianceType: string }) => (
-    <div data-testid={`document-upload-${complianceType}`}>Document Upload Mock</div>
+  ComplianceDocumentUpload: ({
+    complianceType,
+  }: {
+    complianceType: string;
+  }) => (
+    <div data-testid={`document-upload-${complianceType}`}>
+      Document Upload Mock
+    </div>
   ),
 }));
 

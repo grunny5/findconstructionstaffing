@@ -301,6 +301,18 @@ export async function PUT(
 
       // Validate expiration date format and semantics if provided
       if (item.expirationDate) {
+        if (typeof item.expirationDate !== 'string') {
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.INVALID_PARAMS,
+                message:
+                  'expirationDate must be in YYYY-MM-DD format if provided',
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(item.expirationDate)) {
           return NextResponse.json(

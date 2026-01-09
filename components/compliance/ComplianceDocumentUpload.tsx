@@ -80,7 +80,7 @@ export function ComplianceDocumentUpload({
     : urlWithoutQuery?.toLowerCase().endsWith('.pdf');
 
   const handleFileSelect = useCallback(
-    (file: File) => {
+    async (file: File) => {
       setValidationError(null);
 
       if (!isValidFileType(file)) {
@@ -99,14 +99,26 @@ export function ComplianceDocumentUpload({
 
       setSelectedFile(file);
 
+      let newPreviewUrl: string | null = null;
       if (!isPdfFile(file)) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
+        newPreviewUrl = URL.createObjectURL(file);
+        setPreviewUrl(newPreviewUrl);
       } else {
         setPreviewUrl(null);
       }
 
-      void onUpload(file);
+      try {
+        await onUpload(file);
+      } catch (err) {
+        setValidationError(
+          err instanceof Error ? err.message : 'Upload failed'
+        );
+        setSelectedFile(null);
+        if (newPreviewUrl) {
+          URL.revokeObjectURL(newPreviewUrl);
+        }
+        setPreviewUrl(null);
+      }
     },
     [onUpload]
   );
@@ -159,7 +171,7 @@ export function ComplianceDocumentUpload({
     fileInputRef.current?.click();
   }, [disabled, isUploading]);
 
-  const handleRemove = useCallback(() => {
+  const handleRemove = useCallback(async () => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
@@ -169,7 +181,11 @@ export function ComplianceDocumentUpload({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    void onRemove();
+    try {
+      await onRemove();
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : 'Remove failed');
+    }
   }, [previewUrl, onRemove]);
 
   useEffect(() => {
