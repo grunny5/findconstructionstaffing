@@ -14,6 +14,7 @@ import {
   PerformanceMonitor,
   ErrorRateTracker,
 } from '@/lib/monitoring/performance';
+import { isValidSlug } from '@/lib/validation/slug';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -36,13 +37,6 @@ interface RouteParams {
   params: {
     slug: string;
   };
-}
-
-// Helper function to validate slug format
-function isValidSlug(slug: string): boolean {
-  // Slug should be lowercase, alphanumeric with hyphens, no spaces or special chars
-  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-  return slugRegex.test(slug) && slug.length > 0 && slug.length <= 100;
 }
 
 // Network error codes that indicate connection issues

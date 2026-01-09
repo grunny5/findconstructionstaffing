@@ -16,6 +16,7 @@ import {
   type ComplianceItem,
   toComplianceItem,
 } from '@/types/api';
+import { isValidSlug } from '@/lib/validation/slug';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,13 +53,13 @@ export async function GET(
   try {
     const { slug } = await context.params;
 
-    // Validate slug format
-    if (!slug || typeof slug !== 'string') {
+    // Validate slug format (lowercase alphanumeric with hyphens)
+    if (!slug || typeof slug !== 'string' || !isValidSlug(slug)) {
       return NextResponse.json(
         {
           error: {
             code: ERROR_CODES.INVALID_PARAMS,
-            message: 'Invalid agency slug',
+            message: 'Invalid agency slug format',
           },
         },
         { status: HTTP_STATUS.BAD_REQUEST }

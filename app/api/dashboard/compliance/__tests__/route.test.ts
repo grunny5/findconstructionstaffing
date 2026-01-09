@@ -196,6 +196,7 @@ describe('/api/dashboard/compliance', () => {
         const data = await response.json();
 
         expect(response.status).toBe(HTTP_STATUS.OK);
+        expect(queryCount).toBe(2); // agencies and agency_compliance tables
         expect(data.data).toHaveLength(2);
         expect(data.data[0]).toMatchObject({
           id: 'comp-1',
