@@ -82,13 +82,13 @@ jobs:
   test-components:
     name: Test Components (jsdom) - Shard ${{ matrix.shard }}/${{ matrix.total-shards }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     needs: [quality-checks]
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
-        total-shards: [4]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        total-shards: [8]
 
     steps:
       - name: Checkout code
@@ -124,7 +124,9 @@ jobs:
         if: always()
         run: |
           echo "Component tests (shard ${{ matrix.shard }}) taking >30 seconds:"
-          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output-components-shard${{ matrix.shard }}.log || echo "No slow tests found"
+          grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-components-shard${{ matrix.shard }}.log \
+            | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
+            || echo "No slow tests found"
 
       - name: Upload component test results
         if: always()
@@ -202,7 +204,9 @@ jobs:
         if: always()
         run: |
           echo "API tests taking >30 seconds:"
-          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output-api.log || echo "No slow tests found"
+          grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-api.log \
+            | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
+            || echo "No slow tests found"
 
       - name: Upload API test results
         if: always()
@@ -362,7 +366,7 @@ jobs:
           | Job | Status |
           |-----|--------|
           | Quality Checks | ${{ needs.quality-checks.result }} |
-          | Component Tests (4 shards) | ${{ needs.test-components.result }} |
+          | Component Tests (8 shards) | ${{ needs.test-components.result }} |
           | API Tests | ${{ needs.test-api.result }} |
           | Test Results | ${{ needs.test-results.result }} |
           | Security | ${{ needs.security.result }} |
