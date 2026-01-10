@@ -79,11 +79,68 @@ jobs:
         if: matrix.check == 'prettier'
         run: npm run format:check
 
-  test:
-    name: Run Tests
+  test-components:
+    name: Test Components (jsdom)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [quality-checks] # Ensures tests run only after quality checks pass
+    needs: [quality-checks]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and dependencies
+        uses: ./.github/actions/setup-node
+        with:
+          node-version: '20.x'
+
+      - name: Cache Jest cache
+        uses: actions/cache@v4
+        with:
+          path: .jest-cache
+          key: ${{ runner.os }}-jest-components-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-components-
+            ${{ runner.os }}-jest-
+
+      - name: Run component tests
+        run: |
+          export NODE_ENV=test
+          export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
+          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
+          export FORCE_TEST_MOCKS=true
+          export CI=true
+
+          npm test -- --selectProjects=jsdom --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components.log
+
+      - name: Analyze slow component tests
+        if: always()
+        run: |
+          echo "Component tests taking >30 seconds:"
+          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output-components.log || echo "No slow tests found"
+
+      - name: Upload component test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-components
+          path: test-results/
+
+      - name: Component Test Report
+        uses: dorny/test-reporter@v1.9.1
+        if: always() && github.event_name == 'pull_request'
+        with:
+          name: Jest Tests (Components)
+          path: test-results/junit.xml
+          reporter: jest-junit
+          fail-on-error: false
+
+  test-api:
+    name: Test API Routes (node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [quality-checks]
 
     services:
       postgres:
@@ -113,11 +170,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .jest-cache
-          key: ${{ runner.os }}-jest-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-jest-api-${{ hashFiles('package-lock.json') }}
           restore-keys: |
+            ${{ runner.os }}-jest-api-
             ${{ runner.os }}-jest-
 
-      - name: Run unit tests
+      - name: Run API tests
         run: |
           echo "Waiting for PostgreSQL to start..."
           sleep 5
@@ -132,35 +190,60 @@ jobs:
           export USER=postgres
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
 
-          npm test -- --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output.log
+          npm test -- --selectProjects=node --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log
 
-      - name: Analyze slow tests
+      - name: Analyze slow API tests
         if: always()
         run: |
-          echo "Tests taking >30 seconds:"
-          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output.log || echo "No slow tests found"
+          echo "API tests taking >30 seconds:"
+          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output-api.log || echo "No slow tests found"
 
-      - name: Upload test results
+      - name: Upload API test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-api
           path: test-results/
 
-      - name: Test Report
+      - name: API Test Report
         uses: dorny/test-reporter@v1.9.1
         if: always() && github.event_name == 'pull_request'
         with:
-          name: Jest Tests
+          name: Jest Tests (API)
           path: test-results/junit.xml
           reporter: jest-junit
           fail-on-error: false
+
+  test-results:
+    name: Test Results Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [test-components, test-api]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "Component Tests: ${{ needs.test-components.result }}"
+          echo "API Tests: ${{ needs.test-api.result }}"
+
+          if [[ "${{ needs.test-components.result }}" != "success" ]]; then
+            echo "❌ Component tests failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.test-api.result }}" != "success" ]]; then
+            echo "❌ API tests failed"
+            exit 1
+          fi
+
+          echo "✅ All tests passed"
 
   coverage:
     name: Generate Coverage Report
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: [test]
+    needs: [test-results]
     if: github.event_name == 'pull_request'
 
     services:
@@ -248,7 +331,7 @@ jobs:
     name: Build Application
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [test, security]
+    needs: [test-results, security]
 
     steps:
       - name: Checkout code
@@ -276,7 +359,7 @@ jobs:
     name: Performance Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [start-timer, quality-checks, test, security, build]
+    needs: [start-timer, quality-checks, test-components, test-api, test-results, security, build]
     if: always()
 
     steps:
@@ -298,7 +381,9 @@ jobs:
           | Job | Status |
           |-----|--------|
           | Quality Checks | ${{ needs.quality-checks.result }} |
-          | Tests | ${{ needs.test.result }} |
+          | Component Tests | ${{ needs.test-components.result }} |
+          | API Tests | ${{ needs.test-api.result }} |
+          | Test Results | ${{ needs.test-results.result }} |
           | Security | ${{ needs.security.result }} |
           | Build | ${{ needs.build.result }} |
           EOF
