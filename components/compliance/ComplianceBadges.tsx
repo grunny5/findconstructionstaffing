@@ -29,7 +29,6 @@ export function ComplianceBadges({
   compliance,
   variant = 'default',
 }: ComplianceBadgesProps) {
-  // Return null if no compliance items
   if (!compliance || compliance.length === 0) {
     return null;
   }
@@ -78,14 +77,14 @@ export function ComplianceBadges({
                         ? 'bg-green-50 text-green-600'
                         : 'bg-industrial-graphite-100 text-industrial-graphite-500'
                     )}
-                    aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type]}${item.isVerified ? ' (Verified)' : ''}`}
+                    aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}${item.isVerified ? ' (Verified)' : ''}`}
                   >
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="font-semibold">
-                    {COMPLIANCE_DISPLAY_NAMES[item.type]}
+                    {COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}
                   </p>
                   {item.isVerified && (
                     <p className="text-xs text-green-600">Verified</p>
@@ -129,7 +128,7 @@ export function ComplianceBadges({
                     'hover:border-industrial-orange cursor-help focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2'
                   )}
                   tabIndex={0}
-                  aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type]}${item.isVerified ? ' - Verified' : ''}${item.isExpired ? ' - Expired' : ''}`}
+                  aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}${item.isVerified ? ' - Verified' : ''}${item.isExpired ? ' - Expired' : ''}`}
                 >
                   <div
                     className={cn(
@@ -148,7 +147,7 @@ export function ComplianceBadges({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
-                        {COMPLIANCE_DISPLAY_NAMES[item.type]}
+                        {COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}
                       </span>
 
                       {item.isVerified && !item.isExpired && (
@@ -190,10 +189,10 @@ export function ComplianceBadges({
               >
                 <div className="space-y-1.5">
                   <p className="font-semibold text-sm">
-                    {COMPLIANCE_DISPLAY_NAMES[item.type]}
+                    {COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}
                   </p>
                   <p className="text-xs text-industrial-graphite-400">
-                    {COMPLIANCE_DESCRIPTIONS[item.type]}
+                    {COMPLIANCE_DESCRIPTIONS[item.type] ?? 'No description available'}
                   </p>
                   {item.isVerified && (
                     <Badge

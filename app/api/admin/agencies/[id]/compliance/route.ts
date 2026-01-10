@@ -82,7 +82,20 @@ export async function GET(
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile || profile.role !== 'admin') {
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to verify user permissions',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
+
+    if (!profile || profile.role !== 'admin') {
       return NextResponse.json(
         {
           error: {
@@ -232,7 +245,20 @@ export async function PUT(
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile || profile.role !== 'admin') {
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to verify user permissions',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
+
+    if (!profile || profile.role !== 'admin') {
       return NextResponse.json(
         {
           error: {
@@ -413,6 +439,25 @@ export async function PUT(
           { status: HTTP_STATUS.BAD_REQUEST }
         );
       }
+    }
+
+    // Check for duplicate compliance types in the request
+    const types = body.items.map((item) => item.type);
+    const uniqueTypes = new Set(types);
+    if (uniqueTypes.size !== types.length) {
+      const duplicates = types.filter(
+        (type, index) => types.indexOf(type) !== index
+      );
+      const uniqueDuplicates = Array.from(new Set(duplicates));
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.INVALID_PARAMS,
+            message: `Duplicate compliance types not allowed: ${uniqueDuplicates.join(', ')}`,
+          },
+        },
+        { status: HTTP_STATUS.BAD_REQUEST }
+      );
     }
 
     // Upsert compliance items (admin can modify all fields including verification)

@@ -72,7 +72,20 @@ export async function POST(
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile || profile.role !== 'admin') {
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to verify user permissions',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
+
+    if (!profile || profile.role !== 'admin') {
       return NextResponse.json(
         {
           error: {

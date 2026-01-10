@@ -87,6 +87,9 @@ export function ComplianceDocumentUpload({
         setValidationError(
           'Invalid file type. Please upload a PDF, PNG, or JPEG file.'
         );
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
         return;
       }
 
@@ -94,6 +97,9 @@ export function ComplianceDocumentUpload({
         setValidationError(
           `File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`
         );
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
         return;
       }
 
@@ -123,6 +129,9 @@ export function ComplianceDocumentUpload({
           URL.revokeObjectURL(newPreviewUrl);
         }
         setPreviewUrl(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     },
     [onUpload, previewUrl]
