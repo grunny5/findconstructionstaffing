@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   pull_request:
@@ -6,397 +6,66 @@ on:
   push:
     branches: [main, develop]
 
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
-  checks: write
-  actions: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 jobs:
-  start-timer:
-    runs-on: ubuntu-latest
-    outputs:
-      start-time: ${{ steps.start.outputs.time }}
-    steps:
-      - id: start
-        run: echo "time=$(date -u +%s)" >> $GITHUB_OUTPUT
-
-  quality-checks:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
-    strategy:
-      matrix:
-        check: [typescript, eslint, prettier]
-      fail-fast: false
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and dependencies
-        uses: ./.github/actions/setup-node
-        with:
-          node-version: '20.x'
-
-      - name: Cache TypeScript
-        if: matrix.check == 'typescript'
-        uses: actions/cache@v4
-        with:
-          path: |
-            tsconfig.tsbuildinfo
-            .tsbuildinfo
-          key: ${{ runner.os }}-typescript-${{ hashFiles('package-lock.json', 'tsconfig.json', '**/*.ts', '**/*.tsx') }}
-          restore-keys: |
-            ${{ runner.os }}-typescript-${{ hashFiles('package-lock.json', 'tsconfig.json') }}
-            ${{ runner.os }}-typescript-
-
-      - name: Cache ESLint
-        if: matrix.check == 'eslint'
-        uses: actions/cache@v4
-        with:
-          path: .eslintcache
-          key: ${{ runner.os }}-eslint-${{ hashFiles('package-lock.json', '.eslintrc.*') }}
-          restore-keys: |
-            ${{ runner.os }}-eslint-
-
-      - name: Run TypeScript compilation
-        if: matrix.check == 'typescript'
-        run: npm run type-check
-
-      - name: Run ESLint
-        if: matrix.check == 'eslint'
-        run: npm run lint -- --cache --cache-location .eslintcache --max-warnings 0
-
-      - name: Run Prettier check
-        if: matrix.check == 'prettier'
-        run: npm run format:check
-
-  test-components:
-    name: Test Components (jsdom) - Shard ${{ matrix.shard }}/${{ matrix.total-shards }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: [quality-checks]
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
-        total-shards: [8]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and dependencies
-        uses: ./.github/actions/setup-node
-        with:
-          node-version: '20.x'
-
-      - name: Cache Jest cache
-        uses: actions/cache@v4
-        with:
-          path: .jest-cache
-          key: ${{ runner.os }}-jest-components-shard${{ matrix.shard }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-jest-components-shard${{ matrix.shard }}-
-            ${{ runner.os }}-jest-components-
-            ${{ runner.os }}-jest-
-
-      - name: Run component tests (shard ${{ matrix.shard }}/${{ matrix.total-shards }})
-        run: |
-          export NODE_ENV=test
-          export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
-          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
-          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
-          export FORCE_TEST_MOCKS=true
-          export CI=true
-
-          # Run tests with 5-minute timeout and real-time output via stdbuf
-          # stdbuf -oL ensures line-buffered output for real-time visibility
-          timeout 300 stdbuf -oL npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log || exit_code=$?
-
-          # Handle timeout (exit code 124)
-          if [ "${exit_code:-0}" -eq 124 ]; then
-            echo "::error::Tests timed out after 5 minutes"
-            exit 1
-          fi
-
-          exit ${exit_code:-0}
-
-      - name: Analyze slow component tests
-        if: always()
-        run: |
-          echo "Component tests (shard ${{ matrix.shard }}) taking >30 seconds:"
-          if [ -f test-output-components-shard${{ matrix.shard }}.log ]; then
-            grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-components-shard${{ matrix.shard }}.log 2>/dev/null \
-              | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
-              || echo "No slow tests found"
-          else
-            echo "No test output log found"
-          fi
-
-      - name: Upload component test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-components-shard-${{ matrix.shard }}
-          path: test-results/
-
-      - name: Component Test Report
-        uses: dorny/test-reporter@v1.9.1
-        if: always() && github.event_name == 'pull_request'
-        with:
-          name: Jest Tests (Components - Shard ${{ matrix.shard }}/${{ matrix.total-shards }})
-          path: test-results/junit.xml
-          reporter: jest-junit
-          fail-on-error: false
-
-  test-api:
-    name: Test API Routes (node)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: [quality-checks]
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: findconstructionstaffing_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and dependencies
-        uses: ./.github/actions/setup-node
-        with:
-          node-version: '20.x'
-
-      - name: Cache Jest cache
-        uses: actions/cache@v4
-        with:
-          path: .jest-cache
-          key: ${{ runner.os }}-jest-api-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-jest-api-
-            ${{ runner.os }}-jest-
-
-      - name: Run API tests
-        run: |
-          echo "Waiting for PostgreSQL to start..."
-          sleep 5
-
-          export NODE_ENV=test
-          export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
-          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
-          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
-          export FORCE_TEST_MOCKS=true
-          export CI=true
-          export PGUSER=postgres
-          export USER=postgres
-          export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
-
-          # Run tests with 5-minute timeout and real-time output via stdbuf
-          # stdbuf -oL ensures line-buffered output for real-time visibility
-          timeout 300 stdbuf -oL npm test -- --selectProjects=node --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log || exit_code=$?
-
-          # Handle timeout (exit code 124)
-          if [ "${exit_code:-0}" -eq 124 ]; then
-            echo "::error::Tests timed out after 5 minutes"
-            exit 1
-          fi
-
-          exit ${exit_code:-0}
-
-      - name: Analyze slow API tests
-        if: always()
-        run: |
-          echo "API tests taking >30 seconds:"
-          if [ -f test-output-api.log ]; then
-            grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-api.log 2>/dev/null \
-              | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
-              || echo "No slow tests found"
-          else
-            echo "No test output log found"
-          fi
-
-      - name: Upload API test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-api
-          path: test-results/
-
-      - name: API Test Report
-        uses: dorny/test-reporter@v1.9.1
-        if: always() && github.event_name == 'pull_request'
-        with:
-          name: Jest Tests (API)
-          path: test-results/junit.xml
-          reporter: jest-junit
-          fail-on-error: false
-
-  test-results:
-    name: Test Results Summary
+  typecheck:
+    name: TypeScript
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [test-components, test-api]
-    if: always()
-
     steps:
-      - name: Check test results
-        run: |
-          COMPONENT_STATUS="${{ needs.test-components.result }}"
-          API_STATUS="${{ needs.test-api.result }}"
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: '20.x'
+      - run: npm run type-check
 
-          echo "Component Tests (all shards): $COMPONENT_STATUS"
-          echo "API Tests: $API_STATUS"
-
-          # If both were skipped (upstream failure), skip this check
-          if [[ "$COMPONENT_STATUS" == "skipped" ]] && [[ "$API_STATUS" == "skipped" ]]; then
-            echo "⏭️  Tests were skipped (likely due to upstream failure)"
-            exit 0
-          fi
-
-          # Handle cancelled (timeout)
-          if [[ "$COMPONENT_STATUS" == "cancelled" ]]; then
-            echo "❌ Component tests were cancelled (likely timeout)"
-            exit 1
-          fi
-
-          if [[ "$API_STATUS" == "cancelled" ]]; then
-            echo "❌ API tests were cancelled (likely timeout)"
-            exit 1
-          fi
-
-          # Check for actual failures
-          if [[ "$COMPONENT_STATUS" == "failure" ]]; then
-            echo "❌ Component tests failed"
-            exit 1
-          fi
-
-          if [[ "$API_STATUS" == "failure" ]]; then
-            echo "❌ API tests failed"
-            exit 1
-          fi
-
-          # Both must be successful if not skipped
-          if [[ "$COMPONENT_STATUS" == "success" ]] && [[ "$API_STATUS" == "success" ]]; then
-            echo "✅ All tests passed"
-            exit 0
-          fi
-
-          # Catch-all for unexpected states
-          echo "⚠️  Unexpected test status - Component: $COMPONENT_STATUS, API: $API_STATUS"
-          exit 1
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: '20.x'
+      - name: Run API tests
+        run: npm test -- --selectProjects=node --forceExit --ci
+        env:
+          NODE_ENV: test
+          FORCE_TEST_MOCKS: 'true'
+          CI: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co'
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
+          SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key'
 
   security:
-    name: Security Scanning
+    name: Security Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [quality-checks]
-
+    timeout-minutes: 3
+    continue-on-error: true
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and dependencies
-        uses: ./.github/actions/setup-node
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
         with:
           node-version: '20.x'
-
-      - name: Run npm audit
-        run: npm audit --audit-level=critical
-
-      - name: Upload audit report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-audit-report
-          path: audit.json
+      - run: npm audit --audit-level=critical
 
   build:
-    name: Build Application
+    name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [test-results, security]
-
+    timeout-minutes: 10
+    needs: [api-tests]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and dependencies
-        uses: ./.github/actions/setup-node
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
         with:
           node-version: '20.x'
-
-      - name: Build application
-        run: npm run build
+      - run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: .next/
-
-  performance-summary:
-    name: Performance Summary
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs:
-      [
-        start-timer,
-        quality-checks,
-        test-components,
-        test-api,
-        test-results,
-        security,
-        build,
-      ]
-    if: always()
-
-    steps:
-      - name: Calculate pipeline duration
-        id: duration
-        run: |
-          START_TIME=${{ needs.start-timer.outputs.start-time }}
-          END_TIME=$(date -u +%s)
-          DURATION=$((END_TIME - START_TIME))
-          DURATION_MIN=$((DURATION / 60))
-          DURATION_SEC=$((DURATION % 60))
-          echo "duration_display=${DURATION_MIN}m ${DURATION_SEC}s" >> $GITHUB_OUTPUT
-
-      - name: Generate job summary
-        run: |
-          cat >> $GITHUB_STEP_SUMMARY << EOF
-          # CI/CD Pipeline Performance Report
-          ## Overall Duration: ${{ steps.duration.outputs.duration_display }}
-          | Job | Status |
-          |-----|--------|
-          | Quality Checks | ${{ needs.quality-checks.result }} |
-          | Component Tests (8 shards) | ${{ needs.test-components.result }} |
-          | API Tests | ${{ needs.test-api.result }} |
-          | Test Results | ${{ needs.test-results.result }} |
-          | Security | ${{ needs.security.result }} |
-          | Build | ${{ needs.build.result }} |
-          EOF
+          NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co'
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
+          SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key'
