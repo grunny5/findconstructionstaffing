@@ -68,6 +68,11 @@ describe('ResetPasswordPage', () => {
     (window as any).location = { hash: '' };
   });
 
+  afterEach(() => {
+    // Ensure fake timers are cleaned up even if a test fails mid-execution
+    jest.useRealTimers();
+  });
+
   describe('Token Validation', () => {
     it('should show error when token is missing', async () => {
       (window as any).location.hash = '';

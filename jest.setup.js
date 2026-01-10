@@ -161,3 +161,13 @@ if (typeof global.HTMLElement !== 'undefined') {
     };
   }
 }
+
+// Global safety net: ensure real timers after every test
+// This catches any tests that use jest.useFakeTimers() without proper cleanup
+afterEach(() => {
+  try {
+    jest.useRealTimers();
+  } catch (e) {
+    // Ignore if already using real timers
+  }
+});

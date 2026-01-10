@@ -118,7 +118,7 @@ jobs:
           export FORCE_TEST_MOCKS=true
           export CI=true
 
-          npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log
+          npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log
 
       - name: Analyze slow component tests
         if: always()
@@ -198,7 +198,7 @@ jobs:
           export USER=postgres
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
 
-          npm test -- --selectProjects=node --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log
+          npm test -- --selectProjects=node --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log
 
       - name: Analyze slow API tests
         if: always()
