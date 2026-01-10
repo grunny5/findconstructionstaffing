@@ -118,15 +118,25 @@ jobs:
           export FORCE_TEST_MOCKS=true
           export CI=true
 
-          npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log
+          # Use timeout to force process exit after 10 minutes to prevent Jest hanging
+          timeout 600 npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log || exit_code=$?
+          if [ "${exit_code:-0}" -eq 124 ]; then
+            echo "::error::Tests timed out after 10 minutes"
+            exit 1
+          fi
+          exit ${exit_code:-0}
 
       - name: Analyze slow component tests
         if: always()
         run: |
           echo "Component tests (shard ${{ matrix.shard }}) taking >30 seconds:"
-          grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-components-shard${{ matrix.shard }}.log \
-            | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
-            || echo "No slow tests found"
+          if [ -f test-output-components-shard${{ matrix.shard }}.log ]; then
+            grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-components-shard${{ matrix.shard }}.log 2>/dev/null \
+              | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
+              || echo "No slow tests found"
+          else
+            echo "No test output log found"
+          fi
 
       - name: Upload component test results
         if: always()
@@ -198,15 +208,25 @@ jobs:
           export USER=postgres
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
 
-          npm test -- --selectProjects=node --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log
+          # Use timeout to force process exit after 10 minutes to prevent Jest hanging
+          timeout 600 npm test -- --selectProjects=node --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log || exit_code=$?
+          if [ "${exit_code:-0}" -eq 124 ]; then
+            echo "::error::Tests timed out after 10 minutes"
+            exit 1
+          fi
+          exit ${exit_code:-0}
 
       - name: Analyze slow API tests
         if: always()
         run: |
           echo "API tests taking >30 seconds:"
-          grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-api.log \
-            | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
-            || echo "No slow tests found"
+          if [ -f test-output-api.log ]; then
+            grep -E "^(PASS|FAIL).*\([0-9]+(\.[0-9]+)? s\)" test-output-api.log 2>/dev/null \
+              | awk 'match($0, /\(([0-9]+(\.[0-9]+)?) s\)/, m) && (m[1] + 0) > 30 { print }' \
+              || echo "No slow tests found"
+          else
+            echo "No test output log found"
+          fi
 
       - name: Upload API test results
         if: always()
