@@ -80,10 +80,15 @@ jobs:
         run: npm run format:check
 
   test-components:
-    name: Test Components (jsdom)
+    name: Test Components (jsdom) - Shard ${{ matrix.shard }}/${{ matrix.total-shards }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     needs: [quality-checks]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+        total-shards: [4]
 
     steps:
       - name: Checkout code
@@ -98,12 +103,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .jest-cache
-          key: ${{ runner.os }}-jest-components-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-jest-components-shard${{ matrix.shard }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
+            ${{ runner.os }}-jest-components-shard${{ matrix.shard }}-
             ${{ runner.os }}-jest-components-
             ${{ runner.os }}-jest-
 
-      - name: Run component tests
+      - name: Run component tests (shard ${{ matrix.shard }}/${{ matrix.total-shards }})
         run: |
           export NODE_ENV=test
           export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
@@ -112,26 +118,26 @@ jobs:
           export FORCE_TEST_MOCKS=true
           export CI=true
 
-          npm test -- --selectProjects=jsdom --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components.log
+          npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log
 
       - name: Analyze slow component tests
         if: always()
         run: |
-          echo "Component tests taking >30 seconds:"
-          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output-components.log || echo "No slow tests found"
+          echo "Component tests (shard ${{ matrix.shard }}) taking >30 seconds:"
+          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output-components-shard${{ matrix.shard }}.log || echo "No slow tests found"
 
       - name: Upload component test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-components
+          name: test-results-components-shard-${{ matrix.shard }}
           path: test-results/
 
       - name: Component Test Report
         uses: dorny/test-reporter@v1.9.1
         if: always() && github.event_name == 'pull_request'
         with:
-          name: Jest Tests (Components)
+          name: Jest Tests (Components - Shard ${{ matrix.shard }}/${{ matrix.total-shards }})
           path: test-results/junit.xml
           reporter: jest-junit
           fail-on-error: false
@@ -227,13 +233,24 @@ jobs:
           COMPONENT_STATUS="${{ needs.test-components.result }}"
           API_STATUS="${{ needs.test-api.result }}"
 
-          echo "Component Tests: $COMPONENT_STATUS"
+          echo "Component Tests (all shards): $COMPONENT_STATUS"
           echo "API Tests: $API_STATUS"
 
           # If both were skipped (upstream failure), skip this check
           if [[ "$COMPONENT_STATUS" == "skipped" ]] && [[ "$API_STATUS" == "skipped" ]]; then
             echo "⏭️  Tests were skipped (likely due to upstream failure)"
             exit 0
+          fi
+
+          # Handle cancelled (timeout)
+          if [[ "$COMPONENT_STATUS" == "cancelled" ]]; then
+            echo "❌ Component tests were cancelled (likely timeout)"
+            exit 1
+          fi
+
+          if [[ "$API_STATUS" == "cancelled" ]]; then
+            echo "❌ API tests were cancelled (likely timeout)"
+            exit 1
           fi
 
           # Check for actual failures
@@ -345,7 +362,7 @@ jobs:
           | Job | Status |
           |-----|--------|
           | Quality Checks | ${{ needs.quality-checks.result }} |
-          | Component Tests | ${{ needs.test-components.result }} |
+          | Component Tests (4 shards) | ${{ needs.test-components.result }} |
           | API Tests | ${{ needs.test-api.result }} |
           | Test Results | ${{ needs.test-results.result }} |
           | Security | ${{ needs.security.result }} |
