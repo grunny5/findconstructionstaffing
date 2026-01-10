@@ -238,6 +238,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Update or insert compliance record
     // Preserve existing is_active state, or default to false for new records
+    // Reset verification status when new document uploaded - requires admin re-review
     const { error: upsertError } = await supabase
       .from('agency_compliance')
       .upsert(
@@ -246,6 +247,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           compliance_type: complianceType,
           document_url: storagePath,
           is_active: existingCompliance?.is_active ?? false,
+          is_verified: false,
+          verified_by: null,
+          verified_at: null,
         },
         {
           onConflict: 'agency_id,compliance_type',

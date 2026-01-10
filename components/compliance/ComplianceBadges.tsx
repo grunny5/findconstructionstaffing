@@ -129,7 +129,6 @@ export function ComplianceBadges({
                     'hover:border-industrial-orange cursor-help focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2'
                   )}
                   tabIndex={0}
-                  role="button"
                   aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type]}${item.isVerified ? ' - Verified' : ''}${item.isExpired ? ' - Expired' : ''}`}
                 >
                   <div

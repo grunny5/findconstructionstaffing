@@ -75,7 +75,7 @@ describe('ComplianceBadges', () => {
       // OSHA is verified, should have a visible checkmark icon
       expect(screen.getByTestId('verified-icon-osha_certified')).toBeInTheDocument();
       // Container should have accessible label indicating verified status
-      expect(screen.getByRole('button', { name: /OSHA Certified - Verified/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/OSHA Certified - Verified/i)).toBeInTheDocument();
     });
 
     it('shows expiration date for items with expiration', () => {

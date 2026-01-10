@@ -311,35 +311,27 @@ export async function POST(
         { status: HTTP_STATUS.OK }
       );
     } else {
-      // REJECT ACTION: Delete storage file, clear document_url, and send email
+      // REJECT ACTION: Clear document_url, then delete storage file, and send email
+      // IMPORTANT: Update database FIRST, then delete file - ensures consistency
+      // if database update fails, file remains intact (no broken references)
 
-      // Delete the document from storage if it exists
+      // Store old document path for cleanup AFTER successful database update
+      const STORAGE_BUCKET = 'compliance-documents';
+      let oldDocumentPath: string | null = null;
       if (compliance.document_url) {
         // Extract file path from signed URL (strip bucket prefix and query params)
         // Handles both full signed URLs and plain storage paths
-        const STORAGE_BUCKET = 'compliance-documents';
         const urlParts = compliance.document_url.split(`/${STORAGE_BUCKET}/`);
-        let filePath: string;
         if (urlParts.length > 1) {
           // Full URL with bucket prefix - extract path after bucket name
-          filePath = urlParts[1].split('?')[0];
+          oldDocumentPath = urlParts[1].split('?')[0];
         } else {
           // Plain storage path - strip query params only
-          filePath = compliance.document_url.split('?')[0];
-        }
-        const { error: deleteError } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .remove([filePath]);
-
-        if (deleteError) {
-          console.warn(
-            `Failed to delete storage file ${filePath}:`,
-            deleteError
-          );
-          // Continue with rejection even if storage delete fails
+          oldDocumentPath = compliance.document_url.split('?')[0];
         }
       }
 
+      // Update database FIRST
       const { data: updatedCompliance, error: updateError } = await supabase
         .from('agency_compliance')
         .update({
@@ -347,7 +339,7 @@ export async function POST(
           verified_by: null,
           verified_at: null,
           document_url: null,
-          notes: validatedNotes ?? null,
+          notes: validatedNotes !== undefined ? validatedNotes : compliance.notes,
         })
         .eq('id', compliance.id)
         .select()
@@ -371,6 +363,22 @@ export async function POST(
           },
           { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
         );
+      }
+
+      // Delete storage file AFTER successful database update
+      // This ensures we don't have broken references if deletion succeeds but DB update fails
+      if (oldDocumentPath) {
+        const { error: deleteError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .remove([oldDocumentPath]);
+
+        if (deleteError) {
+          console.warn(
+            `Failed to delete storage file ${oldDocumentPath}:`,
+            deleteError
+          );
+          // Continue - database is consistent, orphaned file is minor issue
+        }
       }
 
       // ========================================================================

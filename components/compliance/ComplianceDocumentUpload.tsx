@@ -282,7 +282,7 @@ export function ComplianceDocumentUpload({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(currentUrl, '_blank');
+                      window.open(currentUrl, '_blank', 'noopener,noreferrer');
                     }}
                     data-testid="view-document-button"
                   >
@@ -321,6 +321,7 @@ export function ComplianceDocumentUpload({
                   handleRemove();
                 }}
                 data-testid="document-remove-button"
+                aria-label="Remove document"
               >
                 <X className="h-4 w-4" />
               </Button>

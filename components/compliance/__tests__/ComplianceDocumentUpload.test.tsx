@@ -467,7 +467,8 @@ describe('ComplianceDocumentUpload', () => {
 
       expect(windowOpenSpy).toHaveBeenCalledWith(
         'https://example.com/doc.pdf',
-        '_blank'
+        '_blank',
+        'noopener,noreferrer'
       );
 
       windowOpenSpy.mockRestore();
