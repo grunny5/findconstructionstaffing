@@ -83,7 +83,7 @@ export function ComplianceDashboard({
       }
 
       const result = await response.json();
-      setComplianceData(result.data);
+      setComplianceData(result.data.map(toComplianceItemFull));
 
       toast({
         title: 'Changes saved',

@@ -72,11 +72,10 @@ describe('ComplianceBadges', () => {
     it('shows verified icon for verified items', () => {
       render(<ComplianceBadges compliance={mockComplianceItems} />);
 
-      // OSHA is verified, should have 1 checkmark visible (the inline one)
-      const oshaSection = screen
-        .getByText('OSHA Certified')
-        .closest('div[class*="flex items-start gap-3"]');
-      expect(oshaSection).toBeInTheDocument();
+      // OSHA is verified, should have a visible checkmark icon
+      expect(screen.getByTestId('verified-icon-osha_certified')).toBeInTheDocument();
+      // Container should have accessible label indicating verified status
+      expect(screen.getByRole('button', { name: /OSHA Certified - Verified/i })).toBeInTheDocument();
     });
 
     it('shows expiration date for items with expiration', () => {
@@ -92,25 +91,23 @@ describe('ComplianceBadges', () => {
     });
 
     it('renders in responsive grid layout', () => {
-      const { container } = render(
-        <ComplianceBadges compliance={mockComplianceItems} />
-      );
+      render(<ComplianceBadges compliance={mockComplianceItems} />);
 
-      const grid = container.querySelector(
-        '.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3'
-      );
+      const grid = screen.getByTestId('compliance-badges-default');
       expect(grid).toBeInTheDocument();
     });
 
     it('does not show expiration for items without expiration date', () => {
       render(<ComplianceBadges compliance={mockComplianceItems} />);
 
-      const drugTestingSection = screen
-        .getByText('Drug Testing Policy')
-        .closest('div[class*="flex items-start gap-3"]');
-      expect(drugTestingSection).toBeInTheDocument();
-      expect(drugTestingSection).not.toHaveTextContent('Expires');
-      expect(drugTestingSection).not.toHaveTextContent('Expired');
+      // Drug Testing Policy item has no expiration date
+      const drugTestingText = screen.getByText('Drug Testing Policy');
+      expect(drugTestingText).toBeInTheDocument();
+
+      // Get the parent container and check it doesn't contain expiration text
+      const container = drugTestingText.parentElement?.parentElement;
+      expect(container).not.toHaveTextContent('Expires');
+      expect(container).not.toHaveTextContent('Expired');
     });
   });
 
@@ -160,21 +157,15 @@ describe('ComplianceBadges', () => {
         },
       ];
 
-      const { container } = render(
-        <ComplianceBadges compliance={manyItems} variant="compact" />
-      );
+      render(<ComplianceBadges compliance={manyItems} variant="compact" />);
 
       // Should show "+2" indicator
       expect(screen.getByText('+2')).toBeInTheDocument();
 
-      // Should only render 3 icon containers (direct children with p-1.5 class)
-      const wrapper = container.querySelector(
-        'div.flex.items-center.gap-1\\.5'
-      );
-      const iconContainers = wrapper?.querySelectorAll(
-        ':scope > div[class*="p-1.5"]'
-      );
-      expect(iconContainers).toHaveLength(3);
+      // Should only render 3 icon buttons (buttons in compact mode)
+      const compactContainer = screen.getByTestId('compliance-badges-compact');
+      const iconButtons = compactContainer.querySelectorAll('button[type="button"]');
+      expect(iconButtons).toHaveLength(3);
     });
 
     it('applies verified styling to verified items in compact mode', () => {
@@ -208,12 +199,10 @@ describe('ComplianceBadges', () => {
 
   describe('Accessibility', () => {
     it('uses semantic HTML for better accessibility', () => {
-      const { container } = render(
-        <ComplianceBadges compliance={mockComplianceItems} />
-      );
+      render(<ComplianceBadges compliance={mockComplianceItems} />);
 
-      // Should have proper structure
-      expect(container.querySelector('.grid')).toBeInTheDocument();
+      // Should have proper testid structure
+      expect(screen.getByTestId('compliance-badges-default')).toBeInTheDocument();
     });
 
     it('provides tooltip content for additional context', () => {
@@ -267,13 +256,11 @@ describe('ComplianceBadges', () => {
         verifiedAt: null,
       };
 
-      const { container } = render(<ComplianceBadges compliance={[item]} />);
-      const badge = container.querySelector(
-        'div[class*="flex items-start gap-3"]'
-      );
+      render(<ComplianceBadges compliance={[item]} />);
 
-      expect(badge).not.toHaveTextContent('Expires');
-      expect(badge).not.toHaveTextContent('Expired');
+      const container = screen.getByTestId('compliance-badges-default');
+      expect(container).not.toHaveTextContent('Expires');
+      expect(container).not.toHaveTextContent('Expired');
     });
   });
 });

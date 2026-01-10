@@ -151,9 +151,16 @@ export function ComplianceVerifyDialog({
   };
 
   const handleReject = async () => {
-    if (!rejectReason.trim()) {
+    const trimmedReason = rejectReason.trim();
+    if (!trimmedReason) {
       toast.error('Rejection Reason Required', {
         description: 'Please provide a reason for rejecting this document.',
+      });
+      return;
+    }
+    if (trimmedReason.length < 10) {
+      toast.error('Rejection Reason Too Short', {
+        description: 'Please provide at least 10 characters for the rejection reason.',
       });
       return;
     }
@@ -392,7 +399,8 @@ export function ComplianceVerifyDialog({
                 className="border-red-200 focus:border-red-500 focus:ring-red-500"
               />
               <p className="text-xs text-gray-600">
-                This reason will be sent to the agency owner.
+                This reason will be sent to the agency owner. Minimum 10
+                characters ({rejectReason.trim().length}/10).
               </p>
             </div>
           )}
@@ -449,7 +457,7 @@ export function ComplianceVerifyDialog({
                   <Button
                     variant="destructive"
                     onClick={handleReject}
-                    disabled={isProcessing || !rejectReason.trim()}
+                    disabled={isProcessing || rejectReason.trim().length < 10}
                   >
                     {isProcessing ? (
                       <>

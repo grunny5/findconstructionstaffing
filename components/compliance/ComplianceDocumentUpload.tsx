@@ -177,17 +177,18 @@ export function ComplianceDocumentUpload({
   }, [disabled, isUploading]);
 
   const handleRemove = useCallback(async () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setSelectedFile(null);
-    setPreviewUrl(null);
     setValidationError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
     try {
       await onRemove();
+      // Only clear state after successful removal
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (err) {
       setValidationError(err instanceof Error ? err.message : 'Remove failed');
     }

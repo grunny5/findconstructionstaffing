@@ -87,10 +87,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const file = formData.get('file') as File | null;
+  const file = formData.get('file');
   const complianceType = formData.get('compliance_type') as string | null;
 
-  if (!file) {
+  if (!file || !(file instanceof File)) {
     return NextResponse.json(
       {
         success: false,

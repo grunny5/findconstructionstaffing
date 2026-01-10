@@ -70,16 +70,18 @@ export function ComplianceBadges({
             <TooltipProvider key={item.type}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div
+                  <button
+                    type="button"
                     className={cn(
                       'p-1.5 rounded-industrial-sharp',
                       item.isVerified
                         ? 'bg-green-50 text-green-600'
                         : 'bg-industrial-graphite-100 text-industrial-graphite-500'
                     )}
+                    aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type]}${item.isVerified ? ' (Verified)' : ''}`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="font-semibold">
@@ -104,7 +106,10 @@ export function ComplianceBadges({
 
   // Default variant for profile pages
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+      data-testid="compliance-badges-default"
+    >
       {compliance.map((item) => {
         const Icon = COMPLIANCE_ICONS[item.type] || DEFAULT_COMPLIANCE_ICON;
         const formattedExpiration = formatExpirationDate(item.expirationDate);
@@ -121,8 +126,11 @@ export function ComplianceBadges({
                       : item.isVerified
                         ? 'border-green-200 bg-green-50'
                         : 'border-industrial-graphite-200 bg-industrial-bg-card',
-                    'hover:border-industrial-orange cursor-help'
+                    'hover:border-industrial-orange cursor-help focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2'
                   )}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type]}${item.isVerified ? ' - Verified' : ''}${item.isExpired ? ' - Expired' : ''}`}
                 >
                   <div
                     className={cn(
@@ -133,22 +141,30 @@ export function ComplianceBadges({
                           ? 'bg-green-100 text-green-600'
                           : 'bg-industrial-graphite-100 text-industrial-graphite-500'
                     )}
+                    aria-hidden="true"
                   >
                     <Icon className="h-4 w-4" />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
+                      <span className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
                         {COMPLIANCE_DISPLAY_NAMES[item.type]}
-                      </h4>
+                      </span>
 
                       {item.isVerified && !item.isExpired && (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <CheckCircle2
+                          className="h-4 w-4 text-green-600 flex-shrink-0"
+                          aria-hidden="true"
+                          data-testid={`verified-icon-${item.type}`}
+                        />
                       )}
 
                       {item.isExpired && (
-                        <AlertCircle className="h-4 w-4 text-industrial-orange-600 flex-shrink-0" />
+                        <AlertCircle
+                          className="h-4 w-4 text-industrial-orange-600 flex-shrink-0"
+                          aria-hidden="true"
+                        />
                       )}
                     </div>
 

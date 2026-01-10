@@ -119,6 +119,23 @@ export async function POST(
 
     const { complianceType, action, reason, notes } = body;
 
+    // Validate notes if provided
+    let validatedNotes: string | undefined = undefined;
+    if (notes !== undefined) {
+      if (typeof notes !== 'string') {
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.VALIDATION_ERROR,
+              message: 'Notes must be a string if provided',
+            },
+          },
+          { status: HTTP_STATUS.BAD_REQUEST }
+        );
+      }
+      validatedNotes = notes.trim() || undefined;
+    }
+
     // Validate complianceType
     if (!complianceType || typeof complianceType !== 'string') {
       return NextResponse.json(
@@ -260,7 +277,7 @@ export async function POST(
           is_verified: true,
           verified_by: user.id,
           verified_at: now,
-          notes: notes?.trim() || compliance.notes,
+          notes: validatedNotes !== undefined ? validatedNotes : compliance.notes,
         })
         .eq('id', compliance.id)
         .select()
@@ -330,7 +347,7 @@ export async function POST(
           verified_by: null,
           verified_at: null,
           document_url: null,
-          notes: notes?.trim() || null,
+          notes: validatedNotes ?? null,
         })
         .eq('id', compliance.id)
         .select()
