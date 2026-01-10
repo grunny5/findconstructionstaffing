@@ -462,9 +462,11 @@ export async function PUT(
 
     // Validate document presence for items being verified
     // Items with isVerified=true must have a document (either in request or existing in DB)
-    // Reject if documentUrl is explicitly set to empty string (clearing document while verifying)
+    // Reject if documentUrl is explicitly set to empty string or null (clearing document while verifying)
     const itemsExplicitlyClearingDocument = body.items.filter(
-      (item) => item.isVerified === true && item.documentUrl === ''
+      (item) =>
+        item.isVerified === true &&
+        (item.documentUrl === '' || item.documentUrl === null)
     );
 
     if (itemsExplicitlyClearingDocument.length > 0) {
