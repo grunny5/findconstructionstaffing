@@ -160,7 +160,8 @@ export function ComplianceVerifyDialog({
     }
     if (trimmedReason.length < 10) {
       toast.error('Rejection Reason Too Short', {
-        description: 'Please provide at least 10 characters for the rejection reason.',
+        description:
+          'Please provide at least 10 characters for the rejection reason.',
       });
       return;
     }

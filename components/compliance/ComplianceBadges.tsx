@@ -84,7 +84,9 @@ export function ComplianceBadges({
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="font-semibold">
-                    {COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}
+                    {COMPLIANCE_DISPLAY_NAMES[item.type] ??
+                      item.type ??
+                      'Unknown'}
                   </p>
                   {item.isVerified && (
                     <p className="text-xs text-green-600">Verified</p>
@@ -147,7 +149,9 @@ export function ComplianceBadges({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
-                        {COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}
+                        {COMPLIANCE_DISPLAY_NAMES[item.type] ??
+                          item.type ??
+                          'Unknown'}
                       </span>
 
                       {item.isVerified && !item.isExpired && (
@@ -189,10 +193,13 @@ export function ComplianceBadges({
               >
                 <div className="space-y-1.5">
                   <p className="font-semibold text-sm">
-                    {COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}
+                    {COMPLIANCE_DISPLAY_NAMES[item.type] ??
+                      item.type ??
+                      'Unknown'}
                   </p>
                   <p className="text-xs text-industrial-graphite-400">
-                    {COMPLIANCE_DESCRIPTIONS[item.type] ?? 'No description available'}
+                    {COMPLIANCE_DESCRIPTIONS[item.type] ??
+                      'No description available'}
                   </p>
                   {item.isVerified && (
                     <Badge

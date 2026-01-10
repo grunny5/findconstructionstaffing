@@ -290,7 +290,8 @@ export async function POST(
           is_verified: true,
           verified_by: user.id,
           verified_at: now,
-          notes: validatedNotes !== undefined ? validatedNotes : compliance.notes,
+          notes:
+            validatedNotes !== undefined ? validatedNotes : compliance.notes,
         })
         .eq('id', compliance.id)
         .select()
@@ -352,7 +353,8 @@ export async function POST(
           verified_by: null,
           verified_at: null,
           document_url: null,
-          notes: validatedNotes !== undefined ? validatedNotes : compliance.notes,
+          notes:
+            validatedNotes !== undefined ? validatedNotes : compliance.notes,
         })
         .eq('id', compliance.id)
         .select()

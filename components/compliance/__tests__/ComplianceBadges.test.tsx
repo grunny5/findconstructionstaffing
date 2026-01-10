@@ -73,9 +73,13 @@ describe('ComplianceBadges', () => {
       render(<ComplianceBadges compliance={mockComplianceItems} />);
 
       // OSHA is verified, should have a visible checkmark icon
-      expect(screen.getByTestId('verified-icon-osha_certified')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('verified-icon-osha_certified')
+      ).toBeInTheDocument();
       // Container should have accessible label indicating verified status
-      expect(screen.getByLabelText(/OSHA Certified - Verified/i)).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/OSHA Certified - Verified/i)
+      ).toBeInTheDocument();
     });
 
     it('shows expiration date for items with expiration', () => {
@@ -164,7 +168,9 @@ describe('ComplianceBadges', () => {
 
       // Should only render 3 icon buttons (buttons in compact mode)
       const compactContainer = screen.getByTestId('compliance-badges-compact');
-      const iconButtons = compactContainer.querySelectorAll('button[type="button"]');
+      const iconButtons = compactContainer.querySelectorAll(
+        'button[type="button"]'
+      );
       expect(iconButtons).toHaveLength(3);
     });
 
@@ -202,7 +208,9 @@ describe('ComplianceBadges', () => {
       render(<ComplianceBadges compliance={mockComplianceItems} />);
 
       // Should have proper testid structure
-      expect(screen.getByTestId('compliance-badges-default')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('compliance-badges-default')
+      ).toBeInTheDocument();
     });
 
     it('provides tooltip content for additional context', () => {
