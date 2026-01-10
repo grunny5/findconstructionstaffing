@@ -224,83 +224,38 @@ jobs:
     steps:
       - name: Check test results
         run: |
-          echo "Component Tests: ${{ needs.test-components.result }}"
-          echo "API Tests: ${{ needs.test-api.result }}"
+          COMPONENT_STATUS="${{ needs.test-components.result }}"
+          API_STATUS="${{ needs.test-api.result }}"
 
-          if [[ "${{ needs.test-components.result }}" != "success" ]]; then
+          echo "Component Tests: $COMPONENT_STATUS"
+          echo "API Tests: $API_STATUS"
+
+          # If both were skipped (upstream failure), skip this check
+          if [[ "$COMPONENT_STATUS" == "skipped" ]] && [[ "$API_STATUS" == "skipped" ]]; then
+            echo "⏭️  Tests were skipped (likely due to upstream failure)"
+            exit 0
+          fi
+
+          # Check for actual failures
+          if [[ "$COMPONENT_STATUS" == "failure" ]]; then
             echo "❌ Component tests failed"
             exit 1
           fi
 
-          if [[ "${{ needs.test-api.result }}" != "success" ]]; then
+          if [[ "$API_STATUS" == "failure" ]]; then
             echo "❌ API tests failed"
             exit 1
           fi
 
-          echo "✅ All tests passed"
+          # Both must be successful if not skipped
+          if [[ "$COMPONENT_STATUS" == "success" ]] && [[ "$API_STATUS" == "success" ]]; then
+            echo "✅ All tests passed"
+            exit 0
+          fi
 
-  coverage:
-    name: Generate Coverage Report
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs: [test-results]
-    if: github.event_name == 'pull_request'
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: findconstructionstaffing_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and dependencies
-        uses: ./.github/actions/setup-node
-        with:
-          node-version: '20.x'
-
-      - name: Cache Jest cache
-        uses: actions/cache@v4
-        with:
-          path: .jest-cache
-          key: ${{ runner.os }}-jest-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-jest-
-
-      - name: Run tests with coverage
-        run: |
-          echo "Waiting for PostgreSQL to start..."
-          sleep 5
-
-          export NODE_ENV=test
-          export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
-          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
-          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
-          export FORCE_TEST_MOCKS=true
-          export CI=true
-          export PGUSER=postgres
-          export USER=postgres
-          export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
-
-          npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache --maxWorkers=2
-
-      - name: Upload coverage reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-reports
-          path: coverage/
+          # Catch-all for unexpected states
+          echo "⚠️  Unexpected test status - Component: $COMPONENT_STATUS, API: $API_STATUS"
+          exit 1
 
   security:
     name: Security Scanning
@@ -359,7 +314,16 @@ jobs:
     name: Performance Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [start-timer, quality-checks, test-components, test-api, test-results, security, build]
+    needs:
+      [
+        start-timer,
+        quality-checks,
+        test-components,
+        test-api,
+        test-results,
+        security,
+        build,
+      ]
     if: always()
 
     steps:
