@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -91,6 +91,14 @@ export function ComplianceVerifyDialog({
   const [rejectReason, setRejectReason] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Reset form state when complianceItem changes to ensure clean state for each item
+  useEffect(() => {
+    setShowRejectReason(false);
+    setRejectReason('');
+    setAdminNotes('');
+    setIsProcessing(false);
+  }, [complianceItem]);
 
   if (!complianceItem) return null;
 

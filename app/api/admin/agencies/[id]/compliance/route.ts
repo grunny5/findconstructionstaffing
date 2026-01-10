@@ -462,6 +462,23 @@ export async function PUT(
 
     // Validate document presence for items being verified
     // Items with isVerified=true must have a document (either in request or existing in DB)
+    // Reject if documentUrl is explicitly set to empty string (clearing document while verifying)
+    const itemsExplicitlyClearingDocument = body.items.filter(
+      (item) => item.isVerified === true && item.documentUrl === ''
+    );
+
+    if (itemsExplicitlyClearingDocument.length > 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.INVALID_PARAMS,
+            message: `Cannot verify compliance while clearing the document: ${itemsExplicitlyClearingDocument.map((i) => i.type).join(', ')}`,
+          },
+        },
+        { status: HTTP_STATUS.BAD_REQUEST }
+      );
+    }
+
     const itemsNeedingDocumentCheck = body.items.filter(
       (item) => item.isVerified === true && !item.documentUrl
     );

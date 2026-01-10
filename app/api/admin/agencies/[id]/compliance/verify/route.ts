@@ -450,11 +450,11 @@ export async function POST(
 
             emailSent = true;
             console.log(
-              `Rejection email sent to owner ${agency.claimed_by} for compliance ${complianceType} on agency ${agencyId}`
+              `Rejection email sent successfully for compliance type: ${complianceType}`
             );
           } else {
             console.warn(
-              `Unable to send rejection email for agency ${agencyId}: owner not found or missing email`
+              `Unable to send rejection email: owner not found or missing email`
             );
           }
         } else {

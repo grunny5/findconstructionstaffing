@@ -474,12 +474,16 @@ export async function DELETE(
     }
   }
 
-  // Update compliance record to remove document_url FIRST
+  // Update compliance record to remove document_url and reset verification FIRST
   // This ensures we don't have broken links if storage deletion fails
+  // Verification must be reset since a verified item should always have a supporting document
   const { error: updateError } = await supabase
     .from('agency_compliance')
     .update({
       document_url: null,
+      is_verified: false,
+      verified_by: null,
+      verified_at: null,
     })
     .eq('agency_id', agencyId)
     .eq('compliance_type', complianceType);
