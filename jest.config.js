@@ -7,6 +7,19 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
+  // Enable parallel test execution
+  // CI: Use 50% of cores (conservative for stability)
+  // Local: Use 75% of cores (faster development)
+  maxWorkers: process.env.CI ? '50%' : '75%',
+
+  // Reduce watch mode overhead (doesn't affect CI)
+  watchPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/coverage/',
+    '/.jest-cache/',
+  ],
+
   // Configure different environments for different test types
   projects: [
     {
@@ -33,7 +46,7 @@ const customJestConfig = {
       resetMocks: false,
       testPathIgnorePatterns: ['/node_modules/', '/.next/', '/app/api/'],
       transformIgnorePatterns: [
-        '/node_modules/',
+        '/node_modules/(?!(@radix-ui|@supabase)/)',
         '^.+\\.module\\.(css|sass|scss)$',
       ],
     },
@@ -60,7 +73,7 @@ const customJestConfig = {
       resetMocks: false,
       testPathIgnorePatterns: ['/node_modules/', '/.next/'],
       transformIgnorePatterns: [
-        '/node_modules/',
+        '/node_modules/(?!(@radix-ui|@supabase)/)',
         '^.+\\.module\\.(css|sass|scss)$',
       ],
     },

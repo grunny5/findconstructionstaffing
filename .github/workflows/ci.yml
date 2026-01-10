@@ -82,7 +82,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     needs: [quality-checks] # Ensures tests run only after quality checks pass
 
     services:
@@ -117,7 +117,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-jest-
 
-      - name: Run unit tests with coverage
+      - name: Run unit tests
         run: |
           echo "Waiting for PostgreSQL to start..."
           sleep 5
@@ -132,14 +132,13 @@ jobs:
           export USER=postgres
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
 
-          npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache
+          npm test -- --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output.log
 
-      - name: Upload coverage reports
+      - name: Analyze slow tests
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-reports
-          path: coverage/
+        run: |
+          echo "Tests taking >30 seconds:"
+          grep -E "PASS|FAIL.*\([0-9]+ s\)" test-output.log || echo "No slow tests found"
 
       - name: Upload test results
         if: always()
@@ -156,6 +155,69 @@ jobs:
           path: test-results/junit.xml
           reporter: jest-junit
           fail-on-error: false
+
+  coverage:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [test]
+    if: github.event_name == 'pull_request'
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: findconstructionstaffing_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and dependencies
+        uses: ./.github/actions/setup-node
+        with:
+          node-version: '20.x'
+
+      - name: Cache Jest cache
+        uses: actions/cache@v4
+        with:
+          path: .jest-cache
+          key: ${{ runner.os }}-jest-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-
+
+      - name: Run tests with coverage
+        run: |
+          echo "Waiting for PostgreSQL to start..."
+          sleep 5
+
+          export NODE_ENV=test
+          export NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://test.supabase.co' }}"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key' }}"
+          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key' }}"
+          export FORCE_TEST_MOCKS=true
+          export CI=true
+          export PGUSER=postgres
+          export USER=postgres
+          export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
+
+          npm test -- --coverage --ci --passWithNoTests --cacheDirectory=.jest-cache --maxWorkers=2
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
 
   security:
     name: Security Scanning
