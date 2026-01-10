@@ -200,12 +200,27 @@ export async function POST(
     const filename = `${agencyId}/${complianceType}/${timestamp}.${extension}`;
 
     // Get existing compliance record to check for old document and preserve is_active state
-    const { data: existingCompliance } = await supabase
+    const { data: existingCompliance, error: existingError } = await supabase
       .from('agency_compliance')
       .select('document_url, is_active')
       .eq('agency_id', agencyId)
       .eq('compliance_type', complianceType)
       .single();
+
+    // Check for database errors (PGRST116 = no rows found, which is OK for new records)
+    if (existingError && existingError.code !== 'PGRST116') {
+      console.error('Error fetching existing compliance record:', existingError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to check existing compliance record',
+          },
+        },
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      );
+    }
 
     // Store old document path for cleanup AFTER successful upload
     let oldDocumentPath: string | null = null;
