@@ -216,6 +216,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
             return {
               select: jest.fn().mockReturnThis(),
               eq: jest.fn().mockReturnThis(),
+              in: jest.fn().mockReturnThis(),
               order: jest.fn().mockResolvedValue({
                 data: mockComplianceRows,
                 error: null,
@@ -225,6 +226,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
         });
@@ -273,6 +275,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
             return {
               select: jest.fn().mockReturnThis(),
               eq: jest.fn().mockReturnThis(),
+              in: jest.fn().mockReturnThis(),
               order: jest.fn().mockResolvedValue({
                 data: [],
                 error: null,
@@ -282,6 +285,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
         });
@@ -484,6 +488,10 @@ describe('/api/admin/agencies/[id]/compliance', () => {
             return {
               select: jest.fn().mockReturnThis(),
               eq: jest.fn().mockReturnThis(),
+              in: jest.fn().mockResolvedValue({
+                data: [mockComplianceRows[0]],
+                error: null,
+              }),
               order: jest.fn().mockResolvedValue({
                 data: [mockComplianceRows[0]],
                 error: null,
@@ -494,6 +502,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
         });
@@ -559,6 +568,10 @@ describe('/api/admin/agencies/[id]/compliance', () => {
             return {
               select: jest.fn().mockReturnThis(),
               eq: jest.fn().mockReturnThis(),
+              in: jest.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
               order: jest.fn().mockResolvedValue({
                 data: [],
                 error: null,
@@ -569,6 +582,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
         });
@@ -622,6 +636,10 @@ describe('/api/admin/agencies/[id]/compliance', () => {
             return {
               select: jest.fn().mockReturnThis(),
               eq: jest.fn().mockReturnThis(),
+              in: jest.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
               order: jest.fn().mockResolvedValue({
                 data: [],
                 error: null,
@@ -632,6 +650,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
         });
@@ -692,6 +711,16 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           }
           if (table === 'agency_compliance') {
             return {
+              select: jest.fn().mockReturnThis(),
+              eq: jest.fn().mockReturnThis(),
+              in: jest.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
+              order: jest.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
               upsert: jest.fn().mockResolvedValue({
                 error: { code: 'PGRST500', message: 'Database error' },
               }),
@@ -700,6 +729,7 @@ describe('/api/admin/agencies/[id]/compliance', () => {
           return {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
+            in: jest.fn().mockReturnThis(),
             single: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
         });
