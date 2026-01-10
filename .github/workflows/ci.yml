@@ -118,12 +118,13 @@ jobs:
           export FORCE_TEST_MOCKS=true
           export CI=true
 
-          # Use timeout to force process exit after 10 minutes to prevent Jest hanging
-          timeout 600 npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-components-shard${{ matrix.shard }}.log || exit_code=$?
-          if [ "${exit_code:-0}" -eq 124 ]; then
-            echo "::error::Tests timed out after 10 minutes"
-            exit 1
-          fi
+          # Run tests with output to file (no pipe to prevent Jest hanging)
+          npm test -- --selectProjects=jsdom --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose > test-output-components-shard${{ matrix.shard }}.log 2>&1 || exit_code=$?
+
+          # Display output for CI logs
+          cat test-output-components-shard${{ matrix.shard }}.log
+
+          # Exit with test exit code
           exit ${exit_code:-0}
 
       - name: Analyze slow component tests
@@ -208,12 +209,13 @@ jobs:
           export USER=postgres
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findconstructionstaffing_test"
 
-          # Use timeout to force process exit after 10 minutes to prevent Jest hanging
-          timeout 600 npm test -- --selectProjects=node --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose 2>&1 | tee test-output-api.log || exit_code=$?
-          if [ "${exit_code:-0}" -eq 124 ]; then
-            echo "::error::Tests timed out after 10 minutes"
-            exit 1
-          fi
+          # Run tests with output to file (no pipe to prevent Jest hanging)
+          npm test -- --selectProjects=node --forceExit --ci --passWithNoTests --cacheDirectory=.jest-cache --verbose > test-output-api.log 2>&1 || exit_code=$?
+
+          # Display output for CI logs
+          cat test-output-api.log
+
+          # Exit with test exit code
           exit ${exit_code:-0}
 
       - name: Analyze slow API tests
