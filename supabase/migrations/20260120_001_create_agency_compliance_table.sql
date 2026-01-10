@@ -112,6 +112,7 @@ WITH CHECK (
 );
 
 -- RLS Policy: Agency owner can update their compliance items
+-- Note: Verification field protection is enforced by trigger below
 CREATE POLICY "Agency owner update own compliance"
 ON agency_compliance
 FOR UPDATE
@@ -129,13 +130,43 @@ WITH CHECK (
     WHERE agencies.id = agency_compliance.agency_id
     AND agencies.claimed_by = auth.uid()
   )
-  -- Agency owner cannot modify verification fields
-  AND (
-    OLD.is_verified = NEW.is_verified
-    AND OLD.verified_by IS NOT DISTINCT FROM NEW.verified_by
-    AND OLD.verified_at IS NOT DISTINCT FROM NEW.verified_at
-  )
 );
+
+-- Trigger function to prevent agency owners from modifying verification fields
+-- This is necessary because RLS WITH CHECK cannot use OLD/NEW comparisons
+CREATE OR REPLACE FUNCTION prevent_owner_modify_verification()
+RETURNS TRIGGER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  owner_id UUID;
+BEGIN
+  -- Get the agency owner
+  SELECT claimed_by INTO owner_id
+  FROM agencies
+  WHERE id = NEW.agency_id;
+
+  -- If the current user is the agency owner (not admin), check verification fields
+  IF owner_id = auth.uid() THEN
+    -- Check if verification fields were modified
+    IF OLD.is_verified IS DISTINCT FROM NEW.is_verified
+       OR OLD.verified_by IS DISTINCT FROM NEW.verified_by
+       OR OLD.verified_at IS DISTINCT FROM NEW.verified_at
+    THEN
+      RAISE EXCEPTION 'Agency owners cannot modify verification fields';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create the trigger
+DROP TRIGGER IF EXISTS trigger_prevent_owner_modify_verification ON agency_compliance;
+CREATE TRIGGER trigger_prevent_owner_modify_verification
+  BEFORE UPDATE ON agency_compliance
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_owner_modify_verification();
 
 -- RLS Policy: Admin can update any compliance items (including verification)
 CREATE POLICY "Admin update any compliance"

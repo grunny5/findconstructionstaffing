@@ -97,6 +97,11 @@ export function ComplianceDocumentUpload({
         return;
       }
 
+      // Revoke previous preview URL to prevent memory leak
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
       setSelectedFile(file);
 
       let newPreviewUrl: string | null = null;
@@ -120,7 +125,7 @@ export function ComplianceDocumentUpload({
         setPreviewUrl(null);
       }
     },
-    [onUpload]
+    [onUpload, previewUrl]
   );
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {

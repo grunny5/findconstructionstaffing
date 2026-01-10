@@ -119,21 +119,24 @@ export async function POST(
     );
   }
 
-  const file = formData.get('file') as File | null;
+  const fileEntry = formData.get('file');
   const complianceType = formData.get('compliance_type') as string | null;
 
-  if (!file) {
+  // Validate file is present and is a File object (not a string)
+  if (!fileEntry || !(fileEntry instanceof File)) {
     return NextResponse.json(
       {
         success: false,
         error: {
           code: ERROR_CODES.VALIDATION_ERROR,
-          message: 'No file provided',
+          message: 'No file provided or invalid file format',
         },
       },
       { status: HTTP_STATUS.BAD_REQUEST }
     );
   }
+
+  const file = fileEntry;
 
   if (
     !complianceType ||
@@ -453,10 +456,10 @@ export async function DELETE(
     );
   }
 
-  // Delete document from storage if exists
+  // Extract file path before updating database (needed for storage deletion)
+  let filePath: string | null = null;
   if (complianceRecord?.document_url) {
     // Handle both old signed URLs (full URLs) and new storage paths (just filename)
-    let filePath: string;
     const urlParts = complianceRecord.document_url.split(`/${STORAGE_BUCKET}/`);
     if (urlParts.length > 1) {
       // Old format: full signed URL - extract path and strip query parameters
@@ -465,18 +468,10 @@ export async function DELETE(
       // New format: just the storage path (e.g., "agency-id/type/timestamp.pdf")
       filePath = complianceRecord.document_url;
     }
-
-    const { error: deleteError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .remove([filePath]);
-
-    if (deleteError) {
-      console.error('Storage delete error:', deleteError);
-      // Continue anyway to clear document_url
-    }
   }
 
-  // Update compliance record to remove document_url
+  // Update compliance record to remove document_url FIRST
+  // This ensures we don't have broken links if storage deletion fails
   const { error: updateError } = await supabase
     .from('agency_compliance')
     .update({
@@ -497,6 +492,18 @@ export async function DELETE(
       },
       { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
+  }
+
+  // Delete document from storage AFTER database update succeeds
+  if (filePath) {
+    const { error: deleteError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .remove([filePath]);
+
+    if (deleteError) {
+      console.error('Storage delete error:', deleteError);
+      // Log but don't fail - document_url is already cleared in database
+    }
   }
 
   return NextResponse.json({

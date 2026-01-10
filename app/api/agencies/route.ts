@@ -544,16 +544,49 @@ export async function GET(request: NextRequest) {
 
     if (agencyIds.length > 0) {
       const complianceQueryId = monitor.startQuery();
-      const { data: complianceData } = await queryWithRetry(async () =>
-        supabase
-          .from('agency_compliance')
-          .select(
-            'id, agency_id, compliance_type, is_active, is_verified, expiration_date'
-          )
-          .in('agency_id', agencyIds)
-          .eq('is_active', true)
-      );
+      const { data: complianceData, error: complianceError } =
+        await queryWithRetry(async () =>
+          supabase
+            .from('agency_compliance')
+            .select(
+              'id, agency_id, compliance_type, is_active, is_verified, expiration_date'
+            )
+            .in('agency_id', agencyIds)
+            .eq('is_active', true)
+        );
       monitor.endQuery(complianceQueryId);
+
+      if (complianceError) {
+        console.error(
+          '[API ERROR] Failed to fetch compliance data:',
+          complianceError
+        );
+        const errorResponse: ErrorResponse = {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to fetch agency compliance data',
+            details: {
+              supabaseError: complianceError.message,
+              code: complianceError.code,
+            },
+          },
+        };
+
+        monitor.complete(
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          errorResponse.error.message
+        );
+        errorTracker.recordRequest('/api/agencies', true);
+
+        return NextResponse.json(errorResponse, {
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+        });
+      }
 
       // Build compliance map by agency ID
       if (complianceData) {

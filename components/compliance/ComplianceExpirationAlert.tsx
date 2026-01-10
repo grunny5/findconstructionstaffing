@@ -24,6 +24,8 @@ interface ComplianceExpirationAlertProps {
   complianceUrl?: string;
   /** Optional agency ID for localStorage key (default: 'default') */
   agencyId?: string;
+  /** Optional fetch error to display as a non-blocking notification */
+  fetchError?: string | null;
 }
 
 /**
@@ -63,8 +65,10 @@ export function ComplianceExpirationAlert({
   expiringItems,
   complianceUrl = '/dashboard/compliance',
   agencyId = 'default',
+  fetchError = null,
 }: ComplianceExpirationAlertProps) {
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isErrorDismissed, setIsErrorDismissed] = useState(false);
 
   // Storage key for dismissed state
   const storageKey = `compliance-alert-dismissed-${agencyId}`;
@@ -127,9 +131,41 @@ export function ComplianceExpirationAlert({
     })
     .filter((enriched) => enriched.severity !== 'none');
 
-  // Don't render if no relevant items or dismissed
+  // Render fetch error alert if there was an error loading compliance data
+  const errorAlert =
+    fetchError && !isErrorDismissed ? (
+      <Alert
+        variant="default"
+        className="relative border-yellow-500 bg-yellow-50"
+      >
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertTitle className="pr-8 text-yellow-800">
+          Unable to Load Compliance Data
+        </AlertTitle>
+        <AlertDescription className="text-yellow-700">
+          <p className="text-sm">
+            Could not load compliance expiration data for agency {agencyId}.
+            Your compliance settings may still be accessible.
+          </p>
+          <div className="mt-2">
+            <Button asChild size="sm" variant="outline">
+              <Link href={complianceUrl}>View Compliance Settings</Link>
+            </Button>
+          </div>
+        </AlertDescription>
+        <button
+          onClick={() => setIsErrorDismissed(true)}
+          className="absolute top-4 right-4 p-1 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+          aria-label="Dismiss error"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </Alert>
+    ) : null;
+
+  // Don't render expiration alert if no relevant items or dismissed
   if (enrichedItems.length === 0 || isDismissed) {
-    return null;
+    return errorAlert;
   }
 
   // Categorize items by severity
@@ -144,85 +180,89 @@ export function ComplianceExpirationAlert({
   const Icon = hasExpired || hasUrgent ? AlertCircle : AlertTriangle;
 
   return (
-    <Alert variant={variant} className="relative">
-      <Icon className="h-4 w-4" />
-      <AlertTitle className="pr-8">
-        {hasExpired
-          ? 'Compliance Certifications Expired'
-          : hasUrgent
-            ? 'Urgent: Compliance Certifications Expiring Soon'
-            : 'Compliance Certifications Expiring in 30 Days'}
-      </AlertTitle>
-      <AlertDescription>
-        <div className="space-y-2">
-          {expiredItems.length > 0 && (
-            <div>
-              <p className="font-semibold text-sm">
-                Expired ({expiredItems.length}):
-              </p>
-              <ul className="list-disc list-inside text-sm ml-4">
-                {expiredItems.map(({ item, days }) => (
-                  <li key={item.id}>
-                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expired{' '}
-                    {Math.abs(days)} {Math.abs(days) === 1 ? 'day' : 'days'} ago
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+    <div className="space-y-4">
+      {errorAlert}
+      <Alert variant={variant} className="relative">
+        <Icon className="h-4 w-4" />
+        <AlertTitle className="pr-8">
+          {hasExpired
+            ? 'Compliance Certifications Expired'
+            : hasUrgent
+              ? 'Urgent: Compliance Certifications Expiring Soon'
+              : 'Compliance Certifications Expiring in 30 Days'}
+        </AlertTitle>
+        <AlertDescription>
+          <div className="space-y-2">
+            {expiredItems.length > 0 && (
+              <div>
+                <p className="font-semibold text-sm">
+                  Expired ({expiredItems.length}):
+                </p>
+                <ul className="list-disc list-inside text-sm ml-4">
+                  {expiredItems.map(({ item, days }) => (
+                    <li key={item.id}>
+                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expired{' '}
+                      {Math.abs(days)} {Math.abs(days) === 1 ? 'day' : 'days'}{' '}
+                      ago
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          {urgentItems.length > 0 && (
-            <div>
-              <p className="font-semibold text-sm">
-                Expiring within 7 days ({urgentItems.length}):
-              </p>
-              <ul className="list-disc list-inside text-sm ml-4">
-                {urgentItems.map(({ item, days }) => (
-                  <li key={item.id}>
-                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
-                    {days === 1 ? 'day' : 'days'}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            {urgentItems.length > 0 && (
+              <div>
+                <p className="font-semibold text-sm">
+                  Expiring within 7 days ({urgentItems.length}):
+                </p>
+                <ul className="list-disc list-inside text-sm ml-4">
+                  {urgentItems.map(({ item, days }) => (
+                    <li key={item.id}>
+                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
+                      {days === 1 ? 'day' : 'days'}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          {warningItems.length > 0 && (
-            <div>
-              <p className="font-semibold text-sm">
-                Expiring within 30 days ({warningItems.length}):
-              </p>
-              <ul className="list-disc list-inside text-sm ml-4">
-                {warningItems.map(({ item, days }) => (
-                  <li key={item.id}>
-                    {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
-                    {days === 1 ? 'day' : 'days'}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            {warningItems.length > 0 && (
+              <div>
+                <p className="font-semibold text-sm">
+                  Expiring within 30 days ({warningItems.length}):
+                </p>
+                <ul className="list-disc list-inside text-sm ml-4">
+                  {warningItems.map(({ item, days }) => (
+                    <li key={item.id}>
+                      {COMPLIANCE_DISPLAY_NAMES[item.type]} - expires in {days}{' '}
+                      {days === 1 ? 'day' : 'days'}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          <div className="mt-4">
-            <Button
-              asChild
-              size="sm"
-              variant={hasExpired || hasUrgent ? 'default' : 'outline'}
-            >
-              <Link href={complianceUrl}>Update Now</Link>
-            </Button>
+            <div className="mt-4">
+              <Button
+                asChild
+                size="sm"
+                variant={hasExpired || hasUrgent ? 'default' : 'outline'}
+              >
+                <Link href={complianceUrl}>Update Now</Link>
+              </Button>
+            </div>
           </div>
-        </div>
-      </AlertDescription>
+        </AlertDescription>
 
-      {/* Dismiss button */}
-      <button
-        onClick={handleDismiss}
-        className="absolute top-4 right-4 p-1 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-        aria-label="Dismiss alert"
-      >
-        <X className="h-4 w-4" />
-      </button>
-    </Alert>
+        {/* Dismiss button */}
+        <button
+          onClick={handleDismiss}
+          className="absolute top-4 right-4 p-1 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+          aria-label="Dismiss alert"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </Alert>
+    </div>
   );
 }

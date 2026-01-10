@@ -8,12 +8,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 1: Database & API Foundation (Sprint 1) ✅ COMPLETE
+## 📦 Phase 1: Database & API Foundation (Sprint 1) — COMPLETE
 
 **Goal:** Establish the data model and core API endpoints for compliance management
 **Estimated Duration:** 3-4 days
-**Dependencies:** Feature 008 (Complete ✅), Feature 012 (Complete ✅)
-**Completed:** 2026-01-06
+**Dependencies:** Feature 008 (Complete), Feature 012 (Complete)
+**Completed:** 2026-01-06 — PR #579
+**Key Files:** `supabase/migrations/20260120_001_create_agency_compliance_table.sql`, `app/api/agencies/[slug]/compliance/route.ts`, `types/api.ts`
 
 ---
 
@@ -41,6 +42,7 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
   - Unique constraint on (agency_id, compliance_type)
   - Timestamp columns with defaults
 - **Schema:**
+
   ```sql
   CREATE TABLE agency_compliance (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,16 +60,42 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE(agency_id, compliance_type)
+    UNIQUE(agency_id, compliance_type),
+    -- Ensure verified_by and verified_at are set together
+    CHECK ((verified_by IS NULL AND verified_at IS NULL) OR (verified_by IS NOT NULL AND verified_at IS NOT NULL))
   );
+
+  -- Index for agency lookup queries
+  CREATE INDEX agency_compliance_agency_id_idx ON agency_compliance(agency_id);
+
+  -- Index for expiration date queries (used by cron job filtering BETWEEN now() AND now() + interval '30 days')
+  CREATE INDEX agency_compliance_expiration_date_idx ON agency_compliance(expiration_date);
+
+  -- Trigger function to auto-update updated_at timestamp
+  CREATE OR REPLACE FUNCTION set_updated_at()
+  RETURNS TRIGGER AS $$
+  BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+  END;
+  $$ LANGUAGE plpgsql;
+
+  -- Trigger to call set_updated_at on row updates
+  CREATE TRIGGER agency_compliance_set_updated_at
+    BEFORE UPDATE ON agency_compliance
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
   ```
+
 - **Acceptance Criteria (for this task):**
   - [ ] Migration creates agency_compliance table with all columns
   - [ ] Foreign key constraint to agencies with CASCADE delete
   - [ ] CHECK constraint validates compliance_type values
+  - [ ] CHECK constraint ensures verified_by and verified_at are set together
   - [ ] Unique constraint prevents duplicate compliance types per agency
-  - [ ] Index created on agency_id for query performance
-  - [ ] Trigger updates updated_at on row changes
+  - [ ] Index agency_compliance_agency_id_idx created on agency_id for query performance
+  - [ ] Index agency_compliance_expiration_date_idx created on expiration_date for cron queries
+  - [ ] Trigger agency_compliance_set_updated_at updates updated_at on row changes using set_updated_at function
 - **Definition of Done:**
   - [ ] Migration created and tested locally
   - [ ] Rollback migration included
@@ -308,12 +336,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 2: Agency Owner Dashboard (Sprint 2) ✅ COMPLETE
+## 📦 Phase 2: Agency Owner Dashboard (Sprint 2) — COMPLETE
 
 **Goal:** Enable agency owners to manage their compliance settings with document upload
 **Estimated Duration:** 3-4 days
 **Dependencies:** Phase 1 complete
-**Completed:** 2026-01-07
+**Completed:** 2026-01-07 — PR #579
+**Key Files:** `components/compliance/ComplianceSettings.tsx`, `components/compliance/ComplianceDocumentUpload.tsx`, `app/api/dashboard/compliance/route.ts`
 
 ---
 
@@ -517,12 +546,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 3: Public Profile Display (Sprint 3) ✅ COMPLETE
+## 📦 Phase 3: Public Profile Display (Sprint 3) — COMPLETE
 
 **Goal:** Display compliance badges on agency public profiles
 **Estimated Duration:** 2-3 days
 **Dependencies:** Phase 1 complete
-**Completed:** 2026-01-07
+**Completed:** 2026-01-07 — PR #579
+**Key Files:** `components/compliance/ComplianceBadges.tsx`, `app/recruiters/[slug]/page.tsx`, `components/AgencyCard.tsx`
 
 ---
 
@@ -639,12 +669,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 4: Search Filtering (Sprint 3-4) ✅ COMPLETE
+## 📦 Phase 4: Search Filtering (Sprint 3-4) — COMPLETE
 
 **Goal:** Enable contractors to filter agencies by compliance requirements
 **Estimated Duration:** 2-3 days
 **Dependencies:** Phase 1 complete
-**Completed:** 2026-01-07
+**Completed:** 2026-01-07 — PR #579
+**Key Files:** `components/compliance/ComplianceFilters.tsx`, `app/api/agencies/route.ts`, `app/page.tsx`
 
 ---
 
@@ -749,12 +780,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 5: Admin Verification (Sprint 4) ✅ COMPLETE
+## 📦 Phase 5: Admin Verification (Sprint 4) — COMPLETE
 
 **Goal:** Enable admins to verify compliance documents and manage any agency's compliance
 **Estimated Duration:** 3-4 days
 **Dependencies:** Phase 1-2 complete
-**Completed:** 2026-01-07
+**Completed:** 2026-01-07 — PR #579
+**Key Files:** `components/admin/ComplianceVerifyDialog.tsx`, `app/api/admin/agencies/[id]/compliance/route.ts`, `lib/email/templates/compliance-rejected.tsx`
 
 ---
 
@@ -932,12 +964,13 @@ This document breaks down Feature #013 into sprint-ready engineering tasks. All 
 
 ---
 
-## 📦 Phase 6: Expiration Tracking (Sprint 5) ✅ COMPLETE
+## 📦 Phase 6: Expiration Tracking (Sprint 5) — COMPLETE
 
 **Goal:** Track compliance expiration dates and send reminder notifications
 **Estimated Duration:** 3-4 days
 **Dependencies:** Phase 1-2 complete, Email service
-**Completed:** 2026-01-07
+**Completed:** 2026-01-07 — PR #579
+**Key Files:** `components/compliance/ComplianceExpirationAlert.tsx`, `app/api/cron/compliance-expiration/route.ts`, `lib/email/templates/compliance-expiring-30.tsx`
 
 ---
 

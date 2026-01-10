@@ -28,16 +28,18 @@ DROP POLICY IF EXISTS "Admin delete any compliance documents" ON storage.objects
 
 -- Policy: Agency owner can read their own documents
 -- File path structure: {agency_id}/{compliance_type}/{filename}
+-- Security: Reject path traversal attempts and enforce strict path pattern
 CREATE POLICY "Agency owner read own compliance documents"
 ON storage.objects
 FOR SELECT
 TO authenticated
 USING (
   bucket_id = 'compliance-documents'
+  AND storage.objects.name !~ '\\.\\.'
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
+    AND storage.objects.name ~ ('^' || agencies.id::text || '/[^/]+(/.*)?$')
   )
 );
 
@@ -56,16 +58,18 @@ USING (
 );
 
 -- Policy: Agency owner can upload to their own folder
+-- Security: Reject path traversal attempts and enforce strict path pattern
 CREATE POLICY "Agency owner upload own compliance documents"
 ON storage.objects
 FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'compliance-documents'
+  AND storage.objects.name !~ '\\.\\.'
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
+    AND storage.objects.name ~ ('^' || agencies.id::text || '/[^/]+(/.*)?$')
   )
 );
 
@@ -84,24 +88,27 @@ WITH CHECK (
 );
 
 -- Policy: Agency owner can update their own documents
+-- Security: Reject path traversal attempts and enforce strict path pattern
 CREATE POLICY "Agency owner update own compliance documents"
 ON storage.objects
 FOR UPDATE
 TO authenticated
 USING (
   bucket_id = 'compliance-documents'
+  AND storage.objects.name !~ '\\.\\.'
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
+    AND storage.objects.name ~ ('^' || agencies.id::text || '/[^/]+(/.*)?$')
   )
 )
 WITH CHECK (
   bucket_id = 'compliance-documents'
+  AND storage.objects.name !~ '\\.\\.'
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
+    AND storage.objects.name ~ ('^' || agencies.id::text || '/[^/]+(/.*)?$')
   )
 );
 
@@ -128,16 +135,18 @@ WITH CHECK (
 );
 
 -- Policy: Agency owner can delete their own documents
+-- Security: Reject path traversal attempts and enforce strict path pattern
 CREATE POLICY "Agency owner delete own compliance documents"
 ON storage.objects
 FOR DELETE
 TO authenticated
 USING (
   bucket_id = 'compliance-documents'
+  AND storage.objects.name !~ '\\.\\.'
   AND EXISTS (
     SELECT 1 FROM agencies
     WHERE agencies.claimed_by = auth.uid()
-    AND (storage.foldername(storage.objects.name))[1] = agencies.id::text
+    AND storage.objects.name ~ ('^' || agencies.id::text || '/[^/]+(/.*)?$')
   )
 );
 

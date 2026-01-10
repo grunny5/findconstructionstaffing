@@ -55,9 +55,7 @@ describe('ComplianceBadges', () => {
     });
 
     it('returns null when compliance is null', () => {
-      const { container } = render(
-        <ComplianceBadges compliance={null as any} />
-      );
+      const { container } = render(<ComplianceBadges compliance={null} />);
       expect(container.firstChild).toBeNull();
     });
   });

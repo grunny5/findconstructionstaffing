@@ -342,7 +342,7 @@ async function sendReminder(
       html,
       text,
       headers: {
-        'X-Idempotency-Key': idempotencyKey,
+        'Idempotency-Key': idempotencyKey,
       },
     });
 
@@ -460,6 +460,19 @@ export async function GET(request: NextRequest) {
 
     const resend = new Resend(resendApiKey);
     const siteUrl = validateSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || '');
+
+    if (!siteUrl) {
+      console.error(
+        '[Cron] NEXT_PUBLIC_SITE_URL is missing or invalid. validateSiteUrl returned empty string. Cannot generate email links.'
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Site URL not configured - cannot generate email links',
+        },
+        { status: 500 }
+      );
+    }
 
     // ========================================================================
     // 4. FETCH EXPIRING COMPLIANCE ITEMS

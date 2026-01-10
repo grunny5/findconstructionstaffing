@@ -17,7 +17,7 @@ export function createMockNextRequest(
     method?: string;
     headers?: Record<string, string>;
     searchParams?: Record<string, string | string[]>;
-    body?: FormData | Record<string, any> | string;
+    body?: FormData | Record<string, unknown> | string;
   } = {}
 ): NextRequest {
   const {

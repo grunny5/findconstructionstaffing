@@ -8,7 +8,7 @@
  * Client component that wraps ComplianceSettings and handles API interactions.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
   ComplianceSettings,
@@ -35,6 +35,7 @@ export function ComplianceDashboard({
     () => initialData.map(toComplianceItemFull)
   );
   const [isLoading, setIsLoading] = useState(false);
+  const savingRef = useRef(false);
 
   // Transform initial data when it changes
   useEffect(() => {
@@ -42,6 +43,9 @@ export function ComplianceDashboard({
   }, [initialData]);
 
   const handleSave = async (data: ComplianceFormData[]): Promise<void> => {
+    // Prevent concurrent saves
+    if (savingRef.current) return;
+    savingRef.current = true;
     setIsLoading(true);
 
     try {
@@ -96,6 +100,7 @@ export function ComplianceDashboard({
         variant: 'destructive',
       });
     } finally {
+      savingRef.current = false;
       setIsLoading(false);
     }
   };

@@ -21,7 +21,7 @@ import {
 } from '@/lib/constants/compliance';
 
 export interface ComplianceBadgesProps {
-  compliance: ComplianceItem[];
+  compliance: ComplianceItem[] | null | undefined;
   variant?: 'default' | 'compact';
 }
 
@@ -60,7 +60,10 @@ export function ComplianceBadges({
   if (variant === 'compact') {
     // Compact variant for agency cards
     return (
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div
+        className="flex items-center gap-1.5 flex-wrap"
+        data-testid="compliance-badges-compact"
+      >
         {compliance.slice(0, 3).map((item) => {
           const Icon = COMPLIANCE_ICONS[item.type] || DEFAULT_COMPLIANCE_ICON;
           return (

@@ -2,10 +2,15 @@
  * Dashboard Compliance Document API Endpoint
  *
  * POST /api/dashboard/compliance/document
- * Uploads a compliance document (PDF or image) for the authenticated agency owner
+ * Uploads a compliance document (PDF or image) for the authenticated agency owner.
+ * The agency is determined from the authenticated user's claimed agency (via claimed_by).
  *
  * DELETE /api/dashboard/compliance/document
- * Removes a compliance document from storage and sets document_url to null
+ * Removes a compliance document from storage and sets document_url to null.
+ * The agency is determined from the authenticated user's claimed agency (via claimed_by).
+ *
+ * Note: Unlike the admin route, this endpoint does not use route params for agency ID.
+ * The agency is automatically resolved from the authenticated user's session.
  */
 
 import { NextRequest, NextResponse } from 'next/server';

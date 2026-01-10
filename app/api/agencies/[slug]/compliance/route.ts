@@ -12,8 +12,10 @@ import { supabase } from '@/lib/supabase';
 import {
   ERROR_CODES,
   HTTP_STATUS,
+  COMPLIANCE_TYPES,
   type AgencyComplianceRow,
   type ComplianceItem,
+  type ComplianceType,
   toComplianceItem,
 } from '@/types/api';
 import { isValidSlug } from '@/lib/validation/slug';
@@ -66,6 +68,35 @@ export async function GET(
       );
     }
 
+    // Parse optional "type" query param (CSV list of compliance types)
+    const typeParam = request.nextUrl.searchParams.get('type');
+    let typeFilter: ComplianceType[] = [];
+
+    if (typeParam) {
+      const typeValues = typeParam
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
+
+      // Validate each type value
+      for (const typeValue of typeValues) {
+        if (!COMPLIANCE_TYPES.includes(typeValue as ComplianceType)) {
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.INVALID_PARAMS,
+                message: `Invalid compliance type: ${typeValue}`,
+                details: { validTypes: COMPLIANCE_TYPES },
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
+      }
+
+      typeFilter = typeValues as ComplianceType[];
+    }
+
     // Find the agency by slug (only active agencies)
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
@@ -87,12 +118,19 @@ export async function GET(
     }
 
     // Fetch active compliance items for this agency
-    const { data: complianceRows, error: complianceError } = await supabase
+    let query = supabase
       .from('agency_compliance')
       .select('*')
       .eq('agency_id', agency.id)
-      .eq('is_active', true)
-      .order('compliance_type');
+      .eq('is_active', true);
+
+    // Apply type filter if provided
+    if (typeFilter.length > 0) {
+      query = query.in('compliance_type', typeFilter);
+    }
+
+    const { data: complianceRows, error: complianceError } =
+      await query.order('compliance_type');
 
     if (complianceError) {
       console.error('Error fetching compliance data:', complianceError);

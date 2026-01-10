@@ -377,6 +377,11 @@ export async function POST(
             .single();
 
           if (!ownerError && owner && owner.email) {
+            // Use configurable sender address - domain must be verified in Resend (SPF/DKIM)
+            const emailSender =
+              process.env.AUTH_EMAIL_SENDER ||
+              'FindConstructionStaffing <noreply@findconstructionstaffing.com>';
+
             const emailHtml = generateComplianceRejectedHTML({
               recipientName: owner.full_name || undefined,
               agencyName: agency.name,
@@ -396,7 +401,7 @@ export async function POST(
             });
 
             await resend.emails.send({
-              from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+              from: emailSender,
               to: owner.email,
               subject: `Compliance Document Update - ${agency.name}`,
               html: emailHtml,

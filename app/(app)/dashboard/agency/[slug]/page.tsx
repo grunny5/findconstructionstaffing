@@ -91,6 +91,11 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     .eq('is_active', true)
     .not('expiration_date', 'is', null);
 
+  // Log compliance fetch errors but don't block rendering
+  const complianceFetchError = complianceError
+    ? `Failed to load compliance data: ${complianceError.message}`
+    : null;
+
   if (complianceError) {
     console.error(
       `Failed to fetch compliance data for agency ${agency.id}:`,
@@ -110,6 +115,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         expiringItems={complianceItems}
         complianceUrl={`/dashboard/agency/${agency.slug}/compliance`}
         agencyId={agency.id}
+        fetchError={complianceFetchError}
       />
 
       {/* Header */}

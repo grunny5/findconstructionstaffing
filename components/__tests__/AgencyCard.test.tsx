@@ -560,13 +560,15 @@ describe('AgencyCard', () => {
         compliance: mockCompliance,
       };
 
-      const { container } = render(
-        <AgencyCard agency={toAgencyCardProps(agencyWithCompliance)} />
-      );
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithCompliance)} />);
 
-      // Should render ComplianceBadges component in compact mode
-      const complianceIcons = container.querySelectorAll('svg');
+      // Verify user-facing compliance labels are displayed
+      // In compact mode, icons are shown with tooltips containing the display names
+      const complianceIcons = screen.getAllByRole('img', { hidden: true });
       expect(complianceIcons.length).toBeGreaterThan(0);
+
+      // The component renders compliance items - verify agency still renders correctly
+      expect(screen.getByText('Test Agency')).toBeInTheDocument();
     });
 
     it('should not render compliance indicators when no compliance data', () => {
@@ -579,10 +581,12 @@ describe('AgencyCard', () => {
         <AgencyCard agency={toAgencyCardProps(agencyWithoutCompliance)} />
       );
 
-      // Compliance section should not be rendered
-      // We can't easily test for absence of ComplianceBadges component
-      // but we can verify the main content renders without errors
+      // Verify main content renders
       expect(screen.getByText('Test Agency')).toBeInTheDocument();
+
+      // Compliance labels should not be present
+      expect(screen.queryByText('OSHA Certified')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drug Testing Policy')).not.toBeInTheDocument();
     });
 
     it('should not render compliance indicators when compliance array is empty', () => {
@@ -595,8 +599,12 @@ describe('AgencyCard', () => {
         <AgencyCard agency={toAgencyCardProps(agencyWithEmptyCompliance)} />
       );
 
-      // Compliance section should not be rendered
+      // Verify main content renders
       expect(screen.getByText('Test Agency')).toBeInTheDocument();
+
+      // Compliance labels should not be present
+      expect(screen.queryByText('OSHA Certified')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drug Testing Policy')).not.toBeInTheDocument();
     });
   });
 });

@@ -609,18 +609,38 @@ export interface ComplianceUpdateRequest {
 }
 
 /**
- * Request body for admin verification
+ * Request body for admin verification (verify action)
  */
-export interface ComplianceVerifyRequest {
+export interface ComplianceVerifyRequestVerify {
   /** Compliance type to verify */
   complianceType: ComplianceType;
   /** Action to take */
-  action: 'verify' | 'reject';
-  /** Rejection reason (required if action is 'reject') */
-  reason?: string;
+  action: 'verify';
   /** Optional admin notes */
   notes?: string;
 }
+
+/**
+ * Request body for admin verification (reject action)
+ */
+export interface ComplianceVerifyRequestReject {
+  /** Compliance type to verify */
+  complianceType: ComplianceType;
+  /** Action to take */
+  action: 'reject';
+  /** Rejection reason (required for reject action) */
+  reason: string;
+  /** Optional admin notes */
+  notes?: string;
+}
+
+/**
+ * Request body for admin verification
+ * Discriminated union ensuring rejection requires a reason
+ */
+export type ComplianceVerifyRequest =
+  | ComplianceVerifyRequestVerify
+  | ComplianceVerifyRequestReject;
 
 /**
  * Response for compliance endpoints

@@ -309,6 +309,18 @@ export async function PUT(
 
     // Validate each item
     for (const item of body.items) {
+      if (item == null) {
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.INVALID_PARAMS,
+              message: 'Invalid item: null or undefined item in items array',
+            },
+          },
+          { status: HTTP_STATUS.BAD_REQUEST }
+        );
+      }
+
       if (!item.type || !COMPLIANCE_TYPES.includes(item.type)) {
         return NextResponse.json(
           {

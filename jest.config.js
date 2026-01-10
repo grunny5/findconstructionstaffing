@@ -83,7 +83,6 @@ const customJestConfig = {
     '!**/tests/load/**',
     '!**/__mocks__/**',
   ],
-  // Coverage thresholds set to 85% minimum
   coverageThreshold: {
     global: {
       branches: 85,

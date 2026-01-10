@@ -2,7 +2,7 @@
 
 This document tracks the security warnings from Supabase Database Linter and provides remediation steps.
 
-**Last Updated:** January 21, 2026
+**Last Updated:** January 9, 2026
 
 ---
 
@@ -47,8 +47,8 @@ The following warnings require changes in the Supabase Dashboard and cannot be f
 
 1. Go to Supabase Dashboard → **Authentication** → **Email Auth**
 2. Find the **OTP Expiry** setting
-3. Change from current value to **3600 seconds (1 hour)** or less
-4. Recommended value: **900 seconds (15 minutes)**
+3. Change to **900 seconds (15 minutes)** - this is the recommended value
+4. Maximum acceptable: **3600 seconds (1 hour)** - values above this trigger the warning
 5. Click **Save**
 
 **References:**

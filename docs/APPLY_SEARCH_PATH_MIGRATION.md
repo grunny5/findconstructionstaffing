@@ -96,10 +96,10 @@ This prevents the automated `supabase db push` from working correctly.
 
    ```sql
    -- Mark the migration as applied in the history
-   -- Use 14-digit timestamp format: YYYYMMDDHHMMSS
+   -- Version must match the migration filename prefix (YYYYMMDD format)
    INSERT INTO supabase_migrations.schema_migrations (version, name)
    VALUES (
-     '20260121120000',
+     '20260121',
      '20260121_001_fix_function_search_path'
    )
    ON CONFLICT (version) DO NOTHING;
@@ -108,7 +108,7 @@ This prevents the automated `supabase db push` from working correctly.
 5. **Verify the fix**
    - Navigate to: **Database** → **Reports** → **Database Health**
    - Check that the "Function Search Path Mutable" warning is resolved
-   - Or run: `SELECT * FROM supabase_migrations.schema_migrations WHERE version = '20260121120000';`
+   - Or run: `SELECT * FROM supabase_migrations.schema_migrations WHERE version = '20260121';`
 
 ---
 
@@ -128,8 +128,8 @@ export DATABASE_URL="<YOUR_POSTGRES_CONNECTION_STRING>"
 # Apply the migration
 psql $DATABASE_URL -f supabase/migrations/20260121_001_fix_function_search_path.sql
 
-# Record in migration history (use 14-digit timestamp format: YYYYMMDDHHMMSS)
-psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('20260121120000', '20260121_001_fix_function_search_path') ON CONFLICT DO NOTHING;"
+# Record in migration history (version must match migration filename prefix)
+psql $DATABASE_URL -c "INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('20260121', '20260121_001_fix_function_search_path') ON CONFLICT (version) DO NOTHING;"
 ```
 
 ---

@@ -6,6 +6,7 @@
  */
 
 import { NextRequest } from 'next/server';
+import type { supabase } from '@/lib/supabase';
 
 type NextRequestInit = ConstructorParameters<typeof NextRequest>[1];
 
@@ -85,6 +86,11 @@ export function createMultiTableMock(
 
     if (!tableConfig) {
       // Return default empty response for unconfigured tables
+      const defaultResult = Promise.resolve({
+        data: null,
+        error: null,
+        count: 0,
+      });
       const defaultChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -93,7 +99,7 @@ export function createMultiTableMock(
         or: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
-        single: jest.fn().mockReturnThis(),
+        single: jest.fn(() => defaultResult),
         update: jest.fn().mockReturnThis(),
         upsert: jest.fn().mockReturnThis(),
         insert: jest.fn().mockReturnThis(),
@@ -192,5 +198,85 @@ export function createMultiTableMock(
     // Combine promise with chain methods
     result = Object.assign(getPromiseResult(), chainMethods);
     return result;
+  });
+}
+
+/**
+ * Configuration for agency slug API mock
+ */
+export interface AgencySlugMockConfig {
+  /** Agency data to return (null for not found) */
+  agencyData?: Record<string, unknown> | null;
+  /** Agency query error */
+  agencyError?: { code?: string; message: string } | null;
+  /** Compliance data array */
+  complianceData?: Record<string, unknown>[];
+  /** Compliance query error */
+  complianceError?: { code?: string; message: string } | null;
+}
+
+/**
+ * Creates a mock implementation for supabase.from() that handles
+ * agencies and agency_compliance tables for the agency slug API.
+ *
+ * This DRYs up repeated mock patterns in route tests.
+ *
+ * @param supabaseMock - The mocked supabase instance
+ * @param config - Configuration for mock responses
+ *
+ * @example
+ * createAgencySlugMock(supabase, {
+ *   agencyData: { id: '1', name: 'Test Agency', slug: 'test-agency' },
+ *   complianceData: [],
+ * });
+ */
+export function createAgencySlugMock(
+  supabaseMock: typeof supabase,
+  config: AgencySlugMockConfig
+): void {
+  const {
+    agencyData = null,
+    agencyError = null,
+    complianceData = [],
+    complianceError = null,
+  } = config;
+
+  (supabaseMock.from as jest.Mock).mockImplementation((table: string) => {
+    if (table === 'agencies') {
+      const queryChain: Record<string, jest.Mock> = {
+        select: jest.fn(() => queryChain),
+        eq: jest.fn(() => queryChain),
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: agencyData,
+            error: agencyError,
+          })
+        ),
+      };
+      return queryChain;
+    }
+
+    if (table === 'agency_compliance') {
+      const queryChain: Record<string, jest.Mock> = {
+        select: jest.fn(() => queryChain),
+        eq: jest.fn(() => queryChain),
+        order: jest.fn(() =>
+          Promise.resolve({
+            data: complianceData,
+            error: complianceError,
+          })
+        ),
+      };
+      return queryChain;
+    }
+
+    // Default chain for other tables
+    const defaultChain: Record<string, jest.Mock> = {
+      select: jest.fn(() => defaultChain),
+      eq: jest.fn(() => defaultChain),
+      order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+      single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+    };
+    return defaultChain;
   });
 }

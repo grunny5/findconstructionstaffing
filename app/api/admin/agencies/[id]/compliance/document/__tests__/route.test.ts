@@ -257,7 +257,9 @@ describe('POST /api/admin/agencies/[id]/compliance/document', () => {
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(json.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
-      expect(json.error.message).toBe('No file provided');
+      expect(json.error.message).toBe(
+        'No file provided or invalid file format'
+      );
     });
 
     it('returns 400 when compliance_type is missing', async () => {
