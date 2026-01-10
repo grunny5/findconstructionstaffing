@@ -14,16 +14,12 @@ import {
   ComplianceSettings,
   type ComplianceFormData,
 } from './ComplianceSettings';
-import {
-  type AgencyComplianceRow,
-  type ComplianceItemFull,
-  toComplianceItemFull,
-} from '@/types/api';
+import { type ComplianceItemFull } from '@/types/api';
 import { Loader2 } from 'lucide-react';
 
 interface ComplianceDashboardProps {
   agencyId: string;
-  initialData: AgencyComplianceRow[];
+  initialData: ComplianceItemFull[];
 }
 
 export function ComplianceDashboard({
@@ -31,15 +27,14 @@ export function ComplianceDashboard({
   initialData,
 }: ComplianceDashboardProps) {
   const { toast } = useToast();
-  const [complianceData, setComplianceData] = useState<ComplianceItemFull[]>(
-    () => initialData.map(toComplianceItemFull)
-  );
+  const [complianceData, setComplianceData] =
+    useState<ComplianceItemFull[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const savingRef = useRef(false);
 
-  // Transform initial data when it changes
+  // Update state when initial data changes
   useEffect(() => {
-    setComplianceData(initialData.map(toComplianceItemFull));
+    setComplianceData(initialData);
   }, [initialData]);
 
   const handleSave = async (data: ComplianceFormData[]): Promise<void> => {
@@ -83,7 +78,7 @@ export function ComplianceDashboard({
       }
 
       const result = await response.json();
-      setComplianceData(result.data.map(toComplianceItemFull));
+      setComplianceData(result.data);
 
       toast({
         title: 'Changes saved',

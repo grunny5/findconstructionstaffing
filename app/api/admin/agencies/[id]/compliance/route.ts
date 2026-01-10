@@ -460,6 +460,59 @@ export async function PUT(
       );
     }
 
+    // Validate document presence for items being verified
+    // Items with isVerified=true must have a document (either in request or existing in DB)
+    const itemsNeedingDocumentCheck = body.items.filter(
+      (item) => item.isVerified === true && !item.documentUrl
+    );
+
+    if (itemsNeedingDocumentCheck.length > 0) {
+      // Fetch existing compliance records to check for documents
+      const typesToCheck = itemsNeedingDocumentCheck.map((item) => item.type);
+      const { data: existingRecords, error: existingError } = await supabase
+        .from('agency_compliance')
+        .select('compliance_type, document_url')
+        .eq('agency_id', agencyId)
+        .in('compliance_type', typesToCheck);
+
+      if (existingError) {
+        console.error(
+          'Error checking existing compliance records:',
+          existingError
+        );
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.DATABASE_ERROR,
+              message: 'Failed to validate compliance data',
+            },
+          },
+          { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
+      }
+
+      // Build a map of existing document URLs
+      const existingDocuments = new Map(
+        (existingRecords || []).map((r) => [r.compliance_type, r.document_url])
+      );
+
+      // Check each item that needs verification has a document
+      for (const item of itemsNeedingDocumentCheck) {
+        const existingDocUrl = existingDocuments.get(item.type);
+        if (!existingDocUrl) {
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.INVALID_PARAMS,
+                message: `Cannot verify compliance type "${item.type}" without a supporting document`,
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
+      }
+    }
+
     // Upsert compliance items (admin can modify all fields including verification)
     // Use batched upsert to avoid partial updates
     const upsertPayload = body.items.map((item) => {

@@ -9,6 +9,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import { ComplianceDashboard } from '@/components/compliance/ComplianceDashboard';
+import { transformComplianceWithSignedUrls } from '@/lib/supabase/compliance-helpers';
+import type { AgencyComplianceRow } from '@/types/api';
 
 interface CompliancePageProps {
   params: Promise<{ slug: string }>;
@@ -77,6 +79,12 @@ export default async function CompliancePage({ params }: CompliancePageProps) {
     throw new Error('Failed to load compliance data');
   }
 
+  // Transform compliance data with signed URLs for document access
+  const transformedComplianceData = await transformComplianceWithSignedUrls(
+    supabase,
+    (complianceData || []) as AgencyComplianceRow[]
+  );
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -93,7 +101,7 @@ export default async function CompliancePage({ params }: CompliancePageProps) {
       {/* Compliance Dashboard Client Component */}
       <ComplianceDashboard
         agencyId={agency.id}
-        initialData={complianceData || []}
+        initialData={transformedComplianceData}
       />
     </div>
   );

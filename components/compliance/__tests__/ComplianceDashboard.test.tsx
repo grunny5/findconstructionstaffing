@@ -4,7 +4,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ComplianceDashboard } from '../ComplianceDashboard';
-import { type AgencyComplianceRow } from '@/types/api';
+import { type ComplianceItemFull } from '@/types/api';
 
 // Mock dependencies
 const mockToast = jest.fn();
@@ -22,34 +22,32 @@ global.fetch = mockFetch;
 describe('ComplianceDashboard', () => {
   const mockAgencyId = 'agency-123';
 
-  const mockComplianceData: AgencyComplianceRow[] = [
+  const mockComplianceData: ComplianceItemFull[] = [
     {
       id: '1',
-      agency_id: mockAgencyId,
-      compliance_type: 'osha_certified',
-      is_active: true,
-      is_verified: true,
-      expiration_date: '2026-12-31',
-      document_url: null,
+      type: 'osha_certified',
+      displayName: 'OSHA Certified',
+      isActive: true,
+      isVerified: true,
+      expirationDate: '2026-12-31',
+      isExpired: false,
+      documentUrl: null,
       notes: null,
-      verified_by: null,
-      verified_at: null,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
+      verifiedBy: null,
+      verifiedAt: null,
     },
     {
       id: '2',
-      agency_id: mockAgencyId,
-      compliance_type: 'drug_testing',
-      is_active: true,
-      is_verified: false,
-      expiration_date: null,
-      document_url: null,
+      type: 'drug_testing',
+      displayName: 'Drug Testing Policy',
+      isActive: true,
+      isVerified: false,
+      expirationDate: null,
+      isExpired: false,
+      documentUrl: null,
       notes: null,
-      verified_by: null,
-      verified_at: null,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
+      verifiedBy: null,
+      verifiedAt: null,
     },
   ];
 
@@ -79,7 +77,7 @@ describe('ComplianceDashboard', () => {
       ).toBeInTheDocument();
     });
 
-    it('transforms initial data to ComplianceItemFull format', () => {
+    it('displays initial data correctly with active items checked', () => {
       render(
         <ComplianceDashboard
           agencyId={mockAgencyId}
@@ -87,7 +85,7 @@ describe('ComplianceDashboard', () => {
         />
       );
 
-      // OSHA should be toggled on (based on initial data)
+      // OSHA should be toggled on (based on initial data isActive: true)
       const oshaSwitch = screen.getByRole('switch', {
         name: /OSHA Certified/i,
       });
