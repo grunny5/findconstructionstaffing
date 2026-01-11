@@ -12,6 +12,11 @@
  *   npm run seed:verify  - Runs verification queries
  */
 
+// CRITICAL: Load environment variables FIRST before any imports that use them
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
 import { createClient } from '@supabase/supabase-js';
 import { mockAgencies, allStates, allTrades, mockComplianceData } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
@@ -35,11 +40,6 @@ if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
   throw new Error('All states data is not available or empty');
 }
 import type { Agency, Trade, Region } from '../../lib/supabase';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-
-// Load environment variables from .env.local
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 // ANSI color codes for console output
 const colors = {
