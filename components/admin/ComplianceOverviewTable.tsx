@@ -146,7 +146,17 @@ export function ComplianceOverviewTable({
     router.refresh(); // Refresh data using Next.js App Router
   };
 
-  // Filter and search compliance data
+  // Pre-compute status for all items once (performance optimization)
+  // This avoids O(n*4) status calculations on every filter change
+  const statusMap = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof getComplianceStatus>>();
+    complianceData.forEach((item) => {
+      map.set(item.id, getComplianceStatus(item));
+    });
+    return map;
+  }, [complianceData]);
+
+  // Filter and search compliance data using pre-computed status
   const filteredData = useMemo(() => {
     return complianceData.filter((item) => {
       // Search filter
@@ -159,28 +169,30 @@ export function ComplianceOverviewTable({
 
       if (!matchesSearch) return false;
 
-      // Status filter
+      // Status filter using pre-computed status (O(1) lookup)
       if (statusFilter === 'all') return true;
 
-      const status = getComplianceStatus(item);
+      const status = statusMap.get(item.id);
       return status === statusFilter;
     });
-  }, [complianceData, searchQuery, statusFilter]);
+  }, [complianceData, searchQuery, statusFilter, statusMap]);
 
-  // Count items by status
+  // Count items by status using pre-computed Map (single pass)
   const statusCounts = useMemo(() => {
-    return {
-      expired: complianceData.filter(
-        (item) => getComplianceStatus(item) === 'expired'
-      ).length,
-      expiring_soon: complianceData.filter(
-        (item) => getComplianceStatus(item) === 'expiring_soon'
-      ).length,
-      pending_verification: complianceData.filter(
-        (item) => getComplianceStatus(item) === 'pending_verification'
-      ).length,
+    const counts = {
+      expired: 0,
+      expiring_soon: 0,
+      pending_verification: 0,
     };
-  }, [complianceData]);
+
+    statusMap.forEach((status) => {
+      if (status === 'expired') counts.expired++;
+      else if (status === 'expiring_soon') counts.expiring_soon++;
+      else if (status === 'pending_verification') counts.pending_verification++;
+    });
+
+    return counts;
+  }, [statusMap]);
 
   return (
     <div className="space-y-4">
@@ -265,7 +277,7 @@ export function ComplianceOverviewTable({
             </TableHeader>
             <TableBody>
               {filteredData.map((item) => {
-                const status = getComplianceStatus(item);
+                const status = statusMap.get(item.id)!; // Use pre-computed status (O(1) lookup)
                 const days = item.expiration_date
                   ? daysUntilExpiration(item.expiration_date)
                   : null;

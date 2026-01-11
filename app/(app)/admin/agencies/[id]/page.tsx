@@ -9,6 +9,7 @@ import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
 import { AgencyEditButton } from '@/components/admin/AgencyEditButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import { COMPLIANCE_DISPLAY_NAMES, isComplianceExpired, type ComplianceType } from '@/types/api';
+import { secureLog } from '@/lib/utils/secure-logging';
 
 interface AgencyDetailPageProps {
   params: {
@@ -71,49 +72,65 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch agency details with trades and regions
-  const { data: agency, error: agencyError } = await supabase
-    .from('agencies')
-    .select(
+  // Parallelize independent database queries for better performance
+  const [agencyResult, complianceResult] = await Promise.all([
+    // Query 1: Fetch agency details with trades and regions
+    supabase
+      .from('agencies')
+      .select(
+        `
+        id,
+        name,
+        slug,
+        description,
+        website,
+        phone,
+        email,
+        headquarters,
+        founded_year,
+        employee_count,
+        company_size,
+        offers_per_diem,
+        is_union,
+        is_active,
+        is_claimed,
+        claimed_by,
+        created_at,
+        updated_at,
+        profile_completion_percentage,
+        trades:agency_trades(
+          trade:trades(
+            id,
+            name,
+            slug
+          )
+        ),
+        regions:agency_regions(
+          region:regions(
+            id,
+            name,
+            slug,
+            state_code
+          )
+        )
       `
-      id,
-      name,
-      slug,
-      description,
-      website,
-      phone,
-      email,
-      headquarters,
-      founded_year,
-      employee_count,
-      company_size,
-      offers_per_diem,
-      is_union,
-      is_active,
-      is_claimed,
-      claimed_by,
-      created_at,
-      updated_at,
-      profile_completion_percentage,
-      trades:agency_trades(
-        trade:trades(
-          id,
-          name,
-          slug
-        )
-      ),
-      regions:agency_regions(
-        region:regions(
-          id,
-          name,
-          slug,
-          state_code
-        )
       )
-    `
-    )
-    .eq('id', params.id)
-    .single();
+      .eq('id', params.id)
+      .single(),
+
+    // Query 2: Fetch compliance data
+    supabase
+      .from('agency_compliance')
+      .select(
+        'id, compliance_type, is_active, is_verified, expiration_date, document_url, notes, verified_by, verified_at'
+      )
+      .eq('agency_id', params.id)
+      .eq('is_active', true)
+      .order('compliance_type'),
+  ]);
+
+  const { data: agency, error: agencyError } = agencyResult;
+  const { data: complianceData, error: complianceError } = complianceResult;
 
   // Transform trades and regions from nested structure to flat arrays
   const agencyWithRelations = agency
@@ -157,7 +174,7 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch owner profile if agency is claimed
+  // Fetch owner profile if agency is claimed (sequential - depends on agency data)
   let ownerProfile: { email: string | null; full_name: string | null } | null =
     null;
   if (agencyWithRelations.claimed_by) {
@@ -170,22 +187,12 @@ export default async function AgencyDetailPage({
     ownerProfile = profile || null;
   }
 
-  // Fetch compliance data
-  const { data: complianceData, error: complianceError } = await supabase
-    .from('agency_compliance')
-    .select(
-      'id, compliance_type, is_active, is_verified, expiration_date, document_url, notes, verified_by, verified_at'
-    )
-    .eq('agency_id', params.id)
-    .eq('is_active', true)
-    .order('compliance_type');
-
   // Log error but don't fail the page if compliance data can't be fetched
   if (complianceError) {
-    console.error(
-      `Error fetching compliance data for agency ${params.id}:`,
-      complianceError
-    );
+    secureLog.error('Error fetching compliance data for agency', {
+      agencyId: params.id,
+      error: complianceError,
+    });
   }
 
   const complianceItems = (complianceData || []).map((c: ComplianceRow) => ({
