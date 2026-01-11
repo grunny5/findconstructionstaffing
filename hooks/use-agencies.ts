@@ -40,6 +40,12 @@ function buildQueryString(params: AgenciesQueryParams): string {
     });
   }
 
+  if (params.compliance && params.compliance.length > 0) {
+    params.compliance.forEach((complianceType) => {
+      searchParams.append('compliance[]', complianceType);
+    });
+  }
+
   if (params.limit !== undefined) {
     searchParams.set('limit', params.limit.toString());
   }
@@ -126,6 +132,7 @@ export function useAgencies(
     search,
     trades,
     states,
+    compliance,
     limit = API_CONSTANTS.DEFAULT_LIMIT,
     offset = API_CONSTANTS.DEFAULT_OFFSET,
     enabled = true,
@@ -137,6 +144,7 @@ export function useAgencies(
     search,
     trades,
     states,
+    compliance,
     limit,
     offset,
   };

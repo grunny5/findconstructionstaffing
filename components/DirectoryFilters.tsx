@@ -37,6 +37,8 @@ import {
   companySizes,
   focusAreas,
 } from '@/lib/mock-data';
+import { ComplianceType, COMPLIANCE_DISPLAY_NAMES } from '@/types/api';
+import { ComplianceFilters } from '@/components/compliance/ComplianceFilters';
 
 // Helper function to convert trade names to slugs
 const tradeToSlug = (trade: string): string => {
@@ -59,6 +61,7 @@ export interface FilterState {
   search: string;
   trades: string[];
   states: string[];
+  compliance: ComplianceType[];
   perDiem: boolean | null;
   union: boolean | null;
   claimedOnly: boolean;
@@ -76,6 +79,7 @@ export default function DirectoryFilters({
     search: '',
     trades: [],
     states: [],
+    compliance: [],
     perDiem: null,
     union: null,
     claimedOnly: false,
@@ -95,6 +99,7 @@ export default function DirectoryFilters({
       search: '',
       trades: [],
       states: [],
+      compliance: [],
       perDiem: null,
       union: null,
       claimedOnly: false,
@@ -109,6 +114,7 @@ export default function DirectoryFilters({
     filters.search ||
     filters.trades.length > 0 ||
     filters.states.length > 0 ||
+    filters.compliance.length > 0 ||
     filters.perDiem !== null ||
     filters.union !== null ||
     filters.claimedOnly ||
@@ -125,6 +131,11 @@ export default function DirectoryFilters({
         break;
       case 'state':
         updateFilters({ states: filters.states.filter((s) => s !== value) });
+        break;
+      case 'compliance':
+        updateFilters({
+          compliance: filters.compliance.filter((c) => c !== value),
+        });
         break;
       case 'perDiem':
         updateFilters({ perDiem: null });
@@ -296,6 +307,19 @@ export default function DirectoryFilters({
                 </div>
               ))}
             </div>
+          </FilterPopover>
+
+          {/* Compliance Requirements Filter */}
+          <FilterPopover
+            trigger="Compliance"
+            title="Compliance Requirements"
+            icon={Award}
+            activeCount={filters.compliance.length}
+          >
+            <ComplianceFilters
+              selectedFilters={filters.compliance}
+              onChange={(compliance) => updateFilters({ compliance })}
+            />
           </FilterPopover>
 
           {/* Company Size Filter */}
@@ -544,6 +568,21 @@ export default function DirectoryFilters({
                 +{filters.states.length - 2} more states
               </Badge>
             )}
+            {filters.compliance.map((complianceType) => (
+              <Badge
+                key={complianceType}
+                variant="secondary"
+                className="bg-industrial-graphite-600 text-white font-body text-xs uppercase tracking-wide px-3 py-1 rounded-industrial-sharp"
+              >
+                {COMPLIANCE_DISPLAY_NAMES[complianceType]}
+                <button
+                  onClick={() => removeFilter('compliance', complianceType)}
+                  className="ml-2 hover:text-industrial-graphite-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
             {filters.perDiem !== null && (
               <Badge
                 variant="secondary"

@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Building2,
   Users,
+  ShieldCheck,
   FileCheck,
   Plug,
   ArrowLeft,
@@ -75,6 +76,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/users',
       label: 'Users',
       icon: Users,
+    },
+    {
+      href: '/admin/compliance',
+      label: 'Compliance',
+      icon: ShieldCheck,
     },
     {
       href: '/admin/claims',

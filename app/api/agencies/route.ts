@@ -6,6 +6,9 @@ import {
   HTTP_STATUS,
   ERROR_CODES,
   API_CONSTANTS,
+  toComplianceItem,
+  type ComplianceQueryResult,
+  type ComplianceItem,
 } from '@/types/api';
 import { createHash } from 'crypto';
 import {
@@ -112,13 +115,14 @@ async function queryWithRetry<T>(
 }
 
 /**
- * Apply trade and state filters to get matching agency IDs
+ * Apply trade, state, and compliance filters to get matching agency IDs
  * @returns Array of agency IDs that match the filters, or null if no filters applied
  */
 async function applyFilters(
   monitor: PerformanceMonitor,
   trades?: string[],
-  states?: string[]
+  states?: string[],
+  compliance?: string[]
 ): Promise<string[] | null> {
   if (!supabase) {
     throw new Error('Database connection not initialized');
@@ -193,15 +197,16 @@ async function applyFilters(
         throw new Error('Failed to fetch agency region data');
       }
 
-      const stateAgencyIds = Array.from(
-        new Set(agencyRegionData.map((ar) => ar.agency_id))
+      // Use Set for O(1) lookups when intersecting
+      const stateAgencyIdSet = new Set(
+        agencyRegionData.map((ar) => ar.agency_id)
       );
 
       // Intersect with existing filter if needed
       if (agencyIds !== null) {
-        agencyIds = agencyIds.filter((id) => stateAgencyIds.includes(id));
+        agencyIds = agencyIds.filter((id) => stateAgencyIdSet.has(id));
       } else {
-        agencyIds = stateAgencyIds;
+        agencyIds = Array.from(stateAgencyIdSet);
       }
     } else {
       // No matching regions
@@ -211,6 +216,54 @@ async function applyFilters(
         // If we already have trade filters, this intersection results in empty set
         agencyIds = [];
       }
+    }
+  }
+
+  // Apply compliance filter
+  if (compliance && compliance.length > 0) {
+    const complianceQueryId = monitor.startQuery();
+
+    // Fetch all requested compliance types in a single query
+    const { data: complianceData, error: complianceError } =
+      await queryWithRetry(async () =>
+        supabase
+          .from('agency_compliance')
+          .select('agency_id, compliance_type')
+          .in('compliance_type', compliance)
+          .eq('is_active', true)
+      );
+
+    monitor.endQuery(complianceQueryId);
+
+    if (complianceError || !complianceData) {
+      throw new Error('Failed to fetch agency compliance data');
+    }
+
+    // Group by agency_id and count compliance types
+    // Only keep agencies that have ALL requested compliance types (AND logic)
+    const agencyComplianceCounts = new Map<string, Set<string>>();
+
+    for (const row of complianceData) {
+      if (!agencyComplianceCounts.has(row.agency_id)) {
+        agencyComplianceCounts.set(row.agency_id, new Set());
+      }
+      agencyComplianceCounts.get(row.agency_id)!.add(row.compliance_type);
+    }
+
+    // Filter to only agencies that have all requested compliance types
+    // Use Set for O(1) lookups when intersecting
+    const complianceAgencyIdSet = new Set<string>();
+    agencyComplianceCounts.forEach((types, agencyId) => {
+      if (compliance.every((t) => types.has(t))) {
+        complianceAgencyIdSet.add(agencyId);
+      }
+    });
+
+    // Intersect with existing filters if needed
+    if (agencyIds !== null) {
+      agencyIds = agencyIds.filter((id) => complianceAgencyIdSet.has(id));
+    } else {
+      agencyIds = Array.from(complianceAgencyIdSet);
     }
   }
 
@@ -361,7 +414,8 @@ export async function GET(request: NextRequest) {
       return response;
     }
 
-    const { search, trades, states, limit, offset } = queryParseResult.data;
+    const { search, trades, states, compliance, limit, offset } =
+      queryParseResult.data;
 
     // Sanitize search input if provided
     const sanitizedSearch = search ? sanitizeSearchInput(search) : undefined;
@@ -399,8 +453,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Apply trade and state filters
-    const filteredAgencyIds = await applyFilters(monitor, trades, states);
+    // Apply trade, state, and compliance filters
+    const filteredAgencyIds = await applyFilters(
+      monitor,
+      trades,
+      states,
+      compliance
+    );
 
     if (filteredAgencyIds !== null) {
       // Apply the filter to the query
@@ -479,6 +538,73 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Fetch compliance data for all returned agencies
+    const agencyIds = transformedAgencies.map((a) => a.id);
+    let complianceMap = new Map<string, ComplianceItem[]>();
+
+    if (agencyIds.length > 0) {
+      const complianceQueryId = monitor.startQuery();
+      const { data: complianceData, error: complianceError } =
+        await queryWithRetry(async () =>
+          supabase
+            .from('agency_compliance')
+            .select(
+              'id, agency_id, compliance_type, is_active, is_verified, expiration_date'
+            )
+            .in('agency_id', agencyIds)
+            .eq('is_active', true)
+        );
+      monitor.endQuery(complianceQueryId);
+
+      if (complianceError) {
+        console.error(
+          '[API ERROR] Failed to fetch compliance data:',
+          complianceError
+        );
+        const errorResponse: ErrorResponse = {
+          error: {
+            code: ERROR_CODES.DATABASE_ERROR,
+            message: 'Failed to fetch agency compliance data',
+            details: {
+              supabaseError: complianceError.message,
+              code: complianceError.code,
+            },
+          },
+        };
+
+        monitor.complete(
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          errorResponse.error.message
+        );
+        errorTracker.recordRequest('/api/agencies', true);
+
+        return NextResponse.json(errorResponse, {
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+        });
+      }
+
+      // Build compliance map by agency ID
+      if (complianceData) {
+        for (const row of complianceData as ComplianceQueryResult[]) {
+          if (!complianceMap.has(row.agency_id)) {
+            complianceMap.set(row.agency_id, []);
+          }
+          complianceMap.get(row.agency_id)!.push(toComplianceItem(row));
+        }
+      }
+    }
+
+    // Attach compliance data to each agency
+    const agenciesWithCompliance = transformedAgencies.map((agency) => ({
+      ...agency,
+      compliance: complianceMap.get(agency.id) || [],
+    }));
+
     // Get total count for pagination with same filters applied
     const countQueryId = monitor.startQuery();
     let countQuery = supabase
@@ -506,7 +632,7 @@ export async function GET(request: NextRequest) {
 
     // Build the response
     const response: AgenciesApiResponse = {
-      data: transformedAgencies,
+      data: agenciesWithCompliance,
       pagination: {
         total: totalCount || 0,
         limit,
@@ -547,9 +673,14 @@ export async function GET(request: NextRequest) {
 
     // Complete monitoring with success metrics
     const metrics = monitor.complete(HTTP_STATUS.OK, undefined, {
-      resultCount: transformedAgencies.length,
+      resultCount: agenciesWithCompliance.length,
       totalCount: totalCount || 0,
-      hasFilters: !!(sanitizedSearch || trades?.length || states?.length),
+      hasFilters: !!(
+        sanitizedSearch ||
+        trades?.length ||
+        states?.length ||
+        compliance?.length
+      ),
     });
     errorTracker.recordRequest('/api/agencies', false);
 

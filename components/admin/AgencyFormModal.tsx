@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -44,7 +44,10 @@ import type { AgencyCreationFormData } from '@/lib/validations/agency-creation';
 import { TradeSelector } from '@/components/dashboard/TradeSelector';
 import { RegionSelector } from '@/components/dashboard/RegionSelector';
 import { LogoUpload } from '@/components/admin/LogoUpload';
+import { ComplianceSettings } from '@/components/compliance/ComplianceSettings';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Trade, Region } from '@/types/supabase';
+import type { ComplianceItemFull } from '@/types/api';
 
 export interface AgencyFormModalProps {
   isOpen: boolean;
@@ -86,6 +89,13 @@ export function AgencyFormModal({
   const [logoRemoved, setLogoRemoved] = useState(false);
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'compliance'>(
+    'details'
+  );
+  const [complianceData, setComplianceData] = useState<ComplianceItemFull[]>(
+    []
+  );
+  const [isLoadingCompliance, setIsLoadingCompliance] = useState(false);
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
@@ -110,6 +120,75 @@ export function AgencyFormModal({
     },
   });
 
+  const fetchComplianceData = useCallback(async () => {
+    if (!isEditMode || !agency?.id) return;
+
+    setIsLoadingCompliance(true);
+    try {
+      const response = await fetch(
+        `/api/admin/agencies/${agency.id}/compliance`
+      );
+      if (response.ok) {
+        const result = await response.json();
+        setComplianceData(result.data || []);
+      } else {
+        const result = await response.json().catch(() => ({}));
+        console.error('Failed to fetch compliance data:', result.error);
+        toast.error('Failed to Load Compliance', {
+          description:
+            result.error?.message || 'Unable to load compliance data.',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch compliance data:', error);
+      toast.error('Failed to Load Compliance', {
+        description: 'A network error occurred while loading compliance data.',
+      });
+    } finally {
+      setIsLoadingCompliance(false);
+    }
+  }, [isEditMode, agency?.id]);
+
+  const saveComplianceData = async (
+    updatedCompliance: Array<{
+      type: string;
+      isActive: boolean;
+      expirationDate: string | null;
+    }>
+  ) => {
+    if (!isEditMode || !agency?.id) return;
+
+    try {
+      const response = await fetch(
+        `/api/admin/agencies/${agency.id}/compliance`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: updatedCompliance }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to save compliance data');
+      }
+
+      const result = await response.json();
+      // Update local state with the response
+      if (result.data) {
+        setComplianceData(result.data);
+      }
+
+      toast.success('Compliance Updated', {
+        description: 'Compliance settings have been saved successfully.',
+      });
+    } catch (error) {
+      toast.error('Update Failed', {
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
+      });
+    }
+  };
+
   useEffect(() => {
     const mappedValues: AgencyCreationFormData = {
       name: agency?.name || '',
@@ -133,7 +212,13 @@ export function AgencyFormModal({
     setPendingLogoFile(null);
     setLogoRemoved(false);
     setLogoUploadError(null);
-  }, [agency, form]);
+    setActiveTab('details');
+
+    // Fetch compliance data for edit mode
+    if (isEditMode) {
+      fetchComplianceData();
+    }
+  }, [agency, form, isEditMode, fetchComplianceData]);
 
   const handleLogoFileSelect = (file: File | null) => {
     setLogoUploadError(null);
@@ -316,316 +401,368 @@ export function AgencyFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-            data-testid="agency-form"
-          >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Company Name <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter company name"
-                      data-testid="name-input"
-                    />
-                  </FormControl>
-                  <FormMessage data-testid="name-error" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Describe the company and its services..."
-                      rows={4}
-                      data-testid="description-input"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Brief description of the company (max 5000 characters)
-                  </FormDescription>
-                  <FormMessage data-testid="description-error" />
-                </FormItem>
-              )}
-            />
-
-            {/* Agency Logo */}
-            <div className="pt-4 border-t" data-testid="logo-upload-section">
-              <LogoUpload
-                currentLogoUrl={logoRemoved ? null : agency?.logo_url}
-                onFileSelect={handleLogoFileSelect}
-                isUploading={isUploadingLogo}
-                disabled={isSubmitting}
-                error={logoUploadError}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="url"
-                        placeholder="https://www.example.com"
-                        data-testid="website-input"
-                      />
-                    </FormControl>
-                    <FormMessage data-testid="website-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        placeholder="contact@example.com"
-                        data-testid="email-input"
-                      />
-                    </FormControl>
-                    <FormMessage data-testid="email-error" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="tel"
-                        placeholder="+12345678900"
-                        data-testid="phone-input"
-                      />
-                    </FormControl>
-                    <FormDescription>E.164 format</FormDescription>
-                    <FormMessage data-testid="phone-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="headquarters"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Headquarters</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="City, State"
-                        data-testid="headquarters-input"
-                      />
-                    </FormControl>
-                    <FormMessage data-testid="headquarters-error" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="founded_year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Founded Year</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="founded-year-select">
-                          <SelectValue placeholder="Select year" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {foundedYearOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage data-testid="founded-year-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="employee_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employee Count</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="employee-count-select">
-                          <SelectValue placeholder="Select range" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {EMPLOYEE_COUNT_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage data-testid="employee-count-error" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="company_size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Size</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="company-size-select">
-                        <SelectValue placeholder="Select size" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {COMPANY_SIZE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage data-testid="company-size-error" />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <FormField
-                control={form.control}
-                name="offers_per_diem"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Offers Per Diem</FormLabel>
-                      <FormDescription>
-                        Agency offers per diem pay
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="offers-per-diem-switch"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="is_union"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Union Agency</FormLabel>
-                      <FormDescription>
-                        Agency is union-affiliated
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="is-union-switch"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Trade Specializations - Admin has no limit */}
-            <div className="pt-4 border-t" data-testid="trade-selector-section">
-              <TradeSelector
-                selectedTrades={selectedTrades}
-                onChange={setSelectedTrades}
-                disabled={isSubmitting}
-                maxTrades={100}
-              />
-            </div>
-
-            {/* Service Regions */}
-            <div
-              className="pt-4 border-t"
-              data-testid="region-selector-section"
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as 'details' | 'compliance')}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details" data-testid="details-tab">
+              Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="compliance"
+              data-testid="compliance-tab"
+              disabled={!isEditMode}
             >
-              <RegionSelector
-                selectedRegions={selectedRegions}
-                onChange={setSelectedRegions}
-                disabled={isSubmitting}
-              />
-            </div>
+              Compliance
+            </TabsTrigger>
+          </TabsList>
 
-            <DialogFooter className="gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                data-testid="agency-form-cancel-button"
+          <TabsContent value="details" className="mt-6">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-4"
+                data-testid="agency-form"
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={!form.formState.isValid || isSubmitting}
-                data-testid="submit-button"
-              >
-                {isSubmitting && (
-                  <Loader2
-                    className="mr-2 h-4 w-4 animate-spin"
-                    data-testid="loading-spinner"
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Company Name <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Enter company name"
+                          data-testid="name-input"
+                        />
+                      </FormControl>
+                      <FormMessage data-testid="name-error" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Describe the company and its services..."
+                          rows={4}
+                          data-testid="description-input"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Brief description of the company (max 5000 characters)
+                      </FormDescription>
+                      <FormMessage data-testid="description-error" />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Agency Logo */}
+                <div
+                  className="pt-4 border-t"
+                  data-testid="logo-upload-section"
+                >
+                  <LogoUpload
+                    currentLogoUrl={logoRemoved ? null : agency?.logo_url}
+                    onFileSelect={handleLogoFileSelect}
+                    isUploading={isUploadingLogo}
+                    disabled={isSubmitting}
+                    error={logoUploadError}
                   />
-                )}
-                {isEditMode ? 'Save Changes' : 'Create Agency'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="website"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Website</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://www.example.com"
+                            data-testid="website-input"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="website-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder="contact@example.com"
+                            data-testid="email-input"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="email-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="+12345678900"
+                            data-testid="phone-input"
+                          />
+                        </FormControl>
+                        <FormDescription>E.164 format</FormDescription>
+                        <FormMessage data-testid="phone-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="headquarters"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Headquarters</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="City, State"
+                            data-testid="headquarters-input"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="headquarters-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="founded_year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Founded Year</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="founded-year-select">
+                              <SelectValue placeholder="Select year" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[200px]">
+                            {foundedYearOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage data-testid="founded-year-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="employee_count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Employee Count</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="employee-count-select">
+                              <SelectValue placeholder="Select range" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {EMPLOYEE_COUNT_OPTIONS.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage data-testid="employee-count-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="company_size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Size</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="company-size-select">
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {COMPANY_SIZE_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage data-testid="company-size-error" />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="offers_per_diem"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel>Offers Per Diem</FormLabel>
+                          <FormDescription>
+                            Agency offers per diem pay
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="offers-per-diem-switch"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="is_union"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel>Union Agency</FormLabel>
+                          <FormDescription>
+                            Agency is union-affiliated
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="is-union-switch"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Trade Specializations - Admin has no limit */}
+                <div
+                  className="pt-4 border-t"
+                  data-testid="trade-selector-section"
+                >
+                  <TradeSelector
+                    selectedTrades={selectedTrades}
+                    onChange={setSelectedTrades}
+                    disabled={isSubmitting}
+                    maxTrades={100}
+                  />
+                </div>
+
+                {/* Service Regions */}
+                <div
+                  className="pt-4 border-t"
+                  data-testid="region-selector-section"
+                >
+                  <RegionSelector
+                    selectedRegions={selectedRegions}
+                    onChange={setSelectedRegions}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <DialogFooter className="gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={isSubmitting}
+                    data-testid="agency-form-cancel-button"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={!form.formState.isValid || isSubmitting}
+                    data-testid="submit-button"
+                  >
+                    {isSubmitting && (
+                      <Loader2
+                        className="mr-2 h-4 w-4 animate-spin"
+                        data-testid="loading-spinner"
+                      />
+                    )}
+                    {isEditMode ? 'Save Changes' : 'Create Agency'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </TabsContent>
+
+          <TabsContent value="compliance" className="mt-6">
+            {isEditMode && (
+              <ComplianceSettings
+                initialData={complianceData}
+                onSave={saveComplianceData}
+                isLoading={isLoadingCompliance}
+                isAdmin={true}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

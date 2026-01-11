@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { allTrades, allStates } from '@/lib/mock-data';
 import type { Agency, Trade, Region } from '@/types/supabase';
 import type { FilterState } from '@/components/DirectoryFilters';
+import type { ComplianceType } from '@/types/api';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -254,6 +255,7 @@ const createMockDirectoryFilters = () => {
       search: '',
       trades: [],
       states: [],
+      compliance: [],
       perDiem: null,
       union: null,
       claimedOnly: false,
@@ -301,7 +303,19 @@ const createMockDirectoryFilters = () => {
       [updateFilters]
     );
 
-    const activeFilterCount = filters.trades.length + filters.states.length;
+    const toggleCompliance = React.useCallback(
+      (complianceType: ComplianceType) => {
+        updateFilters((currentFilters) => ({
+          compliance: currentFilters.compliance.includes(complianceType)
+            ? currentFilters.compliance.filter((c) => c !== complianceType)
+            : [...currentFilters.compliance, complianceType],
+        }));
+      },
+      [updateFilters]
+    );
+
+    const activeFilterCount =
+      filters.trades.length + filters.states.length + filters.compliance.length;
 
     return (
       <div data-testid="directory-filters">
@@ -329,8 +343,27 @@ const createMockDirectoryFilters = () => {
           <button onClick={() => toggleState('NY')}>New York</button>
         </div>
 
+        <div data-testid="compliance-filters">
+          <button onClick={() => toggleCompliance('osha_certified')}>
+            OSHA Certified
+          </button>
+          <button onClick={() => toggleCompliance('drug_testing')}>
+            Drug Testing
+          </button>
+          <button onClick={() => toggleCompliance('background_checks')}>
+            Background Checks
+          </button>
+        </div>
+
         <button
-          onClick={() => updateFilters({ search: '', trades: [], states: [] })}
+          onClick={() =>
+            updateFilters({
+              search: '',
+              trades: [],
+              states: [],
+              compliance: [],
+            })
+          }
           data-testid="clear-all-filters-button"
           aria-label="Clear all applied filters"
         >
@@ -529,6 +562,7 @@ describe('Filter Integration Tests', () => {
           search: '',
           trades: ['electrician'],
           states: [],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -561,6 +595,7 @@ describe('Filter Integration Tests', () => {
           search: '',
           trades: ['electrician', 'plumber'],
           states: [],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -651,6 +686,7 @@ describe('Filter Integration Tests', () => {
           search: '',
           trades: [],
           states: ['TX'],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -684,6 +720,7 @@ describe('Filter Integration Tests', () => {
           search: '',
           trades: [],
           states: ['TX', 'CA'],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -767,6 +804,7 @@ describe('Filter Integration Tests', () => {
           search: '',
           trades: ['electrician'],
           states: ['TX'],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -807,6 +845,7 @@ describe('Filter Integration Tests', () => {
           search: 'elite',
           trades: ['electrician'],
           states: ['TX'],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -866,6 +905,7 @@ describe('Filter Integration Tests', () => {
           search: '',
           trades: [],
           states: [],
+          compliance: [],
           limit: 20,
           offset: 0,
         });
@@ -963,6 +1003,7 @@ describe('Filter Integration Tests', () => {
         search: '',
         trades: ['electrician', 'plumber'],
         states: ['TX'],
+        compliance: [],
         limit: 20,
         offset: 0,
       });
@@ -1076,6 +1117,183 @@ describe('Filter Integration Tests', () => {
         expect(
           screen.getByText(/Try adjusting your criteria/)
         ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Compliance Filter Integration', () => {
+    it('should filter agencies by single compliance type', async () => {
+      const mockUseAgencies = useAgencies as jest.Mock;
+
+      mockUseAgencies.mockReturnValue({
+        data: { data: mockAgencies.all },
+        error: null,
+        isLoading: false,
+        isValidating: false,
+      });
+
+      render(<HomePage />);
+
+      // Click OSHA Certified filter
+      const complianceFilters = screen.getByTestId('compliance-filters');
+      fireEvent.click(within(complianceFilters).getByText('OSHA Certified'));
+
+      await waitFor(() => {
+        expect(mockUseAgencies).toHaveBeenCalledWith({
+          search: '',
+          trades: [],
+          states: [],
+          compliance: ['osha_certified'],
+          limit: 20,
+          offset: 0,
+        });
+      });
+    });
+
+    it('should filter agencies by multiple compliance types', async () => {
+      const mockUseAgencies = useAgencies as jest.Mock;
+
+      mockUseAgencies.mockReturnValue({
+        data: { data: mockAgencies.all },
+        error: null,
+        isLoading: false,
+        isValidating: false,
+      });
+
+      render(<HomePage />);
+
+      // Click multiple compliance filters
+      const complianceFilters = screen.getByTestId('compliance-filters');
+      fireEvent.click(within(complianceFilters).getByText('OSHA Certified'));
+      fireEvent.click(within(complianceFilters).getByText('Drug Testing'));
+
+      await waitFor(() => {
+        expect(mockUseAgencies).toHaveBeenCalledWith({
+          search: '',
+          trades: [],
+          states: [],
+          compliance: ['osha_certified', 'drug_testing'],
+          limit: 20,
+          offset: 0,
+        });
+      });
+    });
+
+    it('should combine compliance filters with trade and state filters', async () => {
+      const mockUseAgencies = useAgencies as jest.Mock;
+
+      mockUseAgencies.mockReturnValue({
+        data: { data: [mockAgencies.all[0]] },
+        error: null,
+        isLoading: false,
+        isValidating: false,
+      });
+
+      render(<HomePage />);
+
+      // Apply compliance, trade, and state filters
+      const complianceFilters = screen.getByTestId('compliance-filters');
+      fireEvent.click(within(complianceFilters).getByText('OSHA Certified'));
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
+
+      await waitFor(() => {
+        expect(mockUseAgencies).toHaveBeenCalledWith({
+          search: '',
+          trades: ['electrician'],
+          states: ['TX'],
+          compliance: ['osha_certified'],
+          limit: 20,
+          offset: 0,
+        });
+      });
+    });
+
+    it('should clear compliance filters when clearing all filters', async () => {
+      const mockUseAgencies = useAgencies as jest.Mock;
+
+      mockUseAgencies.mockReturnValue({
+        data: { data: mockAgencies.all },
+        error: null,
+        isLoading: false,
+        isValidating: false,
+      });
+
+      render(<HomePage />);
+
+      // Apply compliance filter
+      const complianceFilters = screen.getByTestId('compliance-filters');
+      fireEvent.click(within(complianceFilters).getByText('OSHA Certified'));
+
+      // Clear all filters
+      const clearButton = screen.getByTestId('clear-all-filters-button');
+      fireEvent.click(clearButton);
+
+      await waitFor(() => {
+        expect(mockUseAgencies).toHaveBeenCalledWith({
+          search: '',
+          trades: [],
+          states: [],
+          compliance: [],
+          limit: 20,
+          offset: 0,
+        });
+      });
+    });
+
+    it('should update URL with compliance filter parameters', async () => {
+      const mockUseAgencies = useAgencies as jest.Mock;
+
+      mockUseAgencies.mockReturnValue({
+        data: { data: mockAgencies.all },
+        error: null,
+        isLoading: false,
+        isValidating: false,
+      });
+
+      render(<HomePage />);
+
+      // Apply compliance filter
+      const complianceFilters = screen.getByTestId('compliance-filters');
+      fireEvent.click(within(complianceFilters).getByText('OSHA Certified'));
+      fireEvent.click(within(complianceFilters).getByText('Drug Testing'));
+
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith(
+          expect.stringMatching(
+            /compliance%5B%5D=osha_certified.*compliance%5B%5D=drug_testing/
+          ),
+          { scroll: false }
+        );
+      });
+    });
+
+    it('should show correct filter count with compliance filters', async () => {
+      const mockUseAgencies = useAgencies as jest.Mock;
+
+      mockUseAgencies.mockReturnValue({
+        data: { data: mockAgencies.all },
+        error: null,
+        isLoading: false,
+        isValidating: false,
+      });
+
+      render(<HomePage />);
+
+      // Apply trade, state, and compliance filters
+      const tradeFilters = screen.getByTestId('trade-filters');
+      fireEvent.click(within(tradeFilters).getByText('Electrician'));
+      const stateFilters = screen.getByTestId('state-filters');
+      fireEvent.click(within(stateFilters).getByText('Texas'));
+      const complianceFilters = screen.getByTestId('compliance-filters');
+      fireEvent.click(within(complianceFilters).getByText('OSHA Certified'));
+      fireEvent.click(within(complianceFilters).getByText('Drug Testing'));
+
+      await waitFor(() => {
+        // Should show total active filters (1 trade + 1 state + 2 compliance = 4)
+        expect(screen.getByText('4 filters applied')).toBeInTheDocument();
       });
     });
   });

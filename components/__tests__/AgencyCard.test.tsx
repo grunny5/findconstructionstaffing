@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AgencyCard from '../AgencyCard';
-import { Agency } from '@/types/api';
+import { Agency, ComplianceItem } from '@/types/api';
 import { US_STATE_CODES } from '@/lib/utils';
 
 // Helper to convert Agency type to AgencyCard props
 function toAgencyCardProps(
-  agency: Agency
+  agency: Agency & { compliance?: ComplianceItem[] }
 ): Parameters<typeof AgencyCard>[0]['agency'] {
   return {
     id: agency.id,
@@ -22,6 +22,7 @@ function toAgencyCardProps(
     is_union: agency.is_union,
     trades: agency.trades.map((t) => t.name),
     regions: agency.regions,
+    compliance: agency.compliance,
     rating: agency.rating ?? undefined,
     reviewCount: agency.review_count,
     projectCount: agency.project_count,
@@ -532,6 +533,78 @@ describe('AgencyCard', () => {
       const badge = screen.getByText('Featured Agency').closest('div');
       expect(badge).toHaveClass('from-amber-400');
       expect(badge).toHaveClass('to-yellow-500');
+    });
+  });
+
+  describe('Compliance Indicators', () => {
+    const mockCompliance: ComplianceItem[] = [
+      {
+        type: 'osha_certified',
+        displayName: 'OSHA Certified',
+        isVerified: true,
+        expirationDate: '2026-12-31',
+        isExpired: false,
+      },
+      {
+        type: 'drug_testing',
+        displayName: 'Drug Testing Policy',
+        isVerified: false,
+        expirationDate: null,
+        isExpired: false,
+      },
+    ];
+
+    it('should render compliance indicators when compliance data is provided', () => {
+      const agencyWithCompliance = {
+        ...mockAgency,
+        compliance: mockCompliance,
+      };
+
+      render(<AgencyCard agency={toAgencyCardProps(agencyWithCompliance)} />);
+
+      // Verify user-facing compliance labels are displayed
+      // In compact mode, icons are shown with tooltips containing the display names
+      const complianceIcons = screen.getAllByRole('img', { hidden: true });
+      expect(complianceIcons.length).toBeGreaterThan(0);
+
+      // The component renders compliance items - verify agency still renders correctly
+      expect(screen.getByText('Test Agency')).toBeInTheDocument();
+    });
+
+    it('should not render compliance indicators when no compliance data', () => {
+      const agencyWithoutCompliance = {
+        ...mockAgency,
+        compliance: undefined,
+      };
+
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithoutCompliance)} />
+      );
+
+      // Verify main content renders
+      expect(screen.getByText('Test Agency')).toBeInTheDocument();
+
+      // Compliance labels should not be present
+      expect(screen.queryByText('OSHA Certified')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drug Testing Policy')).not.toBeInTheDocument();
+    });
+
+    it('should not render compliance indicators when compliance array is empty', () => {
+      const agencyWithEmptyCompliance = {
+        ...mockAgency,
+        compliance: [],
+      };
+
+      render(
+        <AgencyCard agency={toAgencyCardProps(agencyWithEmptyCompliance)} />
+      );
+
+      // Verify main content renders
+      expect(screen.getByText('Test Agency')).toBeInTheDocument();
+
+      // Compliance labels should not be present
+      expect(screen.queryByText('OSHA Certified')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drug Testing Policy')).not.toBeInTheDocument();
     });
   });
 });

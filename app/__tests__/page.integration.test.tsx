@@ -126,6 +126,11 @@ describe('HomePage Integration Tests', () => {
     window.location = { reload: jest.fn() } as any;
   });
 
+  afterEach(() => {
+    // Ensure fake timers are cleaned up even if a test fails mid-execution
+    jest.useRealTimers();
+  });
+
   describe('API Connection and Data Loading', () => {
     it('should display loading skeletons while fetching data', async () => {
       (useAgencies as jest.Mock).mockReturnValue(
@@ -339,6 +344,7 @@ describe('HomePage Integration Tests', () => {
         search: '',
         trades: ['electrician'],
         states: ['TX'],
+        compliance: [],
         limit: 20,
         offset: 0,
       });
@@ -439,6 +445,7 @@ describe('HomePage Integration Tests', () => {
         search: 'test',
         trades: ['electrician'],
         states: ['TX'],
+        compliance: [],
         limit: 20,
         offset: 0,
       });

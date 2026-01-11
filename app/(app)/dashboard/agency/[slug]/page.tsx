@@ -9,6 +9,8 @@ import { redirect, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
+import { ComplianceExpirationAlert } from '@/components/compliance/ComplianceExpirationAlert';
+import { toComplianceItemFull } from '@/types/api';
 
 interface DashboardPageProps {
   params: { slug: string };
@@ -81,8 +83,41 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     return null;
   }
 
+  // Fetch compliance data for expiration alerts
+  const { data: complianceData, error: complianceError } = await supabase
+    .from('agency_compliance')
+    .select('*')
+    .eq('agency_id', agency.id)
+    .eq('is_active', true)
+    .not('expiration_date', 'is', null);
+
+  // Log compliance fetch errors but don't block rendering
+  const complianceFetchError = complianceError
+    ? `Failed to load compliance data: ${complianceError.message}`
+    : null;
+
+  if (complianceError) {
+    console.error(
+      `Failed to fetch compliance data for agency ${agency.id}:`,
+      complianceError
+    );
+  }
+
+  const complianceItems =
+    !complianceError && complianceData
+      ? complianceData.map(toComplianceItemFull)
+      : [];
+
   return (
     <div className="space-y-6">
+      {/* Compliance Expiration Alert */}
+      <ComplianceExpirationAlert
+        expiringItems={complianceItems}
+        complianceUrl={`/dashboard/agency/${agency.slug}/compliance`}
+        agencyId={agency.id}
+        fetchError={complianceFetchError}
+      />
+
       {/* Header */}
       <div className="flex items-start gap-4">
         {agency.logo_url && (

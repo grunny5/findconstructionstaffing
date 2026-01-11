@@ -7,6 +7,19 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
+  // Enable parallel test execution
+  // CI: Use 50% of cores (conservative for stability)
+  // Local: Use 75% of cores (faster development)
+  maxWorkers: process.env.CI ? '50%' : '75%',
+
+  // Reduce watch mode overhead (doesn't affect CI)
+  watchPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/coverage/',
+    '/.jest-cache/',
+  ],
+
   // Configure different environments for different test types
   projects: [
     {
@@ -31,9 +44,9 @@ const customJestConfig = {
       },
       clearMocks: true,
       resetMocks: false,
-      testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+      testPathIgnorePatterns: ['/node_modules/', '/.next/', '/app/api/'],
       transformIgnorePatterns: [
-        '/node_modules/',
+        '/node_modules/(?!(@radix-ui|@supabase)/)',
         '^.+\\.module\\.(css|sass|scss)$',
       ],
     },
@@ -60,7 +73,7 @@ const customJestConfig = {
       resetMocks: false,
       testPathIgnorePatterns: ['/node_modules/', '/.next/'],
       transformIgnorePatterns: [
-        '/node_modules/',
+        '/node_modules/(?!(@radix-ui|@supabase)/)',
         '^.+\\.module\\.(css|sass|scss)$',
       ],
     },
@@ -83,14 +96,12 @@ const customJestConfig = {
     '!**/tests/load/**',
     '!**/__mocks__/**',
   ],
-  // Coverage thresholds temporarily lowered while fixing tests
-  // TODO: Gradually increase these back to 80% as we add more tests
   coverageThreshold: {
     global: {
-      branches: 15,
-      functions: 15,
-      lines: 15,
-      statements: 15,
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
     },
   },
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],

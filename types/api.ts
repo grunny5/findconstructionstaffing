@@ -86,6 +86,8 @@ export interface Agency {
   trades: Trade[];
   /** Associated service regions */
   regions: Region[];
+  /** Active compliance certifications (public data only) */
+  compliance?: ComplianceItem[];
 }
 
 /**
@@ -126,6 +128,8 @@ export interface AgenciesQueryParams {
   trades?: string[];
   /** Filter by state codes */
   states?: string[];
+  /** Filter by compliance types */
+  compliance?: ComplianceType[];
   /** Results per page (default: 20, max: 100) */
   limit?: number;
   /** Pagination offset (default: 0) */
@@ -186,6 +190,8 @@ export const API_CONSTANTS = {
   MAX_TRADE_FILTERS: 10,
   /** Maximum number of state filters allowed in a single request */
   MAX_STATE_FILTERS: 10,
+  /** Maximum number of compliance filters allowed in a single request */
+  MAX_COMPLIANCE_FILTERS: 6,
 } as const;
 
 /**
@@ -451,3 +457,304 @@ export type AsyncRouteContext<T extends Record<string, string>> = {
 export type SyncRouteContext<T extends Record<string, string>> = {
   params: T;
 };
+
+// =============================================================================
+// COMPLIANCE TYPES (Feature 013)
+// =============================================================================
+
+/**
+ * Compliance type enum representing the 6 compliance categories
+ */
+export type ComplianceType =
+  | 'osha_certified'
+  | 'drug_testing'
+  | 'background_checks'
+  | 'workers_comp'
+  | 'general_liability'
+  | 'bonding';
+
+/**
+ * All valid compliance types as a constant array
+ */
+export const COMPLIANCE_TYPES: readonly ComplianceType[] = [
+  'osha_certified',
+  'drug_testing',
+  'background_checks',
+  'workers_comp',
+  'general_liability',
+  'bonding',
+];
+
+/**
+ * Display names for each compliance type
+ */
+export const COMPLIANCE_DISPLAY_NAMES: Record<ComplianceType, string> = {
+  osha_certified: 'OSHA Certified',
+  drug_testing: 'Drug Testing Policy',
+  background_checks: 'Background Checks',
+  workers_comp: "Workers' Compensation",
+  general_liability: 'General Liability Insurance',
+  bonding: 'Bonding/Surety Bond',
+} as const;
+
+/**
+ * Descriptions for each compliance type
+ */
+export const COMPLIANCE_DESCRIPTIONS: Record<ComplianceType, string> = {
+  osha_certified: 'OSHA 10/30 safety training certification',
+  drug_testing: 'Pre-employment and random drug testing program',
+  background_checks: 'Criminal background check capability',
+  workers_comp: "Workers' compensation insurance coverage",
+  general_liability: 'General liability insurance coverage',
+  bonding: 'Surety bond or performance bond capability',
+} as const;
+
+/**
+ * Helper function to get display name for a compliance type
+ */
+export function getComplianceDisplayName(type: ComplianceType): string {
+  return COMPLIANCE_DISPLAY_NAMES[type];
+}
+
+/**
+ * Helper function to get description for a compliance type
+ */
+export function getComplianceDescription(type: ComplianceType): string {
+  return COMPLIANCE_DESCRIPTIONS[type];
+}
+
+/**
+ * Database row type for agency_compliance table
+ */
+export interface AgencyComplianceRow {
+  id: string;
+  agency_id: string;
+  compliance_type: ComplianceType;
+  is_active: boolean;
+  is_verified: boolean;
+  verified_by: string | null;
+  verified_at: string | null;
+  document_url: string | null;
+  expiration_date: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Subset of AgencyComplianceRow returned by partial SELECT queries
+ */
+export type ComplianceQueryResult = Pick<
+  AgencyComplianceRow,
+  | 'id'
+  | 'agency_id'
+  | 'compliance_type'
+  | 'is_active'
+  | 'is_verified'
+  | 'expiration_date'
+>;
+
+/**
+ * Public compliance item for display on agency profiles
+ */
+export interface ComplianceItem {
+  /** Compliance type identifier */
+  type: ComplianceType;
+  /** Human-readable display name */
+  displayName: string;
+  /** Whether admin has verified this compliance */
+  isVerified: boolean;
+  /** Expiration date if applicable */
+  expirationDate: string | null;
+  /** Whether the compliance has expired */
+  isExpired: boolean;
+}
+
+/**
+ * Full compliance item for dashboard/admin views
+ */
+export interface ComplianceItemFull extends ComplianceItem {
+  /** Unique record ID */
+  id: string;
+  /** Whether the agency has this compliance active */
+  isActive: boolean;
+  /** URL to uploaded verification document */
+  documentUrl: string | null;
+  /** Admin notes */
+  notes: string | null;
+  /** ID of admin who verified */
+  verifiedBy: string | null;
+  /** Timestamp of verification */
+  verifiedAt: string | null;
+}
+
+/**
+ * Request body for updating compliance items
+ */
+export interface ComplianceUpdateItem {
+  /** Compliance type to update */
+  type: ComplianceType;
+  /** Whether this compliance is active */
+  isActive: boolean;
+  /** Optional expiration date */
+  expirationDate?: string | null;
+}
+
+/**
+ * Request body for PUT /api/dashboard/compliance or /api/admin/agencies/[id]/compliance
+ */
+export interface ComplianceUpdateRequest {
+  /** Array of compliance items to update */
+  items: ComplianceUpdateItem[];
+}
+
+/**
+ * Request body for admin verification (verify action)
+ */
+export interface ComplianceVerifyRequestVerify {
+  /** Compliance type to verify */
+  complianceType: ComplianceType;
+  /** Action to take */
+  action: 'verify';
+  /** Optional admin notes */
+  notes?: string;
+}
+
+/**
+ * Request body for admin verification (reject action)
+ */
+export interface ComplianceVerifyRequestReject {
+  /** Compliance type to verify */
+  complianceType: ComplianceType;
+  /** Action to take */
+  action: 'reject';
+  /** Rejection reason (required for reject action) */
+  reason: string;
+  /** Optional admin notes */
+  notes?: string;
+}
+
+/**
+ * Request body for admin verification
+ * Discriminated union ensuring rejection requires a reason
+ */
+export type ComplianceVerifyRequest =
+  | ComplianceVerifyRequestVerify
+  | ComplianceVerifyRequestReject;
+
+/**
+ * Response for compliance endpoints
+ */
+export interface ComplianceResponse {
+  /** Array of compliance items */
+  data: ComplianceItem[];
+}
+
+/**
+ * Response for dashboard/admin compliance endpoints (includes full data)
+ */
+export interface ComplianceFullResponse {
+  /** Array of full compliance items */
+  data: ComplianceItemFull[];
+}
+
+/**
+ * Helper function to check if a compliance item is expired
+ */
+export function isComplianceExpired(expirationDate: string | null): boolean {
+  if (!expirationDate) return false;
+  const expDate = new Date(expirationDate);
+  // Check if the date is valid
+  if (isNaN(expDate.getTime())) return false;
+
+  // Extract date components for UTC comparison
+  const expYear = expDate.getUTCFullYear();
+  const expMonth = expDate.getUTCMonth();
+  const expDay = expDate.getUTCDate();
+  const expUTC = Date.UTC(expYear, expMonth, expDay);
+
+  const today = new Date();
+  const todayYear = today.getUTCFullYear();
+  const todayMonth = today.getUTCMonth();
+  const todayDay = today.getUTCDate();
+  const todayUTC = Date.UTC(todayYear, todayMonth, todayDay);
+
+  return expUTC < todayUTC;
+}
+
+/**
+ * Helper function to check if compliance is expiring soon (within days)
+ */
+export function isComplianceExpiringSoon(
+  expirationDate: string | null,
+  withinDays: number = 30
+): boolean {
+  if (!expirationDate) return false;
+  const expDate = new Date(expirationDate);
+  // Check if the date is valid
+  if (isNaN(expDate.getTime())) return false;
+
+  // Extract date components for UTC comparison
+  const expYear = expDate.getUTCFullYear();
+  const expMonth = expDate.getUTCMonth();
+  const expDay = expDate.getUTCDate();
+  const expUTC = Date.UTC(expYear, expMonth, expDay);
+
+  const today = new Date();
+  const todayYear = today.getUTCFullYear();
+  const todayMonth = today.getUTCMonth();
+  const todayDay = today.getUTCDate();
+  const todayUTC = Date.UTC(todayYear, todayMonth, todayDay);
+
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+  const diffDays = Math.floor((expUTC - todayUTC) / MS_PER_DAY);
+  return diffDays >= 0 && diffDays <= withinDays;
+}
+
+/**
+ * Transform database row to public ComplianceItem.
+ * Accepts either full AgencyComplianceRow or partial ComplianceQueryResult.
+ */
+export function toComplianceItem(
+  row: AgencyComplianceRow | ComplianceQueryResult
+): ComplianceItem {
+  return {
+    type: row.compliance_type,
+    displayName: getComplianceDisplayName(row.compliance_type),
+    isVerified: row.is_verified,
+    expirationDate: row.expiration_date,
+    isExpired: isComplianceExpired(row.expiration_date),
+  };
+}
+
+/**
+ * Transform database row to full ComplianceItemFull
+ */
+export function toComplianceItemFull(
+  row: AgencyComplianceRow
+): ComplianceItemFull {
+  return {
+    id: row.id,
+    type: row.compliance_type,
+    displayName: getComplianceDisplayName(row.compliance_type),
+    isActive: row.is_active,
+    isVerified: row.is_verified,
+    expirationDate: row.expiration_date,
+    isExpired: isComplianceExpired(row.expiration_date),
+    documentUrl: row.document_url,
+    notes: row.notes,
+    verifiedBy: row.verified_by,
+    verifiedAt: row.verified_at,
+  };
+}
+
+/**
+ * Item representing a compliance certification that is expiring
+ * Used by email templates for expiration reminders
+ */
+export interface ComplianceExpiringItem {
+  /** Type of compliance that is expiring */
+  complianceType: ComplianceType;
+  /** Expiration date in ISO format (YYYY-MM-DD) */
+  expirationDate: string;
+}

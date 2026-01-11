@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { RegionBadges } from '@/components/RegionBadges';
+import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +25,7 @@ import {
   ArrowUpRight,
   CheckCircle2,
 } from 'lucide-react';
-import type { Region } from '@/types/api';
+import type { Region, ComplianceItem } from '@/types/api';
 
 interface AgencyCardProps {
   agency: {
@@ -41,6 +42,7 @@ interface AgencyCardProps {
     is_union: boolean;
     trades?: string[];
     regions?: Region[];
+    compliance?: ComplianceItem[];
     rating?: number;
     reviewCount?: number;
     projectCount?: number;
@@ -231,6 +233,14 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                         {agency.rating.toFixed(1)}
                       </span>
                     </div>
+                  )}
+
+                  {/* Compliance Indicators */}
+                  {agency.compliance && agency.compliance.length > 0 && (
+                    <ComplianceBadges
+                      compliance={agency.compliance}
+                      variant="compact"
+                    />
                   )}
                 </div>
 

@@ -34,9 +34,17 @@ import {
 } from 'lucide-react';
 import { useAgencies } from '@/hooks/use-agencies';
 import { useDebounce } from '@/hooks/use-debounce';
-import { Agency } from '@/types/api';
+import { Agency, ComplianceType, COMPLIANCE_TYPES } from '@/types/api';
 import Link from 'next/link';
 import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
+
+// Helper to validate and filter compliance query parameters
+function validateComplianceParams(params: string[]): ComplianceType[] {
+  const validTypes = new Set(COMPLIANCE_TYPES);
+  return params.filter((p): p is ComplianceType =>
+    validTypes.has(p as ComplianceType)
+  );
+}
 
 function HomePageContent() {
   const router = useRouter();
@@ -46,6 +54,7 @@ function HomePageContent() {
     search: searchParams.get('search') || '',
     trades: searchParams.getAll('trades[]') || [],
     states: searchParams.getAll('states[]') || [],
+    compliance: validateComplianceParams(searchParams.getAll('compliance[]')),
     perDiem: null,
     union: null,
     claimedOnly: false,
@@ -74,6 +83,7 @@ function HomePageContent() {
     search: debouncedSearchQuery,
     trades: filters.trades,
     states: filters.states,
+    compliance: filters.compliance,
     limit,
     offset,
   });
@@ -109,12 +119,23 @@ function HomePageContent() {
       params.delete('states[]');
     }
 
+    // Handle compliance filter
+    if (filters.compliance.length > 0) {
+      params.delete('compliance[]'); // Clear existing
+      filters.compliance.forEach((compliance) => {
+        params.append('compliance[]', compliance);
+      });
+    } else {
+      params.delete('compliance[]');
+    }
+
     // Use replace to avoid adding to browser history on every change
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [
     debouncedSearchQuery,
     filters.trades,
     filters.states,
+    filters.compliance,
     router,
     searchParams,
   ]);
@@ -122,7 +143,12 @@ function HomePageContent() {
   // Reset pagination when filters change
   useEffect(() => {
     setOffset(0);
-  }, [debouncedSearchQuery, filters.trades, filters.states]);
+  }, [
+    debouncedSearchQuery,
+    filters.trades,
+    filters.states,
+    filters.compliance,
+  ]);
 
   // Process API data and accumulate results for pagination
   const [allAgencies, setAllAgencies] = useState<Agency[]>([]);
@@ -214,6 +240,7 @@ function HomePageContent() {
   const activeFilterCount =
     filters.trades.length +
     filters.states.length +
+    filters.compliance.length +
     (filters.perDiem !== null ? 1 : 0) +
     (filters.union !== null ? 1 : 0) +
     (filters.claimedOnly ? 1 : 0) +
@@ -227,6 +254,7 @@ function HomePageContent() {
       search: '',
       trades: [],
       states: [],
+      compliance: [],
       perDiem: null,
       union: null,
       claimedOnly: false,

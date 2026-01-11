@@ -7,6 +7,10 @@ import {
   supabaseMockHelpers,
   resetSupabaseMock,
 } from '@/__tests__/utils/supabase-mock';
+import {
+  createMultiTableMock,
+  type SupabaseMock,
+} from '@/__tests__/utils/multi-table-mock';
 import { supabase } from '@/lib/supabase';
 import {
   isErrorResponse,
@@ -328,6 +332,208 @@ describe('GET /api/agencies', () => {
       );
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Compliance Filtering', () => {
+    it('should filter agencies by single compliance type', async () => {
+      const mockAgencies = [
+        {
+          id: '1',
+          name: 'OSHA Certified Agency',
+          slug: 'osha-agency',
+          is_active: true,
+          trades: [],
+          regions: [],
+        },
+      ];
+
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+      ];
+
+      configureSupabaseMock(supabase, {
+        defaultData: mockAgencies,
+        defaultCount: 1,
+      });
+
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: mockAgencies, count: 1 },
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?compliance=osha_certified',
+      });
+
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.data).toHaveLength(1);
+      expect((supabase as any).in).toHaveBeenCalledWith('compliance_type', [
+        'osha_certified',
+      ]);
+      expect((supabase as any).eq).toHaveBeenCalledWith('is_active', true);
+    });
+
+    it('should filter agencies by multiple compliance types (AND logic)', async () => {
+      const mockAgencies = [
+        {
+          id: '1',
+          name: 'Fully Compliant Agency',
+          slug: 'compliant-agency',
+          is_active: true,
+          trades: [],
+          regions: [],
+        },
+      ];
+
+      // Agency 1 has both compliance types, Agency 2 only has OSHA, Agency 3 only has drug testing
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+        { agency_id: '1', compliance_type: 'drug_testing' },
+        { agency_id: '2', compliance_type: 'osha_certified' },
+        { agency_id: '3', compliance_type: 'drug_testing' },
+      ];
+
+      configureSupabaseMock(supabase, {
+        defaultData: mockAgencies,
+        defaultCount: 1,
+      });
+
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: mockAgencies, count: 1 },
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?compliance[]=osha_certified&compliance[]=drug_testing',
+      });
+
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      // Should only return agency 1 which has both compliance types
+      expect(data.data).toHaveLength(1);
+    });
+
+    it('should combine compliance filter with trade filter', async () => {
+      const mockAgencies = [
+        {
+          id: '1',
+          name: 'Compliant Electrician Agency',
+          slug: 'compliant-electrician',
+          is_active: true,
+          trades: [
+            {
+              trade: { id: 't1', name: 'Electricians', slug: 'electricians' },
+            },
+          ],
+          regions: [],
+        },
+      ];
+
+      const mockTradeData = [{ id: 't1' }];
+      const mockAgencyTradeData = [{ agency_id: '1' }, { agency_id: '2' }];
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+        { agency_id: '3', compliance_type: 'osha_certified' },
+      ];
+
+      configureSupabaseMock(supabase, {
+        defaultData: mockAgencies,
+        defaultCount: 1,
+      });
+
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
+        trades: { data: mockTradeData },
+        agency_trades: { data: mockAgencyTradeData },
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: mockAgencies, count: 1 },
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?trades=electricians&compliance=osha_certified',
+      });
+
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      // Should only return agency 1 which has both electrician trade and OSHA compliance
+      expect(data.data).toHaveLength(1);
+    });
+
+    it('should reject invalid compliance type', async () => {
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?compliance=invalid_type',
+      });
+
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(isErrorResponse(data)).toBe(true);
+      expect(data.error.code).toBe(ERROR_CODES.INVALID_PARAMS);
+    });
+
+    it('should return empty results when no agencies match compliance filter', async () => {
+      configureSupabaseMock(supabase, {
+        defaultData: [],
+        defaultCount: 0,
+      });
+
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
+        agency_compliance: { data: [] },
+        agencies: { data: [], count: 0 },
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?compliance=osha_certified',
+      });
+
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.data).toEqual([]);
+      expect(data.pagination.total).toBe(0);
+    });
+
+    it('should handle multiple compliance filters with no intersection', async () => {
+      // Agency 1 only has OSHA, Agency 2 only has drug testing - no overlap
+      const mockComplianceData = [
+        { agency_id: '1', compliance_type: 'osha_certified' },
+        { agency_id: '2', compliance_type: 'drug_testing' },
+      ];
+
+      configureSupabaseMock(supabase, {
+        defaultData: [],
+        defaultCount: 0,
+      });
+
+      // Use helper to create multi-table mock
+      createMultiTableMock(supabase as unknown as SupabaseMock, {
+        agency_compliance: { data: mockComplianceData },
+        agencies: { data: [], count: 0 },
+      });
+
+      const mockRequest = createMockNextRequest({
+        url: 'http://localhost:3000/api/agencies?compliance[]=osha_certified&compliance[]=drug_testing',
+      });
+
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.data).toEqual([]);
+      expect(data.pagination.total).toBe(0);
     });
   });
 });
