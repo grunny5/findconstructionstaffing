@@ -34,6 +34,7 @@ import {
   COMPLIANCE_DISPLAY_NAMES,
   type ComplianceType,
   type AgencyComplianceRow,
+  isComplianceExpired,
 } from '@/types/api';
 import { ComplianceVerifyDialog } from '@/components/admin/ComplianceVerifyDialog';
 
@@ -369,9 +370,7 @@ export function ComplianceOverviewTable({
             isActive: selectedCompliance.is_active,
             isVerified: selectedCompliance.is_verified,
             expirationDate: selectedCompliance.expiration_date,
-            isExpired: selectedCompliance.expiration_date
-              ? new Date(selectedCompliance.expiration_date) < new Date()
-              : false,
+            isExpired: isComplianceExpired(selectedCompliance.expiration_date),
             documentUrl: selectedCompliance.document_url,
             notes: selectedCompliance.notes,
             verifiedBy: selectedCompliance.verified_by,

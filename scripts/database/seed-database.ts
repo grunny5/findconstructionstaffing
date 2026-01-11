@@ -961,7 +961,21 @@ async function resetDatabase(
     }
     deletions.push({ table: 'agency_regions', count: agencyRegionCount || 0 });
 
-    // 2. Delete agencies (depends on junction tables)
+    // 2.5. Delete agency compliance records (must come before agencies deletion)
+    log.info('Deleting agency compliance records...');
+    const { count: complianceCount, error: complianceError } = await supabase
+      .from('agency_compliance')
+      .delete()
+      .neq('agency_id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+    if (complianceError) {
+      throw new Error(
+        `Failed to delete agency compliance: ${complianceError.message}`
+      );
+    }
+    deletions.push({ table: 'agency_compliance', count: complianceCount || 0 });
+
+    // 3. Delete agencies (depends on junction tables and compliance)
     log.info('Deleting agencies...');
     const { count: agencyCount, error: agencyError } = await supabase
       .from('agencies')

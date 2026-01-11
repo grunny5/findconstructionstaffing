@@ -8,12 +8,24 @@ import Link from 'next/link';
 import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
 import { AgencyEditButton } from '@/components/admin/AgencyEditButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
-import { COMPLIANCE_DISPLAY_NAMES, isComplianceExpired } from '@/types/api';
+import { COMPLIANCE_DISPLAY_NAMES, isComplianceExpired, type ComplianceType } from '@/types/api';
 
 interface AgencyDetailPageProps {
   params: {
     id: string;
   };
+}
+
+interface ComplianceRow {
+  id: string;
+  compliance_type: string;
+  is_active: boolean;
+  is_verified: boolean;
+  expiration_date: string | null;
+  document_url: string | null;
+  notes: string | null;
+  verified_by: string | null;
+  verified_at: string | null;
 }
 
 const formatDate = (dateString: string): string => {
@@ -176,9 +188,9 @@ export default async function AgencyDetailPage({
     );
   }
 
-  const complianceItems = (complianceData || []).map((c: any) => ({
+  const complianceItems = (complianceData || []).map((c: ComplianceRow) => ({
     id: c.id,
-    type: c.compliance_type,
+    type: c.compliance_type as ComplianceType,
     displayName: COMPLIANCE_DISPLAY_NAMES[c.compliance_type as keyof typeof COMPLIANCE_DISPLAY_NAMES] || String(c.compliance_type),
     isActive: c.is_active,
     isVerified: c.is_verified,
@@ -471,7 +483,7 @@ export default async function AgencyDetailPage({
               <div className="grid grid-cols-3 gap-4 pb-4 border-b border-industrial-graphite-200">
                 <div className="text-center">
                   <div className="text-2xl font-display font-bold text-green-600">
-                    {complianceItems.filter((c: any) => c.isVerified && !c.isExpired).length}
+                    {complianceItems.filter((c) => c.isVerified && !c.isExpired).length}
                   </div>
                   <div className="text-xs font-body text-industrial-graphite-400 uppercase">
                     Verified
@@ -479,7 +491,7 @@ export default async function AgencyDetailPage({
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-display font-bold text-industrial-orange-600">
-                    {complianceItems.filter((c: any) => !c.isVerified && !c.isExpired).length}
+                    {complianceItems.filter((c) => !c.isVerified && !c.isExpired).length}
                   </div>
                   <div className="text-xs font-body text-industrial-graphite-400 uppercase">
                     Pending
@@ -487,7 +499,7 @@ export default async function AgencyDetailPage({
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-display font-bold text-red-600">
-                    {complianceItems.filter((c: any) => c.isExpired).length}
+                    {complianceItems.filter((c) => c.isExpired).length}
                   </div>
                   <div className="text-xs font-body text-industrial-graphite-400 uppercase">
                     Expired
