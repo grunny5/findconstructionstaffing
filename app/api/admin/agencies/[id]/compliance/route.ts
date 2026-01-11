@@ -560,6 +560,14 @@ export async function PUT(
 
       if (item.documentUrl !== undefined) {
         upsertData.document_url = item.documentUrl || null;
+
+        // If document is being cleared, reset verification status
+        // (verified items must have supporting documents)
+        if (item.documentUrl === '' || item.documentUrl === null) {
+          upsertData.is_verified = false;
+          upsertData.verified_by = null;
+          upsertData.verified_at = null;
+        }
       }
 
       return upsertData;

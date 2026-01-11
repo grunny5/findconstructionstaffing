@@ -62,12 +62,18 @@ function isValidEmail(email: unknown): email is string {
 /**
  * Timing-safe comparison of authorization header against expected secret
  * Protects against timing attacks on the cron secret
+ * Requires explicit "Bearer " scheme prefix
  */
 function isValidAuthHeader(
   authHeader: string | null,
   expectedSecret: string
 ): boolean {
   if (!authHeader) return false;
+
+  // Require explicit Bearer scheme
+  if (!/^Bearer\s+/i.test(authHeader)) {
+    return false;
+  }
 
   // Extract token from "Bearer <token>" format
   const token = authHeader.replace(/^Bearer\s+/i, '');
@@ -374,17 +380,17 @@ async function sendReminder(
         ? generateComplianceExpiring30Text(emailParams)
         : generateComplianceExpiring7Text(emailParams);
 
-    // Send email with idempotency key and check response
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
-      to: owner.email,
-      subject,
-      html,
-      text,
-      headers: {
-        'Idempotency-Key': idempotencyKey,
+    // Send email with idempotency key (passed as second parameter for Resend SDK)
+    const { data: emailData, error: emailError } = await resend.emails.send(
+      {
+        from: 'FindConstructionStaffing <noreply@findconstructionstaffing.com>',
+        to: owner.email,
+        subject,
+        html,
+        text,
       },
-    });
+      { idempotencyKey }
+    );
 
     if (emailError) {
       // Check if this is a rate limit error (HTTP 429)
@@ -392,8 +398,9 @@ async function sendReminder(
         'statusCode' in emailError && emailError.statusCode === 429;
 
       // STEP 3: Rollback tracking timestamp on email failure
+      // Log with non-PII identifiers only
       console.error(
-        `[Cron] Email send failed for ${owner.email}, rolling back tracking:`,
+        `[Cron] Email send failed for user ${owner.id} (agency: ${owner.agency_id}), rolling back tracking:`,
         emailError
       );
 
@@ -405,14 +412,16 @@ async function sendReminder(
       };
     }
 
+    // Log with non-PII identifiers only
     console.log(
-      `[Cron] Sent ${reminderType}-day reminder to ${owner.email} for ${items.length} items (id: ${emailData?.id})`
+      `[Cron] Sent ${reminderType}-day reminder to user ${owner.id} (agency: ${owner.agency_name}) for ${items.length} items (id: ${emailData?.id})`
     );
     return { success: true };
   } catch (error) {
     // Unexpected error - attempt rollback
+    // Log with non-PII identifiers only
     console.error(
-      `[Cron] Unexpected error sending ${reminderType}-day reminder to ${owner.email}:`,
+      `[Cron] Unexpected error sending ${reminderType}-day reminder to user ${owner.id} (agency: ${owner.agency_id}):`,
       error
     );
 
