@@ -94,7 +94,7 @@ function isValidAuthHeader(
 }
 
 /**
- * Check if a date is within N days from now (with a small window for flexibility)
+ * Check if a date is within a window of days from now
  * Uses a window to allow for slight timing variations in cron execution
  *
  * For 30-day reminders: matches days 28-30
@@ -102,7 +102,6 @@ function isValidAuthHeader(
  */
 function isDaysFromNowInWindow(
   dateStr: string,
-  targetDays: number,
   windowStart: number,
   windowEnd: number
 ): boolean {
@@ -603,12 +602,12 @@ export async function GET(request: NextRequest) {
     // Filter items by expiration timeframe (with windows for flexibility)
     // 30-day reminders: 28-30 days out
     const items30Days = (allItems || []).filter((item) =>
-      isDaysFromNowInWindow(item.expiration_date, 30, 28, 30)
+      isDaysFromNowInWindow(item.expiration_date, 28, 30)
     ) as ComplianceExpiringItem[];
 
     // 7-day reminders: 5-7 days out
     const items7Days = (allItems || []).filter((item) =>
-      isDaysFromNowInWindow(item.expiration_date, 7, 5, 7)
+      isDaysFromNowInWindow(item.expiration_date, 5, 7)
     ) as ComplianceExpiringItem[];
 
     console.log(
