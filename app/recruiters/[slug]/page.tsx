@@ -36,11 +36,12 @@ interface PageProps {
 
 // This is a server component - data fetching happens at request time
 export default async function AgencyProfilePage({ params }: PageProps) {
-  // Fetch agency data from API
+  // Fetch agency data from API with caching for performance
+  // Data revalidates every 60 seconds in the background (stale-while-revalidate pattern)
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/agencies/${params.slug}`,
     {
-      cache: 'no-store', // Ensure fresh data
+      next: { revalidate: 60 },
       headers: {
         'Content-Type': 'application/json',
       },
