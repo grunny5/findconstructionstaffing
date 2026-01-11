@@ -262,12 +262,23 @@ async function groupItemsByAgency(
 }
 
 /**
+ * Result from sendReminder including rate limit info for backoff handling
+ */
+interface SendReminderResult {
+  success: boolean;
+  rateLimitRemaining?: number;
+  rateLimitReset?: number; // Unix timestamp when rate limit resets
+  isRateLimited?: boolean;
+}
+
+/**
  * Send reminder email and update tracking
  *
  * Uses idempotent update-then-send pattern with rollback on email failure:
- * 1. Update tracking timestamp FIRST (prevents duplicate sends on retry)
- * 2. Send email with idempotencyKey for Resend deduplication
- * 3. If email fails, rollback the tracking timestamp
+ * 1. Capture original timestamp values for rollback
+ * 2. Update tracking timestamp FIRST (prevents duplicate sends on retry)
+ * 3. Send email with idempotencyKey for Resend deduplication
+ * 4. If email fails, rollback to original timestamp values by ID
  */
 async function sendReminder(
   supabaseAdmin: SupabaseClient,
@@ -276,7 +287,7 @@ async function sendReminder(
   reminderType: '30' | '7',
   resend: Resend,
   siteUrl: string
-): Promise<boolean> {
+): Promise<SendReminderResult> {
   const now = new Date().toISOString();
   const updateField =
     reminderType === '30'
@@ -288,6 +299,36 @@ async function sendReminder(
   // This prevents duplicate sends if cron runs multiple times on same day
   const today = new Date().toISOString().split('T')[0];
   const idempotencyKey = `${owner.agency_id}-${owner.id}-${reminderType}day-${today}`;
+
+  // STEP 0: Capture original timestamp values before update (for reliable rollback)
+  const originalValues = new Map<string, string | null>();
+  for (const item of items) {
+    originalValues.set(
+      item.id,
+      reminderType === '30'
+        ? item.last_30_day_reminder_sent
+        : item.last_7_day_reminder_sent
+    );
+  }
+
+  /**
+   * Rollback helper: restore original timestamp values by ID
+   */
+  async function rollbackToOriginal(): Promise<void> {
+    for (const [itemId, originalValue] of Array.from(originalValues.entries())) {
+      try {
+        await supabaseAdmin
+          .from('agency_compliance')
+          .update({ [updateField]: originalValue })
+          .eq('id', itemId);
+      } catch (rollbackError) {
+        console.error(
+          `[Cron] Failed to rollback ${updateField} for item ${itemId}:`,
+          rollbackError
+        );
+      }
+    }
+  }
 
   try {
     // STEP 1: Update tracking FIRST (idempotent - prevents duplicate sends on retry)
@@ -302,7 +343,7 @@ async function sendReminder(
         itemIds,
         updateError
       );
-      return false;
+      return { success: false };
     }
 
     // STEP 2: Send email AFTER tracking is updated
@@ -347,33 +388,28 @@ async function sendReminder(
     });
 
     if (emailError) {
+      // Check if this is a rate limit error (HTTP 429)
+      const isRateLimited =
+        'statusCode' in emailError && emailError.statusCode === 429;
+
       // STEP 3: Rollback tracking timestamp on email failure
       console.error(
         `[Cron] Email send failed for ${owner.email}, rolling back tracking:`,
         emailError
       );
 
-      const { error: rollbackError } = await supabaseAdmin
-        .from('agency_compliance')
-        .update({ [updateField]: null })
-        .in('id', itemIds)
-        .eq(updateField, now);
+      await rollbackToOriginal();
 
-      if (rollbackError) {
-        console.error(
-          `[Cron] Failed to rollback ${updateField} for items:`,
-          itemIds,
-          rollbackError
-        );
-      }
-
-      return false;
+      return {
+        success: false,
+        isRateLimited,
+      };
     }
 
     console.log(
       `[Cron] Sent ${reminderType}-day reminder to ${owner.email} for ${items.length} items (id: ${emailData?.id})`
     );
-    return true;
+    return { success: true };
   } catch (error) {
     // Unexpected error - attempt rollback
     console.error(
@@ -381,18 +417,97 @@ async function sendReminder(
       error
     );
 
-    // Attempt rollback
-    try {
-      await supabaseAdmin
-        .from('agency_compliance')
-        .update({ [updateField]: null })
-        .in('id', itemIds)
-        .eq(updateField, now);
-    } catch (rollbackError) {
-      console.error('[Cron] Rollback also failed:', rollbackError);
+    // Check if this is a rate limit error
+    const isRateLimited =
+      error instanceof Error &&
+      ('statusCode' in error
+        ? (error as { statusCode?: number }).statusCode === 429
+        : error.message?.includes('429'));
+
+    await rollbackToOriginal();
+
+    return { success: false, isRateLimited };
+  }
+}
+
+/**
+ * Process reminders with rate limiting and exponential backoff
+ * Adds delays between API calls and handles 429 responses
+ */
+async function processRemindersWithRateLimit(
+  supabaseAdmin: SupabaseClient,
+  grouped: Map<string, { owner: AgencyOwner; items: ComplianceExpiringItem[] }>,
+  reminderType: '30' | '7',
+  resend: Resend,
+  siteUrl: string,
+  result: ProcessingResult
+): Promise<void> {
+  const entries = Array.from(grouped.entries());
+
+  // Base delay between API calls (100ms to stay well under rate limits)
+  const BASE_DELAY_MS = 100;
+  // Maximum backoff delay (30 seconds)
+  const MAX_BACKOFF_MS = 30000;
+  // Maximum retry attempts for rate-limited requests
+  const MAX_RETRIES = 3;
+
+  for (let i = 0; i < entries.length; i++) {
+    const [agencyId, { owner, items }] = entries[i];
+
+    let retryCount = 0;
+    let backoffMs = 1000; // Start with 1 second backoff for retries
+    let sendResult: SendReminderResult = { success: false };
+
+    // Retry loop for rate-limited requests
+    while (retryCount <= MAX_RETRIES) {
+      sendResult = await sendReminder(
+        supabaseAdmin,
+        owner,
+        items,
+        reminderType,
+        resend,
+        siteUrl
+      );
+
+      if (sendResult.success) {
+        // Success - update results
+        if (reminderType === '30') {
+          result.sent30DayReminders += items.length;
+        } else {
+          result.sent7DayReminders += items.length;
+        }
+        if (!result.processedAgencies.includes(agencyId)) {
+          result.processedAgencies.push(agencyId);
+        }
+        break;
+      }
+
+      if (sendResult.isRateLimited && retryCount < MAX_RETRIES) {
+        // Rate limited - apply exponential backoff
+        console.log(
+          `[Cron] Rate limited, waiting ${backoffMs}ms before retry ${retryCount + 1}/${MAX_RETRIES}`
+        );
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
+        retryCount++;
+      } else {
+        // Non-rate-limit error or max retries reached
+        console.error(
+          `[Cron] Failed to send ${reminderType}-day reminder for agency ${agencyId}` +
+            (retryCount > 0 ? ` after ${retryCount} retries` : '')
+        );
+        result.errors.push(
+          `Failed to send ${reminderType}-day reminder for agency ${agencyId}`
+        );
+        break;
+      }
     }
 
-    return false;
+    // Add base delay between requests to avoid hitting rate limits
+    // Skip delay after the last item
+    if (i < entries.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, BASE_DELAY_MS));
+    }
   }
 }
 
@@ -501,7 +616,7 @@ export async function GET(request: NextRequest) {
     );
 
     // ========================================================================
-    // 5. PROCESS 30-DAY REMINDERS
+    // 5. PROCESS 30-DAY REMINDERS (with rate limiting)
     // ========================================================================
     const result: ProcessingResult = {
       sent30DayReminders: 0,
@@ -516,33 +631,17 @@ export async function GET(request: NextRequest) {
       '30'
     );
 
-    for (const [agencyId, { owner, items }] of Array.from(
-      grouped30Day.entries()
-    )) {
-      const success = await sendReminder(
-        supabaseAdmin,
-        owner,
-        items,
-        '30',
-        resend,
-        siteUrl
-      );
-
-      if (success) {
-        result.sent30DayReminders += items.length;
-        result.processedAgencies.push(agencyId);
-      } else {
-        console.error(
-          `[Cron] Failed to send 30-day reminder for agency ${agencyId}`
-        );
-        result.errors.push(
-          `Failed to send 30-day reminder for agency ${agencyId}`
-        );
-      }
-    }
+    await processRemindersWithRateLimit(
+      supabaseAdmin,
+      grouped30Day,
+      '30',
+      resend,
+      siteUrl,
+      result
+    );
 
     // ========================================================================
-    // 6. PROCESS 7-DAY REMINDERS
+    // 6. PROCESS 7-DAY REMINDERS (with rate limiting)
     // ========================================================================
     const grouped7Day = await groupItemsByAgency(
       supabaseAdmin,
@@ -550,32 +649,14 @@ export async function GET(request: NextRequest) {
       '7'
     );
 
-    for (const [agencyId, { owner, items }] of Array.from(
-      grouped7Day.entries()
-    )) {
-      const success = await sendReminder(
-        supabaseAdmin,
-        owner,
-        items,
-        '7',
-        resend,
-        siteUrl
-      );
-
-      if (success) {
-        result.sent7DayReminders += items.length;
-        if (!result.processedAgencies.includes(agencyId)) {
-          result.processedAgencies.push(agencyId);
-        }
-      } else {
-        console.error(
-          `[Cron] Failed to send 7-day reminder for agency ${agencyId}`
-        );
-        result.errors.push(
-          `Failed to send 7-day reminder for agency ${agencyId}`
-        );
-      }
-    }
+    await processRemindersWithRateLimit(
+      supabaseAdmin,
+      grouped7Day,
+      '7',
+      resend,
+      siteUrl,
+      result
+    );
 
     // ========================================================================
     // 7. RETURN SUMMARY
