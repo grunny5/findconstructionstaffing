@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
 import { AgencyEditButton } from '@/components/admin/AgencyEditButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
-import { COMPLIANCE_DISPLAY_NAMES } from '@/types/api';
+import { COMPLIANCE_DISPLAY_NAMES, isComplianceExpired } from '@/types/api';
 
 interface AgencyDetailPageProps {
   params: {
@@ -159,21 +159,31 @@ export default async function AgencyDetailPage({
   }
 
   // Fetch compliance data
-  const { data: complianceData } = await supabase
+  const { data: complianceData, error: complianceError } = await supabase
     .from('agency_compliance')
-    .select('*')
+    .select(
+      'id, compliance_type, is_active, is_verified, expiration_date, document_url, notes, verified_by, verified_at'
+    )
     .eq('agency_id', params.id)
     .eq('is_active', true)
     .order('compliance_type');
 
+  // Log error but don't fail the page if compliance data can't be fetched
+  if (complianceError) {
+    console.error(
+      `Error fetching compliance data for agency ${params.id}:`,
+      complianceError
+    );
+  }
+
   const complianceItems = (complianceData || []).map((c: any) => ({
     id: c.id,
     type: c.compliance_type,
-    displayName: COMPLIANCE_DISPLAY_NAMES[c.compliance_type as keyof typeof COMPLIANCE_DISPLAY_NAMES],
+    displayName: COMPLIANCE_DISPLAY_NAMES[c.compliance_type as keyof typeof COMPLIANCE_DISPLAY_NAMES] || String(c.compliance_type),
     isActive: c.is_active,
     isVerified: c.is_verified,
     expirationDate: c.expiration_date,
-    isExpired: c.expiration_date ? new Date(c.expiration_date) < new Date() : false,
+    isExpired: isComplianceExpired(c.expiration_date),
     documentUrl: c.document_url,
     notes: c.notes,
     verifiedBy: c.verified_by,
@@ -469,7 +479,7 @@ export default async function AgencyDetailPage({
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-display font-bold text-industrial-orange-600">
-                    {complianceItems.filter((c: any) => !c.isVerified).length}
+                    {complianceItems.filter((c: any) => !c.isVerified && !c.isExpired).length}
                   </div>
                   <div className="text-xs font-body text-industrial-graphite-400 uppercase">
                     Pending

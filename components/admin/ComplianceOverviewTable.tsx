@@ -10,6 +10,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -132,6 +133,7 @@ function formatDate(dateString: string): string {
 export function ComplianceOverviewTable({
   complianceData,
 }: ComplianceOverviewTableProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
@@ -140,7 +142,7 @@ export function ComplianceOverviewTable({
   const handleVerificationComplete = () => {
     setVerifyDialogOpen(false);
     setSelectedCompliance(null);
-    window.location.reload(); // Refresh data
+    router.refresh(); // Refresh data using Next.js App Router
   };
 
   // Filter and search compliance data

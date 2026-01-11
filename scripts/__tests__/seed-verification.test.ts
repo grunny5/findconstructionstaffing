@@ -3,7 +3,7 @@ import {
   extractUniqueTrades,
   extractUniqueStates,
 } from '../database/seed-database';
-import { mockAgencies } from '../../lib/mock-data';
+import { mockAgencies, mockComplianceData } from '../../lib/mock-data';
 
 describe('Verification Functions', () => {
   describe('verifySeededData', () => {
@@ -18,6 +18,10 @@ describe('Verification Functions', () => {
       );
       const expectedRegionRelationships = mockAgencies.reduce(
         (sum, agency) => sum + agency.regions.length,
+        0
+      );
+      const expectedComplianceCount = mockComplianceData.reduce(
+        (sum, agency) => sum + agency.complianceItems.length,
         0
       );
 
@@ -85,6 +89,15 @@ describe('Verification Functions', () => {
                 select: jest.fn(() =>
                   Promise.resolve({
                     count: expectedRegionRelationships,
+                    error: null,
+                  })
+                ),
+              };
+            case 'agency_compliance':
+              return {
+                select: jest.fn(() =>
+                  Promise.resolve({
+                    count: expectedComplianceCount,
                     error: null,
                   })
                 ),
@@ -338,6 +351,10 @@ describe('Verification Functions', () => {
         (sum, agency) => sum + agency.regions.length,
         0
       );
+      const expectedComplianceCount = mockComplianceData.reduce(
+        (sum, agency) => sum + agency.complianceItems.length,
+        0
+      );
 
       const mockClient = {
         from: jest.fn((table: string) => {
@@ -400,6 +417,15 @@ describe('Verification Functions', () => {
                 select: jest.fn(() =>
                   Promise.resolve({
                     count: expectedRegionRelationships,
+                    error: null,
+                  })
+                ),
+              };
+            case 'agency_compliance':
+              return {
+                select: jest.fn(() =>
+                  Promise.resolve({
+                    count: expectedComplianceCount,
                     error: null,
                   })
                 ),

@@ -84,9 +84,13 @@ You should see all green checkmarks (✅).
 ## Security Notes
 
 - **NEVER** commit `.env.local` to version control
-- The `service_role` key has admin access - keep it secret
-- Only share the `anon` key publicly (it's safe)
-- Use environment variables in production (not `.env.local`)
+- The `service_role` key bypasses Row Level Security (RLS) and has full database access - **keep it secret**
+- The `anon` key is intended for client-side use but is **NOT fully public**:
+  - Only expose it when you have properly configured RLS policies on all tables
+  - RLS policies enforce access control based on user authentication
+  - Without RLS, the `anon` key could allow unauthorized data access
+  - Never use `anon` key for operations that should require admin privileges
+- In production, use environment variables (not `.env.local`)
 
 ## Database Seeding
 

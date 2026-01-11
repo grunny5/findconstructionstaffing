@@ -556,8 +556,19 @@ export async function GET(
     try {
       const rawCompliance = agencyData.agency_compliance;
       if (Array.isArray(rawCompliance)) {
-        // Type guard: narrow to NestedComplianceRow (separate from business logic)
-        const isNestedComplianceRow = (c: any): c is NestedComplianceRow => c != null;
+        // Type guard: validate object shape to ensure safe access to properties
+        const isNestedComplianceRow = (c: any): c is NestedComplianceRow => {
+          return (
+            c != null &&
+            typeof c === 'object' &&
+            typeof c.compliance_type === 'string' &&
+            typeof c.is_active === 'boolean' &&
+            typeof c.is_verified === 'boolean' &&
+            (c.expiration_date === null || typeof c.expiration_date === 'string') &&
+            (c.document_url === null || typeof c.document_url === 'string') &&
+            (c.notes === null || typeof c.notes === 'string')
+          );
+        };
 
         complianceItems = rawCompliance
           .filter(isNestedComplianceRow)

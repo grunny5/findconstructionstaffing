@@ -579,7 +579,16 @@ async function seedCompliance(
   let skipped = 0;
 
   try {
-    const complianceRecords = [];
+    const complianceRecords: Array<{
+      agency_id: string;
+      compliance_type: string;
+      is_active: boolean;
+      is_verified: boolean;
+      expiration_date: string | null;
+    }> = [];
+
+    // Track duplicates to prevent adding the same compliance item twice
+    const seenCombinations = new Set<string>();
 
     // Build compliance records from mock data
     for (const agencyCompliance of mockComplianceData) {
@@ -590,12 +599,23 @@ async function seedCompliance(
       }
 
       for (const item of agencyCompliance.complianceItems) {
+        const key = `${agencyId}-${item.type}`;
+
+        // Skip if we've already seen this combination in mockComplianceData
+        if (seenCombinations.has(key)) {
+          log.warning(
+            `Skipping duplicate compliance entry: ${agencyCompliance.agencyName} - ${item.type}`
+          );
+          continue;
+        }
+
+        seenCombinations.add(key);
         complianceRecords.push({
           agency_id: agencyId,
           compliance_type: item.type,
           is_active: item.isActive,
           is_verified: item.isVerified,
-          expiration_date: item.expirationDate,
+          expiration_date: item.expirationDate || null,
         });
       }
     }

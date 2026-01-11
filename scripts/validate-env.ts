@@ -20,13 +20,22 @@ interface ValidationResult {
 
 /**
  * Decode JWT token to extract project reference
+ * Uses base64url decoding (JWT standard)
  */
 function decodeJWT(token: string): { ref?: string; role?: string; exp?: number } | null {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
 
-    const payload = Buffer.from(parts[1], 'base64').toString('utf8');
+    // Convert base64url to base64: replace '-' with '+', '_' with '/'
+    let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+
+    // Add padding to make length a multiple of 4
+    while (base64.length % 4 !== 0) {
+      base64 += '=';
+    }
+
+    const payload = Buffer.from(base64, 'base64').toString('utf8');
     return JSON.parse(payload);
   } catch {
     return null;
@@ -150,7 +159,7 @@ function validateEnvironment(): ValidationResult[] {
         results.push({
           name: 'SUPABASE_SERVICE_ROLE_KEY',
           status: 'fail',
-          message: `❌ Project mismatch: Key is for '${keyProjectId}' but URL is '${expectedProjectId}'`
+          message: `Project mismatch: Key is for '${keyProjectId}' but URL is '${expectedProjectId}'`
         });
       } else {
         results.push({
