@@ -28,12 +28,13 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, ExternalLink, FileWarning } from 'lucide-react';
+import { Search, ExternalLink, FileWarning, FileCheck } from 'lucide-react';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   type ComplianceType,
   type AgencyComplianceRow,
 } from '@/types/api';
+import { ComplianceVerifyDialog } from '@/components/admin/ComplianceVerifyDialog';
 
 /**
  * Extended compliance row type that includes joined agency data
@@ -133,6 +134,14 @@ export function ComplianceOverviewTable({
 }: ComplianceOverviewTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [selectedCompliance, setSelectedCompliance] = useState<ComplianceDataRow | null>(null);
+
+  const handleVerificationComplete = () => {
+    setVerifyDialogOpen(false);
+    setSelectedCompliance(null);
+    window.location.reload(); // Refresh data
+  };
 
   // Filter and search compliance data
   const filteredData = useMemo(() => {
@@ -303,15 +312,33 @@ export function ComplianceOverviewTable({
 
                     {/* Actions */}
                     <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={`/admin/agencies/${item.agency_id}`}
-                          className="gap-2"
-                        >
-                          View Agency
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        {/* Review button for pending verification */}
+                        {status === 'pending_verification' && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCompliance(item);
+                              setVerifyDialogOpen(true);
+                            }}
+                          >
+                            <FileCheck className="h-3 w-3 mr-2" />
+                            Review
+                          </Button>
+                        )}
+
+                        {/* View Agency button */}
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            href={`/admin/agencies/${item.agency_id}`}
+                            className="gap-2"
+                          >
+                            View Agency
+                            <ExternalLink className="h-3 w-3 ml-2" />
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -327,6 +354,35 @@ export function ComplianceOverviewTable({
           Showing {filteredData.length} of {complianceData.length} compliance
           issues
         </p>
+      )}
+
+      {/* Verification Dialog */}
+      {selectedCompliance && (
+        <ComplianceVerifyDialog
+          isOpen={verifyDialogOpen}
+          complianceItem={{
+            id: selectedCompliance.id,
+            type: selectedCompliance.compliance_type,
+            displayName: COMPLIANCE_DISPLAY_NAMES[selectedCompliance.compliance_type],
+            isActive: selectedCompliance.is_active,
+            isVerified: selectedCompliance.is_verified,
+            expirationDate: selectedCompliance.expiration_date,
+            isExpired: selectedCompliance.expiration_date
+              ? new Date(selectedCompliance.expiration_date) < new Date()
+              : false,
+            documentUrl: selectedCompliance.document_url,
+            notes: selectedCompliance.notes,
+            verifiedBy: selectedCompliance.verified_by,
+            verifiedAt: selectedCompliance.verified_at,
+          }}
+          agencyId={selectedCompliance.agency_id}
+          agencyName={selectedCompliance.agencies.name}
+          onComplete={handleVerificationComplete}
+          onClose={() => {
+            setVerifyDialogOpen(false);
+            setSelectedCompliance(null);
+          }}
+        />
       )}
     </div>
   );

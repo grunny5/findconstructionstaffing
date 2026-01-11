@@ -394,3 +394,124 @@ export const focusAreas = [
   'Transportation',
   'Government Contracts',
 ];
+
+/**
+ * Mock compliance data for seeding
+ * Provides realistic test data across all 12 agencies with various statuses:
+ * - Verified items with valid expiration dates
+ * - Pending verification (isVerified: false)
+ * - Expired items (dates in the past)
+ * - Expiring soon (dates within 30 days)
+ */
+export const mockComplianceData = [
+  {
+    agencyName: 'Industrial Staffing Solutions',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-08-15' },
+      { type: 'drug_testing', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2027-01-31' },
+      { type: 'general_liability', isActive: true, isVerified: false, expirationDate: '2026-12-15' },
+      { type: 'background_checks', isActive: true, isVerified: true, expirationDate: null },
+    ],
+  },
+  {
+    agencyName: 'TradePower Recruiting',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-05-20' },
+      { type: 'bonding', isActive: true, isVerified: false, expirationDate: '2027-03-01' },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2026-11-30' },
+      { type: 'drug_testing', isActive: true, isVerified: true, expirationDate: null },
+    ],
+  },
+  {
+    agencyName: 'Shutdown Specialists Inc',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-02-10' }, // Expiring soon
+      { type: 'workers_comp', isActive: true, isVerified: false, expirationDate: '2026-09-30' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2025-12-31' }, // Expired
+    ],
+  },
+  {
+    agencyName: 'Elite Construction Staffing',
+    complianceItems: [
+      { type: 'background_checks', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'drug_testing', isActive: true, isVerified: false, expirationDate: null }, // Pending verification
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2026-11-15' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-10-01' },
+    ],
+  },
+  {
+    agencyName: 'Union Trades Collective',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-07-20' },
+      { type: 'bonding', isActive: true, isVerified: true, expirationDate: '2027-02-28' },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2026-12-31' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-06-30' },
+      { type: 'background_checks', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'drug_testing', isActive: true, isVerified: true, expirationDate: null },
+    ],
+  },
+  {
+    agencyName: 'Maritime Construction Crew',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: false, expirationDate: '2026-04-15' },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2026-08-31' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2025-11-30' }, // Expired
+    ],
+  },
+  {
+    agencyName: 'Rocky Mountain Workforce',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-09-10' },
+      { type: 'drug_testing', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'background_checks', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2027-03-15' },
+    ],
+  },
+  {
+    agencyName: 'Northeast Industrial Partners',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-06-25' },
+      { type: 'workers_comp', isActive: true, isVerified: false, expirationDate: '2026-10-15' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-05-30' },
+      { type: 'bonding', isActive: true, isVerified: true, expirationDate: '2027-01-20' },
+    ],
+  },
+  {
+    agencyName: 'Pacific Coast Builders',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-03-31' },
+      { type: 'drug_testing', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'background_checks', isActive: true, isVerified: false, expirationDate: null },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2026-09-15' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-07-31' },
+    ],
+  },
+  {
+    agencyName: 'Midwest Manufacturing Staffing',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-10-20' },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2027-02-15' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-08-25' },
+    ],
+  },
+  {
+    agencyName: 'Energy Sector Solutions',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-05-15' },
+      { type: 'drug_testing', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'background_checks', isActive: true, isVerified: true, expirationDate: null },
+      { type: 'workers_comp', isActive: true, isVerified: false, expirationDate: '2026-11-10' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-04-30' },
+    ],
+  },
+  {
+    agencyName: 'Southeast Infrastructure Group',
+    complianceItems: [
+      { type: 'osha_certified', isActive: true, isVerified: true, expirationDate: '2026-07-05' },
+      { type: 'workers_comp', isActive: true, isVerified: true, expirationDate: '2026-12-20' },
+      { type: 'general_liability', isActive: true, isVerified: true, expirationDate: '2026-06-15' },
+      { type: 'bonding', isActive: true, isVerified: false, expirationDate: '2027-04-10' },
+    ],
+  },
+];

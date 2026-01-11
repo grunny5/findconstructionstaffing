@@ -3,10 +3,12 @@ import { redirect, notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileWarning } from 'lucide-react';
 import Link from 'next/link';
 import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
 import { AgencyEditButton } from '@/components/admin/AgencyEditButton';
+import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
+import { COMPLIANCE_DISPLAY_NAMES } from '@/types/api';
 
 interface AgencyDetailPageProps {
   params: {
@@ -155,6 +157,28 @@ export default async function AgencyDetailPage({
 
     ownerProfile = profile || null;
   }
+
+  // Fetch compliance data
+  const { data: complianceData } = await supabase
+    .from('agency_compliance')
+    .select('*')
+    .eq('agency_id', params.id)
+    .eq('is_active', true)
+    .order('compliance_type');
+
+  const complianceItems = (complianceData || []).map((c: any) => ({
+    id: c.id,
+    type: c.compliance_type,
+    displayName: COMPLIANCE_DISPLAY_NAMES[c.compliance_type as keyof typeof COMPLIANCE_DISPLAY_NAMES],
+    isActive: c.is_active,
+    isVerified: c.is_verified,
+    expirationDate: c.expiration_date,
+    isExpired: c.expiration_date ? new Date(c.expiration_date) < new Date() : false,
+    documentUrl: c.document_url,
+    notes: c.notes,
+    verifiedBy: c.verified_by,
+    verifiedAt: c.verified_at,
+  }));
 
   return (
     <div className="container mx-auto p-6 max-w-5xl min-h-screen">
@@ -411,6 +435,59 @@ export default async function AgencyDetailPage({
               </div>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Compliance & Verification Card */}
+      <Card className="mb-6 border-l-4 border-l-industrial-orange">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Compliance & Verification</span>
+            <Badge variant="outline" className="font-body">
+              {complianceItems.length} Active
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {complianceItems.length === 0 ? (
+            <div className="text-center py-8 bg-industrial-graphite-50 rounded-industrial-base">
+              <FileWarning className="h-12 w-12 text-industrial-graphite-300 mx-auto mb-3" />
+              <p className="font-body text-sm text-industrial-graphite-400">
+                No compliance certifications added yet
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-4 pb-4 border-b border-industrial-graphite-200">
+                <div className="text-center">
+                  <div className="text-2xl font-display font-bold text-green-600">
+                    {complianceItems.filter((c: any) => c.isVerified && !c.isExpired).length}
+                  </div>
+                  <div className="text-xs font-body text-industrial-graphite-400 uppercase">
+                    Verified
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-display font-bold text-industrial-orange-600">
+                    {complianceItems.filter((c: any) => !c.isVerified).length}
+                  </div>
+                  <div className="text-xs font-body text-industrial-graphite-400 uppercase">
+                    Pending
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-display font-bold text-red-600">
+                    {complianceItems.filter((c: any) => c.isExpired).length}
+                  </div>
+                  <div className="text-xs font-body text-industrial-graphite-400 uppercase">
+                    Expired
+                  </div>
+                </div>
+              </div>
+
+              <ComplianceBadges compliance={complianceItems} variant="default" />
+            </>
+          )}
         </CardContent>
       </Card>
 
