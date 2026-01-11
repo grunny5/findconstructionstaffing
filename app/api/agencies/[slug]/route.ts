@@ -556,8 +556,12 @@ export async function GET(
     try {
       const rawCompliance = agencyData.agency_compliance;
       if (Array.isArray(rawCompliance)) {
+        // Type guard: narrow to NestedComplianceRow (separate from business logic)
+        const isNestedComplianceRow = (c: any): c is NestedComplianceRow => c != null;
+
         complianceItems = rawCompliance
-          .filter((c): c is NestedComplianceRow => c != null && c.is_active === true)
+          .filter(isNestedComplianceRow)
+          .filter((c) => c.is_active === true) // Business logic: only active items
           .sort((a, b) => a.compliance_type.localeCompare(b.compliance_type))
           .map((c) => ({
             type: c.compliance_type,

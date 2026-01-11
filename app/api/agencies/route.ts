@@ -536,13 +536,30 @@ export async function GET(request: NextRequest) {
           code: ar.region.state_code,
         })) || [];
 
-      // Extract and transform compliance from nested structure (only active items)
-      const compliance: ComplianceItem[] = (agency.agency_compliance || [])
-        .filter((c: any) => c.is_active)
-        .sort((a: any, b: any) =>
-          a.compliance_type.localeCompare(b.compliance_type)
-        )
-        .map((c: any) => toComplianceItem(c as ComplianceQueryResult));
+      // Extract and transform compliance from nested structure with graceful degradation
+      // If compliance data is malformed, return empty array instead of failing entire request
+      let compliance: ComplianceItem[] = [];
+      try {
+        const rawCompliance = agency.agency_compliance;
+        if (Array.isArray(rawCompliance)) {
+          // Type guard: narrow to valid compliance row
+          const isValidCompliance = (c: any): c is ComplianceQueryResult =>
+            c != null && typeof c.compliance_type === 'string';
+
+          compliance = rawCompliance
+            .filter(isValidCompliance)
+            .filter((c) => c.is_active === true) // Business logic: only active items
+            .sort((a, b) => a.compliance_type.localeCompare(b.compliance_type))
+            .map((c) => toComplianceItem(c));
+        }
+      } catch (complianceError) {
+        // Log but don't fail if compliance transformation fails (not critical for display)
+        console.warn(
+          `[API WARNING] Failed to transform compliance data for agency ${agency.slug}:`,
+          complianceError
+        );
+        compliance = [];
+      }
 
       // Remove the nested structures and add flattened arrays
       const {
