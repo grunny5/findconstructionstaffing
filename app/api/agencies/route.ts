@@ -421,6 +421,7 @@ export async function GET(request: NextRequest) {
     const sanitizedSearch = search ? sanitizeSearchInput(search) : undefined;
 
     // Build the base query
+    // Include compliance in nested select to avoid separate query (performance optimization)
     let query = supabase
       .from('agencies')
       .select(
@@ -439,9 +440,15 @@ export async function GET(request: NextRequest) {
             name,
             state_code
           )
+        ),
+        agency_compliance(
+          id,
+          compliance_type,
+          is_active,
+          is_verified,
+          expiration_date
         )
-      `,
-        { count: 'exact' }
+      `
       )
       .eq('is_active', true);
 
@@ -511,7 +518,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to match our API response format
-    const transformedAgencies = (agencies || []).map((agency) => {
+    // Compliance data is now included in the main query (nested select)
+    const agenciesWithCompliance = (agencies || []).map((agency) => {
       // Extract trades from the nested structure
       const trades =
         agency.trades?.map((at: any) => ({
@@ -528,82 +536,29 @@ export async function GET(request: NextRequest) {
           code: ar.region.state_code,
         })) || [];
 
+      // Extract and transform compliance from nested structure (only active items)
+      const compliance: ComplianceItem[] = (agency.agency_compliance || [])
+        .filter((c: any) => c.is_active)
+        .sort((a: any, b: any) =>
+          a.compliance_type.localeCompare(b.compliance_type)
+        )
+        .map((c: any) => toComplianceItem(c as ComplianceQueryResult));
+
       // Remove the nested structures and add flattened arrays
-      const { trades: _, regions: __, ...agencyData } = agency;
+      const {
+        trades: _,
+        regions: __,
+        agency_compliance: ___,
+        ...agencyData
+      } = agency;
 
       return {
         ...agencyData,
         trades,
         regions,
+        compliance,
       };
     });
-
-    // Fetch compliance data for all returned agencies
-    const agencyIds = transformedAgencies.map((a) => a.id);
-    let complianceMap = new Map<string, ComplianceItem[]>();
-
-    if (agencyIds.length > 0) {
-      const complianceQueryId = monitor.startQuery();
-      const { data: complianceData, error: complianceError } =
-        await queryWithRetry(async () =>
-          supabase
-            .from('agency_compliance')
-            .select(
-              'id, agency_id, compliance_type, is_active, is_verified, expiration_date'
-            )
-            .in('agency_id', agencyIds)
-            .eq('is_active', true)
-        );
-      monitor.endQuery(complianceQueryId);
-
-      if (complianceError) {
-        console.error(
-          '[API ERROR] Failed to fetch compliance data:',
-          complianceError
-        );
-        const errorResponse: ErrorResponse = {
-          error: {
-            code: ERROR_CODES.DATABASE_ERROR,
-            message: 'Failed to fetch agency compliance data',
-            details: {
-              supabaseError: complianceError.message,
-              code: complianceError.code,
-            },
-          },
-        };
-
-        monitor.complete(
-          HTTP_STATUS.INTERNAL_SERVER_ERROR,
-          errorResponse.error.message
-        );
-        errorTracker.recordRequest('/api/agencies', true);
-
-        return NextResponse.json(errorResponse, {
-          status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            Pragma: 'no-cache',
-            Expires: '0',
-          },
-        });
-      }
-
-      // Build compliance map by agency ID
-      if (complianceData) {
-        for (const row of complianceData as ComplianceQueryResult[]) {
-          if (!complianceMap.has(row.agency_id)) {
-            complianceMap.set(row.agency_id, []);
-          }
-          complianceMap.get(row.agency_id)!.push(toComplianceItem(row));
-        }
-      }
-    }
-
-    // Attach compliance data to each agency
-    const agenciesWithCompliance = transformedAgencies.map((agency) => ({
-      ...agency,
-      compliance: complianceMap.get(agency.id) || [],
-    }));
 
     // Get total count for pagination with same filters applied
     const countQueryId = monitor.startQuery();
