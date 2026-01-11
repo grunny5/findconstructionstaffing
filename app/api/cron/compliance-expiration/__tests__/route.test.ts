@@ -334,12 +334,15 @@ describe('GET /api/cron/compliance-expiration', () => {
       expect(data.summary.sent7DayReminders).toBe(0);
       expect(data.summary.totalAgenciesNotified).toBe(1);
 
-      // Verify email was sent
+      // Verify email was sent with idempotency key as second parameter
       expect(mockResendSend).toHaveBeenCalledTimes(1);
       expect(mockResendSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'owner@test.com',
           subject: expect.stringContaining('30 Days'),
+        }),
+        expect.objectContaining({
+          idempotencyKey: expect.any(String),
         })
       );
 
@@ -542,12 +545,15 @@ describe('GET /api/cron/compliance-expiration', () => {
       expect(data.summary.sent7DayReminders).toBe(1);
       expect(data.summary.totalAgenciesNotified).toBe(1);
 
-      // Verify email was sent
+      // Verify email was sent with idempotency key as second parameter
       expect(mockResendSend).toHaveBeenCalledTimes(1);
       expect(mockResendSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'owner@test.com',
           subject: expect.stringContaining('7 Days'),
+        }),
+        expect.objectContaining({
+          idempotencyKey: expect.any(String),
         })
       );
 
