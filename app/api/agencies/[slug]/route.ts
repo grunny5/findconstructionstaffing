@@ -6,9 +6,10 @@ import {
   HTTP_STATUS,
   ERROR_CODES,
   AgencyResponse,
-  type AgencyComplianceRow,
   type ComplianceItem,
-  toComplianceItem,
+  type ComplianceType,
+  getComplianceDisplayName,
+  isComplianceExpired,
 } from '@/types/api';
 import {
   PerformanceMonitor,
@@ -518,6 +519,18 @@ export async function GET(
 
     // Transform the data to match expected format
     // Compliance is now included in the main query for better performance
+
+    // Type for nested compliance data from the query (matches SELECT fields exactly)
+    interface NestedComplianceRow {
+      id: string;
+      compliance_type: ComplianceType;
+      is_active: boolean;
+      is_verified: boolean;
+      expiration_date: string | null;
+      document_url: string | null;
+      notes: string | null;
+    }
+
     const agencyData = agency as Agency & {
       agency_trades?: Array<{
         trade: {
@@ -534,21 +547,34 @@ export async function GET(
           slug: string;
         };
       }>;
-      agency_compliance?: Array<{
-        id: string;
-        compliance_type: string;
-        is_active: boolean;
-        is_verified: boolean;
-        expiration_date: string | null;
-        document_url: string | null;
-        notes: string | null;
-      }>;
+      agency_compliance?: NestedComplianceRow[] | null;
     };
 
-    // Filter and transform compliance data (only active items)
-    const complianceItems: ComplianceItem[] = (agencyData.agency_compliance || [])
-      .filter((c) => c.is_active)
-      .map((c) => toComplianceItem(c as AgencyComplianceRow));
+    // Transform compliance data with graceful degradation
+    // If compliance data is missing or malformed, return empty array instead of failing
+    let complianceItems: ComplianceItem[] = [];
+    try {
+      const rawCompliance = agencyData.agency_compliance;
+      if (Array.isArray(rawCompliance)) {
+        complianceItems = rawCompliance
+          .filter((c): c is NestedComplianceRow => c != null && c.is_active === true)
+          .sort((a, b) => a.compliance_type.localeCompare(b.compliance_type))
+          .map((c) => ({
+            type: c.compliance_type,
+            displayName: getComplianceDisplayName(c.compliance_type),
+            isVerified: c.is_verified,
+            expirationDate: c.expiration_date,
+            isExpired: isComplianceExpired(c.expiration_date),
+          }));
+      }
+    } catch (complianceError) {
+      // Log but don't fail if compliance transformation fails (not critical for display)
+      console.warn(
+        `[API WARNING] Failed to transform compliance data for agency ${agencyData.slug}:`,
+        complianceError
+      );
+      complianceItems = [];
+    }
 
     // Create API response with all required fields
     const apiAgency = {
