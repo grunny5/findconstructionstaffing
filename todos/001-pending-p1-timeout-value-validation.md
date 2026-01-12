@@ -27,7 +27,6 @@ The `withTimeout()` and `fetchWithTimeout()` functions in `lib/fetch/timeout.ts`
 - No maximum bound checking (could pass Number.MAX_SAFE_INTEGER)
 - Function accepts any number without validation
 - No runtime TypeError for invalid inputs
--
 
 **Attack vector:**
 ```typescript

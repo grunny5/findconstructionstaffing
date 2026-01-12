@@ -40,17 +40,31 @@ When API is overloaded or database is down, every request still attempts full ti
 ```typescript
 class CircuitBreaker {
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
-  private failures: number = 0;
-  private successes: number = 0;
+  private failureTimestamps: number[] = [];
+  private successTimestamps: number[] = [];
   private lastFailureTime: number = 0;
+  private halfOpenTestInProgress: boolean = false;
+
+  private readonly WINDOW_MS = 10000;      // 10 second window
+  private readonly COOLDOWN_MS = 30000;    // 30 second cooldown
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
+    this.cleanOldTimestamps();
+
     if (this.state === 'OPEN') {
-      if (Date.now() - this.lastFailureTime > 30000) {
-        this.state = 'HALF_OPEN';
-      } else {
+      if (Date.now() - this.lastFailureTime < this.COOLDOWN_MS) {
         throw new Error('Circuit breaker OPEN');
       }
+      // Transition to HALF_OPEN
+      this.state = 'HALF_OPEN';
+      this.halfOpenTestInProgress = false;
+    }
+
+    if (this.state === 'HALF_OPEN') {
+      if (this.halfOpenTestInProgress) {
+        throw new Error('Circuit breaker HALF_OPEN - test in progress');
+      }
+      this.halfOpenTestInProgress = true;
     }
 
     try {
@@ -64,21 +78,43 @@ class CircuitBreaker {
   }
 
   private onSuccess() {
-    this.successes++;
+    this.successTimestamps.push(Date.now());
+    this.cleanOldTimestamps();
+
     if (this.state === 'HALF_OPEN') {
+      // Successful test - reset and close circuit
       this.state = 'CLOSED';
-      this.failures = 0;
+      this.failureTimestamps = [];
+      this.successTimestamps = [];
+      this.halfOpenTestInProgress = false;
     }
   }
 
   private onFailure() {
-    this.failures++;
+    this.failureTimestamps.push(Date.now());
     this.lastFailureTime = Date.now();
+    this.cleanOldTimestamps();
 
-    const total = this.failures + this.successes;
-    if (total >= 10 && this.failures / total > 0.5) {
+    if (this.state === 'HALF_OPEN') {
+      // Test failed - reopen circuit
+      this.state = 'OPEN';
+      this.halfOpenTestInProgress = false;
+      return;
+    }
+
+    // Check if we should trip the circuit
+    const total = this.failureTimestamps.length + this.successTimestamps.length;
+    const failureRatio = this.failureTimestamps.length / total;
+
+    if (total >= 10 && failureRatio > 0.5) {
       this.state = 'OPEN';
     }
+  }
+
+  private cleanOldTimestamps() {
+    const cutoff = Date.now() - this.WINDOW_MS;
+    this.failureTimestamps = this.failureTimestamps.filter(t => t > cutoff);
+    this.successTimestamps = this.successTimestamps.filter(t => t > cutoff);
   }
 }
 ```

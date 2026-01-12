@@ -161,8 +161,8 @@ const fetchProfile = async () => {
 - Agency: `SELECT slug FROM agencies WHERE claimed_by = userId`
 
 **Performance targets:**
-- Typical case: < 3s auth initialization (currently 4s)
-- Worst case: < 9s auth initialization (currently 16s)
+- Typical case: < 2s auth initialization (currently 4s)
+- Worst case: < 8s auth initialization (currently 16s)
 - Best case: < 500ms auth initialization (currently 400ms)
 
 ## Resources
@@ -180,8 +180,8 @@ const fetchProfile = async () => {
 - [ ] Test with non-agency users (agency query gracefully fails)
 - [ ] Test with slow database (simulated 7s latency)
 - [ ] Measure before/after performance:
-  - [ ] Typical case improves from 4s to <3s
-  - [ ] Worst case improves from 16s to <9s
+  - [ ] Typical case improves from 4s to <2s
+  - [ ] Worst case improves from 16s to <8s
 - [ ] All existing auth tests pass
 - [ ] No regression in Header rendering behavior
 

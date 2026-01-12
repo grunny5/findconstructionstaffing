@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // Fetch profile with timeout protection
         const { data, error } = await withTimeout(
-          supabase.from('profiles').select('*').eq('id', userId).single(),
+          (async () => supabase.from('profiles').select('*').eq('id', userId).single())(),
           TIMEOUT_CONFIG.CLIENT_AUTH,
           'Profile fetch timeout'
         );
@@ -57,8 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // If user is agency owner, fetch their claimed agency slug with timeout
         if (data?.role === 'agency_owner') {
-          const { data: agency, error: agencyError } = await withTimeout(
-            supabase.from('agencies').select('slug').eq('claimed_by', userId).single(),
+          const { data: agency, error: agencyError} = await withTimeout(
+            (async () => supabase.from('agencies').select('slug').eq('claimed_by', userId).single())(),
             TIMEOUT_CONFIG.CLIENT_AUTH,
             'Agency slug fetch timeout'
           );

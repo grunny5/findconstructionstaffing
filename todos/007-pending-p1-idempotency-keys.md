@@ -63,9 +63,22 @@ setIsOpen(true);
 
 **Client side:**
 ```typescript
-const [idempotencyKey] = useState(() =>
-  `${agencyId}-${user.id}-${Date.now()}`
+// Option 1: Stable identity-based key (recommended)
+const idempotencyKey = useMemo(
+  () => `conversation:${agencyId}:${user.id}`,
+  [agencyId, user.id]
 );
+
+// Option 2: Session storage (if retry persistence across remounts needed)
+const [idempotencyKey] = useState(() => {
+  const storageKey = `idempotency:${agencyId}:${user.id}`;
+  const existing = sessionStorage.getItem(storageKey);
+  if (existing) return existing;
+
+  const newKey = `${agencyId}-${user.id}-${Date.now()}`;
+  sessionStorage.setItem(storageKey, newKey);
+  return newKey;
+});
 
 const handleSendMessage = async () => {
   const response = await fetch('/api/messages/conversations', {
@@ -88,8 +101,8 @@ const handleSendMessage = async () => {
 // POST /api/messages/conversations
 const idempotencyKey = req.headers['idempotency-key'];
 
-// Check if conversation already exists for this key
-const existing = await supabase
+// FIRST: Check if conversation already exists (using existing maybeSingle)
+const { data: existing } = await supabase
   .from('conversations')
   .select('*')
   .eq('context_type', 'agency_inquiry')
@@ -98,11 +111,45 @@ const existing = await supabase
   .maybeSingle();
 
 if (existing) {
-  // Return existing conversation (idempotent)
+  // Idempotent: Return existing conversation
   return res.status(200).json({ data: existing });
 }
 
-// Create new conversation...
+// SECOND: Try to create new conversation
+try {
+  const { data: conversation, error } = await supabase
+    .from('conversations')
+    .insert({
+      context_type: 'agency_inquiry',
+      context_id: agencyId,
+      created_by: userId,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    // Check for unique constraint violation (race condition)
+    if (error.code === '23505') {
+      // Another request created it - fetch and return
+      const { data: raceConv } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('context_type', 'agency_inquiry')
+        .eq('context_id', agencyId)
+        .eq('created_by', userId)
+        .single();
+
+      return res.status(200).json({ data: raceConv });
+    }
+    throw error;
+  }
+
+  // Create initial message...
+  return res.status(201).json({ data: conversation });
+
+} catch (error) {
+  return res.status(500).json({ error: 'Failed to create conversation' });
+}
 ```
 
 **Pros:**
