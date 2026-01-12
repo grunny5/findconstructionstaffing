@@ -2,13 +2,13 @@
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AgencyCard from '@/components/AgencyCard';
 import AgencyCardSkeleton from '@/components/AgencyCardSkeleton';
 import ApiErrorState from '@/components/ApiErrorState';
 import DirectoryFilters, { FilterState } from '@/components/DirectoryFilters';
-import { MobileFilterSheet } from '@/components/MobileFilterSheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +39,14 @@ import { Agency, ComplianceType, COMPLIANCE_TYPES } from '@/types/api';
 import Link from 'next/link';
 import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
 import { EmptyState } from '@/components/EmptyState';
+
+const MobileFilterSheet = dynamic(
+  () => import('@/components/MobileFilterSheet').then((mod) => ({ default: mod.MobileFilterSheet })),
+  {
+    loading: () => null,
+    ssr: false,
+  }
+);
 
 // Helper to validate and filter compliance query parameters
 function validateComplianceParams(params: string[]): ComplianceType[] {
