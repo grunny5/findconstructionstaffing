@@ -176,7 +176,7 @@ Test at zoom levels: **100%, 150%, 200%**
 ### Network Throttling
 
 **Simulate 3G Network**:
-```
+```text
 Network: Fast 3G
 Download: 1.6 Mbps
 Upload: 750 Kbps
