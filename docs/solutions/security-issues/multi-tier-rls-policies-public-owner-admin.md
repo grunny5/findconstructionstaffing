@@ -554,7 +554,12 @@ describe('RLS Policy Tests', () => {
 
   it('agency owners can view their own inactive agency', async () => {
     const supabase = createClient(url, anonKey);
-    await supabase.auth.signIn({ email: 'owner@example.com', password: 'pass' });
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: 'owner@example.com',
+      password: 'pass',
+    });
+    expect(authError).toBeNull();
+    expect(authData.user).toBeDefined();
 
     const { data: agencies } = await supabase
       .from('agencies')
@@ -568,7 +573,12 @@ describe('RLS Policy Tests', () => {
 
   it('agency owners cannot update other agencies', async () => {
     const supabase = createClient(url, anonKey);
-    await supabase.auth.signIn({ email: 'owner@example.com', password: 'pass' });
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: 'owner@example.com',
+      password: 'pass',
+    });
+    expect(authError).toBeNull();
+    expect(authData.user).toBeDefined();
 
     const { data, error } = await supabase
       .from('agencies')

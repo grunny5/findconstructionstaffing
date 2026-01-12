@@ -381,21 +381,14 @@ Add custom ESLint rule to catch unsafe logging:
 // .eslintrc.js
 module.exports = {
   rules: {
-    'no-console': ['error', { allow: [] }],  // Disallow all console.*
-    'no-restricted-imports': [
-      'error',
-      {
-        paths: [
-          {
-            name: 'console',
-            message: 'Use secureLog from @/lib/utils/secure-logging instead',
-          },
-        ],
-      },
-    ],
+    // Disallow all console.* calls
+    // Use secureLog from '@/lib/utils/secure-logging' instead
+    'no-console': ['error', { allow: [] }],
   },
 };
 ```
+
+**Note**: The `no-console` rule will flag all direct `console.log`, `console.error`, and `console.warn` calls. Developers should use `secureLog.info()`, `secureLog.error()`, and `secureLog.warn()` from `@/lib/utils/secure-logging` instead.
 
 ### 3. Development vs Production Testing
 
