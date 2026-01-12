@@ -229,6 +229,12 @@ export default function Header() {
                 ))}
 
                 <div className="border-t-2 border-industrial-graphite-200 pt-6 space-y-3">
+                  <div className="flex items-center justify-between pb-3">
+                    <span className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-500">
+                      Theme
+                    </span>
+                    <ThemeToggle />
+                  </div>
                   {user ? (
                     // Logged in - show user-specific actions
                     <>

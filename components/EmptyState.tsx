@@ -40,14 +40,14 @@ export function EmptyState({
   illustration = 'search',
 }: EmptyStateProps) {
   // Select icon based on illustration prop
-  const Icon =
-    illustration === 'construction'
-      ? Construction
-      : illustration === 'filter'
-        ? Filter
-        : illustration === 'error'
-          ? AlertCircle
-          : Search;
+  const iconMap = {
+    construction: Construction,
+    filter: Filter,
+    error: AlertCircle,
+    search: Search,
+  } as const;
+
+  const Icon = iconMap[illustration];
 
   // Select background color based on variant
   const iconBgColor =

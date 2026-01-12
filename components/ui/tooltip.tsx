@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Tooltip Component - Industrial Design System
- * Hover tooltips with industrial styling
- */
-
 import * as React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
