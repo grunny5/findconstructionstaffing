@@ -44,6 +44,7 @@ class CircuitBreaker {
   private successTimestamps: number[] = [];
   private lastFailureTime: number = 0;
   private halfOpenTestInProgress: boolean = false;
+  private halfOpenLock: Promise<void> = Promise.resolve();
 
   private readonly WINDOW_MS = 10000;      // 10 second window
   private readonly COOLDOWN_MS = 30000;    // 30 second cooldown
@@ -60,13 +61,49 @@ class CircuitBreaker {
       this.halfOpenTestInProgress = false;
     }
 
+    // Atomic check-then-set for HALF_OPEN state using mutex pattern
     if (this.state === 'HALF_OPEN') {
-      if (this.halfOpenTestInProgress) {
-        throw new Error('Circuit breaker HALF_OPEN - test in progress');
+      // Acquire lock by waiting for previous lock to resolve
+      const previousLock = this.halfOpenLock;
+      let resolveLock: () => void;
+      this.halfOpenLock = new Promise(resolve => {
+        resolveLock = resolve;
+      });
+
+      try {
+        await previousLock;
+
+        // Re-check state and test flag after acquiring lock
+        if (this.state !== 'HALF_OPEN') {
+          throw new Error('Circuit breaker state changed');
+        }
+
+        if (this.halfOpenTestInProgress) {
+          throw new Error('Circuit breaker HALF_OPEN - test in progress');
+        }
+
+        // Atomically set the flag
+        this.halfOpenTestInProgress = true;
+
+        // Execute the test request
+        try {
+          const result = await fn();
+          this.onSuccess();
+          return result;
+        } catch (error) {
+          this.onFailure();
+          throw error;
+        } finally {
+          // Always clear the flag when test completes
+          this.halfOpenTestInProgress = false;
+        }
+      } finally {
+        // Release the lock
+        resolveLock!();
       }
-      this.halfOpenTestInProgress = true;
     }
 
+    // Normal CLOSED state execution
     try {
       const result = await fn();
       this.onSuccess();
@@ -86,7 +123,6 @@ class CircuitBreaker {
       this.state = 'CLOSED';
       this.failureTimestamps = [];
       this.successTimestamps = [];
-      this.halfOpenTestInProgress = false;
     }
   }
 
@@ -98,7 +134,6 @@ class CircuitBreaker {
     if (this.state === 'HALF_OPEN') {
       // Test failed - reopen circuit
       this.state = 'OPEN';
-      this.halfOpenTestInProgress = false;
       return;
     }
 
