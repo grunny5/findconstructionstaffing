@@ -84,6 +84,10 @@ export async function fetchWithTimeout(
 /**
  * Generic promise timeout wrapper
  *
+ * Wraps a promise with timeout protection and properly cleans up resources
+ * to prevent memory leaks. Uses setTimeout internally but guarantees cleanup
+ * regardless of whether the promise resolves, rejects, or times out.
+ *
  * @param promise - Promise to wrap with timeout
  * @param timeoutMs - Timeout in milliseconds
  * @param errorMessage - Custom error message
@@ -101,15 +105,23 @@ export async function withTimeout<T>(
   timeoutMs: number,
   errorMessage: string = 'Operation timeout'
 ): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new TimeoutError(errorMessage, timeoutMs)),
-        timeoutMs
-      )
-    ),
-  ]);
+  let timeoutId: NodeJS.Timeout | null = null;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(
+      () => reject(new TimeoutError(errorMessage, timeoutMs)),
+      timeoutMs
+    );
+  });
+
+  try {
+    const result = await Promise.race([promise, timeoutPromise]);
+    if (timeoutId) clearTimeout(timeoutId);
+    return result;
+  } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 /**
