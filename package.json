@@ -111,6 +111,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/jest": "^30.0.0",
+    "@types/jest-axe": "^3.5.9",
     "@types/node": "^24.0.4",
     "@types/papaparse": "^5.5.2",
     "axe-core": "^4.11.1",

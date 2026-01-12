@@ -16,18 +16,7 @@ import { cn } from '@/lib/utils';
  * - Industrial design system styling
  * - Keyboard navigation support
  *
- * @example
- * ```tsx
- * // In page component
- * export default function ResourcesPage() {
- *   return (
- *     <main>
- *       <PageHeader title="Resources" />
- *       {/* page content */}
- *     </main>
- *   );
- * }
- * ```
+ * Usage: <PageHeader title="Resources" subtitle="Optional subtitle" />
  */
 interface PageHeaderProps {
   title: string;
