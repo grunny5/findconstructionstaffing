@@ -100,11 +100,20 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t-2 border-industrial-graphite-500 mt-16 pt-8 text-center">
-          <p className="font-body text-sm text-industrial-graphite-400">
-            &copy; {new Date().getFullYear()} Find Construction Staffing. All
-            rights reserved.
-          </p>
+        <div className="border-t-2 border-industrial-graphite-500 mt-16 pt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="font-body text-sm text-industrial-graphite-400">
+              &copy; {new Date().getFullYear()} Find Construction Staffing. All
+              rights reserved.
+            </p>
+            <p className="font-body text-sm text-industrial-graphite-400">
+              Press{' '}
+              <kbd className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 font-body text-xs font-semibold text-industrial-graphite-600 bg-industrial-graphite-100 border-2 border-industrial-graphite-400 rounded-industrial-sharp">
+                ?
+              </kbd>{' '}
+              for keyboard shortcuts
+            </p>
+          </div>
         </div>
       </div>
     </footer>

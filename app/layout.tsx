@@ -9,6 +9,7 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/lib/auth/auth-context';
 import { ThemeProvider } from 'next-themes';
+import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
 
 /**
  * Font Configuration for Industrial Design System
@@ -72,6 +73,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Toaster />
+            <KeyboardShortcuts />
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -109,6 +109,21 @@
     /* Industrial Design System: Warm cream background (#FAF7F2) */
     @apply bg-industrial-bg-primary text-foreground;
   }
+
+  /**
+   * Accessibility: Keyboard Focus Indicators
+   * Show focus indicators for keyboard navigation (WCAG 2.1 AA)
+   * Hide focus indicators for mouse/pointer users
+   */
+  *:focus-visible {
+    outline: 2px solid var(--industrial-orange-400);
+    outline-offset: 2px;
+  }
+
+  /* Hide focus for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /**
