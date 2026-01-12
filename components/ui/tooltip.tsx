@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Tooltip Component - Industrial Design System
+ * Hover tooltips with industrial styling
+ */
+
 import * as React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
@@ -19,7 +24,14 @@ const TooltipContent = React.forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={cn(
-      'z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]',
+      // Industrial Design System: Tooltip styles
+      'z-50 overflow-hidden rounded-industrial-sharp px-3 py-1.5 text-sm font-body',
+      // Border & Background
+      'border-2 border-industrial-graphite-300 bg-industrial-bg-card text-industrial-graphite-600',
+      // Shadow
+      'shadow-md',
+      // Animation
+      'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]',
       className
     )}
     {...props}

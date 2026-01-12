@@ -37,6 +37,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Agency, ComplianceType, COMPLIANCE_TYPES } from '@/types/api';
 import Link from 'next/link';
 import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
+import { EmptyState } from '@/components/EmptyState';
 
 // Helper to validate and filter compliance query parameters
 function validateComplianceParams(params: string[]): ComplianceType[] {
@@ -525,52 +526,24 @@ function HomePageContent() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="h-10 w-10 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-              {debouncedSearchQuery ? 'No matches found' : 'No agencies found'}
-            </h3>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-              {debouncedSearchQuery ? (
-                <>
-                  We couldn&apos;t find any agencies matching &ldquo;
-                  {debouncedSearchQuery}&rdquo;. Try a different search term or
-                  browse all agencies.
-                </>
-              ) : (
-                <>
-                  We couldn&apos;t find any agencies matching your filters. Try
-                  adjusting your criteria or browse all agencies.
-                </>
-              )}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {debouncedSearchQuery && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() =>
-                    setFilters((prev) => ({ ...prev, search: '' }))
+          <EmptyState
+            variant="no-results"
+            title={debouncedSearchQuery ? 'No matches found' : 'No agencies found'}
+            description={
+              debouncedSearchQuery
+                ? `We couldn't find any agencies matching "${debouncedSearchQuery}". Try a different search term or browse all agencies.`
+                : "We couldn't find any agencies matching your filters. Try adjusting your criteria or browse all agencies."
+            }
+            illustration={debouncedSearchQuery ? 'search' : 'filter'}
+            action={
+              hasActiveFilters || debouncedSearchQuery
+                ? {
+                    label: 'Clear All Filters',
+                    onClick: clearAllFilters,
                   }
-                  className="px-8 modern-button-secondary"
-                >
-                  Clear Search
-                </Button>
-              )}
-              {hasActiveFilters && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={clearAllFilters}
-                  className="px-8 modern-button-secondary"
-                >
-                  Clear All Filters
-                </Button>
-              )}
-            </div>
-          </div>
+                : undefined
+            }
+          />
         )}
 
         {/* Load More Button */}

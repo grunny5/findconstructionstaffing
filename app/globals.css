@@ -162,6 +162,51 @@
 
 /**
  * ==========================================================================
+ * INDUSTRIAL DESIGN SYSTEM - DARK MODE
+ * ==========================================================================
+ * Dark mode variant of industrial design tokens.
+ * Maintains industrial aesthetic with inverted color values.
+ *
+ * Design Philosophy: Same brutalist approach with dark backgrounds,
+ * maintaining high contrast and readability.
+ *
+ * Feature: Phase 2 - Industrial Design Completion
+ * Task: 2.4 - Dark Mode Industrial Variants
+ */
+
+.dark {
+  /* Industrial Orange - Dark mode variants */
+  --industrial-orange-100: #2d1f0a;
+  --industrial-orange-200: #663a00;
+  --industrial-orange-300: #995500;
+  --industrial-orange-400: #e07b00; /* Primary accent - same */
+  --industrial-orange-500: #ff9f1c; /* Brighter hover states */
+  --industrial-orange-600: #ffd699;
+
+  /* Graphite - Inverted for dark backgrounds */
+  --industrial-graphite-100: #2d2d2d;
+  --industrial-graphite-200: #3d3d3d;
+  --industrial-graphite-300: #5c5c5c;
+  --industrial-graphite-400: #9a9a9a;
+  --industrial-graphite-500: #d4d4d4;
+  --industrial-graphite-600: #e5e5e5; /* Primary text in dark mode */
+
+  /* Navy - Dark mode variants */
+  --industrial-navy-100: #0a1219;
+  --industrial-navy-200: #1b3a4f;
+  --industrial-navy-300: #2d4a63;
+  --industrial-navy-400: #4a6b8a; /* Lighter for visibility */
+  --industrial-navy-500: #b8c9d9;
+  --industrial-navy-600: #e8edf2;
+
+  /* Background Colors - Dark theme */
+  --industrial-bg-primary: #0a0a0a; /* Nearly black - main page background */
+  --industrial-bg-card: #1a1a1a; /* Dark cards */
+  --industrial-bg-dark: #faf7f2; /* Inverted - light sections on dark pages */
+}
+
+/**
+ * ==========================================================================
  * BACKGROUND UTILITY CLASSES
  * ==========================================================================
  * Various gradient backgrounds used throughout the application

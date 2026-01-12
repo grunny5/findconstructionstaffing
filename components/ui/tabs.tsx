@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Tabs Component - Industrial Design System
+ * Tab navigation with industrial styling
+ */
+
 import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 
@@ -14,7 +19,8 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      'inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground',
+      // Industrial Design System: Tab list container
+      'inline-flex h-10 items-center justify-center rounded-industrial-sharp bg-industrial-graphite-100 p-1 font-body text-industrial-graphite-500',
       className
     )}
     {...props}
@@ -29,7 +35,14 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
+      // Industrial Design System: Tab trigger button
+      'inline-flex items-center justify-center whitespace-nowrap rounded-industrial-sharp px-3 py-1.5 text-sm font-body font-semibold uppercase tracking-wide ring-offset-background transition-all',
+      // Focus state
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange focus-visible:ring-offset-2',
+      // Disabled state
+      'disabled:pointer-events-none disabled:opacity-50',
+      // Active state
+      'data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 data-[state=active]:shadow-sm',
       className
     )}
     {...props}
@@ -44,7 +57,8 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange-600 focus-visible:ring-offset-2',
+      // Industrial Design System: Tab content panel
+      'mt-2 font-body ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-industrial-orange focus-visible:ring-offset-2',
       className
     )}
     {...props}
