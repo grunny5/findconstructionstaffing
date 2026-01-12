@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p1
 issue_id: "002"
 tags: [performance, memory-leak, timeout]
@@ -260,3 +260,55 @@ test('withTimeout does not leak memory under load', async () => {
 - **Testing:** Requires --expose-gc flag to force GC in tests
 - **Monitoring:** Add memory usage metrics after deployment
 - **Related:** Check if `dbQueryWithTimeout` has similar issue
+
+---
+
+### 2026-01-12 - Issue Resolved
+
+**By:** Claude Code (workflows:work)
+
+**Actions:**
+- Implemented timeout cleanup in `withTimeout()` using stored timeout ID
+- Added `clearTimeout()` calls in both try and catch blocks (lib/fetch/timeout.ts:108-124)
+- Verified `dbQueryWithTimeout` automatically fixed (uses `withTimeout` internally)
+- Added 5 new tests for resource cleanup and load scenarios
+- Fixed 2 flaky existing tests with unrealistic timing expectations
+- All 26 tests passing
+- Created PR #661: https://github.com/grunny5/findconstructionstaffing/pull/661
+
+**Solution Implementation:**
+Used Option 2 (manual timeout cleanup) instead of Option 1 (AbortController) as it's simpler and more straightforward while achieving the same goal:
+```typescript
+let timeoutId: NodeJS.Timeout | null = null;
+const timeoutPromise = new Promise<never>((_, reject) => {
+  timeoutId = setTimeout(() => reject(new TimeoutError(...)), timeoutMs);
+});
+
+try {
+  const result = await Promise.race([promise, timeoutPromise]);
+  if (timeoutId) clearTimeout(timeoutId);
+  return result;
+} catch (error) {
+  if (timeoutId) clearTimeout(timeoutId);
+  throw error;
+}
+```
+
+**Test Coverage:**
+- ✅ Resource cleanup on success
+- ✅ Resource cleanup on error
+- ✅ Resource cleanup on timeout
+- ✅ Concurrent load (100 parallel)
+- ✅ Sequential load (50 rapid calls)
+
+**Learnings:**
+- Manual timeout cleanup is simpler than AbortController for this use case
+- Comprehensive test coverage critical for verifying no memory leaks
+- Fixing one function (`withTimeout`) automatically fixed dependent functions
+- Flaky timing tests need realistic expectations and buffers
+
+**Impact:**
+- Eliminates ~100KB/min memory leak (6MB/hour)
+- Affects all timeout operations across the application
+- No performance degradation (clearTimeout is O(1))
+- No breaking changes to API
