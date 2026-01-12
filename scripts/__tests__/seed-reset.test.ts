@@ -76,6 +76,7 @@ describe('Reset Database Function', () => {
         'staff',
         'agency_trades',
         'agency_regions',
+        'agency_compliance',
         'agencies',
         'trades',
         'regions',
@@ -150,7 +151,7 @@ describe('Reset Database Function', () => {
       await resetDatabase(mockClient as any);
 
       // Verify neq was called with zero UUID for each table (including integration tables)
-      expect(neqMock).toHaveBeenCalledTimes(11); // 6 integration tables + 5 core tables
+      expect(neqMock).toHaveBeenCalledTimes(12); // 6 integration tables + 6 core tables (including agency_compliance)
       expect(neqMock).toHaveBeenCalledWith(
         'agency_id',
         '00000000-0000-0000-0000-000000000000'

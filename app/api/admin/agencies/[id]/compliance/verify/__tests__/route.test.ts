@@ -31,6 +31,17 @@ jest.mock('@/lib/emails/compliance-rejected', () => ({
   generateComplianceRejectedText: jest.fn().mockReturnValue('text'),
 }));
 
+// Mock secure logging utility
+jest.mock('@/lib/utils/secure-logging', () => ({
+  secureLog: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+  sanitizeForLog: jest.fn((value) => String(value)),
+  sanitizeObject: jest.fn((obj) => obj),
+}));
+
 const mockedCreateClient = createClient as jest.MockedFunction<
   typeof createClient
 >;
@@ -59,11 +70,13 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
     // Set environment variables
     process.env.RESEND_API_KEY = 'test-api-key';
     process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
   });
 
   afterEach(() => {
     delete process.env.RESEND_API_KEY;
     delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   });
 
   // ============================================================================
@@ -81,6 +94,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'verify',
@@ -121,6 +137,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'verify',
@@ -167,6 +186,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: 'invalid json',
         }
       );
@@ -186,6 +208,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             action: 'verify',
           }),
@@ -207,6 +232,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'invalid_type',
             action: 'verify',
@@ -229,6 +257,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
           }),
@@ -252,6 +283,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'invalid',
@@ -276,6 +310,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'reject',
@@ -300,6 +337,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'reject',
@@ -318,6 +358,412 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
       expect(data.error.message).toContain(
         'Rejection reason must be at least 10 characters'
       );
+    });
+
+    it('should return 400 if notes exceed 2000 characters', async () => {
+      const longNotes = 'a'.repeat(2001); // 2001 characters
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+            notes: longNotes,
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toContain(
+        'Notes cannot exceed 2000 characters'
+      );
+      expect(data.error.message).toContain('2001 characters');
+    });
+
+    it('should return 400 if notes is not a string', async () => {
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+            notes: 12345, // Invalid: not a string
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe('Notes must be a string if provided');
+    });
+  });
+
+  // ============================================================================
+  // CSRF PROTECTION TESTS
+  // ============================================================================
+
+  describe('CSRF Protection', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'admin-123' } },
+        error: null,
+      });
+    });
+
+    it('should return 403 if origin header does not match expected origin', async () => {
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            origin: 'https://malicious-site.com', // Invalid origin
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Invalid request origin');
+    });
+
+    it('should return 403 if referer header does not match expected origin', async () => {
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            referer: 'https://malicious-site.com/admin', // Invalid referer
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(data.error.code).toBe(ERROR_CODES.FORBIDDEN);
+      expect(data.error.message).toBe('Invalid request origin');
+    });
+
+    it('should accept request with valid referer header', async () => {
+      mockSupabaseClient.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { role: 'admin', full_name: 'Admin User' },
+          error: null,
+        }),
+      });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            referer: 'http://localhost:3000/admin/agencies', // Valid referer
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: '123' }),
+      });
+
+      // Should not fail due to CSRF (will fail later for missing data, but that's expected)
+      expect(response.status).not.toBe(HTTP_STATUS.FORBIDDEN);
+    });
+  });
+
+  // ============================================================================
+  // DOCUMENT URL VALIDATION TESTS
+  // ============================================================================
+
+  describe('Document URL Validation', () => {
+    beforeEach(() => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'admin-123' } },
+        error: null,
+      });
+    });
+
+    it('should return 400 if trying to verify without a document URL', async () => {
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        callCount++;
+        if (callCount === 1) {
+          // profiles (admin check)
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin', full_name: 'Admin User' },
+              error: null,
+            }),
+          };
+        } else if (callCount === 2) {
+          // agencies
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'agency-123',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                claimed_by: 'owner-123',
+              },
+              error: null,
+            }),
+          };
+        } else {
+          // agency_compliance (no document_url)
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'comp-123',
+                agency_id: 'agency-123',
+                compliance_type: 'osha_certified',
+                is_active: true,
+                is_verified: false,
+                document_url: null, // No document
+                notes: null,
+              },
+              error: null,
+            }),
+          };
+        }
+      });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe(
+        'Cannot verify compliance without a supporting document'
+      );
+    });
+
+    it('should return 400 if document URL points to external domain', async () => {
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        callCount++;
+        if (callCount === 1) {
+          // profiles
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin', full_name: 'Admin User' },
+              error: null,
+            }),
+          };
+        } else if (callCount === 2) {
+          // agencies
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'agency-123',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                claimed_by: 'owner-123',
+              },
+              error: null,
+            }),
+          };
+        } else {
+          // agency_compliance (external URL)
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'comp-123',
+                agency_id: 'agency-123',
+                compliance_type: 'osha_certified',
+                is_active: true,
+                is_verified: false,
+                document_url: 'https://malicious-site.com/doc.pdf', // External domain
+                notes: null,
+              },
+              error: null,
+            }),
+          };
+        }
+      });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(data.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(data.error.message).toBe(
+        'Document URL must point to Supabase storage'
+      );
+    });
+
+    it('should accept plain storage paths as valid document URLs', async () => {
+      let callCount = 0;
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        callCount++;
+        if (callCount === 1) {
+          // profiles
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { role: 'admin', full_name: 'Admin User' },
+              error: null,
+            }),
+          };
+        } else if (callCount === 2) {
+          // agencies
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'agency-123',
+                name: 'Test Agency',
+                slug: 'test-agency',
+                claimed_by: 'owner-123',
+              },
+              error: null,
+            }),
+          };
+        } else if (callCount === 3) {
+          // agency_compliance (plain storage path - valid)
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'comp-123',
+                agency_id: 'agency-123',
+                compliance_type: 'osha_certified',
+                is_active: true,
+                is_verified: false,
+                document_url: 'agency-123/osha-cert.pdf', // Plain storage path
+                notes: null,
+              },
+              error: null,
+            }),
+          };
+        } else {
+          // agency_compliance (update)
+          return {
+            update: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: 'comp-123',
+                is_verified: true,
+                verified_by: 'admin-123',
+              },
+              error: null,
+            }),
+          };
+        }
+      });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
+        {
+          method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
+          body: JSON.stringify({
+            complianceType: 'osha_certified',
+            action: 'verify',
+          }),
+        }
+      );
+
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'agency-123' }),
+      });
+      const data = await response.json();
+
+      // Should succeed - plain storage paths are valid
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(data.message).toBe('Compliance document verified successfully');
     });
   });
 
@@ -364,6 +810,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'verify',
@@ -427,6 +876,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'verify',
@@ -498,7 +950,7 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
                 compliance_type: 'osha_certified',
                 is_active: true,
                 is_verified: false,
-                document_url: 'https://example.com/doc.pdf',
+                document_url: 'https://test.supabase.co/storage/v1/object/public/compliance-documents/doc.pdf',
                 notes: null,
               },
               error: null,
@@ -519,7 +971,7 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
                 is_verified: true,
                 verified_by: 'admin-123',
                 verified_at: expect.any(String),
-                document_url: 'https://example.com/doc.pdf',
+                document_url: 'https://test.supabase.co/storage/v1/object/public/compliance-documents/doc.pdf',
                 notes: 'Verified by admin',
               },
               error: null,
@@ -532,6 +984,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'verify',
@@ -592,7 +1047,7 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
                 compliance_type: 'osha_certified',
                 is_active: true,
                 is_verified: false,
-                document_url: 'https://example.com/doc.pdf',
+                document_url: 'https://test.supabase.co/storage/v1/object/public/compliance-documents/doc.pdf',
                 notes: 'Existing notes',
               },
               error: null,
@@ -621,6 +1076,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'verify',
@@ -691,7 +1149,7 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
                 compliance_type: 'osha_certified',
                 is_active: true,
                 is_verified: false,
-                document_url: 'https://example.com/doc.pdf',
+                document_url: 'https://test.supabase.co/storage/v1/object/public/compliance-documents/doc.pdf',
                 notes: null,
               },
               error: null,
@@ -738,6 +1196,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'reject',
@@ -796,7 +1257,7 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
                 id: 'comp-123',
                 is_active: true,
                 is_verified: false,
-                document_url: 'https://example.com/doc.pdf',
+                document_url: 'https://test.supabase.co/storage/v1/object/public/compliance-documents/doc.pdf',
               },
               error: null,
             }),
@@ -834,6 +1295,9 @@ describe('POST /api/admin/agencies/[id]/compliance/verify', () => {
         'http://localhost:3000/api/admin/agencies/agency-123/compliance/verify',
         {
           method: 'POST',
+          headers: {
+            origin: 'http://localhost:3000',
+          },
           body: JSON.stringify({
             complianceType: 'osha_certified',
             action: 'reject',

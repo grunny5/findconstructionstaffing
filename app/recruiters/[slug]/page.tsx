@@ -36,11 +36,12 @@ interface PageProps {
 
 // This is a server component - data fetching happens at request time
 export default async function AgencyProfilePage({ params }: PageProps) {
-  // Fetch agency data from API
+  // Fetch agency data from API with caching for performance
+  // Data revalidates every 60 seconds in the background (stale-while-revalidate pattern)
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/agencies/${params.slug}`,
     {
-      cache: 'no-store', // Ensure fresh data
+      next: { revalidate: 60 },
       headers: {
         'Content-Type': 'application/json',
       },
@@ -214,24 +215,26 @@ export default async function AgencyProfilePage({ params }: PageProps) {
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-8">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-industrial-graphite-100 rounded-industrial-sharp p-1">
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-1 bg-industrial-graphite-100 rounded-industrial-sharp p-1">
                 <TabsTrigger
                   value="overview"
-                  className="font-body uppercase tracking-wide text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
+                  className="font-body uppercase tracking-wide text-xs sm:text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
                 >
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="trades"
-                  className="font-body uppercase tracking-wide text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
+                  className="font-body uppercase tracking-wide text-xs sm:text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
                 >
-                  Trade Specialties
+                  <span className="sm:hidden">Trades</span>
+                  <span className="hidden sm:inline">Trade Specialties</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="regions"
-                  className="font-body uppercase tracking-wide text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
+                  className="font-body uppercase tracking-wide text-xs sm:text-sm data-[state=active]:bg-industrial-bg-card data-[state=active]:text-industrial-graphite-600 rounded-industrial-sharp"
                 >
-                  Service Areas
+                  <span className="sm:hidden">Areas</span>
+                  <span className="hidden sm:inline">Service Areas</span>
                 </TabsTrigger>
               </TabsList>
 

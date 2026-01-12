@@ -23,6 +23,7 @@ import {
   generateComplianceRejectedText,
 } from '@/lib/emails/compliance-rejected';
 import { validateSiteUrl } from '@/lib/emails/utils';
+import { secureLog } from '@/lib/utils/secure-logging';
 
 // Force dynamic rendering for authenticated routes
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,35 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ========================================================================
+    // 0. CSRF PROTECTION
+    // ========================================================================
+    // Validate origin/referer header to prevent cross-site request forgery
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const expectedOrigin = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    if (expectedOrigin) {
+      const expectedHost = new URL(expectedOrigin).origin;
+
+      // Check if request comes from same origin
+      const isSameOrigin =
+        (origin && origin === expectedHost) ||
+        (referer && referer.startsWith(expectedHost));
+
+      if (!isSameOrigin) {
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.FORBIDDEN,
+              message: 'Invalid request origin',
+            },
+          },
+          { status: HTTP_STATUS.FORBIDDEN }
+        );
+      }
+    }
+
     // ========================================================================
     // 1. AUTHENTICATION CHECK
     // ========================================================================
@@ -73,7 +103,7 @@ export async function POST(
       .single();
 
     if (profileError) {
-      console.error('Error fetching user profile:', profileError);
+      secureLog.error('Error fetching user profile', { error: profileError });
       return NextResponse.json(
         {
           error: {
@@ -146,7 +176,23 @@ export async function POST(
           { status: HTTP_STATUS.BAD_REQUEST }
         );
       }
-      validatedNotes = notes.trim() || undefined;
+
+      const trimmedNotes = notes.trim();
+
+      // Validate maximum length (2000 characters)
+      if (trimmedNotes.length > 2000) {
+        return NextResponse.json(
+          {
+            error: {
+              code: ERROR_CODES.VALIDATION_ERROR,
+              message: `Notes cannot exceed 2000 characters (currently ${trimmedNotes.length} characters)`,
+            },
+          },
+          { status: HTTP_STATUS.BAD_REQUEST }
+        );
+      }
+
+      validatedNotes = trimmedNotes || undefined;
     }
 
     // Validate complianceType
@@ -283,6 +329,41 @@ export async function POST(
           { status: HTTP_STATUS.BAD_REQUEST }
         );
       }
+
+      // Validate document URL points to Supabase storage
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (supabaseUrl) {
+        const expectedDomain = new URL(supabaseUrl).hostname;
+        try {
+          // Handle both signed URLs and plain storage paths
+          if (compliance.document_url.startsWith('http://') || compliance.document_url.startsWith('https://')) {
+            const docUrl = new URL(compliance.document_url);
+            if (docUrl.hostname !== expectedDomain) {
+              return NextResponse.json(
+                {
+                  error: {
+                    code: ERROR_CODES.VALIDATION_ERROR,
+                    message: 'Document URL must point to Supabase storage',
+                  },
+                },
+                { status: HTTP_STATUS.BAD_REQUEST }
+              );
+            }
+          }
+          // Plain storage paths (e.g., "agency_id/file.pdf") are considered valid
+        } catch (urlError) {
+          // If URL parsing fails, treat as invalid
+          return NextResponse.json(
+            {
+              error: {
+                code: ERROR_CODES.VALIDATION_ERROR,
+                message: 'Invalid document URL format',
+              },
+            },
+            { status: HTTP_STATUS.BAD_REQUEST }
+          );
+        }
+      }
       // VERIFY ACTION: Set verification fields
       const { data: updatedCompliance, error: updateError } = await supabase
         .from('agency_compliance')
@@ -298,14 +379,11 @@ export async function POST(
         .single();
 
       if (updateError || !updatedCompliance) {
-        console.error(
-          'Failed to verify compliance document:',
-          updateError,
-          'Agency ID:',
+        secureLog.error('Failed to verify compliance document', {
+          error: updateError,
           agencyId,
-          'Compliance Type:',
-          complianceType
-        );
+          complianceType,
+        });
         return NextResponse.json(
           {
             error: {
@@ -361,14 +439,11 @@ export async function POST(
         .single();
 
       if (updateError || !updatedCompliance) {
-        console.error(
-          'Failed to reject compliance document:',
-          updateError,
-          'Agency ID:',
+        secureLog.error('Failed to reject compliance document', {
+          error: updateError,
           agencyId,
-          'Compliance Type:',
-          complianceType
-        );
+          complianceType,
+        });
         return NextResponse.json(
           {
             error: {
@@ -388,10 +463,10 @@ export async function POST(
           .remove([oldDocumentPath]);
 
         if (deleteError) {
-          console.warn(
-            `Failed to delete storage file ${oldDocumentPath}:`,
-            deleteError
-          );
+          secureLog.warn('Failed to delete storage file', {
+            path: oldDocumentPath,
+            error: deleteError,
+          });
           // Continue - database is consistent, orphaned file is minor issue
         }
       }
@@ -449,22 +524,18 @@ export async function POST(
             });
 
             emailSent = true;
-            console.log(
-              `Rejection email sent successfully for compliance type: ${complianceType}`
-            );
+            secureLog.info('Rejection email sent successfully', {
+              complianceType,
+            });
           } else {
-            console.warn(
-              `Unable to send rejection email: owner not found or missing email`
-            );
+            secureLog.warn('Unable to send rejection email: owner not found or missing email');
           }
         } else {
-          console.warn(
-            'RESEND_API_KEY not configured or agency not claimed - skipping rejection email'
-          );
+          secureLog.warn('RESEND_API_KEY not configured or agency not claimed - skipping rejection email');
         }
       } catch (emailError) {
         // Log error but don't fail the request - document was rejected successfully
-        console.error('Error sending rejection email:', emailError);
+        secureLog.error('Error sending rejection email', { error: emailError });
       }
 
       return NextResponse.json(
@@ -476,7 +547,7 @@ export async function POST(
       );
     }
   } catch (error) {
-    console.error('Unexpected error in compliance verification:', error);
+    secureLog.error('Unexpected error in compliance verification', { error });
     return NextResponse.json(
       {
         error: {

@@ -12,8 +12,13 @@
  *   npm run seed:verify  - Runs verification queries
  */
 
+// CRITICAL: Load environment variables FIRST before any imports that use them
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
 import { createClient } from '@supabase/supabase-js';
-import { mockAgencies, allStates, allTrades } from '../../lib/mock-data';
+import { mockAgencies, allStates, allTrades, mockComplianceData } from '../../lib/mock-data';
 import { createSlug } from '../../lib/supabase';
 
 // Helper to check if we're in test environment
@@ -35,11 +40,6 @@ if (!allStates || !Array.isArray(allStates) || allStates.length === 0) {
   throw new Error('All states data is not available or empty');
 }
 import type { Agency, Trade, Region } from '../../lib/supabase';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-
-// Load environment variables from .env.local
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 // ANSI color codes for console output
 const colors = {
@@ -567,6 +567,119 @@ async function seedAgencies(
   }
 }
 
+// Seed agency compliance data
+async function seedCompliance(
+  supabase: ReturnType<typeof createSupabaseClient>,
+  agencyIdMap: Map<string, string>
+): Promise<void> {
+  const startTime = Date.now();
+  log.info('Seeding agency compliance data...');
+
+  let created = 0;
+  let skipped = 0;
+
+  try {
+    const complianceRecords: Array<{
+      agency_id: string;
+      compliance_type: string;
+      is_active: boolean;
+      is_verified: boolean;
+      expiration_date: string | null;
+    }> = [];
+
+    // Track duplicates to prevent adding the same compliance item twice
+    const seenCombinations = new Set<string>();
+
+    // Build compliance records from mock data
+    for (const agencyCompliance of mockComplianceData) {
+      const agencyId = agencyIdMap.get(agencyCompliance.agencyName);
+      if (!agencyId) {
+        log.warning(`Agency ID not found for: ${agencyCompliance.agencyName}`);
+        continue;
+      }
+
+      for (const item of agencyCompliance.complianceItems) {
+        const key = `${agencyId}-${item.type}`;
+
+        // Skip if we've already seen this combination in mockComplianceData
+        if (seenCombinations.has(key)) {
+          log.warning(
+            `Skipping duplicate compliance entry: ${agencyCompliance.agencyName} - ${item.type}`
+          );
+          continue;
+        }
+
+        seenCombinations.add(key);
+        complianceRecords.push({
+          agency_id: agencyId,
+          compliance_type: item.type,
+          is_active: item.isActive,
+          is_verified: item.isVerified,
+          expiration_date: item.expirationDate || null,
+        });
+      }
+    }
+
+    log.info(`Found ${complianceRecords.length} compliance records to seed`);
+
+    // Process in batches for better performance
+    const batchSize = 50;
+    for (let i = 0; i < complianceRecords.length; i += batchSize) {
+      const batch = complianceRecords.slice(i, i + batchSize);
+
+      // Check existing records
+      const agencyIds = Array.from(new Set(batch.map((r) => r.agency_id)));
+      const { data: existingRecords, error: fetchError } = await supabase
+        .from('agency_compliance')
+        .select('agency_id, compliance_type')
+        .in('agency_id', agencyIds);
+
+      if (fetchError) {
+        throw new Error(
+          `Failed to fetch existing compliance: ${fetchError.message}`
+        );
+      }
+
+      // Create set of existing combinations
+      const existingSet = new Set(
+        (existingRecords || []).map((r) => `${r.agency_id}-${r.compliance_type}`)
+      );
+
+      // Filter new records
+      const newRecords = batch.filter(
+        (rec) => !existingSet.has(`${rec.agency_id}-${rec.compliance_type}`)
+      );
+
+      // Insert new records if any
+      if (newRecords.length > 0) {
+        const { error: insertError } = await supabase
+          .from('agency_compliance')
+          .insert(newRecords);
+
+        if (insertError) {
+          throw new Error(
+            `Failed to insert compliance: ${insertError.message}`
+          );
+        }
+
+        created += newRecords.length;
+      }
+
+      skipped += batch.length - newRecords.length;
+    }
+
+    const duration = Date.now() - startTime;
+    log.success(`Compliance seeding completed in ${duration}ms`);
+    log.info(`Created: ${created}, Skipped: ${skipped}`);
+  } catch (error) {
+    log.error('Failed to seed compliance data');
+    if (error instanceof Error) {
+      log.error(`Details: ${error.message}`);
+    }
+    throw error;
+  }
+}
+
 // Create agency-trade relationships
 async function createAgencyTradeRelationships(
   supabase: ReturnType<typeof createSupabaseClient>,
@@ -848,7 +961,21 @@ async function resetDatabase(
     }
     deletions.push({ table: 'agency_regions', count: agencyRegionCount || 0 });
 
-    // 2. Delete agencies (depends on junction tables)
+    // 2.5. Delete agency compliance records (must come before agencies deletion)
+    log.info('Deleting agency compliance records...');
+    const { count: complianceCount, error: complianceError } = await supabase
+      .from('agency_compliance')
+      .delete()
+      .neq('agency_id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+    if (complianceError) {
+      throw new Error(
+        `Failed to delete agency compliance: ${complianceError.message}`
+      );
+    }
+    deletions.push({ table: 'agency_compliance', count: complianceCount || 0 });
+
+    // 3. Delete agencies (depends on junction tables and compliance)
     log.info('Deleting agencies...');
     const { count: agencyCount, error: agencyError } = await supabase
       .from('agencies')
@@ -1062,7 +1189,33 @@ async function verifySeededData(
       if (!passed) allPassed = false;
     }
 
-    // 6. Verify specific agency has correct trades (using first agency)
+    // 6. Verify compliance records
+    const expectedComplianceCount = mockComplianceData.reduce(
+      (sum, agency) => sum + agency.complianceItems.length,
+      0
+    );
+    const { count: complianceCount, error: complianceCountError } = await supabase
+      .from('agency_compliance')
+      .select('*', { count: 'exact', head: true });
+
+    if (complianceCountError) {
+      results.push({
+        check: 'Compliance records',
+        passed: false,
+        details: `Error: ${complianceCountError.message}`,
+      });
+      allPassed = false;
+    } else {
+      const passed = complianceCount === expectedComplianceCount;
+      results.push({
+        check: 'Compliance records',
+        passed,
+        details: `Expected: ${expectedComplianceCount}, Found: ${complianceCount}`,
+      });
+      if (!passed) allPassed = false;
+    }
+
+    // 7. Verify specific agency has correct trades (using first agency)
     const { data: sampleAgency, error: sampleError } = await supabase
       .from('agencies')
       .select(
@@ -1205,6 +1358,9 @@ async function main() {
 
       // Create agency-region relationships
       await createAgencyRegionRelationships(supabase, agencyIdMap, regionIdMap);
+
+      // Seed compliance data
+      await seedCompliance(supabase, agencyIdMap);
     }
 
     log.success('Script completed successfully');

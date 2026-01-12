@@ -10,6 +10,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -28,12 +29,14 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, ExternalLink, FileWarning } from 'lucide-react';
+import { Search, ExternalLink, FileWarning, FileCheck } from 'lucide-react';
 import {
   COMPLIANCE_DISPLAY_NAMES,
   type ComplianceType,
   type AgencyComplianceRow,
+  isComplianceExpired,
 } from '@/types/api';
+import { ComplianceVerifyDialog } from '@/components/admin/ComplianceVerifyDialog';
 
 /**
  * Extended compliance row type that includes joined agency data
@@ -131,10 +134,29 @@ function formatDate(dateString: string): string {
 export function ComplianceOverviewTable({
   complianceData,
 }: ComplianceOverviewTableProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [selectedCompliance, setSelectedCompliance] = useState<ComplianceDataRow | null>(null);
 
-  // Filter and search compliance data
+  const handleVerificationComplete = () => {
+    setVerifyDialogOpen(false);
+    setSelectedCompliance(null);
+    router.refresh(); // Refresh data using Next.js App Router
+  };
+
+  // Pre-compute status for all items once (performance optimization)
+  // This avoids O(n*4) status calculations on every filter change
+  const statusMap = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof getComplianceStatus>>();
+    complianceData.forEach((item) => {
+      map.set(item.id, getComplianceStatus(item));
+    });
+    return map;
+  }, [complianceData]);
+
+  // Filter and search compliance data using pre-computed status
   const filteredData = useMemo(() => {
     return complianceData.filter((item) => {
       // Search filter
@@ -147,28 +169,30 @@ export function ComplianceOverviewTable({
 
       if (!matchesSearch) return false;
 
-      // Status filter
+      // Status filter using pre-computed status (O(1) lookup)
       if (statusFilter === 'all') return true;
 
-      const status = getComplianceStatus(item);
+      const status = statusMap.get(item.id);
       return status === statusFilter;
     });
-  }, [complianceData, searchQuery, statusFilter]);
+  }, [complianceData, searchQuery, statusFilter, statusMap]);
 
-  // Count items by status
+  // Count items by status using pre-computed Map (single pass)
   const statusCounts = useMemo(() => {
-    return {
-      expired: complianceData.filter(
-        (item) => getComplianceStatus(item) === 'expired'
-      ).length,
-      expiring_soon: complianceData.filter(
-        (item) => getComplianceStatus(item) === 'expiring_soon'
-      ).length,
-      pending_verification: complianceData.filter(
-        (item) => getComplianceStatus(item) === 'pending_verification'
-      ).length,
+    const counts = {
+      expired: 0,
+      expiring_soon: 0,
+      pending_verification: 0,
     };
-  }, [complianceData]);
+
+    statusMap.forEach((status) => {
+      if (status === 'expired') counts.expired++;
+      else if (status === 'expiring_soon') counts.expiring_soon++;
+      else if (status === 'pending_verification') counts.pending_verification++;
+    });
+
+    return counts;
+  }, [statusMap]);
 
   return (
     <div className="space-y-4">
@@ -253,7 +277,7 @@ export function ComplianceOverviewTable({
             </TableHeader>
             <TableBody>
               {filteredData.map((item) => {
-                const status = getComplianceStatus(item);
+                const status = statusMap.get(item.id)!; // Use pre-computed status (O(1) lookup)
                 const days = item.expiration_date
                   ? daysUntilExpiration(item.expiration_date)
                   : null;
@@ -303,15 +327,33 @@ export function ComplianceOverviewTable({
 
                     {/* Actions */}
                     <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={`/admin/agencies/${item.agency_id}`}
-                          className="gap-2"
-                        >
-                          View Agency
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        {/* Review button for pending verification */}
+                        {status === 'pending_verification' && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCompliance(item);
+                              setVerifyDialogOpen(true);
+                            }}
+                          >
+                            <FileCheck className="h-3 w-3 mr-2" />
+                            Review
+                          </Button>
+                        )}
+
+                        {/* View Agency button */}
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            href={`/admin/agencies/${item.agency_id}`}
+                            className="gap-2"
+                          >
+                            View Agency
+                            <ExternalLink className="h-3 w-3 ml-2" />
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -327,6 +369,33 @@ export function ComplianceOverviewTable({
           Showing {filteredData.length} of {complianceData.length} compliance
           issues
         </p>
+      )}
+
+      {/* Verification Dialog */}
+      {selectedCompliance && (
+        <ComplianceVerifyDialog
+          isOpen={verifyDialogOpen}
+          complianceItem={{
+            id: selectedCompliance.id,
+            type: selectedCompliance.compliance_type,
+            displayName: COMPLIANCE_DISPLAY_NAMES[selectedCompliance.compliance_type],
+            isActive: selectedCompliance.is_active,
+            isVerified: selectedCompliance.is_verified,
+            expirationDate: selectedCompliance.expiration_date,
+            isExpired: isComplianceExpired(selectedCompliance.expiration_date),
+            documentUrl: selectedCompliance.document_url,
+            notes: selectedCompliance.notes,
+            verifiedBy: selectedCompliance.verified_by,
+            verifiedAt: selectedCompliance.verified_at,
+          }}
+          agencyId={selectedCompliance.agency_id}
+          agencyName={selectedCompliance.agencies.name}
+          onComplete={handleVerificationComplete}
+          onClose={() => {
+            setVerifyDialogOpen(false);
+            setSelectedCompliance(null);
+          }}
+        />
       )}
     </div>
   );

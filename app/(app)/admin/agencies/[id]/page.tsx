@@ -3,15 +3,30 @@ import { redirect, notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileWarning } from 'lucide-react';
 import Link from 'next/link';
 import { AgencyStatusToggle } from '@/components/admin/AgencyStatusToggle';
 import { AgencyEditButton } from '@/components/admin/AgencyEditButton';
+import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
+import { COMPLIANCE_DISPLAY_NAMES, isComplianceExpired, type ComplianceType } from '@/types/api';
+import { secureLog } from '@/lib/utils/secure-logging';
 
 interface AgencyDetailPageProps {
   params: {
     id: string;
   };
+}
+
+interface ComplianceRow {
+  id: string;
+  compliance_type: string;
+  is_active: boolean;
+  is_verified: boolean;
+  expiration_date: string | null;
+  document_url: string | null;
+  notes: string | null;
+  verified_by: string | null;
+  verified_at: string | null;
 }
 
 const formatDate = (dateString: string): string => {
@@ -57,49 +72,65 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch agency details with trades and regions
-  const { data: agency, error: agencyError } = await supabase
-    .from('agencies')
-    .select(
+  // Parallelize independent database queries for better performance
+  const [agencyResult, complianceResult] = await Promise.all([
+    // Query 1: Fetch agency details with trades and regions
+    supabase
+      .from('agencies')
+      .select(
+        `
+        id,
+        name,
+        slug,
+        description,
+        website,
+        phone,
+        email,
+        headquarters,
+        founded_year,
+        employee_count,
+        company_size,
+        offers_per_diem,
+        is_union,
+        is_active,
+        is_claimed,
+        claimed_by,
+        created_at,
+        updated_at,
+        profile_completion_percentage,
+        trades:agency_trades(
+          trade:trades(
+            id,
+            name,
+            slug
+          )
+        ),
+        regions:agency_regions(
+          region:regions(
+            id,
+            name,
+            slug,
+            state_code
+          )
+        )
       `
-      id,
-      name,
-      slug,
-      description,
-      website,
-      phone,
-      email,
-      headquarters,
-      founded_year,
-      employee_count,
-      company_size,
-      offers_per_diem,
-      is_union,
-      is_active,
-      is_claimed,
-      claimed_by,
-      created_at,
-      updated_at,
-      profile_completion_percentage,
-      trades:agency_trades(
-        trade:trades(
-          id,
-          name,
-          slug
-        )
-      ),
-      regions:agency_regions(
-        region:regions(
-          id,
-          name,
-          slug,
-          state_code
-        )
       )
-    `
-    )
-    .eq('id', params.id)
-    .single();
+      .eq('id', params.id)
+      .single(),
+
+    // Query 2: Fetch compliance data
+    supabase
+      .from('agency_compliance')
+      .select(
+        'id, compliance_type, is_active, is_verified, expiration_date, document_url, notes, verified_by, verified_at'
+      )
+      .eq('agency_id', params.id)
+      .eq('is_active', true)
+      .order('compliance_type'),
+  ]);
+
+  const { data: agency, error: agencyError } = agencyResult;
+  const { data: complianceData, error: complianceError } = complianceResult;
 
   // Transform trades and regions from nested structure to flat arrays
   const agencyWithRelations = agency
@@ -143,7 +174,7 @@ export default async function AgencyDetailPage({
     return null;
   }
 
-  // Fetch owner profile if agency is claimed
+  // Fetch owner profile if agency is claimed (sequential - depends on agency data)
   let ownerProfile: { email: string | null; full_name: string | null } | null =
     null;
   if (agencyWithRelations.claimed_by) {
@@ -155,6 +186,28 @@ export default async function AgencyDetailPage({
 
     ownerProfile = profile || null;
   }
+
+  // Log error but don't fail the page if compliance data can't be fetched
+  if (complianceError) {
+    secureLog.error('Error fetching compliance data for agency', {
+      agencyId: params.id,
+      error: complianceError,
+    });
+  }
+
+  const complianceItems = (complianceData || []).map((c: ComplianceRow) => ({
+    id: c.id,
+    type: c.compliance_type as ComplianceType,
+    displayName: COMPLIANCE_DISPLAY_NAMES[c.compliance_type as keyof typeof COMPLIANCE_DISPLAY_NAMES] || String(c.compliance_type),
+    isActive: c.is_active,
+    isVerified: c.is_verified,
+    expirationDate: c.expiration_date,
+    isExpired: isComplianceExpired(c.expiration_date),
+    documentUrl: c.document_url,
+    notes: c.notes,
+    verifiedBy: c.verified_by,
+    verifiedAt: c.verified_at,
+  }));
 
   return (
     <div className="container mx-auto p-6 max-w-5xl min-h-screen">
@@ -411,6 +464,59 @@ export default async function AgencyDetailPage({
               </div>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Compliance & Verification Card */}
+      <Card className="mb-6 border-l-4 border-l-industrial-orange">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Compliance & Verification</span>
+            <Badge variant="outline" className="font-body">
+              {complianceItems.length} Active
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {complianceItems.length === 0 ? (
+            <div className="text-center py-8 bg-industrial-graphite-50 rounded-industrial-base">
+              <FileWarning className="h-12 w-12 text-industrial-graphite-300 mx-auto mb-3" />
+              <p className="font-body text-sm text-industrial-graphite-400">
+                No compliance certifications added yet
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-4 pb-4 border-b border-industrial-graphite-200">
+                <div className="text-center">
+                  <div className="text-2xl font-display font-bold text-green-600">
+                    {complianceItems.filter((c) => c.isVerified && !c.isExpired).length}
+                  </div>
+                  <div className="text-xs font-body text-industrial-graphite-400 uppercase">
+                    Verified
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-display font-bold text-industrial-orange-600">
+                    {complianceItems.filter((c) => !c.isVerified && !c.isExpired).length}
+                  </div>
+                  <div className="text-xs font-body text-industrial-graphite-400 uppercase">
+                    Pending
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-display font-bold text-red-600">
+                    {complianceItems.filter((c) => c.isExpired).length}
+                  </div>
+                  <div className="text-xs font-body text-industrial-graphite-400 uppercase">
+                    Expired
+                  </div>
+                </div>
+              </div>
+
+              <ComplianceBadges compliance={complianceItems} variant="default" />
+            </>
+          )}
         </CardContent>
       </Card>
 

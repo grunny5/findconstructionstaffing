@@ -6,9 +6,10 @@ import {
   HTTP_STATUS,
   ERROR_CODES,
   AgencyResponse,
-  type AgencyComplianceRow,
   type ComplianceItem,
-  toComplianceItem,
+  type ComplianceType,
+  getComplianceDisplayName,
+  isComplianceExpired,
 } from '@/types/api';
 import {
   PerformanceMonitor,
@@ -388,7 +389,8 @@ export async function GET(
       );
     }
 
-    // Fetch agency with related data using retry logic
+    // Fetch agency with all related data in a single query for performance
+    // Includes trades, regions, and compliance data to avoid sequential queries
     const queryId = monitor.startQuery();
     const { data: agency, error } = await queryWithRetry(async () =>
       supabase
@@ -410,6 +412,15 @@ export async function GET(
               state_code,
               slug
             )
+          ),
+          agency_compliance (
+            id,
+            compliance_type,
+            is_active,
+            is_verified,
+            expiration_date,
+            document_url,
+            notes
           )
         `
         )
@@ -506,32 +517,20 @@ export async function GET(
       );
     }
 
-    // Fetch active compliance items for this agency
-    const complianceQueryId = monitor.startQuery();
-    const agencyId = (agency as { id: string }).id;
-    const { data: complianceRows, error: complianceError } = await supabase
-      .from('agency_compliance')
-      .select('*')
-      .eq('agency_id', agencyId)
-      .eq('is_active', true)
-      .order('compliance_type');
+    // Transform the data to match expected format
+    // Compliance is now included in the main query for better performance
 
-    monitor.endQuery(complianceQueryId);
-
-    // Log but don't fail if compliance query fails (not critical for display)
-    if (complianceError) {
-      console.error(
-        '[API WARNING] Failed to fetch compliance data:',
-        complianceError.message
-      );
+    // Type for nested compliance data from the query (matches SELECT fields exactly)
+    interface NestedComplianceRow {
+      id: string;
+      compliance_type: ComplianceType;
+      is_active: boolean;
+      is_verified: boolean;
+      expiration_date: string | null;
+      document_url: string | null;
+      notes: string | null;
     }
 
-    // Transform compliance data
-    const complianceItems: ComplianceItem[] = complianceRows
-      ? (complianceRows as AgencyComplianceRow[]).map(toComplianceItem)
-      : [];
-
-    // Transform the data to match expected format
     const agencyData = agency as Agency & {
       agency_trades?: Array<{
         trade: {
@@ -548,7 +547,49 @@ export async function GET(
           slug: string;
         };
       }>;
+      agency_compliance?: NestedComplianceRow[] | null;
     };
+
+    // Transform compliance data with graceful degradation
+    // If compliance data is missing or malformed, return empty array instead of failing
+    let complianceItems: ComplianceItem[] = [];
+    try {
+      const rawCompliance = agencyData.agency_compliance;
+      if (Array.isArray(rawCompliance)) {
+        // Type guard: validate object shape to ensure safe access to properties
+        const isNestedComplianceRow = (c: any): c is NestedComplianceRow => {
+          return (
+            c != null &&
+            typeof c === 'object' &&
+            typeof c.compliance_type === 'string' &&
+            typeof c.is_active === 'boolean' &&
+            typeof c.is_verified === 'boolean' &&
+            (c.expiration_date === null || typeof c.expiration_date === 'string') &&
+            (c.document_url === null || typeof c.document_url === 'string') &&
+            (c.notes === null || typeof c.notes === 'string')
+          );
+        };
+
+        complianceItems = rawCompliance
+          .filter(isNestedComplianceRow)
+          .filter((c) => c.is_active === true) // Business logic: only active items
+          .sort((a, b) => a.compliance_type.localeCompare(b.compliance_type))
+          .map((c) => ({
+            type: c.compliance_type,
+            displayName: getComplianceDisplayName(c.compliance_type),
+            isVerified: c.is_verified,
+            expirationDate: c.expiration_date,
+            isExpired: isComplianceExpired(c.expiration_date),
+          }));
+      }
+    } catch (complianceError) {
+      // Log but don't fail if compliance transformation fails (not critical for display)
+      console.warn(
+        `[API WARNING] Failed to transform compliance data for agency ${agencyData.slug}:`,
+        complianceError
+      );
+      complianceItems = [];
+    }
 
     // Create API response with all required fields
     const apiAgency = {
