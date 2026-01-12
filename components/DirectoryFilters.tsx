@@ -456,7 +456,11 @@ export default function DirectoryFilters({
         {/* Results Count and Clear Filters */}
         <div className="flex items-center justify-between">
           <div className="font-body text-sm text-industrial-graphite-400 flex items-center gap-2">
-            <span className={isLoading ? 'opacity-60' : ''}>
+            <span
+              className={isLoading ? 'opacity-60' : ''}
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <span className="font-semibold text-industrial-graphite-600">
                 {totalResults}
               </span>{' '}

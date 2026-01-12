@@ -72,7 +72,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -196,8 +196,10 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 className="text-industrial-graphite-600 hover:text-industrial-graphite-600 hover:bg-industrial-graphite-100"
+                aria-label="Open mobile menu"
               >
                 <Menu className="h-5 w-5" />
+                <span className="sr-only">Menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">

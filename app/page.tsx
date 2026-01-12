@@ -268,13 +268,14 @@ function HomePageContent() {
     <div className="min-h-screen bg-industrial-bg-primary">
       <Header />
 
-      {/* Claim Status Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <ClaimStatusBanner />
-      </div>
+      <main>
+        {/* Claim Status Banner */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <ClaimStatusBanner />
+        </div>
 
-      {/* Industrial Hero Section */}
-      <section className="relative py-24 bg-industrial-bg-primary border-b-[3px] border-industrial-graphite-600">
+        {/* Industrial Hero Section */}
+        <section className="relative py-24 bg-industrial-bg-primary border-b-[3px] border-industrial-graphite-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Trust Indicator */}
           <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 bg-industrial-graphite-100 border-2 border-industrial-graphite-200 rounded-industrial-sharp">
@@ -601,6 +602,7 @@ function HomePageContent() {
           </div>
         </div>
       </section>
+      </main>
 
       <Footer />
     </div>
