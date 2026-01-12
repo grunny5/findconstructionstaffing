@@ -8,6 +8,7 @@ import AgencyCard from '@/components/AgencyCard';
 import AgencyCardSkeleton from '@/components/AgencyCardSkeleton';
 import ApiErrorState from '@/components/ApiErrorState';
 import DirectoryFilters, { FilterState } from '@/components/DirectoryFilters';
+import { MobileFilterSheet } from '@/components/MobileFilterSheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -486,12 +487,23 @@ function HomePageContent() {
           </div>
         </div>
 
-        {/* Filters */}
-        <DirectoryFilters
-          onFiltersChange={setFilters}
-          totalResults={filteredAgencies.length}
-          isLoading={isValidating || isSearching}
-        />
+        {/* Filters - Desktop */}
+        <div className="hidden md:block">
+          <DirectoryFilters
+            onFiltersChange={setFilters}
+            totalResults={filteredAgencies.length}
+            isLoading={isValidating || isSearching}
+          />
+        </div>
+
+        {/* Filters - Mobile */}
+        <div className="block md:hidden">
+          <MobileFilterSheet
+            onFiltersChange={setFilters}
+            totalResults={filteredAgencies.length}
+            isLoading={isValidating || isSearching}
+          />
+        </div>
 
         {/* Results Grid */}
         {isLoading && !apiResponse ? (

@@ -31,10 +31,11 @@ const buttonVariants = cva(
         link: 'text-industrial-orange underline-offset-4 hover:underline hover:text-industrial-orange-500',
       },
       size: {
-        default: 'h-10 px-8 py-4',
-        sm: 'h-9 px-3 py-2 text-xs',
-        lg: 'h-11 px-8 py-4',
-        icon: 'h-10 w-10',
+        // Mobile-first: 44px minimum touch target, can be smaller on desktop
+        default: 'min-h-[44px] md:h-10 px-8 py-4',
+        sm: 'min-h-[44px] md:h-9 px-3 py-2 text-xs',
+        lg: 'min-h-[44px] md:h-11 px-8 py-4',
+        icon: 'min-h-[44px] min-w-[44px] md:h-10 md:w-10',
       },
     },
     defaultVariants: {
