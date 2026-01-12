@@ -79,6 +79,11 @@ Create a custom logging utility that automatically sanitizes sensitive data in p
  * - JWT tokens
  * - Email addresses
  * - API keys
+ *
+ * Features:
+ * - Environment-aware (only sanitizes in production)
+ * - Recursive object/array sanitization
+ * - Circular reference detection (prevents stack overflow)
  */
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -129,21 +134,31 @@ export function sanitizeForLog(value: unknown): string {
 
 /**
  * Sanitize an object by recursively sanitizing all values
+ * Includes circular reference detection to prevent stack overflow
  */
-export function sanitizeObject(obj: Record<string, unknown>): Record<string, unknown> {
+export function sanitizeObject(
+  obj: Record<string, unknown>,
+  seen = new WeakSet()
+): Record<string, unknown> {
   if (!IS_PRODUCTION) {
     return obj;
   }
+
+  // Detect circular references
+  if (seen.has(obj)) {
+    return { '[Circular]': true };
+  }
+  seen.add(obj);
 
   const sanitized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
-      sanitized[key] = sanitizeObject(value as Record<string, unknown>);
+      sanitized[key] = sanitizeObject(value as Record<string, unknown>, seen);
     } else if (Array.isArray(value)) {
       sanitized[key] = value.map(v =>
         typeof v === 'object' && v !== null
-          ? sanitizeObject(v as Record<string, unknown>)
+          ? sanitizeObject(v as Record<string, unknown>, seen)
           : sanitizeForLog(v)
       );
     } else {
@@ -279,6 +294,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 | **Numbers** | Unchanged | Unchanged | `42` |
 | **Objects** | Full object | Recursively sanitized | `{ id: '123e4567...' }` |
 | **Arrays** | Full array | Each element sanitized | `['123e4567...', '234f5678...']` |
+| **Circular refs** | Full object | Replaced with marker | `{ '[Circular]': true }` |
 
 ### Testing
 
@@ -329,6 +345,25 @@ describe('Secure Logging', () => {
         agencyId: '234f5678...',
       },
     });
+  });
+
+  it('handles circular references without stack overflow', () => {
+    const input: any = {
+      userId: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'user@example.com',
+    };
+
+    // Create circular reference
+    input.self = input;
+    input.nested = { parent: input };
+
+    const result = sanitizeObject(input);
+
+    // Circular references replaced with marker
+    expect(result).toHaveProperty('userId', '123e4567...');
+    expect(result).toHaveProperty('email', '***@example.com');
+    expect(result).toHaveProperty('self', { '[Circular]': true });
+    expect(result.nested).toHaveProperty('parent', { '[Circular]': true });
   });
 
   it('preserves full data in development', () => {
