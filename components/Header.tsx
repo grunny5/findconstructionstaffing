@@ -29,6 +29,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 import { UnreadBadge } from '@/components/messages/UnreadBadge';
 import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -85,6 +86,7 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             {user ? (
               // Logged in - show Claim Listing + Messages + User Menu
               <>
@@ -227,6 +229,12 @@ export default function Header() {
                 ))}
 
                 <div className="border-t-2 border-industrial-graphite-200 pt-6 space-y-3">
+                  <div className="flex items-center justify-between pb-3">
+                    <span className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-500">
+                      Theme
+                    </span>
+                    <ThemeToggle />
+                  </div>
                   {user ? (
                     // Logged in - show user-specific actions
                     <>
