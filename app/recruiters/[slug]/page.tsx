@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { fetchWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
 import {
   Building2,
   MapPin,
@@ -38,13 +39,15 @@ interface PageProps {
 export default async function AgencyProfilePage({ params }: PageProps) {
   // Fetch agency data from API with caching for performance
   // Data revalidates every 60 seconds in the background (stale-while-revalidate pattern)
-  const response = await fetch(
+  // Timeout protection prevents indefinite hanging if API is slow or unresponsive
+  const response = await fetchWithTimeout(
     `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/agencies/${params.slug}`,
     {
       next: { revalidate: 60 },
       headers: {
         'Content-Type': 'application/json',
       },
+      timeout: TIMEOUT_CONFIG.SERVER_CRITICAL,
     }
   );
 

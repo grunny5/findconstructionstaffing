@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Home, RefreshCw } from 'lucide-react';
+import { AlertCircle, Home, RefreshCw, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { TimeoutError } from '@/lib/fetch/timeout';
 
 export default function ProfileError({
   error,
@@ -23,21 +24,39 @@ export default function ProfileError({
     // }
   }, [error]);
 
+  // Detect if this is a timeout error
+  const isTimeout = error instanceof TimeoutError ||
+                   error.message?.includes('timeout') ||
+                   error.message?.includes('Request timeout');
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="max-w-lg w-full">
         <CardContent className="p-8 text-center">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertCircle className="h-10 w-10 text-red-600" />
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+            isTimeout ? 'bg-amber-100' : 'bg-red-100'
+          }`}>
+            {isTimeout ? (
+              <Clock className="h-10 w-10 text-amber-600" />
+            ) : (
+              <AlertCircle className="h-10 w-10 text-red-600" />
+            )}
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Something went wrong!
+            {isTimeout ? 'Page is taking longer than expected' : 'Something went wrong!'}
           </h1>
 
           <p className="text-gray-600 mb-8">
-            We encountered an error while loading this agency profile. This
-            could be due to a temporary issue with our servers.
+            {isTimeout ? (
+              <>
+                The agency profile is taking longer than usual to load. This could be due to a slow connection or high server load. Please try again in a moment.
+              </>
+            ) : (
+              <>
+                We encountered an error while loading this agency profile. This could be due to a temporary issue with our servers.
+              </>
+            )}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -13,6 +13,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
+  fetchWithTimeout,
+  TIMEOUT_CONFIG,
+  TimeoutError,
+} from '@/lib/fetch/timeout';
 
 export interface UnreadCountData {
   total_unread: number;
@@ -41,7 +46,9 @@ export function useUnreadCount(
     }
 
     try {
-      const response = await fetch('/api/messages/unread-count');
+      const response = await fetchWithTimeout('/api/messages/unread-count', {
+        timeout: TIMEOUT_CONFIG.CLIENT_POLL,
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -55,8 +62,14 @@ export function useUnreadCount(
         setError('Failed to fetch unread count');
       }
     } catch (err) {
-      setError('Network error');
-      console.error('Error fetching unread count:', err);
+      if (err instanceof TimeoutError) {
+        // Graceful degradation: Keep previous count, don't block UI
+        console.warn('Unread count fetch timed out');
+        setError(null); // Don't show error to user for background polling
+      } else {
+        setError('Network error');
+        console.error('Error fetching unread count:', err);
+      }
     } finally {
       setIsLoading(false);
     }
