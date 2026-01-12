@@ -501,6 +501,7 @@ function HomePageContent() {
             onFiltersChange={setFilters}
             totalResults={filteredAgencies.length}
             isLoading={isValidating || isSearching}
+            initialFilters={filters}
           />
         </div>
 
@@ -510,6 +511,7 @@ function HomePageContent() {
             onFiltersChange={setFilters}
             totalResults={filteredAgencies.length}
             isLoading={isValidating || isSearching}
+            initialFilters={filters}
           />
         </div>
 
