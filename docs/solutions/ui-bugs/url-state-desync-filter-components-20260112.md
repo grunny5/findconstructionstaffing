@@ -127,13 +127,15 @@ import { MobileFilterSheet } from '@/components/MobileFilterSheet';
 import dynamic from 'next/dynamic';
 
 const MobileFilterSheet = dynamic(
-  () => import('@/components/MobileFilterSheet').then((mod) => ({ default: mod.MobileFilterSheet })),
+  () => import('@/components/MobileFilterSheet').then(mod => mod.MobileFilterSheet),
   {
     loading: () => null,
     ssr: false,
   }
 );
 ```
+
+**Note:** For named exports, use `.then(mod => mod.NamedExport)` pattern (idiomatic Next.js). For default exports, the promise can return the module directly.
 
 **Benefits:**
 - Reduces initial bundle size by code-splitting mobile-specific component

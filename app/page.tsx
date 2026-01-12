@@ -41,7 +41,7 @@ import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
 import { EmptyState } from '@/components/EmptyState';
 
 const MobileFilterSheet = dynamic(
-  () => import('@/components/MobileFilterSheet').then((mod) => ({ default: mod.MobileFilterSheet })),
+  () => import('@/components/MobileFilterSheet').then(mod => mod.MobileFilterSheet),
   {
     loading: () => null,
     ssr: false,
