@@ -26,6 +26,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import {
+  fetchWithTimeout,
+  TIMEOUT_CONFIG,
+  TimeoutError,
+} from '@/lib/fetch/timeout';
 import { cn } from '@/lib/utils';
 
 const MAX_LENGTH = 10000;
@@ -92,7 +97,9 @@ export function SendMessageButton({
 
     // 2. Check if conversation already exists
     try {
-      const response = await fetch(`/api/messages/conversations`);
+      const response = await fetchWithTimeout(`/api/messages/conversations`, {
+        timeout: TIMEOUT_CONFIG.CLIENT_ACTION,
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -111,8 +118,12 @@ export function SendMessageButton({
         }
       }
     } catch (error) {
-      console.error('Error checking for existing conversation:', error);
-      // Continue to show modal even if check fails
+      if (error instanceof TimeoutError) {
+        console.warn('Conversation check timed out, showing compose modal anyway');
+      } else {
+        console.error('Error checking for existing conversation:', error);
+      }
+      // Continue to show modal even if check fails (graceful degradation)
     }
 
     // 3. No existing conversation - show modal

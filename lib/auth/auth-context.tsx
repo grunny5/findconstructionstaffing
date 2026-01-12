@@ -11,6 +11,7 @@ import {
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types/database';
+import { withTimeout, TIMEOUT_CONFIG, TimeoutError } from '@/lib/fetch/timeout';
 
 interface AuthContextType {
   user: User | null;
@@ -44,22 +45,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = useCallback(
     async (userId: string) => {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
+        // Fetch profile with timeout protection
+        const { data, error } = await withTimeout(
+          (async () => supabase.from('profiles').select('*').eq('id', userId).single())(),
+          TIMEOUT_CONFIG.CLIENT_AUTH,
+          'Profile fetch timeout'
+        );
 
         if (error) throw error;
         setProfile(data);
 
-        // If user is agency owner, fetch their claimed agency slug
+        // If user is agency owner, fetch their claimed agency slug with timeout
         if (data?.role === 'agency_owner') {
-          const { data: agency, error: agencyError } = await supabase
-            .from('agencies')
-            .select('slug')
-            .eq('claimed_by', userId)
-            .single();
+          const { data: agency, error: agencyError} = await withTimeout(
+            (async () => supabase.from('agencies').select('slug').eq('claimed_by', userId).single())(),
+            TIMEOUT_CONFIG.CLIENT_AUTH,
+            'Agency slug fetch timeout'
+          );
 
           if (!agencyError && agency) {
             setAgencySlug(agency.slug);
@@ -70,9 +72,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setAgencySlug(null);
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
-        setProfile(null);
-        setAgencySlug(null);
+        if (error instanceof TimeoutError) {
+          console.warn('Auth initialization timed out:', error.message);
+          // Graceful degradation: Set logged-out state to allow page to render
+          setProfile(null);
+          setAgencySlug(null);
+        } else {
+          console.error('Error fetching profile:', error);
+          setProfile(null);
+          setAgencySlug(null);
+        }
       } finally {
         setLoading(false);
       }

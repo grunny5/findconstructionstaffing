@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import type { Agency } from '@/types/supabase';
+import { dbQueryWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
 import {
   ErrorResponse,
   HTTP_STATUS,
@@ -117,117 +118,6 @@ function classifyDatabaseError(error: any): {
 
   // Default to OTHER with no retry
   return { type: 'OTHER', isRetryable: false };
-}
-
-// Helper function to execute query with retry logic and detailed diagnostics
-async function queryWithRetry<T>(
-  queryFn: () => Promise<{ data: T | null; error: any }>,
-  retries = 3,
-  delay = 1000
-): Promise<{ data: T | null; error: any }> {
-  const startTime = Date.now();
-
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const attemptStart = Date.now();
-      const result = await queryFn();
-      const attemptTime = Date.now() - attemptStart;
-
-      // If successful, return immediately
-      if (!result.error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            `[API SUCCESS] Database query completed in ${attemptTime}ms (attempt ${attempt})`
-          );
-        }
-        return result;
-      }
-
-      // Classify the error
-      const errorClassification = classifyDatabaseError(result.error);
-
-      // Log detailed error information
-      const errorDetails = {
-        attempt: `${attempt}/${retries}`,
-        attemptTime: `${attemptTime}ms`,
-        totalTime: `${Date.now() - startTime}ms`,
-        errorType: errorClassification.type,
-        isRetryable: errorClassification.isRetryable,
-        message: result.error.message,
-        code: result.error.code,
-        supabaseUrl:
-          process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
-        hasValidKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      };
-
-      // Log based on error type
-      switch (errorClassification.type) {
-        case 'CONNECTION':
-          console.error(
-            `[API ERROR] Database connection failed:`,
-            errorDetails
-          );
-          break;
-        case 'AUTH':
-          console.error(
-            `[API ERROR] Database authentication failed:`,
-            errorDetails
-          );
-          break;
-        case 'CLIENT':
-          console.error(
-            `[API ERROR] Client error (not retrying):`,
-            errorDetails
-          );
-          break;
-        default:
-          console.error(`[API ERROR] Database query error:`, errorDetails);
-      }
-
-      // Only retry if it's retryable and not the last attempt
-      if (attempt < retries && errorClassification.isRetryable) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[API RETRY] Waiting ${delay}ms before retry...`);
-        }
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= 1.5; // Exponential backoff
-        continue;
-      }
-
-      return result;
-    } catch (error: any) {
-      const attemptTime = Date.now() - startTime;
-
-      // Try to classify even thrown errors
-      const errorClassification = classifyDatabaseError(error);
-
-      console.error(`[API ERROR] Unexpected error in query:`, {
-        attempt: `${attempt}/${retries}`,
-        totalTime: `${attemptTime}ms`,
-        errorType: errorClassification.type,
-        isRetryable: errorClassification.isRetryable,
-        error: error?.message || String(error),
-        code: error?.code,
-        stack: error?.stack?.split('\n')[0], // First line only
-      });
-
-      if (attempt < retries && errorClassification.isRetryable) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= 1.5;
-        continue;
-      }
-
-      return { data: null, error: error };
-    }
-  }
-
-  // All retries exhausted
-  return {
-    data: null,
-    error: new Error(
-      `Database query failed after ${retries} retry attempts in ${Date.now() - startTime}ms`
-    ),
-  };
 }
 
 /**
@@ -391,12 +281,14 @@ export async function GET(
 
     // Fetch agency with all related data in a single query for performance
     // Includes trades, regions, and compliance data to avoid sequential queries
+    // Timeout protection prevents indefinite hanging if database is slow
     const queryId = monitor.startQuery();
-    const { data: agency, error } = await queryWithRetry(async () =>
-      supabase
-        .from('agencies')
-        .select(
-          `
+    const { data: agency, error } = await dbQueryWithTimeout(
+      async () =>
+        supabase
+          .from('agencies')
+          .select(
+            `
           *,
           agency_trades (
             trade:trades (
@@ -423,10 +315,15 @@ export async function GET(
             notes
           )
         `
-        )
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .single()
+          )
+          .eq('slug', slug)
+          .eq('is_active', true)
+          .single(),
+      {
+        retries: 3,
+        retryDelay: 1000,
+        totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
+      }
     );
 
     monitor.endQuery(queryId);

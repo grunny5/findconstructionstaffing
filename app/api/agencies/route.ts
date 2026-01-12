@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { dbQueryWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
 import {
   AgenciesApiResponse,
   ErrorResponse,
@@ -23,97 +24,6 @@ import {
 // Force dynamic rendering since we use searchParams
 export const dynamic = 'force-dynamic';
 
-// Helper function to execute query with retry logic and detailed diagnostics
-async function queryWithRetry<T>(
-  queryFn: () => Promise<{ data: T | null; error: any }>,
-  retries = 3,
-  delay = 1000
-): Promise<{ data: T | null; error: any }> {
-  const startTime = Date.now();
-
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const attemptStart = Date.now();
-      const result = await queryFn();
-      const attemptTime = Date.now() - attemptStart;
-
-      // If successful, return immediately
-      if (!result.error) {
-        if (attempt > 1 && process.env.NODE_ENV === 'development') {
-          console.log(
-            `[API SUCCESS] Database query completed in ${attemptTime}ms (attempt ${attempt})`
-          );
-        }
-        return result;
-      }
-
-      // Check for different types of errors
-      const isConnectionError =
-        result.error.message?.includes('fetch') ||
-        result.error.message?.includes('connect') ||
-        result.error.message?.includes('timeout') ||
-        result.error.code === 'ECONNREFUSED';
-
-      const isAuthError =
-        result.error.message?.includes('auth') ||
-        result.error.message?.includes('unauthorized') ||
-        result.error.code === 'PGRST301';
-
-      // Log detailed error information for connection issues
-      if (isConnectionError) {
-        console.error(`[API ERROR] Database connection failed:`, {
-          attempt: `${attempt}/${retries}`,
-          attemptTime: `${attemptTime}ms`,
-          totalTime: `${Date.now() - startTime}ms`,
-          message: result.error.message,
-          code: result.error.code,
-        });
-
-        // If not the last attempt, retry
-        if (attempt < retries) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[API RETRY] Waiting ${delay}ms before retry...`);
-          }
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 1.5; // Exponential backoff
-          continue;
-        }
-      } else if (isAuthError) {
-        console.error(`[API ERROR] Database authentication failed:`, {
-          message: result.error.message,
-          code: result.error.code,
-        });
-        // Don't retry auth errors
-        return result;
-      }
-
-      // For other errors or last attempt, return the result
-      return result;
-    } catch (error: any) {
-      console.error(`[API ERROR] Unexpected error in query:`, {
-        attempt: `${attempt}/${retries}`,
-        error: error?.message || String(error),
-      });
-
-      if (attempt < retries) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= 1.5;
-        continue;
-      }
-
-      return { data: null, error: error };
-    }
-  }
-
-  // All retries exhausted
-  return {
-    data: null,
-    error: new Error(
-      `Database query failed after ${retries} retry attempts in ${Date.now() - startTime}ms`
-    ),
-  };
-}
-
 /**
  * Apply trade, state, and compliance filters to get matching agency IDs
  * @returns Array of agency IDs that match the filters, or null if no filters applied
@@ -133,8 +43,13 @@ async function applyFilters(
   // Apply trade filter
   if (trades && trades.length > 0) {
     const tradeQueryId = monitor.startQuery();
-    const { data: tradeData, error: tradeError } = await queryWithRetry(
-      async () => supabase.from('trades').select('id').in('slug', trades)
+    const { data: tradeData, error: tradeError } = await dbQueryWithTimeout(
+      async () => supabase.from('trades').select('id').in('slug', trades),
+      {
+        retries: 3,
+        retryDelay: 1000,
+        totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
+      }
     );
     monitor.endQuery(tradeQueryId);
 
@@ -147,11 +62,17 @@ async function applyFilters(
     if (tradeIds.length > 0) {
       const agencyTradeQueryId = monitor.startQuery();
       const { data: agencyTradeData, error: agencyTradeError } =
-        await queryWithRetry(async () =>
-          supabase
-            .from('agency_trades')
-            .select('agency_id')
-            .in('trade_id', tradeIds)
+        await dbQueryWithTimeout(
+          async () =>
+            supabase
+              .from('agency_trades')
+              .select('agency_id')
+              .in('trade_id', tradeIds),
+          {
+            retries: 3,
+            retryDelay: 1000,
+            totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
+          }
         );
       monitor.endQuery(agencyTradeQueryId);
 
@@ -171,8 +92,13 @@ async function applyFilters(
   // Apply state filter
   if (states && states.length > 0) {
     const regionQueryId = monitor.startQuery();
-    const { data: regionData, error: regionError } = await queryWithRetry(
-      async () => supabase.from('regions').select('id').in('state_code', states)
+    const { data: regionData, error: regionError } = await dbQueryWithTimeout(
+      async () => supabase.from('regions').select('id').in('state_code', states),
+      {
+        retries: 3,
+        retryDelay: 1000,
+        totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
+      }
     );
     monitor.endQuery(regionQueryId);
 
@@ -185,11 +111,17 @@ async function applyFilters(
     if (regionIds.length > 0) {
       const agencyRegionQueryId = monitor.startQuery();
       const { data: agencyRegionData, error: agencyRegionError } =
-        await queryWithRetry(async () =>
-          supabase
-            .from('agency_regions')
-            .select('agency_id')
-            .in('region_id', regionIds)
+        await dbQueryWithTimeout(
+          async () =>
+            supabase
+              .from('agency_regions')
+              .select('agency_id')
+              .in('region_id', regionIds),
+          {
+            retries: 3,
+            retryDelay: 1000,
+            totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
+          }
         );
       monitor.endQuery(agencyRegionQueryId);
 
@@ -225,12 +157,18 @@ async function applyFilters(
 
     // Fetch all requested compliance types in a single query
     const { data: complianceData, error: complianceError } =
-      await queryWithRetry(async () =>
-        supabase
-          .from('agency_compliance')
-          .select('agency_id, compliance_type')
-          .in('compliance_type', compliance)
-          .eq('is_active', true)
+      await dbQueryWithTimeout(
+        async () =>
+          supabase
+            .from('agency_compliance')
+            .select('agency_id, compliance_type')
+            .in('compliance_type', compliance)
+            .eq('is_active', true),
+        {
+          retries: 3,
+          retryDelay: 1000,
+          totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
+        }
       );
 
     monitor.endQuery(complianceQueryId);
