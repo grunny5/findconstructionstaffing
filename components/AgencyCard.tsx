@@ -117,12 +117,9 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
     agency.email ||
     'contact@' + agency.name.toLowerCase().replace(/\s+/g, '') + '.com';
 
-  // Determine which completion badge to show
-  const showVerifiedBadge =
-    agency.profile_completion_percentage &&
-    agency.profile_completion_percentage >= 80 &&
-    agency.profile_completion_percentage < 100;
-  const showFeaturedBadge = agency.profile_completion_percentage === 100;
+  // Determine which badges to show
+  const showVerifiedBadge = agency.verified === true; // Verified agency status
+  const showFeaturedBadge = agency.profile_completion_percentage === 100; // 100% profile completion
 
   // Get category border color based on primary trade
   const categoryBorderColor = getCategoryBorderColor(agency.trades);
@@ -223,14 +220,6 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
 
                 {/* Badges Row */}
                 <div className="flex items-center gap-3 mb-4 flex-wrap">
-                  {/* Verification Badge */}
-                  {agency.verified && (
-                    <div className="inline-flex items-center gap-1.5 bg-industrial-graphite-100 text-industrial-graphite-600 px-2.5 py-1 rounded-industrial-sharp text-xs font-body font-semibold uppercase tracking-wide">
-                      <div className="w-1.5 h-1.5 bg-industrial-orange rounded-full"></div>
-                      Verified
-                    </div>
-                  )}
-
                   {/* Rating Badge */}
                   {agency.rating && (
                     <div className="flex items-center gap-1 bg-industrial-graphite-100 text-industrial-graphite-600 px-2.5 py-1 rounded-industrial-sharp">
