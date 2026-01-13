@@ -195,7 +195,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                           <TooltipTrigger asChild>
                             <span className="inline-flex items-center">
                               <BadgeCheck
-                                className="h-5 w-5 text-[var(--industrial-success-600)] dark:text-[var(--industrial-success-400)]"
+                                className="h-5 w-5 text-industrial-orange"
                                 strokeWidth={2.5}
                                 aria-label="Verified Profile"
                               />
