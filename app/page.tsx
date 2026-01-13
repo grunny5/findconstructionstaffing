@@ -71,7 +71,6 @@ function HomePageContent() {
     companySize: [],
     focusAreas: [],
   });
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [limit, setLimit] = useState(20);
   const [offset, setOffset] = useState(0);
