@@ -361,7 +361,7 @@
  * Usage: Secondary actions (Used in app/page.tsx)
  */
 .modern-button-secondary {
-  @apply bg-industrial-bg-card text-industrial-graphite-500 border-industrial-graphite-300 hover:bg-industrial-bg-card backdrop-blur-sm rounded-industrial-sharp;
+  @apply bg-industrial-bg-card text-industrial-graphite-500 border-industrial-graphite-300 hover:bg-industrial-graphite-100 hover:border-industrial-graphite-400 backdrop-blur-sm rounded-industrial-sharp;
 }
 
 /**
