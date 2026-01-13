@@ -52,6 +52,14 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   );
 
   if (!response.ok) {
+    // Log full error details for Vercel logs (before throwing)
+    console.error('[Agency Detail Page] Fetch failed:', {
+      slug: params.slug,
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    });
+
     if (response.status === 404) {
       notFound();
     }

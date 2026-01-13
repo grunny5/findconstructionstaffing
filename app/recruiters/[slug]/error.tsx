@@ -26,8 +26,11 @@ export default function ProfileError({
 
   // Detect if this is a timeout error
   const isTimeout = error instanceof TimeoutError ||
+                   error.name === 'TimeoutError' ||
                    error.message?.includes('timeout') ||
-                   error.message?.includes('Request timeout');
+                   error.message?.includes('Request timeout') ||
+                   error.message?.includes('took longer') ||
+                   error.message?.includes('AbortError');
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -88,6 +91,12 @@ export default function ProfileError({
                 </p>
               )}
             </div>
+          )}
+
+          {process.env.NODE_ENV === 'production' && error.digest && (
+            <p className="text-sm text-gray-500 mt-4">
+              Error ID: {error.digest}
+            </p>
           )}
         </CardContent>
       </Card>
