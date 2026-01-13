@@ -134,7 +134,7 @@ export default function Header() {
                         <p className="text-sm font-medium">
                           {profile?.full_name || 'My Account'}
                         </p>
-                        <p className="text-xs text-slate-500">{user.email}</p>
+                        <p className="text-xs text-industrial-graphite-400">{user.email}</p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
