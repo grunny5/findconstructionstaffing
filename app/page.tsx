@@ -537,7 +537,7 @@ function HomePageContent() {
               <div key={agency.id} className="relative">
                 {agency.featured && (
                   <div className="absolute -top-3 left-6 z-10">
-                    <Badge className="bg-orange-500 text-white px-3 py-1 font-medium">
+                    <Badge className="bg-industrial-orange text-white px-3 py-1 font-medium">
                       <Award className="h-3 w-3 mr-1" />
                       Featured
                     </Badge>
@@ -597,14 +597,14 @@ function HomePageContent() {
           <h2 className="text-3xl font-bold mb-6">
             Ready to Find Your Next Staffing Partner?
           </h2>
-          <p className="text-xl text-slate-300 mb-8">
+          <p className="text-xl text-industrial-graphite-300 mb-8">
             Submit one request and get responses from multiple qualified
             agencies
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-orange-600 hover:bg-orange-700 h-14 px-10 rounded-2xl shadow-lg shadow-orange-600/25"
+              className="bg-industrial-orange hover:bg-industrial-orange-500 h-14 px-10 rounded-industrial-sharp shadow-lg shadow-industrial-orange/25"
               asChild
             >
               <Link href="/request-labor">
@@ -615,7 +615,7 @@ function HomePageContent() {
             <Button
               size="lg"
               variant="outline"
-              className="border-white text-white hover:bg-white hover:text-slate-900 h-14 px-10 rounded-2xl"
+              className="border-white text-white hover:bg-white hover:text-industrial-graphite-600 h-14 px-10 rounded-industrial-sharp"
               asChild
             >
               <Link href="/claim-listing">List Your Agency</Link>

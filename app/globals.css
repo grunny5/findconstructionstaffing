@@ -43,6 +43,35 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Industrial Orange - Primary accent, welding/fabrication category */
+    --industrial-orange-100: #fff4e6;
+    --industrial-orange-200: #ffd699;
+    --industrial-orange-300: #ff9f1c;
+    --industrial-orange-400: #e07b00; /* Primary accent */
+    --industrial-orange-500: #b85c00; /* Hover states */
+    --industrial-orange-600: #8a4400;
+
+    /* Graphite - Primary neutral, text, borders, mechanical category */
+    --industrial-graphite-100: #f5f5f5;
+    --industrial-graphite-200: #d4d4d4;
+    --industrial-graphite-300: #9a9a9a;
+    --industrial-graphite-400: #5c5c5c;
+    --industrial-graphite-500: #333333;
+    --industrial-graphite-600: #1a1a1a; /* Primary text */
+
+    /* Navy - Secondary accent, electrical category */
+    --industrial-navy-100: #e8edf2;
+    --industrial-navy-200: #b8c9d9;
+    --industrial-navy-300: #4a6b8a;
+    --industrial-navy-400: #2d4a63; /* Category accent */
+    --industrial-navy-500: #1b3a4f;
+    --industrial-navy-600: #0f2535;
+
+    /* Background Colors */
+    --industrial-bg-primary: #faf7f2; /* Warm cream - main page background */
+    --industrial-bg-card: #ffffff; /* White - cards only */
+    --industrial-bg-dark: #1a1a1a; /* Footer, inverse sections */
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -142,35 +171,6 @@
  */
 
 :root {
-  /* Industrial Orange - Primary accent, welding/fabrication category */
-  --industrial-orange-100: #fff4e6;
-  --industrial-orange-200: #ffd699;
-  --industrial-orange-300: #ff9f1c;
-  --industrial-orange-400: #e07b00; /* Primary accent */
-  --industrial-orange-500: #b85c00; /* Hover states */
-  --industrial-orange-600: #8a4400;
-
-  /* Graphite - Primary neutral, text, borders, mechanical category */
-  --industrial-graphite-100: #f5f5f5;
-  --industrial-graphite-200: #d4d4d4;
-  --industrial-graphite-300: #9a9a9a;
-  --industrial-graphite-400: #5c5c5c;
-  --industrial-graphite-500: #333333;
-  --industrial-graphite-600: #1a1a1a; /* Primary text */
-
-  /* Navy - Secondary accent, electrical category */
-  --industrial-navy-100: #e8edf2;
-  --industrial-navy-200: #b8c9d9;
-  --industrial-navy-300: #4a6b8a;
-  --industrial-navy-400: #2d4a63; /* Category accent */
-  --industrial-navy-500: #1b3a4f;
-  --industrial-navy-600: #0f2535;
-
-  /* Background Colors */
-  --industrial-bg-primary: #faf7f2; /* Warm cream - main page background */
-  --industrial-bg-card: #ffffff; /* White - cards only */
-  --industrial-bg-dark: #1a1a1a; /* Footer, inverse sections */
-
   /* Spacing Scale - Consistent vertical rhythm */
   --industrial-space-xs: 4px;
   --industrial-space-sm: 8px;
@@ -229,16 +229,11 @@
 
 /**
  * .modern-hero-bg
- * Dark slate gradient for modern hero sections
+ * Industrial dark gradient for hero sections - adapts to dark mode
  * Usage: Hero sections with dark theme
  */
 .modern-hero-bg {
-  background: linear-gradient(
-    to bottom right,
-    rgb(15, 23, 42),
-    rgb(30, 41, 59),
-    rgb(15, 23, 42)
-  );
+  @apply bg-industrial-bg-dark;
 }
 
 /**
@@ -362,11 +357,11 @@
 
 /**
  * .modern-button-secondary
- * Secondary button with glass effect
+ * Secondary button with industrial styling - adapts to dark mode
  * Usage: Secondary actions (Used in app/page.tsx)
  */
 .modern-button-secondary {
-  @apply bg-white/80 text-slate-700 border-slate-300/60 hover:bg-white backdrop-blur-sm rounded-xl;
+  @apply bg-industrial-bg-card text-industrial-graphite-500 border-industrial-graphite-300 hover:bg-industrial-graphite-100 hover:border-industrial-graphite-400 backdrop-blur-sm rounded-industrial-sharp;
 }
 
 /**
