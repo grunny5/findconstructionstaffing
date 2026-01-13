@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AgencyCard from '@/components/AgencyCard';
@@ -39,6 +40,14 @@ import Link from 'next/link';
 import { ClaimStatusBanner } from '@/components/ClaimStatusBanner';
 import { EmptyState } from '@/components/EmptyState';
 
+const MobileFilterSheet = dynamic(
+  () => import('@/components/MobileFilterSheet').then(mod => mod.MobileFilterSheet),
+  {
+    loading: () => null,
+    ssr: false,
+  }
+);
+
 // Helper to validate and filter compliance query parameters
 function validateComplianceParams(params: string[]): ComplianceType[] {
   const validTypes = new Set(COMPLIANCE_TYPES);
@@ -62,7 +71,6 @@ function HomePageContent() {
     companySize: [],
     focusAreas: [],
   });
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [limit, setLimit] = useState(20);
   const [offset, setOffset] = useState(0);
@@ -486,12 +494,25 @@ function HomePageContent() {
           </div>
         </div>
 
-        {/* Filters */}
-        <DirectoryFilters
-          onFiltersChange={setFilters}
-          totalResults={filteredAgencies.length}
-          isLoading={isValidating || isSearching}
-        />
+        {/* Filters - Desktop */}
+        <div className="hidden md:block">
+          <DirectoryFilters
+            onFiltersChange={setFilters}
+            totalResults={filteredAgencies.length}
+            isLoading={isValidating || isSearching}
+            initialFilters={filters}
+          />
+        </div>
+
+        {/* Filters - Mobile */}
+        <div className="block md:hidden">
+          <MobileFilterSheet
+            onFiltersChange={setFilters}
+            totalResults={filteredAgencies.length}
+            isLoading={isValidating || isSearching}
+            initialFilters={filters}
+          />
+        </div>
 
         {/* Results Grid */}
         {isLoading && !apiResponse ? (

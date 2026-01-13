@@ -179,8 +179,10 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                   src={agency.logo_url}
                   alt={`${agency.name} logo`}
                   fill
+                  sizes="(max-width: 768px) 64px, 64px"
                   className="object-cover"
                   onError={() => setImageError(true)}
+                  loading="lazy"
                 />
               </div>
             ) : (
