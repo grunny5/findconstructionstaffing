@@ -131,44 +131,23 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
     <Card
       className={`group bg-industrial-bg-card border border-industrial-graphite-200 border-l-[4px] ${categoryBorderColor} rounded-industrial-base shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 relative`}
     >
-      {/* Completion Badges - Top Right */}
-      {(showVerifiedBadge || showFeaturedBadge) && (
+      {/* Featured Badge - Top Right */}
+      {showFeaturedBadge && (
         <div className="absolute top-4 right-4 z-10">
           <TooltipProvider>
-            {showFeaturedBadge && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg shadow-amber-500/30">
-                    <Star className="h-4 w-4 fill-current" />
-                    Featured Agency
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">
-                    Complete profile with priority placement in search results
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-            {showVerifiedBadge && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="inline-flex items-center justify-center w-8 h-8 bg-[var(--industrial-success-400)] dark:bg-[var(--industrial-success-400)] rounded-industrial-sharp border-2 border-[var(--industrial-success-600)] dark:border-[var(--industrial-success-200)] shadow-sm">
-                    <BadgeCheck
-                      className="h-5 w-5 text-white"
-                      strokeWidth={2.5}
-                      aria-label="Verified Profile"
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs font-body text-sm">
-                    Verified Agency: Profile is 80%+ complete with verified
-                    information
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg shadow-amber-500/30">
+                  <Star className="h-4 w-4 fill-current" />
+                  Featured Agency
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">
+                  Complete profile with priority placement in search results
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </TooltipProvider>
         </div>
       )}
@@ -204,7 +183,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
               <div className="flex-1">
                 {/* Header with name and founded year */}
                 <div className="mb-4">
-                  <h3 className="font-display text-2xl uppercase tracking-wide leading-tight text-industrial-graphite-600">
+                  <h3 className="font-display text-2xl uppercase tracking-wide leading-tight text-industrial-graphite-600 flex items-center flex-wrap gap-2">
                     <Link
                       href={`/recruiters/${agency.slug}`}
                       className="hover:text-industrial-orange transition-colors duration-200"
@@ -213,6 +192,27 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                     >
                       {agency.name}
                     </Link>
+                    {showVerifiedBadge && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center">
+                              <BadgeCheck
+                                className="h-5 w-5 text-[var(--industrial-success-400)] dark:text-[var(--industrial-success-400)]"
+                                strokeWidth={2.5}
+                                aria-label="Verified Profile"
+                              />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs font-body text-sm">
+                              Verified Agency: Profile is 80%+ complete with verified
+                              information
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </h3>
                   {agency.founded_year && (
                     <p className="font-body text-xs text-industrial-graphite-400 mt-1">
