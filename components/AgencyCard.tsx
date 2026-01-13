@@ -195,7 +195,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                           <TooltipTrigger asChild>
                             <span className="inline-flex items-center">
                               <BadgeCheck
-                                className="h-5 w-5 text-[var(--industrial-success-400)] dark:text-[var(--industrial-success-400)]"
+                                className="h-5 w-5 text-[var(--industrial-success-600)] dark:text-[var(--industrial-success-400)]"
                                 strokeWidth={2.5}
                                 aria-label="Verified Profile"
                               />
@@ -203,8 +203,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs font-body text-sm">
-                              Verified Agency: Profile is 80%+ complete with verified
-                              information
+                              Verified Agency: This agency has been verified
                             </p>
                           </TooltipContent>
                         </Tooltip>
