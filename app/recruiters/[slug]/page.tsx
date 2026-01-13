@@ -487,8 +487,10 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-industrial-graphite-200">
-                  <Button className="w-full" size="lg">
-                    Request Workers
+                  <Button className="w-full" size="lg" asChild>
+                    <Link href={`/contact/${transformedAgency.slug}`}>
+                      Request Workers
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
