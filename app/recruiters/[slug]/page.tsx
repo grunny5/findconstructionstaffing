@@ -25,7 +25,13 @@ import {
   DollarSign,
   Shield,
 } from 'lucide-react';
-import { Agency } from '@/types/api';
+import {
+  Agency,
+  RawAgencyQueryResult,
+  SupabaseAgencyTrade,
+  SupabaseAgencyRegion,
+  toComplianceItem,
+} from '@/types/api';
 import { SendMessageButton } from '@/components/messages/SendMessageButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import Link from 'next/link';
@@ -45,7 +51,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   // Fetch agency with all related data in a single query
   // Direct database query avoids serverless function timeout issues
   // Uses aliases (trades:, regions:, compliance:) to match expected property names
-  const { data: agency, error } = await dbQueryWithTimeout<Agency>(
+  const { data: agency, error } = await dbQueryWithTimeout<RawAgencyQueryResult>(
     async () =>
       supabase
         .from('agencies')
@@ -69,6 +75,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
           ),
           compliance:agency_compliance (
             id,
+            agency_id,
             compliance_type,
             is_active,
             is_verified,
@@ -110,12 +117,12 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   // Transform nested Supabase response to flat structure expected by component
   const transformedAgency: Agency = {
     ...agency,
-    trades: agency.trades?.map((t: any) => t.trade) || [],
-    regions: agency.regions?.map((r: any) => ({
+    trades: agency.trades?.map((t: SupabaseAgencyTrade) => t.trade) || [],
+    regions: agency.regions?.map((r: SupabaseAgencyRegion) => ({
       ...r.region,
       code: r.region.state_code
     })) || [],
-    compliance: agency.compliance || []
+    compliance: agency.compliance?.map(toComplianceItem) || []
   };
 
   return (
