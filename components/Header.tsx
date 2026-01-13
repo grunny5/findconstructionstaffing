@@ -59,7 +59,7 @@ export default function Header() {
           {/* Industrial Logo */}
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-industrial-graphite-600 dark:bg-[var(--industrial-orange-400)] rounded-industrial-sharp flex items-center justify-center border-2 border-transparent dark:border-[var(--industrial-orange-500)] transition-colors">
-              <Building2 className="h-5 w-5 text-white" />
+              <Building2 className="h-5 w-5 text-white dark:text-industrial-graphite-600" />
             </div>
             <div>
               <span className="font-display text-2xl uppercase tracking-wide text-industrial-graphite-600">
