@@ -94,6 +94,20 @@ describe('ComplianceBadges', () => {
       expect(screen.getByText(/Expired Jun 2024/)).toBeInTheDocument();
     });
 
+    it('hides verified icon when item is both verified and expired', () => {
+      render(<ComplianceBadges compliance={mockComplianceItems} />);
+
+      // Workers' Compensation is both verified (isVerified: true) and expired (isExpired: true)
+      // The verified icon should NOT be rendered (expired takes precedence)
+      expect(
+        screen.queryByTestId('verified-icon-workers_comp')
+      ).not.toBeInTheDocument();
+
+      // Should still show the item with expired styling
+      expect(screen.getByText("Workers' Compensation")).toBeInTheDocument();
+      expect(screen.getByText(/Expired Jun 2024/)).toBeInTheDocument();
+    });
+
     it('renders in responsive grid layout', () => {
       render(<ComplianceBadges compliance={mockComplianceItems} />);
 

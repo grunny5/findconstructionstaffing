@@ -105,10 +105,10 @@ export function ComplianceBadges({
     );
   }
 
-  // Default variant for profile pages
+  // Default variant for profile pages - single column layout
   return (
     <div
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      className="flex flex-col gap-4"
       data-testid="compliance-badges-default"
     >
       {compliance.map((item) => {
@@ -121,7 +121,7 @@ export function ComplianceBadges({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    'flex flex-col gap-3 p-4 rounded-industrial-base border-2 transition-colors min-h-[100px]',
+                    'flex items-center gap-4 p-4 rounded-industrial-base border-2 transition-colors',
                     item.isExpired
                       ? 'border-industrial-orange-400 bg-industrial-orange-50 dark:bg-[var(--industrial-orange-100)] dark:border-[var(--industrial-orange-300)]'
                       : item.isVerified
@@ -132,46 +132,46 @@ export function ComplianceBadges({
                   tabIndex={0}
                   aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}${item.isVerified ? ' - Verified' : ''}${item.isExpired ? ' - Expired' : ''}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'p-2 rounded-industrial-sharp',
-                        item.isExpired
-                          ? 'bg-industrial-orange-100 text-industrial-orange-600'
-                          : item.isVerified
-                            ? 'bg-[var(--industrial-success-200)] text-[var(--industrial-success-600)]'
-                            : 'bg-industrial-graphite-100 text-industrial-graphite-500'
-                      )}
-                      aria-hidden="true"
-                    >
-                      <Icon className="h-6 w-6 flex-shrink-0" />
-                    </div>
-                    {item.isVerified && !item.isExpired && (
-                      <BadgeCheck
-                        className="h-4 w-4 text-[var(--industrial-success-400)] dark:text-[var(--industrial-success-600)] flex-shrink-0"
-                        aria-label="Verified"
-                        data-testid={`verified-icon-${item.type}`}
-                      />
+                  <div
+                    className={cn(
+                      'p-3 rounded-industrial-sharp flex-shrink-0',
+                      item.isExpired
+                        ? 'bg-industrial-orange-100 text-industrial-orange-600'
+                        : item.isVerified
+                          ? 'bg-[var(--industrial-success-200)] text-[var(--industrial-success-600)]'
+                          : 'bg-industrial-graphite-100 text-industrial-graphite-500'
                     )}
-                    {item.isExpired && (
-                      <AlertCircle
-                        className="h-4 w-4 text-industrial-orange-600 flex-shrink-0"
-                        aria-hidden="true"
-                      />
-                    )}
+                    aria-hidden="true"
+                  >
+                    <Icon className="h-7 w-7" />
                   </div>
 
-                  <div className="flex-1">
-                    <div className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
-                      {COMPLIANCE_DISPLAY_NAMES[item.type] ??
-                        item.type ??
-                        'Unknown'}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-body text-base font-semibold text-industrial-graphite-600">
+                        {COMPLIANCE_DISPLAY_NAMES[item.type] ??
+                          item.type ??
+                          'Unknown'}
+                      </span>
+                      {item.isVerified && !item.isExpired && (
+                        <BadgeCheck
+                          className="h-4 w-4 text-[var(--industrial-success-400)] dark:text-[var(--industrial-success-600)] flex-shrink-0"
+                          aria-label="Verified"
+                          data-testid={`verified-icon-${item.type}`}
+                        />
+                      )}
+                      {item.isExpired && (
+                        <AlertCircle
+                          className="h-4 w-4 text-industrial-orange-600 flex-shrink-0"
+                          aria-hidden="true"
+                        />
+                      )}
                     </div>
 
                     {formattedExpiration && (
                       <p
                         className={cn(
-                          'font-body text-xs mt-1',
+                          'font-body text-sm mt-1',
                           item.isExpired
                             ? 'text-industrial-orange-600 font-semibold'
                             : 'text-industrial-graphite-400'
