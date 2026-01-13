@@ -32,8 +32,8 @@ import {
   SupabaseAgencyRegion,
   toComplianceItem,
 } from '@/types/api';
-import { SendMessageButton } from '@/components/messages/SendMessageButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
+import { AgencyActions } from '@/components/agency/AgencyActions';
 import Link from 'next/link';
 
 interface PageProps {
@@ -186,42 +186,13 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 </div>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col gap-3">
-                  <Button size="lg" className="min-w-[200px]">
-                    Request Workers
-                  </Button>
-                  {transformedAgency.website && (
-                    <Button variant="outline" size="lg" asChild>
-                      <a
-                        href={transformedAgency.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Visit Website
-                        <ExternalLink className="ml-2 h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                  <SendMessageButton
-                    agencyId={transformedAgency.id}
-                    agencyName={transformedAgency.name}
-                    agencySlug={transformedAgency.slug}
-                    isClaimed={transformedAgency.is_claimed}
-                  />
-                  {!transformedAgency.is_claimed && (
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      asChild
-                      className="min-w-[200px]"
-                    >
-                      <Link href={`/claim/${slug}`}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Claim This Agency
-                      </Link>
-                    </Button>
-                  )}
-                </div>
+                <AgencyActions
+                  agencyId={transformedAgency.id}
+                  agencyName={transformedAgency.name}
+                  agencySlug={transformedAgency.slug}
+                  isClaimed={transformedAgency.is_claimed}
+                  website={transformedAgency.website}
+                />
               </div>
 
               {/* Quick Stats - Industrial styling */}
@@ -516,8 +487,10 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-industrial-graphite-200">
-                  <Button className="w-full" size="lg">
-                    Request Workers
+                  <Button className="w-full" size="lg" asChild>
+                    <Link href={`/contact/${transformedAgency.slug}`}>
+                      Request Workers
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
