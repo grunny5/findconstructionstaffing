@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fetchWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
+import { dbQueryWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
+import { supabase } from '@/lib/supabase';
 import {
   Building2,
   MapPin,
@@ -24,7 +25,7 @@ import {
   DollarSign,
   Shield,
 } from 'lucide-react';
-import { Agency, AgencyResponse, isErrorResponse } from '@/types/api';
+import { Agency } from '@/types/api';
 import { SendMessageButton } from '@/components/messages/SendMessageButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import Link from 'next/link';
@@ -35,40 +36,77 @@ interface PageProps {
   };
 }
 
+// Enable ISR: Revalidate cached page every 60 seconds
+export const revalidate = 60;
+
 // This is a server component - data fetching happens at request time
+// Queries Supabase directly instead of internal API call to avoid serverless timeout
 export default async function AgencyProfilePage({ params }: PageProps) {
-  // Fetch agency data from API with caching for performance
-  // Data revalidates every 60 seconds in the background (stale-while-revalidate pattern)
-  // Timeout protection prevents indefinite hanging if API is slow or unresponsive
-  const response = await fetchWithTimeout(
-    `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/agencies/${params.slug}`,
+  // Fetch agency with all related data in a single query
+  // Direct database query avoids serverless function timeout issues
+  const { data: agency, error } = await dbQueryWithTimeout(
+    async () =>
+      supabase
+        .from('agencies')
+        .select(
+          `
+          *,
+          agency_trades (
+            trade:trades (
+              id,
+              name,
+              slug
+            )
+          ),
+          agency_regions (
+            region:regions (
+              id,
+              name,
+              state_code,
+              slug
+            )
+          ),
+          agency_compliance (
+            id,
+            compliance_type,
+            is_active,
+            is_verified,
+            expiration_date,
+            document_url,
+            notes
+          )
+        `
+        )
+        .eq('slug', params.slug)
+        .eq('is_active', true)
+        .single(),
     {
-      next: { revalidate: 60 },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      timeout: TIMEOUT_CONFIG.SERVER_CRITICAL,
+      retries: 3,
+      retryDelay: 1000,
+      totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
     }
   );
 
-  if (!response.ok) {
-    // Log full error details for Vercel logs (before throwing)
-    console.error('[Agency Detail Page] Fetch failed:', {
+  // Handle errors
+  if (error) {
+    console.error('[Agency Detail Page] Database query failed:', {
       slug: params.slug,
-      status: response.status,
-      statusText: response.statusText,
-      url: response.url,
+      error: error.message,
+      code: error.code,
     });
 
-    if (response.status === 404) {
+    // PGRST116 means no rows found (404)
+    if (error.code === 'PGRST116' || !agency) {
       notFound();
     }
-    // For other errors, throw to trigger error boundary
-    throw new Error('Failed to fetch agency data');
+
+    // Other errors trigger error boundary
+    throw new Error(`Failed to load agency: ${error.message}`);
   }
 
-  const data: AgencyResponse = await response.json();
-  const agency = data.data;
+  if (!agency) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen bg-industrial-bg-primary">
