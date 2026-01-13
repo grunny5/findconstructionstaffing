@@ -102,7 +102,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
     });
 
     // PGRST116 means no rows found (404)
-    if (error.code === 'PGRST116' || !agency) {
+    if (error.code === 'PGRST116') {
       notFound();
     }
 
@@ -110,6 +110,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
     throw new Error(`Failed to load agency: ${error.message}`);
   }
 
+  // Handle case where no error but agency is null
   if (!agency) {
     notFound();
   }
