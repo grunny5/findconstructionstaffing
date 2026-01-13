@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fetchWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
+import { dbQueryWithTimeout, TIMEOUT_CONFIG } from '@/lib/fetch/timeout';
+import { supabase } from '@/lib/supabase';
 import {
   Building2,
   MapPin,
@@ -24,51 +25,106 @@ import {
   DollarSign,
   Shield,
 } from 'lucide-react';
-import { Agency, AgencyResponse, isErrorResponse } from '@/types/api';
+import {
+  Agency,
+  RawAgencyQueryResult,
+  SupabaseAgencyTrade,
+  SupabaseAgencyRegion,
+  toComplianceItem,
+} from '@/types/api';
 import { SendMessageButton } from '@/components/messages/SendMessageButton';
 import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import Link from 'next/link';
 
 interface PageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
+// Enable ISR: Revalidate cached page every 60 seconds
+export const revalidate = 60;
+
 // This is a server component - data fetching happens at request time
+// Queries Supabase directly instead of internal API call to avoid serverless timeout
 export default async function AgencyProfilePage({ params }: PageProps) {
-  // Fetch agency data from API with caching for performance
-  // Data revalidates every 60 seconds in the background (stale-while-revalidate pattern)
-  // Timeout protection prevents indefinite hanging if API is slow or unresponsive
-  const response = await fetchWithTimeout(
-    `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/agencies/${params.slug}`,
+  const { slug } = await params;
+
+  // Fetch agency with all related data in a single query
+  // Direct database query avoids serverless function timeout issues
+  // Uses aliases (trades:, regions:, compliance:) to match expected property names
+  const { data: agency, error } = await dbQueryWithTimeout<RawAgencyQueryResult>(
+    async () =>
+      supabase
+        .from('agencies')
+        .select(
+          `
+          *,
+          trades:agency_trades (
+            trade:trades (
+              id,
+              name,
+              slug
+            )
+          ),
+          regions:agency_regions (
+            region:regions (
+              id,
+              name,
+              state_code,
+              slug
+            )
+          ),
+          compliance:agency_compliance (
+            id,
+            agency_id,
+            compliance_type,
+            is_active,
+            is_verified,
+            expiration_date
+          )
+        `
+        )
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .single(),
     {
-      next: { revalidate: 60 },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      timeout: TIMEOUT_CONFIG.SERVER_CRITICAL,
+      retries: 3,
+      retryDelay: 1000,
+      totalTimeout: TIMEOUT_CONFIG.DB_RETRY_TOTAL,
     }
   );
 
-  if (!response.ok) {
-    // Log full error details for Vercel logs (before throwing)
-    console.error('[Agency Detail Page] Fetch failed:', {
-      slug: params.slug,
-      status: response.status,
-      statusText: response.statusText,
-      url: response.url,
+  // Handle errors
+  if (error) {
+    console.error('[Agency Detail Page] Database query failed:', {
+      slug,
+      error: error.message,
+      code: error.code,
     });
 
-    if (response.status === 404) {
+    // PGRST116 means no rows found (404)
+    if (error.code === 'PGRST116') {
       notFound();
     }
-    // For other errors, throw to trigger error boundary
-    throw new Error('Failed to fetch agency data');
+
+    // Other errors trigger error boundary
+    throw new Error(`Failed to load agency: ${error.message}`);
   }
 
-  const data: AgencyResponse = await response.json();
-  const agency = data.data;
+  // Handle case where no error but agency is null
+  if (!agency) {
+    notFound();
+  }
+
+  // Transform nested Supabase response to flat structure expected by component
+  const transformedAgency: Agency = {
+    ...agency,
+    trades: agency.trades?.map((t: SupabaseAgencyTrade) => t.trade) || [],
+    regions: agency.regions?.map((r: SupabaseAgencyRegion) => ({
+      ...r.region,
+      code: r.region.state_code
+    })) || [],
+    compliance: agency.compliance?.map(toComplianceItem) || []
+  };
 
   return (
     <div className="min-h-screen bg-industrial-bg-primary">
@@ -80,10 +136,10 @@ export default async function AgencyProfilePage({ params }: PageProps) {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Logo and Basic Info */}
             <div className="flex-shrink-0">
-              {agency.logo_url ? (
+              {transformedAgency.logo_url ? (
                 <Image
-                  src={agency.logo_url}
-                  alt={`${agency.name} logo`}
+                  src={transformedAgency.logo_url}
+                  alt={`${transformedAgency.name} logo`}
                   width={128}
                   height={128}
                   className="rounded-industrial-sharp object-cover border-2 border-industrial-graphite-200"
@@ -101,22 +157,22 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                 <div>
                   {/* Industrial Typography: Bebas Neue, 2.5rem+, uppercase */}
                   <h1 className="font-display text-4xl lg:text-5xl text-industrial-graphite-600 uppercase tracking-wide mb-3">
-                    {agency.name}
+                    {transformedAgency.name}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 mb-4">
-                    {agency.verified && (
+                    {transformedAgency.verified && (
                       <Badge variant="graphite">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Verified
                       </Badge>
                     )}
-                    {agency.featured && (
+                    {transformedAgency.featured && (
                       <Badge variant="orange">
                         <Award className="h-3 w-3 mr-1" />
                         Featured
                       </Badge>
                     )}
-                    {agency.is_claimed && (
+                    {transformedAgency.is_claimed && (
                       <Badge variant="secondary">
                         <Shield className="h-3 w-3 mr-1" />
                         Claimed
@@ -124,7 +180,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     )}
                   </div>
                   <p className="font-body text-industrial-graphite-400 text-lg max-w-3xl">
-                    {agency.description ||
+                    {transformedAgency.description ||
                       'Professional construction staffing services.'}
                   </p>
                 </div>
@@ -134,10 +190,10 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                   <Button size="lg" className="min-w-[200px]">
                     Request Workers
                   </Button>
-                  {agency.website && (
+                  {transformedAgency.website && (
                     <Button variant="outline" size="lg" asChild>
                       <a
-                        href={agency.website}
+                        href={transformedAgency.website}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -147,19 +203,19 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     </Button>
                   )}
                   <SendMessageButton
-                    agencyId={agency.id}
-                    agencyName={agency.name}
-                    agencySlug={agency.slug}
-                    isClaimed={agency.is_claimed}
+                    agencyId={transformedAgency.id}
+                    agencyName={transformedAgency.name}
+                    agencySlug={transformedAgency.slug}
+                    isClaimed={transformedAgency.is_claimed}
                   />
-                  {!agency.is_claimed && (
+                  {!transformedAgency.is_claimed && (
                     <Button
                       variant="outline"
                       size="lg"
                       asChild
                       className="min-w-[200px]"
                     >
-                      <Link href={`/claim/${params.slug}`}>
+                      <Link href={`/claim/${slug}`}>
                         <Shield className="mr-2 h-4 w-4" />
                         Claim This Agency
                       </Link>
@@ -178,7 +234,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     </span>
                   </div>
                   <p className="font-display text-3xl text-industrial-graphite-600">
-                    {agency.founded_year || 'N/A'}
+                    {transformedAgency.founded_year || 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -189,7 +245,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     </span>
                   </div>
                   <p className="font-display text-3xl text-industrial-graphite-600">
-                    {agency.employee_count || 'N/A'}
+                    {transformedAgency.employee_count || 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -200,7 +256,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     </span>
                   </div>
                   <p className="font-display text-3xl text-industrial-graphite-600">
-                    {agency.rating ? `${agency.rating}/5` : 'N/A'}
+                    {transformedAgency.rating ? `${transformedAgency.rating}/5` : 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -211,7 +267,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     </span>
                   </div>
                   <p className="font-display text-3xl text-industrial-graphite-600">
-                    {agency.project_count || 0}+
+                    {transformedAgency.project_count || 0}+
                   </p>
                 </div>
               </div>
@@ -254,10 +310,10 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                   <CardContent className="p-6">
                     {/* Section header: Bebas Neue, 2rem, uppercase */}
                     <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
-                      About {agency.name}
+                      About {transformedAgency.name}
                     </h2>
                     <p className="font-body text-industrial-graphite-500 mb-6">
-                      {agency.description ||
+                      {transformedAgency.description ||
                         'Professional construction staffing services specializing in skilled trades placement.'}
                     </p>
 
@@ -265,26 +321,26 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       <div className="flex items-center gap-3">
                         <MapPin className="h-5 w-5 text-industrial-graphite-400" />
                         <span className="font-body text-industrial-graphite-600">
-                          {agency.headquarters || 'United States'}
+                          {transformedAgency.headquarters || 'United States'}
                         </span>
                       </div>
 
-                      {agency.offers_per_diem !== null && (
+                      {transformedAgency.offers_per_diem !== null && (
                         <div className="flex items-center gap-3">
                           <DollarSign className="h-5 w-5 text-industrial-graphite-400" />
                           <span className="font-body text-industrial-graphite-600">
-                            {agency.offers_per_diem
+                            {transformedAgency.offers_per_diem
                               ? 'Offers Per Diem'
                               : 'No Per Diem'}
                           </span>
                         </div>
                       )}
 
-                      {agency.is_union !== null && (
+                      {transformedAgency.is_union !== null && (
                         <div className="flex items-center gap-3">
                           <Users className="h-5 w-5 text-industrial-graphite-400" />
                           <span className="font-body text-industrial-graphite-600">
-                            {agency.is_union ? 'Union Partner' : 'Non-Union'}
+                            {transformedAgency.is_union ? 'Union Partner' : 'Non-Union'}
                           </span>
                         </div>
                       )}
@@ -299,7 +355,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                       Specializations
                     </h2>
-                    {agency.trades && agency.trades.length > 0 ? (
+                    {transformedAgency.trades && transformedAgency.trades.length > 0 ? (
                       <div className="space-y-6">
                         {/* Featured Trades (Top 3) */}
                         <div>
@@ -307,7 +363,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                             Featured Specialties
                           </h3>
                           <div className="flex flex-wrap gap-3">
-                            {agency.trades.slice(0, 3).map((trade) => (
+                            {transformedAgency.trades.slice(0, 3).map((trade) => (
                               <Link
                                 key={trade.id}
                                 href={`/?trade=${encodeURIComponent(trade.name)}`}
@@ -326,13 +382,13 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         </div>
 
                         {/* Additional Trades (if more than 3) */}
-                        {agency.trades.length > 3 && (
+                        {transformedAgency.trades.length > 3 && (
                           <div>
                             <h3 className="font-body text-sm font-semibold uppercase tracking-wide text-industrial-graphite-400 mb-3">
                               Additional Specialties
                             </h3>
                             <div className="flex flex-wrap gap-2">
-                              {agency.trades.slice(3).map((trade) => (
+                              {transformedAgency.trades.slice(3).map((trade) => (
                                 <Link
                                   key={trade.id}
                                   href={`/?trade=${encodeURIComponent(trade.name)}`}
@@ -365,9 +421,9 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                     <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                       Service Areas
                     </h2>
-                    {agency.regions && agency.regions.length > 0 ? (
+                    {transformedAgency.regions && transformedAgency.regions.length > 0 ? (
                       <RegionBadges
-                        regions={agency.regions}
+                        regions={transformedAgency.regions}
                         maxDisplay={5}
                         variant="secondary"
                         showViewAll={true}
@@ -386,13 +442,13 @@ export default async function AgencyProfilePage({ params }: PageProps) {
           {/* Right Column - Contact Info & Compliance */}
           <div className="space-y-6">
             {/* Compliance & Certifications Section */}
-            {agency.compliance && agency.compliance.length > 0 && (
+            {transformedAgency.compliance && transformedAgency.compliance.length > 0 && (
               <Card className="bg-industrial-bg-card border-industrial-graphite-200 rounded-industrial-sharp shadow-sm">
                 <CardContent className="p-6">
                   <h2 className="font-display text-2xl text-industrial-graphite-600 uppercase tracking-wide mb-4 pb-3 border-b border-industrial-graphite-200">
                     Compliance & Certifications
                   </h2>
-                  <ComplianceBadges compliance={agency.compliance} />
+                  <ComplianceBadges compliance={transformedAgency.compliance} />
                 </CardContent>
               </Card>
             )}
@@ -404,7 +460,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                   Contact Information
                 </h2>
                 <div className="space-y-4">
-                  {agency.phone && (
+                  {transformedAgency.phone && (
                     <div>
                       <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                         <Phone className="h-4 w-4" />
@@ -413,15 +469,15 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         </span>
                       </div>
                       <a
-                        href={`tel:${agency.phone}`}
+                        href={`tel:${transformedAgency.phone}`}
                         className="font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors"
                       >
-                        {agency.phone}
+                        {transformedAgency.phone}
                       </a>
                     </div>
                   )}
 
-                  {agency.email && (
+                  {transformedAgency.email && (
                     <div>
                       <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                         <Mail className="h-4 w-4" />
@@ -430,15 +486,15 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         </span>
                       </div>
                       <a
-                        href={`mailto:${agency.email}`}
+                        href={`mailto:${transformedAgency.email}`}
                         className="font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors"
                       >
-                        {agency.email}
+                        {transformedAgency.email}
                       </a>
                     </div>
                   )}
 
-                  {agency.website && (
+                  {transformedAgency.website && (
                     <div>
                       <div className="flex items-center gap-2 text-industrial-graphite-400 mb-1">
                         <Globe className="h-4 w-4" />
@@ -447,7 +503,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                         </span>
                       </div>
                       <a
-                        href={agency.website}
+                        href={transformedAgency.website}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-body text-industrial-orange hover:text-industrial-orange-500 transition-colors flex items-center gap-1"

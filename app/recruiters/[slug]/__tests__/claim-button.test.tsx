@@ -5,6 +5,7 @@
 import { render, screen } from '@testing-library/react';
 import { notFound } from 'next/navigation';
 import AgencyProfilePage from '../page';
+import { dbQueryWithTimeout } from '@/lib/fetch/timeout';
 
 // Mock Next.js components and navigation
 jest.mock('next/navigation', () => ({
@@ -49,24 +50,27 @@ jest.mock('@/components/Footer', () => ({
   default: () => <div>Footer</div>,
 }));
 
+// Mock dbQueryWithTimeout to avoid hitting real Supabase
+jest.mock('@/lib/fetch/timeout', () => ({
+  dbQueryWithTimeout: jest.fn(),
+  TIMEOUT_CONFIG: {
+    DB_RETRY_TOTAL: 10000,
+    SERVER_CRITICAL: 12000,
+  },
+}));
+
 describe('Agency Profile Page - Claim Button', () => {
-  const mockFetch = jest.fn();
-  const originalFetch = global.fetch;
-
-  beforeAll(() => {
-    global.fetch = mockFetch;
-  });
-
-  afterAll(() => {
-    global.fetch = originalFetch;
-  });
+  const mockDbQueryWithTimeout = dbQueryWithTimeout as jest.MockedFunction<
+    typeof dbQueryWithTimeout
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should display "Claim This Agency" button for unclaimed agencies', async () => {
-    const unclaimedAgency = {
+    // Mock data with nested Supabase structure (before transformation)
+    const rawAgencyData = {
       id: '1',
       name: 'Test Agency',
       slug: 'test-agency',
@@ -86,18 +90,22 @@ describe('Agency Profile Page - Claim Button', () => {
       project_count: 0,
       verified: false,
       featured: false,
+      profile_completion_percentage: 75,
+      last_edited_at: null,
+      last_edited_by: null,
+      // Nested Supabase structures (as returned by query)
       trades: [],
       regions: [],
+      compliance: [],
     };
 
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: unclaimedAgency }),
+    mockDbQueryWithTimeout.mockResolvedValue({
+      data: rawAgencyData,
+      error: null,
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'test-agency' },
+      params: Promise.resolve({ slug: 'test-agency' }),
     });
     render(component);
 
@@ -109,7 +117,7 @@ describe('Agency Profile Page - Claim Button', () => {
   });
 
   it('should NOT display "Claim This Agency" button for claimed agencies', async () => {
-    const claimedAgency = {
+    const rawAgencyData = {
       id: '2',
       name: 'Claimed Agency',
       slug: 'claimed-agency',
@@ -129,18 +137,21 @@ describe('Agency Profile Page - Claim Button', () => {
       project_count: 50,
       verified: true,
       featured: false,
+      profile_completion_percentage: 90,
+      last_edited_at: null,
+      last_edited_by: null,
       trades: [],
       regions: [],
+      compliance: [],
     };
 
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: claimedAgency }),
+    mockDbQueryWithTimeout.mockResolvedValue({
+      data: rawAgencyData,
+      error: null,
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'claimed-agency' },
+      params: Promise.resolve({ slug: 'claimed-agency' }),
     });
     render(component);
 
@@ -149,7 +160,7 @@ describe('Agency Profile Page - Claim Button', () => {
   });
 
   it('should display "Claimed" badge for claimed agencies', async () => {
-    const claimedAgency = {
+    const rawAgencyData = {
       id: '3',
       name: 'Claimed Agency',
       slug: 'claimed-agency-2',
@@ -169,18 +180,21 @@ describe('Agency Profile Page - Claim Button', () => {
       project_count: 0,
       verified: false,
       featured: false,
+      profile_completion_percentage: 50,
+      last_edited_at: null,
+      last_edited_by: null,
       trades: [],
       regions: [],
+      compliance: [],
     };
 
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: claimedAgency }),
+    mockDbQueryWithTimeout.mockResolvedValue({
+      data: rawAgencyData,
+      error: null,
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'claimed-agency-2' },
+      params: Promise.resolve({ slug: 'claimed-agency-2' }),
     });
     render(component);
 
@@ -189,7 +203,7 @@ describe('Agency Profile Page - Claim Button', () => {
   });
 
   it('should show claim button with correct styling and icon', async () => {
-    const unclaimedAgency = {
+    const rawAgencyData = {
       id: '4',
       name: 'Unclaimed Agency',
       slug: 'unclaimed-agency',
@@ -209,18 +223,21 @@ describe('Agency Profile Page - Claim Button', () => {
       project_count: 0,
       verified: false,
       featured: false,
+      profile_completion_percentage: 40,
+      last_edited_at: null,
+      last_edited_by: null,
       trades: [],
       regions: [],
+      compliance: [],
     };
 
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: unclaimedAgency }),
+    mockDbQueryWithTimeout.mockResolvedValue({
+      data: rawAgencyData,
+      error: null,
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'unclaimed-agency' },
+      params: Promise.resolve({ slug: 'unclaimed-agency' }),
     });
     render(component);
 

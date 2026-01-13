@@ -91,6 +91,54 @@ export interface Agency {
 }
 
 /**
+ * Raw Supabase response types for nested junction table queries
+ * These types represent the structure returned directly from Supabase
+ * when using aliases like `trades:agency_trades(trade:trades(...))`
+ */
+
+/** Raw trade object from junction table query */
+export interface SupabaseAgencyTrade {
+  trade: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+}
+
+/** Raw region object from junction table query */
+export interface SupabaseAgencyRegion {
+  region: {
+    id: string;
+    name: string;
+    state_code: string;
+    slug: string;
+  };
+}
+
+/** Raw compliance object from Supabase (public fields only) */
+export interface SupabaseComplianceItem {
+  id: string;
+  agency_id: string;
+  compliance_type: ComplianceType;
+  is_active: boolean;
+  is_verified: boolean;
+  expiration_date: string | null;
+}
+
+/**
+ * Raw agency response from Supabase with nested junction table structures
+ * Use this type for data returned directly from Supabase queries before transformation
+ */
+export interface RawAgencyQueryResult extends Omit<Agency, 'trades' | 'regions' | 'compliance'> {
+  /** Raw nested trade data from junction table */
+  trades?: SupabaseAgencyTrade[];
+  /** Raw nested region data from junction table */
+  regions?: SupabaseAgencyRegion[];
+  /** Raw compliance data from agency_compliance table */
+  compliance?: SupabaseComplianceItem[];
+}
+
+/**
  * Pagination metadata for list responses
  */
 export interface PaginationMetadata {
