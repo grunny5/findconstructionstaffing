@@ -229,16 +229,11 @@
 
 /**
  * .modern-hero-bg
- * Dark slate gradient for modern hero sections
+ * Industrial dark gradient for hero sections - adapts to dark mode
  * Usage: Hero sections with dark theme
  */
 .modern-hero-bg {
-  background: linear-gradient(
-    to bottom right,
-    rgb(15, 23, 42),
-    rgb(30, 41, 59),
-    rgb(15, 23, 42)
-  );
+  @apply bg-industrial-bg-dark;
 }
 
 /**
@@ -362,11 +357,11 @@
 
 /**
  * .modern-button-secondary
- * Secondary button with glass effect
+ * Secondary button with industrial styling - adapts to dark mode
  * Usage: Secondary actions (Used in app/page.tsx)
  */
 .modern-button-secondary {
-  @apply bg-white/80 text-slate-700 border-slate-300/60 hover:bg-white backdrop-blur-sm rounded-xl;
+  @apply bg-industrial-bg-card/80 text-industrial-graphite-500 border-industrial-graphite-300/60 hover:bg-industrial-bg-card backdrop-blur-sm rounded-industrial-sharp;
 }
 
 /**
