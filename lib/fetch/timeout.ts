@@ -10,7 +10,7 @@
  */
 export const TIMEOUT_CONFIG = {
   /** Server-side blocking render (critical path) */
-  SERVER_CRITICAL: 8000,
+  SERVER_CRITICAL: 12000,
   /** Server-side non-blocking operations */
   SERVER_BACKGROUND: 15000,
   /** User-initiated clicks/forms (active waiting) */
@@ -20,9 +20,9 @@ export const TIMEOUT_CONFIG = {
   /** Auth initialization */
   CLIENT_AUTH: 8000,
   /** Single database query */
-  DB_QUERY: 5000,
+  DB_QUERY: 3000,
   /** Total timeout including all retry attempts */
-  DB_RETRY_TOTAL: 15000,
+  DB_RETRY_TOTAL: 10000,
 } as const;
 
 /**
