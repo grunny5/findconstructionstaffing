@@ -14,6 +14,8 @@ severity: high
 tags: [typescript, jsdoc, test-coverage, accessibility, pageheader, jest-axe]
 ---
 
+> **Note**: This solution document describes a fix from 2026-01-12 and is being committed as part of our compound knowledge system. While it describes work from a different PR, it's included here to ensure all solution docs are tracked in version control for team reference.
+
 # Troubleshooting: TypeScript JSDoc Template Literal Parsing Errors and Missing Test Coverage
 
 ## Problem

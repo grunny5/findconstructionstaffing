@@ -326,7 +326,7 @@ export function FormField({ field, fieldState, label, ...props }) {
 - [ ] Run Lighthouse on all pages (landing, profile, admin)
 - [ ] Document current LCP, INP, CLS scores
 - [ ] Identify top 3 performance bottlenecks
-- [ ] Set target thresholds: LCP < 2.5s, INP < 200ms, CLS < 0.1
+- [ ] Set target thresholds: LCP < 2.0s, INP < 150ms, CLS < 0.08 (2026 Core Web Vitals standards)
 - [ ] Create performance tracking dashboard
 
 **Quick Wins**:
@@ -795,9 +795,9 @@ export function MobileFilterSheet() {
 ```
 
 **Acceptance Criteria**:
-- [ ] Mobile LCP < 4.0s (target < 3.0s)
-- [ ] Mobile INP < 200ms
-- [ ] Mobile CLS < 0.1
+- [ ] Mobile LCP < 2.0s (2026 standard - stricter unified target for all devices)
+- [ ] Mobile INP < 150ms (2026 standard)
+- [ ] Mobile CLS < 0.08 (2026 standard)
 - [ ] Images optimized with next/image
 - [ ] Progressive loading implemented
 
@@ -872,10 +872,10 @@ export function MobileFilterSheet() {
 - [ ] Form data persists during errors (no data loss)
 
 **AC-005: Core Web Vitals**
-- [ ] Landing page LCP < 2.5s (desktop), < 4.0s (mobile)
-- [ ] Agency profile LCP < 2.5s (desktop), < 4.0s (mobile)
-- [ ] All pages INP < 200ms
-- [ ] All pages CLS < 0.1
+- [ ] Landing page LCP < 2.0s (2026 standard - stricter than 2.5s legacy target)
+- [ ] Agency profile LCP < 2.0s (2026 standard - stricter than 2.5s legacy target)
+- [ ] All pages INP < 150ms (2026 standard - stricter than 200ms legacy target)
+- [ ] All pages CLS < 0.08 (2026 standard - stricter than 0.1 legacy target)
 - [ ] Lighthouse performance score > 90
 - [ ] All images use next/image with proper sizes attribute
 
@@ -969,17 +969,13 @@ export function MobileFilterSheet() {
 
 ### Technical Performance Metrics
 
-**Core Web Vitals (Desktop)**:
-- **LCP**: < 2.5s (good), 2.5-4.0s (needs improvement), > 4.0s (poor)
-- **INP**: < 200ms (good), 200-500ms (needs improvement), > 500ms (poor)
-- **CLS**: < 0.1 (good), 0.1-0.25 (needs improvement), > 0.25 (poor)
-- **Target**: 90% of page loads meet "good" thresholds
+**Core Web Vitals (2026 Standards - All Devices)**:
+- **LCP**: < 2.0s (good), 2.0-3.0s (needs improvement), > 3.0s (poor)
+- **INP**: < 150ms (good), 150-300ms (needs improvement), > 300ms (poor)
+- **CLS**: < 0.08 (good), 0.08-0.2 (needs improvement), > 0.2 (poor)
+- **Target**: 75% of page loads meet "good" thresholds on 75th percentile
 
-**Core Web Vitals (Mobile)**:
-- **LCP**: < 3.0s (good), 3.0-5.0s (needs improvement), > 5.0s (poor)
-- **INP**: < 200ms (good), 200-500ms (needs improvement), > 500ms (poor)
-- **CLS**: < 0.1 (good), 0.1-0.25 (needs improvement), > 0.25 (poor)
-- **Target**: 75% of mobile loads meet "good" thresholds
+_Note: These are the updated 2026 Core Web Vitals standards, which are stricter than the legacy 2021 thresholds (LCP < 2.5s, INP < 200ms, CLS < 0.1). All team members should target these new standards for production readiness._
 
 **Lighthouse Scores**:
 - **Performance**: > 90
@@ -1090,10 +1086,10 @@ export function MobileFilterSheet() {
 ### Internal References
 
 **Current State Analysis**:
-- `/mnt/c/Users/tedgr/findconstructionstaffing-1/app/page.tsx` (line 528-573) - Homepage empty state needs industrial styling
-- `/mnt/c/Users/tedgr/findconstructionstaffing-1/app/recruiters/[slug]/error.tsx` - Existing error boundary (review and enhance)
-- `/mnt/c/Users/tedgr/findconstructionstaffing-1/components/ui/` - 47 Shadcn/ui components installed
-- `/mnt/c/Users/tedgr/findconstructionstaffing-1/tailwind.config.ts` - Industrial design tokens defined
+- `app/page.tsx` (line 528-573) - Homepage empty state needs industrial styling
+- `app/recruiters/[slug]/error.tsx` - Existing error boundary (review and enhance)
+- `components/ui/` - 47 Shadcn/ui components installed
+- `tailwind.config.ts` - Industrial design tokens defined
 
 **Design System**:
 - Industrial color palette: Orange (#E07B00), Graphite (#1A1A1A), Navy (#2D4A63), Cream (#FAF7F2)

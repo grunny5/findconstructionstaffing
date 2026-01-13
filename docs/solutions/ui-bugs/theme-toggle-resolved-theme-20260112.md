@@ -211,7 +211,6 @@ components/ThemeToggle.tsx:
 - [next-themes documentation](https://github.com/pacocoursey/next-themes#resolvetheme)
 - PR #663: Phase 2 - Industrial Design Completion & Dark Mode
 - CodeRabbit review comment thread
-- [Blog: Common next-themes pitfalls](https://example.com) (if exists)
 
 ---
 

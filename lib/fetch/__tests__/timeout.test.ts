@@ -12,13 +12,13 @@ import {
 
 describe('TIMEOUT_CONFIG', () => {
   it('should have all required timeout constants', () => {
-    expect(TIMEOUT_CONFIG.SERVER_CRITICAL).toBe(8000);
+    expect(TIMEOUT_CONFIG.SERVER_CRITICAL).toBe(12000);
     expect(TIMEOUT_CONFIG.SERVER_BACKGROUND).toBe(15000);
     expect(TIMEOUT_CONFIG.CLIENT_ACTION).toBe(10000);
     expect(TIMEOUT_CONFIG.CLIENT_POLL).toBe(5000);
     expect(TIMEOUT_CONFIG.CLIENT_AUTH).toBe(8000);
-    expect(TIMEOUT_CONFIG.DB_QUERY).toBe(5000);
-    expect(TIMEOUT_CONFIG.DB_RETRY_TOTAL).toBe(15000);
+    expect(TIMEOUT_CONFIG.DB_QUERY).toBe(3000);
+    expect(TIMEOUT_CONFIG.DB_RETRY_TOTAL).toBe(10000);
   });
 });
 
