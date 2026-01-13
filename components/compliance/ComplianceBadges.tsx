@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, BadgeCheck } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -108,7 +108,7 @@ export function ComplianceBadges({
   // Default variant for profile pages
   return (
     <div
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       data-testid="compliance-badges-default"
     >
       {compliance.map((item) => {
@@ -121,53 +121,51 @@ export function ComplianceBadges({
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    'flex items-start gap-3 p-3 rounded-industrial-base border-2 transition-colors',
+                    'flex flex-col gap-3 p-4 rounded-industrial-base border-2 transition-colors min-h-[100px]',
                     item.isExpired
-                      ? 'border-industrial-orange-400 bg-industrial-orange-50'
+                      ? 'border-industrial-orange-400 bg-industrial-orange-50 dark:bg-[var(--industrial-orange-100)] dark:border-[var(--industrial-orange-300)]'
                       : item.isVerified
-                        ? 'border-green-200 bg-green-50'
+                        ? 'border-[var(--industrial-success-400)] bg-[var(--industrial-success-100)] dark:bg-[var(--industrial-success-100)] dark:border-[var(--industrial-success-200)]'
                         : 'border-industrial-graphite-200 bg-industrial-bg-card',
-                    'hover:border-industrial-orange cursor-help focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2'
+                    'hover:border-industrial-orange dark:hover:border-[var(--industrial-orange-400)] cursor-help focus:outline-none focus:ring-2 focus:ring-industrial-orange focus:ring-offset-2'
                   )}
                   tabIndex={0}
                   aria-label={`${COMPLIANCE_DISPLAY_NAMES[item.type] ?? item.type ?? 'Unknown'}${item.isVerified ? ' - Verified' : ''}${item.isExpired ? ' - Expired' : ''}`}
                 >
-                  <div
-                    className={cn(
-                      'p-2 rounded-industrial-sharp',
-                      item.isExpired
-                        ? 'bg-industrial-orange-100 text-industrial-orange-600'
-                        : item.isVerified
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-industrial-graphite-100 text-industrial-graphite-500'
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        'p-2 rounded-industrial-sharp',
+                        item.isExpired
+                          ? 'bg-industrial-orange-100 text-industrial-orange-600'
+                          : item.isVerified
+                            ? 'bg-[var(--industrial-success-200)] text-[var(--industrial-success-600)]'
+                            : 'bg-industrial-graphite-100 text-industrial-graphite-500'
+                      )}
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-6 w-6 flex-shrink-0" />
+                    </div>
+                    {item.isVerified && !item.isExpired && (
+                      <BadgeCheck
+                        className="h-4 w-4 text-[var(--industrial-success-400)] dark:text-[var(--industrial-success-600)] flex-shrink-0"
+                        aria-label="Verified"
+                        data-testid={`verified-icon-${item.type}`}
+                      />
                     )}
-                    aria-hidden="true"
-                  >
-                    <Icon className="h-4 w-4" />
+                    {item.isExpired && (
+                      <AlertCircle
+                        className="h-4 w-4 text-industrial-orange-600 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
-                        {COMPLIANCE_DISPLAY_NAMES[item.type] ??
-                          item.type ??
-                          'Unknown'}
-                      </span>
-
-                      {item.isVerified && !item.isExpired && (
-                        <CheckCircle2
-                          className="h-4 w-4 text-green-600 flex-shrink-0"
-                          aria-hidden="true"
-                          data-testid={`verified-icon-${item.type}`}
-                        />
-                      )}
-
-                      {item.isExpired && (
-                        <AlertCircle
-                          className="h-4 w-4 text-industrial-orange-600 flex-shrink-0"
-                          aria-hidden="true"
-                        />
-                      )}
+                  <div className="flex-1">
+                    <div className="font-body text-sm font-semibold text-industrial-graphite-600 leading-tight">
+                      {COMPLIANCE_DISPLAY_NAMES[item.type] ??
+                        item.type ??
+                        'Unknown'}
                     </div>
 
                     {formattedExpiration && (
@@ -204,7 +202,7 @@ export function ComplianceBadges({
                   {item.isVerified && (
                     <Badge
                       variant="outline"
-                      className="text-xs bg-green-50 text-green-600 border-green-200"
+                      className="text-xs bg-[var(--industrial-success-100)] text-[var(--industrial-success-600)] border-[var(--industrial-success-200)]"
                     >
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Verified

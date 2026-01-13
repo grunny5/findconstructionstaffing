@@ -23,7 +23,7 @@ import {
   Building2,
   Star,
   ArrowUpRight,
-  CheckCircle2,
+  BadgeCheck,
 } from 'lucide-react';
 import type { Region, ComplianceItem } from '@/types/api';
 
@@ -153,14 +153,18 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
             {showVerifiedBadge && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg shadow-blue-500/30">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Verified Profile
+                  <div className="inline-flex items-center justify-center w-8 h-8 bg-[var(--industrial-success-400)] dark:bg-[var(--industrial-success-400)] rounded-industrial-sharp border-2 border-[var(--industrial-success-600)] dark:border-[var(--industrial-success-200)] shadow-sm">
+                    <BadgeCheck
+                      className="h-5 w-5 text-white"
+                      strokeWidth={2.5}
+                      aria-label="Verified Profile"
+                    />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="max-w-xs">
-                    Profile is 80%+ complete with verified information
+                  <p className="max-w-xs font-body text-sm">
+                    Verified Agency: Profile is 80%+ complete with verified
+                    information
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -305,7 +309,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                       >
                         <Badge
                           variant="default"
-                          className="font-body text-xs font-semibold uppercase tracking-wide bg-industrial-graphite-600 text-white hover:bg-industrial-graphite-500 px-2.5 py-1 rounded-industrial-sharp transition-colors duration-200 cursor-pointer"
+                          className="font-body text-xs font-semibold uppercase tracking-wide bg-industrial-graphite-600 text-white dark:bg-industrial-graphite-100 dark:text-industrial-graphite-600 hover:bg-industrial-graphite-500 dark:hover:bg-industrial-graphite-200 px-2.5 py-1 rounded-industrial-sharp transition-colors duration-200 cursor-pointer"
                         >
                           {trade}
                         </Badge>
@@ -314,7 +318,7 @@ export default function AgencyCard({ agency }: AgencyCardProps) {
                     {agency.trades.length > 3 && (
                       <Badge
                         variant="secondary"
-                        className="font-body text-xs font-semibold bg-industrial-graphite-100 text-industrial-graphite-500 px-2.5 py-1 rounded-industrial-sharp"
+                        className="font-body text-xs font-semibold bg-industrial-graphite-100 text-industrial-graphite-500 dark:bg-industrial-graphite-200 dark:text-industrial-graphite-600 px-2.5 py-1 rounded-industrial-sharp"
                       >
                         +{agency.trades.length - 3} more
                       </Badge>
