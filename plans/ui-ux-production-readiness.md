@@ -6,7 +6,7 @@ Comprehensive UI/UX audit and improvement initiative to bring the FindConstructi
 
 **Current State**: Solid foundation with 47 Shadcn/ui components, industrial design system, and good test coverage (169 test files)
 
-**Target State**: Production-ready application meeting 2026 web standards (WCAG 2.1 AA, Core Web Vitals, comprehensive error handling)
+**Target State**: Production-ready application meeting aspirational performance targets (WCAG 2.1 AA, Core Web Vitals, comprehensive error handling)
 
 **Impact**: Eliminates production blockers, improves conversion rates through better UX, ensures accessibility compliance, and establishes scalable design system.
 
@@ -22,7 +22,7 @@ Comprehensive UI/UX audit and improvement initiative to bring the FindConstructi
 
 **Brand Consistency**: Incomplete industrial design rollout creates inconsistent brand experience. Generic empty states and incomplete component styling dilute the construction industry positioning.
 
-**Performance SEO**: Without defined Core Web Vitals targets and optimization, the platform may rank poorly in search results (Google uses CWV for ranking since 2021, with updated thresholds in 2026).
+**Performance SEO**: Without defined Core Web Vitals targets and optimization, the platform may rank poorly in search results (Google uses CWV for ranking, with current standards of LCP < 2.5s, INP < 200ms, CLS < 0.1).
 
 ### Technical Debt
 
@@ -326,7 +326,7 @@ export function FormField({ field, fieldState, label, ...props }) {
 - [ ] Run Lighthouse on all pages (landing, profile, admin)
 - [ ] Document current LCP, INP, CLS scores
 - [ ] Identify top 3 performance bottlenecks
-- [ ] Set target thresholds: LCP < 2.0s, INP < 150ms, CLS < 0.08 (2026 Core Web Vitals standards)
+- [ ] Set target thresholds: LCP < 2.0s, INP < 150ms, CLS < 0.08 (aspirational internal targets exceeding current official standards: LCP < 2.5s, INP < 200ms, CLS < 0.1)
 - [ ] Create performance tracking dashboard
 
 **Quick Wins**:
@@ -486,11 +486,22 @@ module.exports = {
 ```markdown
 | Foreground | Background | Ratio | Status |
 |------------|------------|-------|--------|
-| #1A1A1A (Graphite-600) | #FAF7F2 (Cream) | 11.2:1 | ✅ AAA |
-| #E07B00 (Orange) | #FFFFFF (White) | 4.8:1 | ✅ AA |
-| #2D4A63 (Navy) | #FFFFFF (White) | 8.2:1 | ✅ AAA |
-| #6B7280 (Graphite-500) | #FAF7F2 (Cream) | 4.6:1 | ✅ AA |
+| #1A1A1A (Graphite-600) | #FAF7F2 (Cream) | 16.3:1 | ✅ AAA |
+| #E07B00 (Orange) | #FFFFFF (White) | 3.0:1 | ❌ Fails AA for text |
+| #2D4A63 (Navy) | #FFFFFF (White) | 9.2:1 | ✅ AAA |
+| #6B7280 (Graphite-500) | #FAF7F2 (Cream) | 4.5:1 | ✅ AA |
 ```
+
+
+**CRITICAL: Orange (#E07B00) Color Accessibility Issue**
+
+The industrial-orange color fails WCAG AA standards (4.5:1) for normal text. Current contrast ratio on white is only 3.0:1.
+
+**Required Actions**:
+- Do NOT use #E07B00 for text content
+- Only use for non-text elements (borders, icons, backgrounds with sufficient text contrast)
+- If text usage is required, darken to approximately #B86300 (which achieves 4.5:1 on white)
+- Update all text usage to use compliant colors or darkened variant
 
 **Acceptance Criteria**:
 - [ ] All text combinations meet 4.5:1 (AA) or higher
@@ -795,9 +806,9 @@ export function MobileFilterSheet() {
 ```
 
 **Acceptance Criteria**:
-- [ ] Mobile LCP < 2.0s (2026 standard - stricter unified target for all devices)
-- [ ] Mobile INP < 150ms (2026 standard)
-- [ ] Mobile CLS < 0.08 (2026 standard)
+- [ ] Mobile LCP < 2.0s (aspirational internal target - exceeds current official 2.5s standard)
+- [ ] Mobile INP < 150ms (aspirational internal target - exceeds current official 200ms standard)
+- [ ] Mobile CLS < 0.08 (aspirational internal target - exceeds current official 0.1 standard)
 - [ ] Images optimized with next/image
 - [ ] Progressive loading implemented
 
@@ -872,10 +883,10 @@ export function MobileFilterSheet() {
 - [ ] Form data persists during errors (no data loss)
 
 **AC-005: Core Web Vitals**
-- [ ] Landing page LCP < 2.0s (2026 standard - stricter than 2.5s legacy target)
-- [ ] Agency profile LCP < 2.0s (2026 standard - stricter than 2.5s legacy target)
-- [ ] All pages INP < 150ms (2026 standard - stricter than 200ms legacy target)
-- [ ] All pages CLS < 0.08 (2026 standard - stricter than 0.1 legacy target)
+- [ ] Landing page LCP < 2.0s (aspirational internal target - exceeds current official 2.5s standard)
+- [ ] Agency profile LCP < 2.0s (aspirational internal target - exceeds current official 2.5s standard)
+- [ ] All pages INP < 150ms (aspirational internal target - exceeds current official 200ms standard)
+- [ ] All pages CLS < 0.08 (aspirational internal target - exceeds current official 0.1 standard)
 - [ ] Lighthouse performance score > 90
 - [ ] All images use next/image with proper sizes attribute
 
@@ -969,13 +980,13 @@ export function MobileFilterSheet() {
 
 ### Technical Performance Metrics
 
-**Core Web Vitals (2026 Standards - All Devices)**:
+**Core Web Vitals (Aspirational Internal Targets - All Devices)**:
 - **LCP**: < 2.0s (good), 2.0-3.0s (needs improvement), > 3.0s (poor)
 - **INP**: < 150ms (good), 150-300ms (needs improvement), > 300ms (poor)
 - **CLS**: < 0.08 (good), 0.08-0.2 (needs improvement), > 0.2 (poor)
 - **Target**: 75% of page loads meet "good" thresholds on 75th percentile
 
-_Note: These are the updated 2026 Core Web Vitals standards, which are stricter than the legacy 2021 thresholds (LCP < 2.5s, INP < 200ms, CLS < 0.1). All team members should target these new standards for production readiness._
+_Note: These are aspirational internal performance goals that exceed the current official Google Core Web Vitals standards (LCP < 2.5s, INP < 200ms, CLS < 0.1). These stricter targets are designed to ensure exceptional user experience and future-proof the application. Current official standards published by Google should still be considered the baseline for compliance, while these internal targets represent excellence._
 
 **Lighthouse Scores**:
 - **Performance**: > 90
@@ -1265,7 +1276,7 @@ This plan transforms the FindConstructionStaffing platform from a solid 75% foun
 - Enhanced form validation with visual feedback
 - Complete industrial design system with dark mode
 - WCAG 2.1 AA accessibility compliance
-- Core Web Vitals meeting 2026 standards
+- Core Web Vitals meeting aspirational internal targets
 - Mobile-optimized touch interactions
 - Automated testing preventing regressions
 

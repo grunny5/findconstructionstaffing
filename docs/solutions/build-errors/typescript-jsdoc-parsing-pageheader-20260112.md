@@ -14,7 +14,15 @@ severity: high
 tags: [typescript, jsdoc, test-coverage, accessibility, pageheader, jest-axe]
 ---
 
-> **Note**: This solution document describes a fix from 2026-01-12 and is being committed as part of our compound knowledge system. While it describes work from a different PR, it's included here to ensure all solution docs are tracked in version control for team reference.
+# COMPOUND KNOWLEDGE DOCUMENTATION
+
+> **IMPORTANT CONTEXT FOR REVIEWERS**: This solution document describes a historical fix from 2026-01-12 and was originally created as part of our compound knowledge system during a different PR.
+>
+> **Why is this included in this PR?** We are systematically committing all solution documentation to version control to ensure our team's compound knowledge is preserved and searchable. This particular document was created during development work but had not yet been committed to the repository. Rather than lose this valuable troubleshooting reference, we are including it in this PR alongside other documentation updates.
+>
+> **This does not affect the PR's primary purpose** of fixing agency detail page 500 errors. It is simply housekeeping to ensure our documentation system is complete and all historical solutions are tracked in git for future reference.
+>
+> For more information about our compound knowledge system, see `/docs/README.md` or the compound-engineering plugin documentation.
 
 # Troubleshooting: TypeScript JSDoc Template Literal Parsing Errors and Missing Test Coverage
 
