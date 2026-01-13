@@ -37,9 +37,7 @@ import { ComplianceBadges } from '@/components/compliance/ComplianceBadges';
 import Link from 'next/link';
 
 interface PageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
 // Enable ISR: Revalidate cached page every 60 seconds
@@ -48,6 +46,8 @@ export const revalidate = 60;
 // This is a server component - data fetching happens at request time
 // Queries Supabase directly instead of internal API call to avoid serverless timeout
 export default async function AgencyProfilePage({ params }: PageProps) {
+  const { slug } = await params;
+
   // Fetch agency with all related data in a single query
   // Direct database query avoids serverless function timeout issues
   // Uses aliases (trades:, regions:, compliance:) to match expected property names
@@ -83,7 +83,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
           )
         `
         )
-        .eq('slug', params.slug)
+        .eq('slug', slug)
         .eq('is_active', true)
         .single(),
     {
@@ -96,7 +96,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
   // Handle errors
   if (error) {
     console.error('[Agency Detail Page] Database query failed:', {
-      slug: params.slug,
+      slug,
       error: error.message,
       code: error.code,
     });
@@ -214,7 +214,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
                       asChild
                       className="min-w-[200px]"
                     >
-                      <Link href={`/claim/${params.slug}`}>
+                      <Link href={`/claim/${slug}`}>
                         <Shield className="mr-2 h-4 w-4" />
                         Claim This Agency
                       </Link>

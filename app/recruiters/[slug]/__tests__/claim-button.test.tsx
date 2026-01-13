@@ -97,7 +97,7 @@ describe('Agency Profile Page - Claim Button', () => {
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'test-agency' },
+      params: Promise.resolve({ slug: 'test-agency' }),
     });
     render(component);
 
@@ -140,7 +140,7 @@ describe('Agency Profile Page - Claim Button', () => {
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'claimed-agency' },
+      params: Promise.resolve({ slug: 'claimed-agency' }),
     });
     render(component);
 
@@ -180,7 +180,7 @@ describe('Agency Profile Page - Claim Button', () => {
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'claimed-agency-2' },
+      params: Promise.resolve({ slug: 'claimed-agency-2' }),
     });
     render(component);
 
@@ -220,7 +220,7 @@ describe('Agency Profile Page - Claim Button', () => {
     });
 
     const component = await AgencyProfilePage({
-      params: { slug: 'unclaimed-agency' },
+      params: Promise.resolve({ slug: 'unclaimed-agency' }),
     });
     render(component);
 
