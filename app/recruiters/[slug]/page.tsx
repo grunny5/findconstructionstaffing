@@ -44,21 +44,22 @@ export const revalidate = 60;
 export default async function AgencyProfilePage({ params }: PageProps) {
   // Fetch agency with all related data in a single query
   // Direct database query avoids serverless function timeout issues
-  const { data: agency, error } = await dbQueryWithTimeout(
+  // Uses aliases (trades:, regions:, compliance:) to match expected property names
+  const { data: agency, error } = await dbQueryWithTimeout<Agency>(
     async () =>
       supabase
         .from('agencies')
         .select(
           `
           *,
-          agency_trades (
+          trades:agency_trades (
             trade:trades (
               id,
               name,
               slug
             )
           ),
-          agency_regions (
+          regions:agency_regions (
             region:regions (
               id,
               name,
@@ -66,7 +67,7 @@ export default async function AgencyProfilePage({ params }: PageProps) {
               slug
             )
           ),
-          agency_compliance (
+          compliance:agency_compliance (
             id,
             compliance_type,
             is_active,
