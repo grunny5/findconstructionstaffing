@@ -496,24 +496,31 @@ async function seedAgencies(
       const timestamp = new Date().toISOString();
       const newAgencies = batch
         .filter((agency) => !existingMap.has(agency.name))
-        .map((agency) => ({
-          name: agency.name,
-          slug: createSlug(agency.name),
-          description: agency.description,
-          logo_url: agency.logo_url,
-          website: agency.website,
-          phone: null, // Not available in mock data
-          email: null, // Not available in mock data
-          is_claimed: false, // Default per FSD
-          is_active: true, // Default per FSD
-          offers_per_diem: agency.offers_per_diem,
-          is_union: agency.is_union,
-          founded_year: agency.founded_year || null,
-          employee_count: agency.employee_count || null,
-          headquarters: agency.headquarters || null,
-          created_at: timestamp,
-          updated_at: timestamp,
-        }));
+        .map((agency, index) => {
+          // Mark first 3 agencies as verified for demo purposes
+          const globalIndex = i + index;
+          const isVerified = globalIndex < 3;
+
+          return {
+            name: agency.name,
+            slug: createSlug(agency.name),
+            description: agency.description,
+            logo_url: agency.logo_url,
+            website: agency.website,
+            phone: null, // Not available in mock data
+            email: null, // Not available in mock data
+            is_claimed: false, // Default per FSD
+            is_active: true, // Default per FSD
+            offers_per_diem: agency.offers_per_diem,
+            is_union: agency.is_union,
+            founded_year: agency.founded_year || null,
+            employee_count: agency.employee_count || null,
+            headquarters: agency.headquarters || null,
+            verified: isVerified, // First 3 agencies are verified
+            created_at: timestamp,
+            updated_at: timestamp,
+          };
+        });
 
       // Insert new agencies if any
       if (newAgencies.length > 0) {
