@@ -72,6 +72,12 @@
     --industrial-bg-primary: #faf7f2; /* Warm cream - main page background */
     --industrial-bg-card: #ffffff; /* White - cards only */
     --industrial-bg-dark: #1a1a1a; /* Footer, inverse sections */
+
+    /* Success/Verification Colors - For compliance badges and verification indicators */
+    --industrial-success-100: #d1fae5; /* Light background */
+    --industrial-success-200: #a7f3d0; /* Border */
+    --industrial-success-400: #34d399; /* Primary success color */
+    --industrial-success-600: #047857; /* Dark text */
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -127,6 +133,12 @@
     --industrial-bg-primary: #0a0a0a; /* Nearly black - main page background */
     --industrial-bg-card: #1a1a1a; /* Dark cards */
     --industrial-bg-dark: #faf7f2; /* Inverted - light sections on dark pages */
+
+    /* Success/Verification Colors - Dark mode variants */
+    --industrial-success-100: #1a2e1a; /* Dark background */
+    --industrial-success-200: #2d4a2d; /* Border */
+    --industrial-success-400: #4ade80; /* Bright green for visibility */
+    --industrial-success-600: #86efac; /* Light green text */
   }
 }
 
