@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Building2, Search, ArrowLeft } from 'lucide-react';
+import { Building2, Search } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { BackButton } from '@/components/BackButton';
 
 export default function AgencyNotFound() {
   return (
@@ -34,14 +35,7 @@ export default function AgencyNotFound() {
                 </Link>
               </Button>
 
-              <Button
-                variant="outline"
-                onClick={() => window.history.back()}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Go Back
-              </Button>
+              <BackButton />
             </div>
 
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
