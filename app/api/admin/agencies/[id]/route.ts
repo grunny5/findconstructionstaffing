@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { z } from 'zod';
 
@@ -359,7 +359,9 @@ export async function PATCH(
           trade_id,
         }));
 
-        const { error: upsertError } = await supabase
+        // Use admin client to bypass RLS for agency_trades table
+        const adminClient = createAdminClient();
+        const { error: upsertError } = await adminClient
           .from('agency_trades')
           .upsert(newRelationships, {
             onConflict: 'agency_id,trade_id',
@@ -393,7 +395,9 @@ export async function PATCH(
         );
 
         if (orphanedIds.length > 0) {
-          const { error: deleteError } = await supabase
+          // Use admin client to bypass RLS for agency_trades table
+          const adminClient = createAdminClient();
+          const { error: deleteError } = await adminClient
             .from('agency_trades')
             .delete()
             .eq('agency_id', id)
@@ -518,7 +522,9 @@ export async function PATCH(
           region_id,
         }));
 
-        const { error: upsertError } = await supabase
+        // Use admin client to bypass RLS for agency_regions table
+        const adminClient = createAdminClient();
+        const { error: upsertError } = await adminClient
           .from('agency_regions')
           .upsert(newRelationships, {
             onConflict: 'agency_id,region_id',
@@ -552,7 +558,9 @@ export async function PATCH(
         );
 
         if (orphanedIds.length > 0) {
-          const { error: deleteError } = await supabase
+          // Use admin client to bypass RLS for agency_regions table
+          const adminClient = createAdminClient();
+          const { error: deleteError } = await adminClient
             .from('agency_regions')
             .delete()
             .eq('agency_id', id)
