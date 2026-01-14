@@ -253,10 +253,8 @@ export function AdminAgenciesTable({ agencies }: AdminAgenciesTableProps) {
               <TableRow key={agency.id} data-testid={`agency-row-${agency.id}`}>
                 <TableCell className="font-medium">
                   <Link
-                    href={`/recruiters/${agency.slug}`}
+                    href={`/admin/agencies/${agency.id}`}
                     className="font-body font-semibold text-industrial-orange hover:text-industrial-orange-500 hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     {agency.name}
                   </Link>

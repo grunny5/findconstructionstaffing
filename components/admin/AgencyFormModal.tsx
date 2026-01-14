@@ -100,9 +100,33 @@ export function AgencyFormModal({
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
+  // Track external state changes (trades, regions, logo) for Save button
+  const hasExternalChanges = useMemo(() => {
+    if (!isEditMode || !agency) return false;
+
+    // Check if trades have changed
+    const initialTradeIds = (agency.trades || []).map((t) => t.id).sort();
+    const currentTradeIds = selectedTrades.map((t) => t.id).sort();
+    const tradesChanged =
+      initialTradeIds.length !== currentTradeIds.length ||
+      !initialTradeIds.every((id, i) => id === currentTradeIds[i]);
+
+    // Check if regions have changed
+    const initialRegionIds = (agency.regions || []).map((r) => r.id).sort();
+    const currentRegionIds = selectedRegions.map((r) => r.id).sort();
+    const regionsChanged =
+      initialRegionIds.length !== currentRegionIds.length ||
+      !initialRegionIds.every((id, i) => id === currentRegionIds[i]);
+
+    // Check if logo has been added, removed, or changed
+    const logoChanged = !!pendingLogoFile || logoRemoved;
+
+    return tradesChanged || regionsChanged || logoChanged;
+  }, [isEditMode, agency, selectedTrades, selectedRegions, pendingLogoFile, logoRemoved]);
+
   const form = useForm<AgencyCreationFormData>({
     resolver: zodResolver(agencyCreationSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       name: agency?.name || '',
       description: agency?.description || '',
@@ -221,7 +245,8 @@ export function AgencyFormModal({
     if (isEditMode) {
       fetchComplianceData();
     }
-  }, [agency, form, isEditMode, fetchComplianceData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agency?.id, isOpen]);
 
   const handleLogoFileSelect = (file: File | null) => {
     setLogoUploadError(null);
@@ -298,11 +323,38 @@ export function AgencyFormModal({
       const method = isEditMode ? 'PATCH' : 'POST';
 
       // Include trade_ids and region_ids in the request body
-      const requestBody = {
+      const requestBody: Record<string, any> = {
         ...data,
-        trade_ids: selectedTrades.map((t) => t.id),
-        region_ids: selectedRegions.map((r) => r.id),
       };
+
+      // In edit mode, only send trades/regions if they've changed to avoid RLS issues
+      if (!isEditMode) {
+        // Create mode: always send trades and regions
+        requestBody.trade_ids = selectedTrades.map((t) => t.id);
+        requestBody.region_ids = selectedRegions.map((r) => r.id);
+      } else {
+        // Edit mode: check if trades have changed
+        const currentTradeIds = agency?.trades?.map((t) => t.id).sort() || [];
+        const selectedTradeIds = selectedTrades.map((t) => t.id).sort();
+        const tradesChanged =
+          currentTradeIds.length !== selectedTradeIds.length ||
+          !currentTradeIds.every((id, i) => id === selectedTradeIds[i]);
+
+        if (tradesChanged) {
+          requestBody.trade_ids = selectedTrades.map((t) => t.id);
+        }
+
+        // Check if regions have changed
+        const currentRegionIds = agency?.regions?.map((r) => r.id).sort() || [];
+        const selectedRegionIds = selectedRegions.map((r) => r.id).sort();
+        const regionsChanged =
+          currentRegionIds.length !== selectedRegionIds.length ||
+          !currentRegionIds.every((id, i) => id === selectedRegionIds[i]);
+
+        if (regionsChanged) {
+          requestBody.region_ids = selectedRegions.map((r) => r.id);
+        }
+      }
 
       const response = await fetch(endpoint, {
         method,
@@ -761,7 +813,11 @@ export function AgencyFormModal({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={!form.formState.isValid || isSubmitting}
+                    disabled={
+                      isSubmitting ||
+                      !form.formState.isValid ||
+                      (isEditMode && !form.formState.isDirty && !hasExternalChanges)
+                    }
                     data-testid="submit-button"
                   >
                     {isSubmitting && (

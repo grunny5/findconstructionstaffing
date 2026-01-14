@@ -92,6 +92,7 @@ export default async function AgencyDetailPage({
         company_size,
         offers_per_diem,
         is_union,
+        verified,
         is_active,
         is_claimed,
         claimed_by,
@@ -210,7 +211,7 @@ export default async function AgencyDetailPage({
   }));
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl min-h-screen">
+    <div className="container mx-auto p-4 max-w-5xl min-h-screen">
       {/* Back button */}
       <div className="mb-6">
         <Link href="/admin/agencies">

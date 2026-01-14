@@ -26,6 +26,8 @@ export interface AdminAgency {
   created_at: string;
   /** Profile completion percentage (0-100) */
   profile_completion_percentage: number | null;
+  /** Whether the agency is verified (shows badge on homepage) */
+  verified?: boolean | null;
   /** Owner profile information (populated for claimed agencies) */
   owner_profile?: {
     email: string | null;

@@ -89,7 +89,7 @@ export default async function AdminCompliancePage() {
     .filter((row) => row.agencies != null);
 
   return (
-    <div className="container mx-auto p-6 min-h-screen">
+    <div className="container mx-auto p-4 min-h-screen">
       <div className="mb-6">
         <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600">
           Compliance Overview
