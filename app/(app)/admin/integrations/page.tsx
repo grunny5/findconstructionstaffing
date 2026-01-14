@@ -75,7 +75,7 @@ export default async function AdminIntegrationsPage() {
   const integrations: IntegrationSummary[] = integrationsData || [];
 
   return (
-    <div className="container mx-auto p-6 min-h-screen">
+    <div className="container mx-auto p-4 min-h-screen">
       <h1 className="font-display text-2xl lg:text-3xl uppercase tracking-wide text-industrial-graphite-600 mb-6">
         Integration Management
       </h1>
