@@ -293,17 +293,17 @@ export interface AdminAgency {
 
 ### Risks
 
-**Risk 1: Database Schema**
+**Risk 1: Database Schema** ⬆️ **ELEVATED TO PHASE 0**
 - **Risk:** `verified` column might not exist in database
 - **Likelihood:** Low (PR #677 suggests it exists)
-- **Mitigation:** Verify schema before implementation, create migration if needed
-- **Rollback:** Remove `verified` from query and type if column missing
+- **Mitigation:** Moved to Phase 0: Prerequisites Verification (mandatory check before implementation)
+- **Rollback:** Cannot proceed with Solution 3 if column missing
 
-**Risk 2: Verified Save Logic**
+**Risk 2: Verified Save Logic** ⬆️ **ELEVATED TO PHASE 0**
 - **Risk:** AgencyFormModal might not save `verified` field
 - **Likelihood:** Medium (PR #677 added UI but save logic unclear)
-- **Mitigation:** Verify API endpoint accepts `verified` in update payload
-- **Rollback:** Add `verified` to API schema if missing (similar to PR #677 approach)
+- **Mitigation:** Moved to Phase 0: Prerequisites Verification (mandatory API endpoint check)
+- **Rollback:** Cannot proceed with Solution 3 if API doesn't accept field
 
 **Risk 3: Layout Regression**
 - **Risk:** Padding reduction breaks layouts on some pages
@@ -325,26 +325,110 @@ export interface AdminAgency {
 
 ## Implementation Plan
 
-### Phase 1: Verification & Setup (10 minutes)
+### Phase 0: Prerequisites Verification (15 minutes)
 
-1. **Verify Database Schema**
-   ```bash
-   # Check if verified column exists
-   # Run in Supabase SQL editor or via CLI
-   SELECT column_name, data_type
-   FROM information_schema.columns
-   WHERE table_name = 'agencies'
-   AND column_name = 'verified';
-   ```
+**CRITICAL:** These prerequisites must be verified before beginning implementation. Risks 1 and 2 from the risk assessment have been elevated to blocking dependencies that must be confirmed before Phase 1.
 
-2. **Check API Endpoint**
-   - Verify `app/api/admin/agencies/[id]/route.ts` accepts `verified` in PATCH
-   - Confirm PR #677 added `verified: z.boolean().optional()` to schema (line 109)
+#### 1. Verify Database Schema (Risk 1 Mitigation)
 
-3. **Confirm Toggle Exists**
-   - Verify `components/admin/AgencyFormModal.tsx` has Switch component (lines 704-724)
+**What to Check:**
+```bash
+# Check if verified column exists in agencies table
+# Run in Supabase SQL editor or via CLI
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'agencies'
+AND column_name = 'verified';
+```
 
-### Phase 2: Reduce Padding (15 minutes)
+**Expected Result:**
+```
+column_name | data_type | is_nullable
+------------|-----------|------------
+verified    | boolean   | YES
+```
+
+**If Missing:**
+- **Action Required:** Create migration to add verified column
+- **SQL:**
+  ```sql
+  ALTER TABLE agencies
+  ADD COLUMN verified BOOLEAN DEFAULT FALSE;
+  ```
+- **Rollback:** Cannot proceed with Solution 3 if column missing
+
+#### 2. Verify API Endpoint Accepts Verified Field (Risk 2 Mitigation)
+
+**Files to Check:**
+
+a) **API Route Schema** - `app/api/admin/agencies/[id]/route.ts`
+   - Confirm line ~109 has: `verified: z.boolean().optional()`
+   - Verify PATCH handler includes `verified` in update payload
+
+b) **Type Definition** - `types/admin.ts`
+   - Check if AdminAgency interface includes: `verified?: boolean | null;`
+   - If missing, this will be added in Phase 4
+
+c) **Save Logic** - `components/admin/AgencyFormModal.tsx`
+   - Verify form includes `verified` field in submission (lines 704-724)
+   - Confirm Switch component exists and binds to form data
+
+**Expected Results:**
+- API schema accepts `verified` as boolean
+- Form submission includes `verified` in payload
+- No TypeScript errors when `verified` is included
+
+**If Any Issues Found:**
+- **Action Required:** Update API schema to accept `verified`
+- **Testing:** Use curl or Postman to verify PATCH accepts `verified: true/false`
+- **Rollback:** Cannot proceed with Solution 3 if API doesn't accept field
+
+#### 3. Verify Permissions Allow Verified Field Updates
+
+**What to Check:**
+- Row-Level Security (RLS) policies in Supabase
+- Admin role has UPDATE permission on `agencies.verified` column
+- Test with admin user account
+
+**Testing:**
+```sql
+-- Check RLS policies
+SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual
+FROM pg_policies
+WHERE tablename = 'agencies';
+```
+
+**If Permissions Missing:**
+- **Action Required:** Update RLS policy to allow admin updates
+- **Rollback:** Verified toggle will fail silently without proper permissions
+
+#### 4. Confirm UI Toggle Component Exists
+
+**File:** `components/admin/AgencyFormModal.tsx` (lines 704-724)
+
+**What to Check:**
+- Switch component from Shadcn/ui is imported
+- `verified` field exists in form schema
+- Toggle is bound to form state
+
+**Expected:** PR #677 already implemented this - verify it's still present
+
+#### 5. Prerequisites Sign-Off
+
+**Before proceeding to Phase 1, confirm:**
+- [ ] Database has `verified` column in `agencies` table
+- [ ] API endpoint accepts `verified` in PATCH request
+- [ ] Permissions allow admin users to update `verified`
+- [ ] AdminAgency type includes `verified` field (or will be added in Phase 4)
+- [ ] AgencyFormModal.tsx includes verified toggle component
+
+**If all prerequisites pass:** ✅ Proceed to Phase 1
+
+**If any prerequisites fail:** ❌ Stop and resolve blocking issues first
+
+---
+
+### Phase 1: Reduce Padding (15 minutes)
 
 **Files to Update:**
 1. `app/(app)/admin/page.tsx` (line 116)
@@ -362,7 +446,7 @@ export interface AdminAgency {
 - Verify layouts still look good
 - Confirm no text overflow or broken grids
 
-### Phase 3: Fix Agency Name Navigation (5 minutes)
+### Phase 2: Fix Agency Name Navigation (5 minutes)
 
 **File:** `components/admin/AdminAgenciesTable.tsx` (lines 255-262)
 
@@ -377,7 +461,7 @@ export interface AdminAgency {
 - Verify Edit Agency button visible on detail page
 - Test browser back button returns to list
 
-### Phase 4: Add Verified Field to Query (10 minutes)
+### Phase 3: Add Verified Field to Query (10 minutes)
 
 **File 1:** `app/(app)/admin/agencies/[id]/page.tsx` (lines 80-118)
 
@@ -397,7 +481,7 @@ export interface AdminAgency {
 - Save and verify status persists
 - Check database or agency list to confirm status changed
 
-### Phase 5: Fix Navigation Bar Scroll (20 minutes)
+### Phase 4: Fix Navigation Bar Scroll (20 minutes)
 
 **File:** `app/(app)/admin/layout.tsx` (lines 116-156)
 
@@ -445,7 +529,7 @@ export interface AdminAgency {
 - Test on actual laptop screen if available
 - Check all navigation items are clickable
 
-### Phase 6: Final Testing & Validation (15 minutes)
+### Phase 5: Final Testing & Validation (15 minutes)
 
 **Regression Testing:**
 - [ ] All admin pages load correctly

@@ -100,6 +100,30 @@ export function AgencyFormModal({
   const isEditMode = !!agency;
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
+  // Track external state changes (trades, regions, logo) for Save button
+  const hasExternalChanges = useMemo(() => {
+    if (!isEditMode || !agency) return false;
+
+    // Check if trades have changed
+    const initialTradeIds = (agency.trades || []).map((t) => t.id).sort();
+    const currentTradeIds = selectedTrades.map((t) => t.id).sort();
+    const tradesChanged =
+      initialTradeIds.length !== currentTradeIds.length ||
+      !initialTradeIds.every((id, i) => id === currentTradeIds[i]);
+
+    // Check if regions have changed
+    const initialRegionIds = (agency.regions || []).map((r) => r.id).sort();
+    const currentRegionIds = selectedRegions.map((r) => r.id).sort();
+    const regionsChanged =
+      initialRegionIds.length !== currentRegionIds.length ||
+      !initialRegionIds.every((id, i) => id === currentRegionIds[i]);
+
+    // Check if logo has been added, removed, or changed
+    const logoChanged = !!pendingLogoFile || logoRemoved;
+
+    return tradesChanged || regionsChanged || logoChanged;
+  }, [isEditMode, agency, selectedTrades, selectedRegions, pendingLogoFile, logoRemoved]);
+
   const form = useForm<AgencyCreationFormData>({
     resolver: zodResolver(agencyCreationSchema),
     mode: 'onChange',
@@ -792,7 +816,7 @@ export function AgencyFormModal({
                     disabled={
                       isSubmitting ||
                       (!isEditMode && !form.formState.isValid) ||
-                      (isEditMode && !form.formState.isDirty)
+                      (isEditMode && !form.formState.isDirty && !hasExternalChanges)
                     }
                     data-testid="submit-button"
                   >

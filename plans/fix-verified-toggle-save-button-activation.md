@@ -184,10 +184,14 @@ disabled={
 ```tsx
 const defaultValues = useRef(form.formState.defaultValues);
 
+// Option A: Watch all fields and use as dependency
+const formValues = form.watch();
 const hasChanges = useMemo(() => {
-  const currentValues = form.getValues();
-  return JSON.stringify(currentValues) !== JSON.stringify(defaultValues.current);
-}, [form.watch()]); // Re-compute on any field change
+  return JSON.stringify(formValues) !== JSON.stringify(defaultValues.current);
+}, [formValues]);
+
+// Option B: Skip useMemo and compute directly (simpler)
+const hasChanges = JSON.stringify(form.watch()) !== JSON.stringify(defaultValues.current);
 
 disabled={
   isSubmitting ||
