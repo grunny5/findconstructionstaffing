@@ -157,22 +157,12 @@ export const agencyCreationSchema = z.object({
     .or(z.literal('')),
 
   employee_count: z
-    .enum(EMPLOYEE_COUNT_VALUES, {
-      errorMap: () => ({
-        message: `Employee count must be one of: ${EMPLOYEE_COUNT_VALUES.join(', ')}`,
-      }),
-    })
-    .optional()
-    .or(z.literal('')),
+    .union([z.enum(EMPLOYEE_COUNT_VALUES), z.literal('')])
+    .optional(),
 
   company_size: z
-    .enum(COMPANY_SIZE_VALUES, {
-      errorMap: () => ({
-        message: `Company size must be one of: ${COMPANY_SIZE_VALUES.join(', ')}`,
-      }),
-    })
-    .optional()
-    .or(z.literal('')),
+    .union([z.enum(COMPANY_SIZE_VALUES), z.literal('')])
+    .optional(),
 
   offers_per_diem: z.boolean().default(false),
 

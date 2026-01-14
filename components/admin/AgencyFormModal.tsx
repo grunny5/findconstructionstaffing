@@ -98,7 +98,6 @@ export function AgencyFormModal({
   );
   const [isLoadingCompliance, setIsLoadingCompliance] = useState(false);
   const isEditMode = !!agency;
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
   const form = useForm<AgencyCreationFormData>({
@@ -122,24 +121,6 @@ export function AgencyFormModal({
       verified: agency?.verified ?? false,
     },
   });
-
-  // Watch form values to detect changes
-  useEffect(() => {
-    const subscription = form.watch(() => {
-      // Mark as having unsaved changes when form becomes dirty
-      if (form.formState.isDirty) {
-        setHasUnsavedChanges(true);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  // Reset hasUnsavedChanges when modal opens/closes
-  useEffect(() => {
-    if (!isOpen) {
-      setHasUnsavedChanges(false);
-    }
-  }, [isOpen]);
 
   const fetchComplianceData = useCallback(async () => {
     if (!isEditMode || !agency?.id) return;
@@ -240,7 +221,8 @@ export function AgencyFormModal({
     if (isEditMode) {
       fetchComplianceData();
     }
-  }, [agency, form, isEditMode, fetchComplianceData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agency?.id, isOpen]);
 
   const handleLogoFileSelect = (file: File | null) => {
     setLogoUploadError(null);
@@ -317,11 +299,38 @@ export function AgencyFormModal({
       const method = isEditMode ? 'PATCH' : 'POST';
 
       // Include trade_ids and region_ids in the request body
-      const requestBody = {
+      const requestBody: Record<string, any> = {
         ...data,
-        trade_ids: selectedTrades.map((t) => t.id),
-        region_ids: selectedRegions.map((r) => r.id),
       };
+
+      // In edit mode, only send trades/regions if they've changed to avoid RLS issues
+      if (!isEditMode) {
+        // Create mode: always send trades and regions
+        requestBody.trade_ids = selectedTrades.map((t) => t.id);
+        requestBody.region_ids = selectedRegions.map((r) => r.id);
+      } else {
+        // Edit mode: check if trades have changed
+        const currentTradeIds = agency?.trades?.map((t) => t.id).sort() || [];
+        const selectedTradeIds = selectedTrades.map((t) => t.id).sort();
+        const tradesChanged =
+          currentTradeIds.length !== selectedTradeIds.length ||
+          !currentTradeIds.every((id, i) => id === selectedTradeIds[i]);
+
+        if (tradesChanged) {
+          requestBody.trade_ids = selectedTrades.map((t) => t.id);
+        }
+
+        // Check if regions have changed
+        const currentRegionIds = agency?.regions?.map((r) => r.id).sort() || [];
+        const selectedRegionIds = selectedRegions.map((r) => r.id).sort();
+        const regionsChanged =
+          currentRegionIds.length !== selectedRegionIds.length ||
+          !currentRegionIds.every((id, i) => id === selectedRegionIds[i]);
+
+        if (regionsChanged) {
+          requestBody.region_ids = selectedRegions.map((r) => r.id);
+        }
+      }
 
       const response = await fetch(endpoint, {
         method,
@@ -374,7 +383,6 @@ export function AgencyFormModal({
       });
 
       form.reset();
-      setHasUnsavedChanges(false);
       setSelectedTrades([]);
       setSelectedRegions([]);
       setPendingLogoFile(null);
@@ -783,8 +791,8 @@ export function AgencyFormModal({
                     type="submit"
                     disabled={
                       isSubmitting ||
-                      !form.formState.isValid ||
-                      (isEditMode && !hasUnsavedChanges)
+                      (!isEditMode && !form.formState.isValid) ||
+                      (isEditMode && !form.formState.isDirty)
                     }
                     data-testid="submit-button"
                   >
