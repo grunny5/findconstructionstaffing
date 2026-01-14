@@ -2,12 +2,13 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 
 // Mock Supabase client
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(),
+  createAdminClient: jest.fn(),
 }));
 
 // Mock NextResponse
@@ -27,6 +28,10 @@ import { PATCH } from '../route';
 
 const mockCreateClient = createClient as jest.MockedFunction<
   typeof createClient
+>;
+
+const mockCreateAdminClient = createAdminClient as jest.MockedFunction<
+  typeof createAdminClient
 >;
 
 describe('PATCH /api/admin/agencies/[id]', () => {
@@ -71,6 +76,8 @@ describe('PATCH /api/admin/agencies/[id]', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Make createAdminClient return the same mock as createClient
+    mockCreateAdminClient.mockImplementation(() => mockCreateClient() as any);
   });
 
   // ========================================================================
