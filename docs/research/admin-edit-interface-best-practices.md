@@ -42,7 +42,7 @@ This document compiles best practices for building an admin agency edit page whe
 >   body: JSON.stringify(formData),
 > })
 > ```
-> This maintains consistency across all 31 existing API routes in the codebase.
+> This maintains consistency across all 42 existing API routes in the codebase.
 
 **Folder Structure** ([Source](https://www.anshgupta.in/blog/nextjs-app-router-best-practices-2025))
 
@@ -100,8 +100,10 @@ npm install react-hook-form @hookform/resolvers zod
 
 **Validation Schema** ([Context7: Zod Documentation](https://github.com/colinhacks/zod))
 
+> **⚠️ PROJECT DIFFERENCE**: The examples below use camelCase field names (general pattern), but **our actual schema uses snake_case** (`founded_year`, `employee_count`, `company_size`, `offers_per_diem`, `is_union`, `verified`). See `lib/validations/agency-creation.ts` for the actual implementation. The form component example above demonstrates the correct snake_case usage.
+
 ```typescript
-// lib/validations/agency.ts
+// lib/validations/agency.ts (GENERAL EXAMPLE - NOT OUR ACTUAL SCHEMA)
 import { z } from "zod"
 
 export const agencyEditSchema = z.object({
@@ -125,7 +127,7 @@ export const agencyEditSchema = z.object({
   // Array of region IDs
   regions: z.array(z.string().uuid()).min(1, "Select at least one region"),
 
-  // Admin-only fields
+  // Admin-only fields (OUR PROJECT USES: verified, not isVerified)
   isVerified: z.boolean(),
   verifiedAt: z.date().nullable(),
   verificationNotes: z.string().optional(),
@@ -149,56 +151,77 @@ export type AgencyEditInput = z.infer<typeof agencyEditSchema>
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { agencyEditSchema, type AgencyEditInput } from "@/lib/validations/agency"
+import { agencyCreationSchema, type AgencyCreationFormData } from "@/lib/validations/agency-creation"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { updateAgencyAction } from "@/app/admin/actions/agencies"
+import { useRouter } from "next/navigation"
 
 interface AgencyEditFormProps {
-  agency: AgencyEditInput & { id: string }
+  agency: AgencyCreationFormData & { id: string }
 }
 
 export function AgencyEditForm({ agency }: AgencyEditFormProps) {
   const { toast } = useToast()
+  const router = useRouter()
 
-  const form = useForm<AgencyEditInput>({
-    resolver: zodResolver(agencyEditSchema),
+  const form = useForm<AgencyCreationFormData>({
+    resolver: zodResolver(agencyCreationSchema),
     defaultValues: {
       name: agency.name,
-      email: agency.email,
+      email: agency.email || "",
       phone: agency.phone || "",
       website: agency.website || "",
-      description: agency.description,
-      trades: agency.trades,
-      regions: agency.regions,
-      isVerified: agency.isVerified,
-      verificationNotes: agency.verificationNotes || "",
+      description: agency.description || "",
+      headquarters: agency.headquarters || "",
+      founded_year: agency.founded_year || "",
+      employee_count: agency.employee_count || "",
+      company_size: agency.company_size || "",
+      offers_per_diem: agency.offers_per_diem ?? false,
+      is_union: agency.is_union ?? false,
+      verified: agency.verified ?? false,
     },
   })
 
-  async function onSubmit(data: AgencyEditInput) {
-    const result = await updateAgencyAction(agency.id, data)
+  async function onSubmit(data: AgencyCreationFormData) {
+    try {
+      const response = await fetch(`/api/admin/agencies/${agency.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
 
-    if (result.success) {
+      const result = await response.json()
+
+      if (!response.ok) {
+        // Handle field-level errors
+        if (result.errors) {
+          Object.entries(result.errors).forEach(([field, message]) => {
+            form.setError(field as any, { message: message as string })
+          })
+        }
+
+        toast({
+          title: "Error",
+          description: result.message || "Failed to update agency",
+          variant: "destructive",
+        })
+        return
+      }
+
       toast({
         title: "Success",
         description: "Agency updated successfully",
       })
-    } else {
-      // Handle field-level errors
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, message]) => {
-          form.setError(field as any, { message })
-        })
-      }
 
+      router.refresh() // Refresh server component data
+    } catch (error) {
       toast({
         title: "Error",
-        description: result.error || "Failed to update agency",
+        description: "An unexpected error occurred",
         variant: "destructive",
       })
     }
@@ -235,19 +258,15 @@ export function AgencyEditForm({ agency }: AgencyEditFormProps) {
           )}
         />
 
-        {/* Admin-only verification field */}
         <FormField
           control={form.control}
-          name="isVerified"
+          name="phone"
           render={({ field }) => (
-            <FormItem className="flex items-center space-x-2">
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
               <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Input {...field} placeholder="+12345678900" />
               </FormControl>
-              <FormLabel>Verified Agency</FormLabel>
               <FormMessage />
             </FormItem>
           )}
@@ -255,14 +274,100 @@ export function AgencyEditForm({ agency }: AgencyEditFormProps) {
 
         <FormField
           control={form.control}
-          name="verificationNotes"
+          name="founded_year"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Verification Notes (Admin Only)</FormLabel>
+              <FormLabel>Founded Year</FormLabel>
               <FormControl>
-                <Textarea {...field} />
+                <Input {...field} placeholder="2020" />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="employee_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Employee Count</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="11-50" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="company_size"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Size</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Small, Medium, Large, Enterprise" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Admin-only verification field */}
+        <FormField
+          control={form.control}
+          name="verified"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <FormLabel>Verified Agency</FormLabel>
+                <FormMessage />
+              </div>
+              <FormControl>
+                <Switch
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="offers_per_diem"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <FormLabel>Offers Per Diem</FormLabel>
+                <FormMessage />
+              </div>
+              <FormControl>
+                <Switch
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="is_union"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <FormLabel>Union Shop</FormLabel>
+                <FormMessage />
+              </div>
+              <FormControl>
+                <Switch
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
