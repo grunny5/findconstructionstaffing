@@ -66,6 +66,7 @@ export interface AgencyFormModalProps {
     company_size?: string | null;
     offers_per_diem?: boolean | null;
     is_union?: boolean | null;
+    verified?: boolean | null;
     logo_url?: string | null;
     trades?: Trade[];
     regions?: Region[];
@@ -117,6 +118,7 @@ export function AgencyFormModal({
         (agency?.company_size as AgencyCreationFormData['company_size']) || '',
       offers_per_diem: agency?.offers_per_diem ?? false,
       is_union: agency?.is_union ?? false,
+      verified: agency?.verified ?? false,
     },
   });
 
@@ -205,6 +207,7 @@ export function AgencyFormModal({
         (agency?.company_size as AgencyCreationFormData['company_size']) || '',
       offers_per_diem: agency?.offers_per_diem ?? false,
       is_union: agency?.is_union ?? false,
+      verified: agency?.verified ?? false,
     };
     form.reset(mappedValues);
     setSelectedTrades(agency?.trades || []);
@@ -692,6 +695,28 @@ export function AgencyFormModal({
                             checked={field.value}
                             onCheckedChange={field.onChange}
                             data-testid="is-union-switch"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="verified"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel>Verified Agency</FormLabel>
+                          <FormDescription>
+                            Show orange verification badge on homepage
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="verified-switch"
                           />
                         </FormControl>
                       </FormItem>
