@@ -102,7 +102,7 @@ export function AgencyFormModal({
 
   const form = useForm<AgencyCreationFormData>({
     resolver: zodResolver(agencyCreationSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       name: agency?.name || '',
       description: agency?.description || '',
@@ -761,7 +761,11 @@ export function AgencyFormModal({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={!form.formState.isValid || isSubmitting}
+                    disabled={
+                      isSubmitting ||
+                      !form.formState.isValid ||
+                      (isEditMode && !form.formState.isDirty)
+                    }
                     data-testid="submit-button"
                   >
                     {isSubmitting && (
