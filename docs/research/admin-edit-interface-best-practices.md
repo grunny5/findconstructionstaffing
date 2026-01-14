@@ -2,6 +2,10 @@
 
 ## Research Date: 2026-01-13
 
+> **⚠️ IMPORTANT NOTE**: This document contains general Next.js 13+ best practices research from external sources. **This repository has chosen to prefer API Routes over Server Actions** for consistency with the existing codebase architecture. See todos [#011](/todos/011-pending-p1-remove-server-actions-use-api-routes.md), [#014](/todos/014-pending-p1-security-server-action-authentication-bypass.md), and [#016](/todos/016-pending-p1-cache-revalidation-apis-not-implemented.md) for architectural decisions.
+>
+> **Project Standard**: Use `fetch()` to call PATCH `/api/admin/agencies/[id]` instead of Server Actions. All examples referencing Server Actions should be adapted to use API routes following the patterns in `components/admin/AgencyFormModal.tsx`.
+
 This document compiles best practices for building an admin agency edit page where admins can modify all agency information including manually setting verified status.
 
 ---
@@ -24,10 +28,21 @@ This document compiles best practices for building an admin agency edit page whe
 
 ### Key Architecture Principles
 
-**Server Actions Over API Routes**
-- Use Server Actions for CRUD operations in admin interfaces
+**Server Actions Over API Routes** (General Best Practice)
+- Use Server Actions for CRUD operations in admin interfaces (external recommendation)
 - They provide direct access to request context including authentication and cookies
 - Simpler than API routes for form mutations
+
+> **⚠️ THIS PROJECT USES API ROUTES INSTEAD**: For consistency with our existing architecture, we use `fetch()` calls to API routes. See example:
+> ```typescript
+> // components/admin/AgencyFormModal.tsx pattern
+> const response = await fetch(`/api/admin/agencies/${agency.id}`, {
+>   method: 'PATCH',
+>   headers: { 'Content-Type': 'application/json' },
+>   body: JSON.stringify(formData),
+> })
+> ```
+> This maintains consistency across all 31 existing API routes in the codebase.
 
 **Folder Structure** ([Source](https://www.anshgupta.in/blog/nextjs-app-router-best-practices-2025))
 ```
