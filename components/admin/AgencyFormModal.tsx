@@ -98,6 +98,7 @@ export function AgencyFormModal({
   );
   const [isLoadingCompliance, setIsLoadingCompliance] = useState(false);
   const isEditMode = !!agency;
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const foundedYearOptions = useMemo(() => getFoundedYearOptions(), []);
 
   const form = useForm<AgencyCreationFormData>({
@@ -121,6 +122,24 @@ export function AgencyFormModal({
       verified: agency?.verified ?? false,
     },
   });
+
+  // Watch form values to detect changes
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      // Mark as having unsaved changes when form becomes dirty
+      if (form.formState.isDirty) {
+        setHasUnsavedChanges(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  // Reset hasUnsavedChanges when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasUnsavedChanges(false);
+    }
+  }, [isOpen]);
 
   const fetchComplianceData = useCallback(async () => {
     if (!isEditMode || !agency?.id) return;
@@ -355,6 +374,7 @@ export function AgencyFormModal({
       });
 
       form.reset();
+      setHasUnsavedChanges(false);
       setSelectedTrades([]);
       setSelectedRegions([]);
       setPendingLogoFile(null);
@@ -764,7 +784,7 @@ export function AgencyFormModal({
                     disabled={
                       isSubmitting ||
                       !form.formState.isValid ||
-                      (isEditMode && !form.formState.isDirty)
+                      (isEditMode && !hasUnsavedChanges)
                     }
                     data-testid="submit-button"
                   >
