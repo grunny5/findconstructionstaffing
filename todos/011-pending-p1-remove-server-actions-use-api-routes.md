@@ -119,16 +119,22 @@ async function onSubmit(data: AgencyEditFormData) {
 
 ## Acceptance Criteria
 
-- [ ] Phase 5 removed from plan entirely
-- [ ] Form submission uses `fetch()` to call PATCH API
-- [ ] Pattern matches existing `AgencyFormModal.tsx:300-350`
-- [ ] No Server Action files created
-- [ ] TypeScript compile with no errors
-- [ ] Existing API route tests still pass
+- [x] Phase 5 removed from plan entirely (used minimal implementation instead)
+- [x] Form submission uses `fetch()` to call PATCH API (existing `AgencyFormModal` pattern maintained)
+- [x] Pattern matches existing `AgencyFormModal.tsx:300-350` (added to existing modal at line 704-724)
+- [x] No Server Action files created (no `app/actions/` directory, only API routes)
+- [x] TypeScript compile with no errors (verified: 0 errors)
+- [x] Existing API route tests still pass (verified: 110/110 tests passing)
 
 ## Work Log
 
 **2026-01-13**: Issue created from code review findings. All 8 review agents identified this as critical blocker.
+
+**2026-01-13**: Issue resolved. Implemented Solution 1 - used existing PATCH `/api/admin/agencies/[id]` endpoint. Added verified field to:
+- API schema validation (`app/api/admin/agencies/[id]/route.ts:109`)
+- Form validation schema (`lib/validations/agency-creation.ts:181`)
+- Modal component (`components/admin/AgencyFormModal.tsx:704-724`)
+Zero new architectural patterns introduced. All tests passing.
 
 ## Resources
 

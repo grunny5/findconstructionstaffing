@@ -45,7 +45,10 @@ This document compiles best practices for building an admin agency edit page whe
 > This maintains consistency across all 31 existing API routes in the codebase.
 
 **Folder Structure** ([Source](https://www.anshgupta.in/blog/nextjs-app-router-best-practices-2025))
-```
+
+> **⚠️ PROJECT DIFFERENCE**: This example shows `app/admin/actions/` for Server Actions, but our project uses `app/api/admin/` for API routes instead.
+
+```plaintext
 app/
 ├── admin/
 │   ├── layout.tsx              # Admin layout with auth check
@@ -56,7 +59,12 @@ app/
 │   │       └── edit/
 │   │           └── page.tsx    # Edit form
 │   └── actions/
-│       └── agencies.ts         # Server actions
+│       └── agencies.ts         # Server actions (general pattern)
+├── api/
+│   └── admin/
+│       └── agencies/
+│           └── [id]/
+│               └── route.ts    # ← THIS PROJECT USES API ROUTES
 components/
 ├── admin/
 │   ├── AgencyEditForm.tsx      # Client component
