@@ -719,6 +719,7 @@ describe('prepareAgencyDataForDatabase', () => {
       company_size: 'Medium' as const,
       offers_per_diem: true,
       is_union: false,
+      verified: false,
     };
 
     const result = prepareAgencyDataForDatabase(formData);
@@ -735,6 +736,7 @@ describe('prepareAgencyDataForDatabase', () => {
       company_size: 'Medium',
       offers_per_diem: true,
       is_union: false,
+      verified: false,
     });
   });
 
@@ -751,6 +753,7 @@ describe('prepareAgencyDataForDatabase', () => {
       company_size: '' as const,
       offers_per_diem: false,
       is_union: false,
+      verified: false,
     };
 
     const result = prepareAgencyDataForDatabase(formData);
@@ -767,6 +770,7 @@ describe('prepareAgencyDataForDatabase', () => {
       company_size: null,
       offers_per_diem: false,
       is_union: false,
+      verified: false,
     });
   });
 });

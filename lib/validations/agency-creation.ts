@@ -77,6 +77,7 @@ export function getFoundedYearOptions() {
  * - company_size: Optional, Small/Medium/Large/Enterprise
  * - offers_per_diem: Boolean, defaults to false
  * - is_union: Boolean, defaults to false
+ * - verified: Boolean, defaults to false (admin-only, shows badge on homepage)
  *
  * Note: founded_year is a string for form compatibility but should be
  * converted to integer before database storage.
@@ -176,6 +177,8 @@ export const agencyCreationSchema = z.object({
   offers_per_diem: z.boolean().default(false),
 
   is_union: z.boolean().default(false),
+
+  verified: z.boolean().default(false),
 });
 
 export type AgencyCreationFormData = z.infer<typeof agencyCreationSchema>;
@@ -223,6 +226,7 @@ export function prepareAgencyDataForDatabase(data: AgencyCreationFormData) {
     company_size: normalizeOptionalString(data.company_size),
     offers_per_diem: data.offers_per_diem,
     is_union: data.is_union,
+    verified: data.verified,
   };
 }
 

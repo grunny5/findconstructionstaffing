@@ -106,6 +106,8 @@ const agencyUpdateSchema = z.object({
 
   is_union: z.boolean().optional(),
 
+  verified: z.boolean().optional(),
+
   // Trade IDs - admin has no limit (unlike owner's 10-trade limit)
   trade_ids: z
     .array(z.string().uuid('Each trade ID must be a valid UUID'))
