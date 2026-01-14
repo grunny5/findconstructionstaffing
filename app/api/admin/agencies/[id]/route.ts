@@ -293,6 +293,9 @@ export async function PATCH(
       updatedAgency = agencyData;
     }
 
+    // Create admin client once for all junction table operations (bypasses RLS)
+    const adminClient = createAdminClient();
+
     // ========================================================================
     // 7. UPDATE TRADES (if trade_ids provided)
     // ========================================================================
@@ -351,9 +354,6 @@ export async function PATCH(
             return trade?.name;
           })
           .filter(Boolean) || [];
-
-      // Create admin client once for all junction table operations (bypasses RLS)
-      const adminClient = createAdminClient();
 
       // 7c. Upsert new trade relationships (if any)
       if (trade_ids!.length > 0) {
