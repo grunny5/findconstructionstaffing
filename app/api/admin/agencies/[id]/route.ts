@@ -352,6 +352,9 @@ export async function PATCH(
           })
           .filter(Boolean) || [];
 
+      // Create admin client once for all junction table operations (bypasses RLS)
+      const adminClient = createAdminClient();
+
       // 7c. Upsert new trade relationships (if any)
       if (trade_ids!.length > 0) {
         const newRelationships = trade_ids!.map((trade_id) => ({
@@ -359,8 +362,6 @@ export async function PATCH(
           trade_id,
         }));
 
-        // Use admin client to bypass RLS for agency_trades table
-        const adminClient = createAdminClient();
         const { error: upsertError } = await adminClient
           .from('agency_trades')
           .upsert(newRelationships, {
@@ -395,8 +396,6 @@ export async function PATCH(
         );
 
         if (orphanedIds.length > 0) {
-          // Use admin client to bypass RLS for agency_trades table
-          const adminClient = createAdminClient();
           const { error: deleteError } = await adminClient
             .from('agency_trades')
             .delete()
@@ -522,8 +521,6 @@ export async function PATCH(
           region_id,
         }));
 
-        // Use admin client to bypass RLS for agency_regions table
-        const adminClient = createAdminClient();
         const { error: upsertError } = await adminClient
           .from('agency_regions')
           .upsert(newRelationships, {
@@ -558,8 +555,6 @@ export async function PATCH(
         );
 
         if (orphanedIds.length > 0) {
-          // Use admin client to bypass RLS for agency_regions table
-          const adminClient = createAdminClient();
           const { error: deleteError } = await adminClient
             .from('agency_regions')
             .delete()
