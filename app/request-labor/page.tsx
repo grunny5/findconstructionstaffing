@@ -127,16 +127,35 @@ export default function RequestLaborPage() {
   const onSubmit = async (data: LaborRequestFormData) => {
     setIsSubmitting(true);
     try {
-      // TODO: Replace with actual API call in Phase 3
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch('/api/labor-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-      console.log('Labor request submitted:', data);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit request');
+      }
+
+      console.log('Labor request submitted:', result);
       setIsSubmitted(true);
-      toast.success(
-        'Labor request submitted successfully! Agencies will be notified within 24 hours.'
-      );
+
+      const matchMessage = result.totalMatches > 0
+        ? `Successfully matched with ${result.totalMatches} agencies! They will be notified within 24 hours.`
+        : 'Request submitted successfully. We\'ll notify you when agencies are matched.';
+
+      toast.success(matchMessage);
     } catch (error) {
-      toast.error('Failed to submit request. Please try again.');
+      console.error('Submission error:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to submit request. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
