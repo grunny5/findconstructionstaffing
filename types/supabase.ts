@@ -1,5 +1,11 @@
 // Shared Supabase type definitions
 import type { Profile } from './database';
+import type {
+  LaborRequest,
+  LaborRequestCraft,
+  LaborRequestNotification,
+  AgencyMatch,
+} from './labor-request';
 
 export type Agency = {
   id: string;
@@ -90,6 +96,52 @@ export interface Database {
         Row: Region;
         Insert: Omit<Region, 'id'>;
         Update: Partial<Omit<Region, 'id'>>;
+      };
+      labor_requests: {
+        Row: LaborRequest;
+        Insert: Omit<
+          LaborRequest,
+          | 'id'
+          | 'created_at'
+          | 'updated_at'
+          | 'confirmation_token'
+          | 'confirmation_token_expires'
+        >;
+        Update: Partial<Omit<LaborRequest, 'id' | 'created_at'>>;
+      };
+      labor_request_crafts: {
+        Row: LaborRequestCraft;
+        Insert: Omit<LaborRequestCraft, 'id' | 'created_at'>;
+        Update: Partial<
+          Omit<LaborRequestCraft, 'id' | 'created_at' | 'labor_request_id'>
+        >;
+      };
+      labor_request_notifications: {
+        Row: LaborRequestNotification;
+        Insert: Omit<
+          LaborRequestNotification,
+          'id' | 'created_at' | 'sent_at' | 'responded_at' | 'viewed_at'
+        >;
+        Update: Partial<
+          Omit<
+            LaborRequestNotification,
+            | 'id'
+            | 'created_at'
+            | 'labor_request_id'
+            | 'labor_request_craft_id'
+            | 'agency_id'
+          >
+        >;
+      };
+    };
+    Functions: {
+      match_agencies_to_craft: {
+        Args: {
+          p_trade_id: string;
+          p_region_id: string;
+          p_worker_count: number;
+        };
+        Returns: AgencyMatch[];
       };
     };
   };
