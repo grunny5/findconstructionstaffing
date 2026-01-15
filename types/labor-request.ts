@@ -43,6 +43,9 @@ export interface LaborRequestCraft {
   duration_days: number;
   hours_per_week: number;
   notes: string | null;
+  pay_rate_min: number | null; // Minimum hourly rate in USD
+  pay_rate_max: number | null; // Maximum hourly rate in USD
+  per_diem_rate: number | null; // Daily per diem in USD
   created_at: string; // ISO 8601 timestamp
 }
 
@@ -104,6 +107,9 @@ export interface CraftFormData {
   durationDays: number;
   hoursPerWeek: number;
   notes?: string;
+  payRateMin?: number; // Minimum hourly rate in USD
+  payRateMax?: number; // Maximum hourly rate in USD
+  perDiemRate?: number; // Daily per diem in USD
 }
 
 export interface LaborRequestFormData {

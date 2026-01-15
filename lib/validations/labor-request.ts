@@ -76,50 +76,96 @@ export const craftNotesSchema = z
 /**
  * Schema for a single craft requirement within a labor request
  */
-export const craftFormDataSchema = z.object({
-  tradeId: z.string().uuid('Invalid trade ID'),
-  regionId: z.string().uuid('Invalid region ID'),
-  workerCount: z
-    .number()
-    .int('Worker count must be a whole number')
-    .min(1, 'Must request at least 1 worker')
-    .max(500, 'Cannot request more than 500 workers'),
-  startDate: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}$/,
-      'Start date must be in YYYY-MM-DD format'
-    )
-    .refine(
-      (date) => {
-        const startDate = new Date(date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return startDate >= today;
-      },
-      { message: 'Start date cannot be in the past' }
-    )
-    .refine(
-      (date) => {
-        const startDate = new Date(date);
-        const oneYearFromNow = new Date();
-        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-        return startDate <= oneYearFromNow;
-      },
-      { message: 'Start date cannot be more than 1 year in the future' }
-    ),
-  durationDays: z
-    .number()
-    .int('Duration must be a whole number')
-    .min(1, 'Duration must be at least 1 day')
-    .max(365, 'Duration cannot exceed 365 days'),
-  hoursPerWeek: z
-    .number()
-    .int('Hours per week must be a whole number')
-    .min(1, 'Hours per week must be at least 1')
-    .max(168, 'Hours per week cannot exceed 168 (24 hours × 7 days)'),
-  notes: craftNotesSchema,
-});
+export const craftFormDataSchema = z
+  .object({
+    tradeId: z.string().uuid('Invalid trade ID'),
+    regionId: z.string().uuid('Invalid region ID'),
+    workerCount: z
+      .number()
+      .int('Worker count must be a whole number')
+      .min(1, 'Must request at least 1 worker')
+      .max(500, 'Cannot request more than 500 workers'),
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format')
+      .refine(
+        (date) => {
+          const startDate = new Date(date);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return startDate >= today;
+        },
+        { message: 'Start date cannot be in the past' }
+      )
+      .refine(
+        (date) => {
+          const startDate = new Date(date);
+          const oneYearFromNow = new Date();
+          oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+          return startDate <= oneYearFromNow;
+        },
+        { message: 'Start date cannot be more than 1 year in the future' }
+      ),
+    durationDays: z
+      .number()
+      .int('Duration must be a whole number')
+      .min(1, 'Duration must be at least 1 day')
+      .max(365, 'Duration cannot exceed 365 days'),
+    hoursPerWeek: z
+      .number()
+      .int('Hours per week must be a whole number')
+      .min(1, 'Hours per week must be at least 1')
+      .max(168, 'Hours per week cannot exceed 168 (24 hours × 7 days)'),
+    notes: craftNotesSchema,
+    payRateMin: z
+      .number()
+      .positive('Pay rate must be positive')
+      .max(1000, 'Pay rate cannot exceed $1000/hour')
+      .optional(),
+    payRateMax: z
+      .number()
+      .positive('Pay rate must be positive')
+      .max(1000, 'Pay rate cannot exceed $1000/hour')
+      .optional(),
+    perDiemRate: z
+      .number()
+      .positive('Per diem must be positive')
+      .max(1000, 'Per diem cannot exceed $1000/day')
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // If one pay rate is provided, both must be provided
+      if (
+        (data.payRateMin !== undefined && data.payRateMax === undefined) ||
+        (data.payRateMin === undefined && data.payRateMax !== undefined)
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Both minimum and maximum pay rates must be provided together',
+      path: ['payRateMin'],
+    }
+  )
+  .refine(
+    (data) => {
+      // If both pay rates are provided, min must be <= max
+      if (
+        data.payRateMin !== undefined &&
+        data.payRateMax !== undefined &&
+        data.payRateMin > data.payRateMax
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Minimum pay rate must be less than or equal to maximum',
+      path: ['payRateMin'],
+    }
+  );
 
 // =============================================================================
 // LABOR REQUEST SUBMISSION SCHEMA
