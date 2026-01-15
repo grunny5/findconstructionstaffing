@@ -198,25 +198,7 @@ export const laborRequestFormDataSchema = z.object({
   crafts: z
     .array(craftFormDataSchema)
     .min(1, 'At least one craft requirement is required')
-    .max(10, 'Cannot request more than 10 crafts per submission')
-    .refine(
-      (crafts) => {
-        // Ensure no duplicate trade/region combinations
-        const seen = new Set<string>();
-        for (const craft of crafts) {
-          const key = `${craft.tradeId}:${craft.regionId}`;
-          if (seen.has(key)) {
-            return false;
-          }
-          seen.add(key);
-        }
-        return true;
-      },
-      {
-        message:
-          'Each trade and region combination must be unique within a request',
-      }
-    ),
+    .max(10, 'Cannot request more than 10 crafts per submission'),
 });
 
 // =============================================================================

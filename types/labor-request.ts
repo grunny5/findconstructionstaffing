@@ -109,28 +109,8 @@ export interface LaborRequestNotificationWithRelations
 // FORM-SPECIFIC TYPES (client-side form state)
 // =============================================================================
 
-export interface CraftFormData {
-  tradeId: string;
-  experienceLevel: ExperienceLevel;
-  regionId: string;
-  workerCount: number;
-  startDate: string; // YYYY-MM-DD
-  durationDays: number;
-  hoursPerWeek: number;
-  notes?: string;
-  payRateMin?: number; // Minimum hourly rate in USD
-  payRateMax?: number; // Maximum hourly rate in USD
-  perDiemRate?: number; // Daily per diem in USD
-}
-
-export interface LaborRequestFormData {
-  projectName: string;
-  companyName: string;
-  contactEmail: string;
-  contactPhone: string;
-  additionalDetails?: string;
-  crafts: CraftFormData[];
-}
+// Re-export Zod-inferred types from validation module as single source of truth
+export type { CraftFormData, LaborRequestFormData } from '@/lib/validations/labor-request';
 
 // =============================================================================
 // API RESPONSE TYPES
@@ -144,10 +124,10 @@ export interface SubmitLaborRequestResponse {
 }
 
 export interface AgencyMatch {
-  agencyId: string;
-  agencyName: string;
-  agencySlug: string;
-  matchScore: number;
+  agency_id: string;
+  agency_name: string;
+  agency_slug: string;
+  match_score: number;
 }
 
 export interface NotificationResult {

@@ -24,8 +24,9 @@ BEGIN
     100::INTEGER AS match_score -- Base score for all matches
   FROM agencies a
   WHERE
-    -- Only active agencies can receive labor requests
+    -- Only active and verified agencies can receive labor requests
     a.is_active = TRUE
+    AND a.verified = TRUE
     -- Must offer the requested trade
     AND EXISTS (
       SELECT 1 FROM agency_trades at
