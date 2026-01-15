@@ -891,6 +891,97 @@ CREATE INDEX idx_labor_request_crafts_request_id
 
 ---
 
+## Clarifying Questions
+
+Before starting implementation, these questions need answers from stakeholders:
+
+### Business Rules & Validation
+
+1. **Maximum crafts per request**: Is 10 crafts the right limit, or should it be higher/lower?
+2. **Duplicate combinations**: Should we allow same trade in different locations (e.g., Electrician in TX AND Electrician in CA)?
+3. **Future start dates**: How far in advance can users request labor? (30 days? 90 days? 1 year?)
+4. **Minimum duration**: What's the minimum project duration we should accept? (Currently set to 1 day)
+5. **Hours per week validation**: Should we validate that hours/week makes sense with duration? (e.g., 168 hours/week for 1 day is odd)
+
+### Matching Algorithm
+
+6. **Verified agencies only**: Should we ONLY match verified agencies, or include unverified with lower ranking?
+7. **Zero matches scenario**: If no agencies match a craft (wrong location/trade combo), what should happen?
+   - Show error before submission?
+   - Allow submission but notify user no agencies available?
+   - Suggest nearby regions?
+8. **Matching criteria weights**: What's the priority order for scoring?
+   - Current plan: verified status > capacity match > certifications
+   - Should we consider: response rate, rating, past performance?
+9. **Agency capacity**: Do we check if agency is currently at capacity before matching? (Requires tracking active placements)
+10. **Regional preferences**: If an agency serves multiple regions, do they get priority for their "primary" regions?
+
+### Notifications
+
+11. **Notification timing**: Send immediately or batch (e.g., every 15 minutes)?
+12. **Notification consolidation**: If agency matches 3 crafts in same request, send 1 email or 3 emails?
+    - Current plan: 1 consolidated email
+13. **Email from address**: Should it be `requests@findconstructionstaffing.com` or `noreply@`?
+14. **Reply-to address**: Should agencies reply directly to requester's email or to platform?
+15. **Unsubscribe handling**: Can agencies opt-out of ALL labor requests or just specific trades/regions?
+16. **Failed delivery retry**: How many retry attempts for failed emails? (Current plan: 3 with exponential backoff)
+17. **Agency notification preferences**: Should agencies be able to set quiet hours or daily digest instead of instant?
+
+### Privacy & Contact Information
+
+18. **Contact info visibility**: When should requester's email/phone be revealed to agencies?
+    - Immediately in email notification (current plan)
+    - Only after agency expresses interest
+19. **Data retention**: How long should we keep labor request data? (30 days? 1 year? Forever?)
+20. **GDPR/Privacy compliance**: Do we need consent checkboxes for sharing contact info with agencies?
+21. **Agency contact visibility**: Can requesters see which specific agencies were notified, or just the count?
+
+### Agency Dashboard
+
+22. **Request expiration**: Do labor requests "expire" after a certain time? (e.g., auto-archive after 30 days)
+23. **Response tracking**: What counts as "responded"?
+    - Clicking "Mark as Responded" button
+    - Starting a conversation
+    - Either action
+24. **Multi-agency coordination**: If multiple agencies respond to same request, how does requester choose? (Outside scope, but affects UX)
+25. **Agency workload limits**: Should we stop sending requests to agencies after X pending requests? (Prevent overwhelming them)
+
+### Form UX & User Flow
+
+26. **Authentication required**: Can anonymous users submit requests, or must they create account?
+    - Current plan: No auth required (just contact info)
+27. **Save draft functionality**: Should users be able to save incomplete requests and return later?
+28. **Edit after submission**: Can users edit/cancel requests after submission? (e.g., "oops, I need 10 workers not 100")
+29. **Request history**: Should authenticated users see their past requests? (Requires user accounts)
+30. **Pre-fill from previous**: Should form pre-fill based on user's last request?
+
+### Success Page & Follow-up
+
+31. **Zero-match messaging**: If no agencies matched, what alternative should we offer?
+    - "Try expanding your search radius"
+    - "Contact support for manual matching"
+    - "Post as public job instead"
+32. **Expected response time**: What should we tell users? (Currently: "24-48 hours")
+33. **Confirmation email**: Should requester get email confirmation with copy of their request?
+    - Current plan: Yes, with agency match counts
+34. **Status tracking**: Should requesters be able to check status later (e.g., "3 agencies viewed, 1 responded")?
+
+### Technical & Infrastructure
+
+35. **Rate limiting**: 5 requests/hour per IP sufficient, or too restrictive for large companies?
+36. **Webhook notifications**: Should we provide webhook callbacks when agencies respond (for integrations)?
+37. **API versioning**: Should this be `/api/labor-requests` or `/api/v1/labor-requests` for future compatibility?
+
+### Agency Dashboard Specific
+
+38. **Request visibility**: Can agencies see requests from their competitors (who else was notified)?
+39. **Conversation creation**: When agency starts conversation, who owns the thread?
+    - Agency can continue even if requester doesn't respond
+    - Platform mediates
+40. **Bulk actions**: Should agencies be able to bulk archive/respond to multiple requests?
+
+---
+
 ## Dependencies & Prerequisites
 
 ### External Dependencies
