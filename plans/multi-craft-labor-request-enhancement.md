@@ -195,6 +195,19 @@ USING (
   )
 );
 
+-- Success page token access for crafts (CRITICAL: allows nested query)
+CREATE POLICY "Success page token access for crafts"
+ON labor_request_crafts FOR SELECT
+TO anon
+USING (
+  EXISTS (
+    SELECT 1 FROM labor_requests lr
+    WHERE lr.id = labor_request_crafts.labor_request_id
+    AND lr.confirmation_token IS NOT NULL
+    AND lr.confirmation_token_expires > NOW()
+  )
+);
+
 -- =============================================================================
 -- LABOR_REQUEST_NOTIFICATIONS TABLE POLICIES
 -- =============================================================================
@@ -304,8 +317,16 @@ SELECT * FROM labor_requests;
 - Improve mobile responsiveness
 
 **2.3 Create Validation Schema**
+
+**Phone Validation**: Install `libphonenumber-js` for proper phone number validation:
+```bash
+npm install libphonenumber-js
+```
+
 ```typescript
 // types/labor-request.ts
+import { isValidPhoneNumber } from 'libphonenumber-js';
+
 const craftSchema = z.object({
   tradeId: z.string().uuid('Select a valid trade'),
   regionId: z.string().uuid('Select a valid location'),
@@ -338,7 +359,26 @@ const laborRequestSchema = z.object({
   projectName: z.string().min(3).max(200),
   companyName: z.string().min(2).max(200),
   contactEmail: z.string().email(),
-  contactPhone: z.string().regex(/^\+?[\d\s()-]{10,20}$/),
+  contactPhone: z.string()
+    .min(10, 'Phone number too short')
+    .max(20, 'Phone number too long')
+    .refine(
+      (phone) => {
+        // Remove all non-digit characters for validation
+        const digitsOnly = phone.replace(/\D/g, '');
+
+        // Must have 10-15 digits (US: 10, International: up to 15)
+        if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+          return false;
+        }
+
+        // Use libphonenumber-js for proper validation
+        return isValidPhoneNumber(phone, 'US');
+      },
+      {
+        message: 'Invalid phone number. Use format: (555) 123-4567 or +1-555-123-4567'
+      }
+    ),
   additionalDetails: z.string().max(2000).optional(),
   crafts: z.array(craftSchema)
     .min(1, 'Add at least one craft requirement')
@@ -376,10 +416,14 @@ const laborRequestSchema = z.object({
 - File: `app/api/labor-requests/route.ts`
 - Implement POST handler with rate limiting (5 req/hour per IP)
 - Validate request payload with Zod
-- Insert main request into `labor_requests` table
+- Insert main request into `labor_requests` table with confirmation token
 - Bulk insert crafts into `labor_request_crafts` table
 - Use Supabase RPC function for atomic transaction
-- Return request ID and match counts per craft
+- Match agencies for each craft using `matchAgenciesToCraft()`
+- **Call `sendConsolidatedNotifications(requestId, matchesByCraft)`** to send one email per agency (Phase 4)
+  - Collect all matches across all crafts first
+  - Pass to consolidation function (not `notifyMatchedAgencies`)
+- Return confirmation token and match counts per craft
 
 **3.2 Implement Matching Algorithm**
 
@@ -599,6 +643,18 @@ export async function sendWithRateLimit(emailFn: () => Promise<void>) {
   - Support contact info
 
 **4.2 Implement Notification Service**
+
+**Integration Approach**: Use `sendConsolidatedNotifications` as the primary notification method to send one email per agency (regardless of how many crafts they match). This reduces email volume and provides better UX for agencies.
+
+**Implementation Flow**:
+1. API endpoint collects all matches across all crafts
+2. Calls `sendConsolidatedNotifications(requestId, matchesByCraft)`
+3. Function groups matches by agency_id
+4. Sends one email per agency with all matched crafts listed
+5. Records separate notification records for each craft-agency pair
+
+**Alternative (not recommended)**: `notifyMatchedAgencies` sends one email per craft per agency. Only use this if you need separate notifications for each craft. The consolidated approach is preferred per stakeholder decision.
+
 - File: `lib/notifications/labor-request-notifier.ts`
 ```typescript
 import { Resend } from 'resend';
@@ -986,27 +1042,153 @@ export default async function SuccessPage({
   - Redirect to `/messages/conversations/[conversationId]`
 
 **6.8 Add Real-Time Notifications**
-- Use Supabase Realtime subscriptions for new requests:
-  ```typescript
-  const channel = supabase
-    .channel('labor-requests')
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'labor_request_notifications',
-        filter: `agency_id=eq.${agencyId}`
-      },
-      (payload) => {
-        // Show toast notification
-        toast.success('New labor request received!');
-        // Increment badge count
-        incrementRequestCount();
+
+**Security**: Use server-validated private channels and RLS policies to prevent unauthorized access.
+
+**Server-Side Channel Setup** (`app/api/agencies/[agencyId]/realtime-token/route.ts`):
+```typescript
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+// Validate UUID format
+const uuidSchema = z.string().uuid();
+
+export async function GET(
+  request: Request,
+  { params }: { params: { agencyId: string } }
+) {
+  const supabase = createClient();
+
+  // Authenticate user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Validate agencyId is valid UUID (prevent injection)
+  const validation = uuidSchema.safeParse(params.agencyId);
+  if (!validation.success) {
+    return NextResponse.json(
+      { error: 'Invalid agency ID format' },
+      { status: 400 }
+    );
+  }
+
+  const agencyId = validation.data;
+
+  // Verify user owns this agency
+  const { data: agency, error } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('id', agencyId)
+    .eq('claimed_by', user.id)
+    .single();
+
+  if (error || !agency) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Return validated channel name (server controls filter)
+  const channelName = `agency:${agencyId}:requests`;
+
+  return NextResponse.json({
+    channelName,
+    agencyId, // Validated UUID
+  });
+}
+```
+
+**Client-Side Subscription** (with server-validated channel):
+```typescript
+// components/dashboard/RealtimeSubscription.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
+
+export function RealtimeSubscription({ agencySlug }: { agencySlug: string }) {
+  const [unreadCount, setUnreadCount] = useState(0);
+  const supabase = createClient();
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    async function setupSubscription() {
+      // Get validated channel from server
+      const response = await fetch(`/api/agencies/${agencySlug}/realtime-token`);
+
+      if (!response.ok) {
+        console.error('Failed to setup realtime subscription');
+        return;
       }
-    )
-    .subscribe();
-  ```
+
+      const { channelName, agencyId } = await response.json();
+
+      // Subscribe to server-validated private channel
+      // RLS policies ensure user only receives authorized events
+      channel = supabase
+        .channel(channelName, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: agencyId },
+          },
+        })
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'labor_request_notifications',
+            filter: `agency_id=eq.${agencyId}`, // Now using validated UUID from server
+          },
+          (payload) => {
+            // RLS policies already enforce this user can only see their agency's notifications
+            toast.success('New labor request received!');
+            setUnreadCount(prev => prev + 1);
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('Realtime subscription active');
+          }
+        });
+    }
+
+    setupSubscription();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [agencySlug]);
+
+  return unreadCount;
+}
+```
+
+**RLS Policy Enforcement**:
+The existing RLS policy on `labor_request_notifications` already restricts SELECT to agencies that own the notification:
+```sql
+CREATE POLICY "Agencies can read their notifications"
+ON labor_request_notifications FOR SELECT
+TO authenticated
+USING (
+  agency_id IN (
+    SELECT id FROM agencies WHERE claimed_by = auth.uid()
+  )
+);
+```
+
+**Security Notes**:
+- ✅ AgencyId validated as UUID server-side (prevents injection)
+- ✅ Ownership verified before returning channel name
+- ✅ RLS policies enforce row-level filtering
+- ✅ Private channel names prevent cross-agency eavesdropping
+- ✅ Client cannot bypass server validation
+
 - Badge count on sidebar "Requests" link showing unread count
 - Browser notification permission prompt (optional)
 
