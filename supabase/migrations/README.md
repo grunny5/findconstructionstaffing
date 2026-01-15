@@ -292,6 +292,44 @@ psql postgres://postgres:postgres@localhost:54322/postgres \
 
 **⚠️ Warning:** Rollbacks may cause data loss. Always backup before rolling back.
 
+## Manually Applied Migrations
+
+Due to Supabase CLI sync issues with the remote database, some migrations need to be applied manually through the Supabase dashboard. To track these properly:
+
+### Process for Manual Migration Application
+
+1. **Run the SQL** in Supabase dashboard SQL editor: https://supabase.com/dashboard/project/[PROJECT_ID]/sql
+2. **Rename the file** with `applied_` prefix to indicate it's been applied:
+   ```bash
+   mv YYYYMMDD_NNN_description.sql applied_YYYYMMDD_NNN_description.sql
+   ```
+3. **Keep the file** in version control for documentation
+4. **Document it** in the list below
+
+### Manually Applied Migration Files
+
+These migrations have been applied manually and should NOT be run via `supabase db push`:
+
+- `applied_20250624_003_add_performance_indexes.sql` - Performance indexes
+- `applied_20250625_005_create_public_read_policies.sql` - Public read RLS policies
+- `applied_20260114_001_optimize_rls_policies.sql` - RLS policy optimizations
+- `applied_20260126_001_add_pay_rates_to_crafts.sql` - Pay rate and per diem fields for labor requests
+- `applied_20260126_002_add_experience_level_to_crafts.sql` - Experience level field for craft requirements
+
+### Why Manual Application?
+
+The Supabase CLI sometimes encounters sync issues when:
+- Remote migration history diverges from local
+- Migrations were created directly in production
+- CLI version mismatches with remote
+- Network issues during `supabase db push`
+
+Using the `applied_` prefix convention ensures:
+- ✅ The migration SQL is preserved for reference
+- ✅ The Supabase CLI skips these files (doesn't match `YYYYMMDD_*.sql` pattern)
+- ✅ Team members know the migration is already applied
+- ✅ No accidental re-application of migrations
+
 ## Best Practices
 
 1. **Always create rollback scripts** for each migration
@@ -302,6 +340,7 @@ psql postgres://postgres:postgres@localhost:54322/postgres \
 6. **Use IF NOT EXISTS** for idempotent migrations
 7. **Document breaking changes** in this README
 8. **Never modify existing migrations** - create new ones instead
+9. **Rename manually applied migrations** with `applied_` prefix immediately
 
 ## Migration Checklist
 

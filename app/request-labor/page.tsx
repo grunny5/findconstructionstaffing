@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -18,44 +17,117 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Users, Briefcase, Building2 } from 'lucide-react';
-import { allTrades, allStates } from '@/lib/mock-data';
+import {
+  MapPin,
+  Users,
+  Briefcase,
+  Building2,
+  Plus,
+  Trash2,
+  Wrench,
+} from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  laborRequestFormDataSchema,
+  type LaborRequestFormData,
+  type ExperienceLevel,
+} from '@/lib/validations/labor-request';
+import type { Trade, Region } from '@/types/supabase';
 
-const requestSchema = z.object({
-  projectName: z.string().min(2, 'Project name must be at least 2 characters'),
-  tradeNeeded: z.string().min(1, 'Please select a trade specialty'),
-  headcount: z.coerce.number().min(1, 'Headcount must be at least 1'),
-  location: z.string().min(2, 'Location must be at least 2 characters'),
-  state: z.string().min(1, 'Please select a state'),
-  startDate: z.string().min(1, 'Please select a start date'),
-  duration: z.string().min(1, 'Please specify project duration'),
-  contactName: z.string().min(2, 'Contact name must be at least 2 characters'),
-  contactEmail: z.string().email('Please enter a valid email address'),
-  contactPhone: z.string().min(10, 'Please enter a valid phone number'),
-  additionalDetails: z.string().optional(),
-});
+// Valid experience levels that match the ExperienceLevel type
+const EXPERIENCE_LEVELS: readonly ExperienceLevel[] = [
+  'Helper',
+  'Apprentice',
+  'Journeyman',
+  'Foreman',
+  'General Foreman',
+  'Superintendent',
+  'Project Manager',
+] as const;
 
-type RequestFormData = z.infer<typeof requestSchema>;
+// Type guard to validate experience level
+function isExperienceLevel(value: string): value is ExperienceLevel {
+  return EXPERIENCE_LEVELS.includes(value as ExperienceLevel);
+}
 
 export default function RequestLaborPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    control,
     watch,
-  } = useForm<RequestFormData>({
-    resolver: zodResolver(requestSchema),
+  } = useForm<LaborRequestFormData>({
+    resolver: zodResolver(laborRequestFormDataSchema),
+    defaultValues: {
+      projectName: '',
+      companyName: '',
+      contactEmail: '',
+      contactPhone: '',
+      additionalDetails: '',
+      crafts: [
+        {
+          tradeId: '',
+          experienceLevel: 'Journeyman' as const,
+          regionId: '',
+          workerCount: 1,
+          startDate: '',
+          durationDays: 30,
+          hoursPerWeek: 40,
+          notes: '',
+          payRateMin: undefined,
+          payRateMax: undefined,
+          perDiemRate: undefined,
+        },
+      ],
+    },
   });
 
-  const onSubmit = async (data: RequestFormData) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'crafts',
+  });
+
+  // Fetch trades and regions on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tradesRes, regionsRes] = await Promise.all([
+          fetch('/api/trades'),
+          fetch('/api/regions'),
+        ]);
+
+        if (!tradesRes.ok || !regionsRes.ok) {
+          throw new Error('Failed to fetch form data');
+        }
+
+        const tradesData = await tradesRes.json();
+        const regionsData = await regionsRes.json();
+
+        setTrades(tradesData.trades || []);
+        setRegions(regionsData.regions || []);
+      } catch (error) {
+        console.error('Error fetching form data:', error);
+        toast.error('Failed to load form data. Please refresh the page.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const onSubmit = async (data: LaborRequestFormData) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
+      // TODO: Replace with actual API call in Phase 3
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       console.log('Labor request submitted:', data);
@@ -67,6 +139,28 @@ export default function RequestLaborPage() {
       toast.error('Failed to submit request. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const addCraft = () => {
+    append({
+      tradeId: '',
+      experienceLevel: 'Journeyman' as const,
+      regionId: '',
+      workerCount: 1,
+      startDate: '',
+      durationDays: 30,
+      hoursPerWeek: 40,
+      notes: '',
+      payRateMin: undefined,
+      payRateMax: undefined,
+      perDiemRate: undefined,
+    });
+  };
+
+  const removeCraft = (index: number) => {
+    if (fields.length > 1) {
+      remove(index);
     }
   };
 
@@ -99,7 +193,7 @@ export default function RequestLaborPage() {
                   </div>
                   <p className="font-body text-industrial-graphite-500">
                     Our system matches your requirements with the top 5
-                    qualified agencies
+                    qualified agencies for each craft
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -129,6 +223,22 @@ export default function RequestLaborPage() {
             <Button className="mt-8" asChild>
               <a href="/">Return to Directory</a>
             </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-industrial-bg-primary">
+        <Header />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="font-body text-lg text-industrial-graphite-500">
+              Loading form...
+            </p>
           </div>
         </div>
         <Footer />
@@ -168,19 +278,20 @@ export default function RequestLaborPage() {
                 <p className="font-body text-sm text-industrial-graphite-600">
                   <span className="font-semibold">How it works:</span> Fill out
                   this form and we&apos;ll automatically match you with the top
-                  5 staffing agencies that specialize in your required trade and
-                  location. Agencies typically respond within 24 hours.
+                  5 staffing agencies for each trade specialty and location.
+                  You can request multiple crafts in a single submission.
+                  Agencies typically respond within 24 hours.
                 </p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-              {/* Project Details */}
+              {/* Project & Company Details */}
               <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
                 <CardHeader className="border-b border-industrial-graphite-200">
                   <CardTitle className="flex items-center space-x-2 font-display text-xl uppercase text-industrial-graphite-600">
                     <Briefcase className="h-5 w-5 text-industrial-orange" />
-                    <span>Project Details</span>
+                    <span>Project & Company Details</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
@@ -207,161 +318,416 @@ export default function RequestLaborPage() {
 
                     <div className="space-y-2">
                       <Label
-                        htmlFor="tradeNeeded"
+                        htmlFor="companyName"
                         className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
                       >
-                        Trade Specialty Needed{' '}
-                        <span className="text-industrial-orange">*</span>
-                      </Label>
-                      <Select
-                        onValueChange={(value) =>
-                          setValue('tradeNeeded', value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select trade specialty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allTrades.map((trade) => (
-                            <SelectItem key={trade} value={trade}>
-                              {trade}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.tradeNeeded && (
-                        <p className="font-body text-sm text-industrial-orange">
-                          {errors.tradeNeeded.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="headcount"
-                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                      >
-                        Number of Workers Needed{' '}
+                        Company Name{' '}
                         <span className="text-industrial-orange">*</span>
                       </Label>
                       <Input
-                        id="headcount"
-                        type="number"
-                        min="1"
-                        {...register('headcount')}
-                        placeholder="e.g., 15"
+                        id="companyName"
+                        {...register('companyName')}
+                        placeholder="e.g., Acme Construction Inc."
                       />
-                      {errors.headcount && (
+                      {errors.companyName && (
                         <p className="font-body text-sm text-industrial-orange">
-                          {errors.headcount.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="duration"
-                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                      >
-                        Project Duration{' '}
-                        <span className="text-industrial-orange">*</span>
-                      </Label>
-                      <Input
-                        id="duration"
-                        {...register('duration')}
-                        placeholder="e.g., 6 weeks, 3 months"
-                      />
-                      {errors.duration && (
-                        <p className="font-body text-sm text-industrial-orange">
-                          {errors.duration.message}
+                          {errors.companyName.message}
                         </p>
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Location & Timing */}
-              <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
-                <CardHeader className="border-b border-industrial-graphite-200">
-                  <CardTitle className="flex items-center space-x-2 font-display text-xl uppercase text-industrial-graphite-600">
-                    <MapPin className="h-5 w-5 text-industrial-orange" />
-                    <span>Location & Timing</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="location"
-                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                      >
-                        City / Project Location{' '}
-                        <span className="text-industrial-orange">*</span>
-                      </Label>
-                      <Input
-                        id="location"
-                        {...register('location')}
-                        placeholder="e.g., Houston, TX"
-                      />
-                      {errors.location && (
-                        <p className="font-body text-sm text-industrial-orange">
-                          {errors.location.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="state"
-                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                      >
-                        State <span className="text-industrial-orange">*</span>
-                      </Label>
-                      <Select
-                        onValueChange={(value) => setValue('state', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select state" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allStates.map((state) => (
-                            <SelectItem key={state.code} value={state.name}>
-                              {state.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.state && (
-                        <p className="font-body text-sm text-industrial-orange">
-                          {errors.state.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="startDate"
-                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                      >
-                        Start Date{' '}
-                        <span className="text-industrial-orange">*</span>
-                      </Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        {...register('startDate')}
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                      {errors.startDate && (
-                        <p className="font-body text-sm text-industrial-orange">
-                          {errors.startDate.message}
-                        </p>
-                      )}
-                    </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="additionalDetails"
+                      className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                    >
+                      Additional Project Details
+                    </Label>
+                    <Textarea
+                      id="additionalDetails"
+                      {...register('additionalDetails')}
+                      placeholder="Any specific requirements, certifications needed, or other details that would help agencies provide accurate proposals..."
+                      rows={4}
+                    />
+                    {errors.additionalDetails && (
+                      <p className="font-body text-sm text-industrial-orange">
+                        {errors.additionalDetails.message}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Craft Requirements */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display text-2xl uppercase text-industrial-graphite-600 flex items-center space-x-2">
+                    <Wrench className="h-6 w-6 text-industrial-orange" />
+                    <span>Craft Requirements</span>
+                  </h2>
+                  <Button
+                    type="button"
+                    onClick={addCraft}
+                    variant="outline"
+                    size="sm"
+                    disabled={fields.length >= 10}
+                    className="flex items-center space-x-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add Craft</span>
+                  </Button>
+                </div>
+
+                {errors.crafts?.message && (
+                  <p className="font-body text-sm text-industrial-orange">
+                    {errors.crafts.message}
+                  </p>
+                )}
+
+                {fields.map((field, index) => (
+                  <Card
+                    key={field.id}
+                    className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200"
+                  >
+                    <CardHeader className="border-b border-industrial-graphite-200">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="font-display text-lg uppercase text-industrial-graphite-600">
+                          Craft #{index + 1}
+                        </CardTitle>
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            onClick={() => removeCraft(index)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-industrial-orange hover:text-industrial-orange-dark"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Trade Selection */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.tradeId`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Trade Specialty{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue(`crafts.${index}.tradeId`, value)
+                            }
+                            defaultValue={watch(`crafts.${index}.tradeId`)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select trade specialty" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {trades.map((trade) => (
+                                <SelectItem key={trade.id} value={trade.id}>
+                                  {trade.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.crafts?.[index]?.tradeId && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.tradeId?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Experience Level */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.experienceLevel`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Experience Level{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Select
+                            onValueChange={(value) => {
+                              if (isExperienceLevel(value)) {
+                                setValue(`crafts.${index}.experienceLevel`, value);
+                              }
+                            }}
+                            defaultValue={watch(`crafts.${index}.experienceLevel`)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select experience level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {EXPERIENCE_LEVELS.map((level) => (
+                                <SelectItem key={level} value={level}>
+                                  {level}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.crafts?.[index]?.experienceLevel && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.experienceLevel?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Region Selection */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.regionId`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Location / State{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue(`crafts.${index}.regionId`, value)
+                            }
+                            defaultValue={watch(`crafts.${index}.regionId`)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {regions.map((region) => (
+                                <SelectItem key={region.id} value={region.id}>
+                                  {region.name} ({region.state_code})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.crafts?.[index]?.regionId && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.regionId?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Worker Count */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.workerCount`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Number of Workers{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Input
+                            id={`crafts.${index}.workerCount`}
+                            type="number"
+                            min="1"
+                            max="500"
+                            {...register(`crafts.${index}.workerCount`, {
+                              valueAsNumber: true,
+                            })}
+                            placeholder="e.g., 15"
+                          />
+                          {errors.crafts?.[index]?.workerCount && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.workerCount?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Start Date */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.startDate`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Start Date{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Input
+                            id={`crafts.${index}.startDate`}
+                            type="date"
+                            {...register(`crafts.${index}.startDate`)}
+                            min={new Date().toISOString().split('T')[0]}
+                          />
+                          {errors.crafts?.[index]?.startDate && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.startDate?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Duration */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.durationDays`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Duration (Days){' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Input
+                            id={`crafts.${index}.durationDays`}
+                            type="number"
+                            min="1"
+                            max="365"
+                            {...register(`crafts.${index}.durationDays`, {
+                              valueAsNumber: true,
+                            })}
+                            placeholder="e.g., 30"
+                          />
+                          {errors.crafts?.[index]?.durationDays && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.durationDays?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Hours Per Week */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.hoursPerWeek`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Hours Per Week{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Input
+                            id={`crafts.${index}.hoursPerWeek`}
+                            type="number"
+                            min="1"
+                            max="168"
+                            {...register(`crafts.${index}.hoursPerWeek`, {
+                              valueAsNumber: true,
+                            })}
+                            placeholder="e.g., 40"
+                          />
+                          {errors.crafts?.[index]?.hoursPerWeek && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.hoursPerWeek?.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Pay Rates Section */}
+                      <div className="border-t border-industrial-graphite-200 pt-6 mt-6">
+                        <h4 className="font-body text-sm font-semibold text-industrial-graphite-600 mb-4 uppercase tracking-wide">
+                          Compensation (Optional)
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {/* Pay Rate Min */}
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor={`crafts.${index}.payRateMin`}
+                              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                            >
+                              Min Hourly Rate ($)
+                            </Label>
+                            <Input
+                              id={`crafts.${index}.payRateMin`}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...register(`crafts.${index}.payRateMin`, {
+                                valueAsNumber: true,
+                                setValueAs: (v) =>
+                                  v === '' ? undefined : parseFloat(v),
+                              })}
+                              placeholder="e.g., 25.00"
+                            />
+                            {errors.crafts?.[index]?.payRateMin && (
+                              <p className="font-body text-sm text-industrial-orange">
+                                {errors.crafts[index]?.payRateMin?.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Pay Rate Max */}
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor={`crafts.${index}.payRateMax`}
+                              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                            >
+                              Max Hourly Rate ($)
+                            </Label>
+                            <Input
+                              id={`crafts.${index}.payRateMax`}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...register(`crafts.${index}.payRateMax`, {
+                                valueAsNumber: true,
+                                setValueAs: (v) =>
+                                  v === '' ? undefined : parseFloat(v),
+                              })}
+                              placeholder="e.g., 35.00"
+                            />
+                            {errors.crafts?.[index]?.payRateMax && (
+                              <p className="font-body text-sm text-industrial-orange">
+                                {errors.crafts[index]?.payRateMax?.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Per Diem Rate */}
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor={`crafts.${index}.perDiemRate`}
+                              className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                            >
+                              Per Diem Rate ($)
+                            </Label>
+                            <Input
+                              id={`crafts.${index}.perDiemRate`}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...register(`crafts.${index}.perDiemRate`, {
+                                valueAsNumber: true,
+                                setValueAs: (v) =>
+                                  v === '' ? undefined : parseFloat(v),
+                              })}
+                              placeholder="e.g., 50.00"
+                            />
+                            {errors.crafts?.[index]?.perDiemRate && (
+                              <p className="font-body text-sm text-industrial-orange">
+                                {errors.crafts[index]?.perDiemRate?.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <p className="font-body text-xs text-industrial-graphite-400 mt-2">
+                          Specify established rates if you have ongoing project rates that staffing firms need to work with. Both min and max must be provided together.
+                        </p>
+                      </div>
+
+                      {/* Craft Notes */}
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`crafts.${index}.notes`}
+                          className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                        >
+                          Additional Notes for This Craft
+                        </Label>
+                        <Textarea
+                          id={`crafts.${index}.notes`}
+                          {...register(`crafts.${index}.notes`)}
+                          placeholder="Specific certifications, experience level, or other requirements for this craft..."
+                          rows={2}
+                        />
+                        {errors.crafts?.[index]?.notes && (
+                          <p className="font-body text-sm text-industrial-orange">
+                            {errors.crafts[index]?.notes?.message}
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
               {/* Contact Information */}
               <Card className="bg-industrial-bg-card rounded-industrial-sharp border-industrial-graphite-200">
@@ -372,27 +738,7 @@ export default function RequestLaborPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="contactName"
-                        className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                      >
-                        Contact Name{' '}
-                        <span className="text-industrial-orange">*</span>
-                      </Label>
-                      <Input
-                        id="contactName"
-                        {...register('contactName')}
-                        placeholder="Your full name"
-                      />
-                      {errors.contactName && (
-                        <p className="font-body text-sm text-industrial-orange">
-                          {errors.contactName.message}
-                        </p>
-                      )}
-                    </div>
-
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label
                         htmlFor="contactEmail"
@@ -434,21 +780,6 @@ export default function RequestLaborPage() {
                         </p>
                       )}
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="additionalDetails"
-                      className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
-                    >
-                      Additional Project Details
-                    </Label>
-                    <Textarea
-                      id="additionalDetails"
-                      {...register('additionalDetails')}
-                      placeholder="Any specific requirements, certifications needed, or other details that would help agencies provide accurate proposals..."
-                      rows={4}
-                    />
                   </div>
                 </CardContent>
               </Card>
