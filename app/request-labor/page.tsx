@@ -58,6 +58,7 @@ export default function RequestLaborPage() {
       crafts: [
         {
           tradeId: '',
+          experienceLevel: 'Journeyman' as const,
           regionId: '',
           workerCount: 1,
           startDate: '',
@@ -127,6 +128,7 @@ export default function RequestLaborPage() {
   const addCraft = () => {
     append({
       tradeId: '',
+      experienceLevel: 'Journeyman' as const,
       regionId: '',
       workerCount: 1,
       startDate: '',
@@ -420,6 +422,41 @@ export default function RequestLaborPage() {
                           {errors.crafts?.[index]?.tradeId && (
                             <p className="font-body text-sm text-industrial-orange">
                               {errors.crafts[index]?.tradeId?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Experience Level */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`crafts.${index}.experienceLevel`}
+                            className="font-body text-xs uppercase font-semibold text-industrial-graphite-400 tracking-wide"
+                          >
+                            Experience Level{' '}
+                            <span className="text-industrial-orange">*</span>
+                          </Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue(`crafts.${index}.experienceLevel`, value as any)
+                            }
+                            defaultValue={watch(`crafts.${index}.experienceLevel`)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select experience level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Helper">Helper</SelectItem>
+                              <SelectItem value="Apprentice">Apprentice</SelectItem>
+                              <SelectItem value="Journeyman">Journeyman</SelectItem>
+                              <SelectItem value="Foreman">Foreman</SelectItem>
+                              <SelectItem value="General Foreman">General Foreman</SelectItem>
+                              <SelectItem value="Superintendent">Superintendent</SelectItem>
+                              <SelectItem value="Project Manager">Project Manager</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.crafts?.[index]?.experienceLevel && (
+                            <p className="font-body text-sm text-industrial-orange">
+                              {errors.crafts[index]?.experienceLevel?.message}
                             </p>
                           )}
                         </div>

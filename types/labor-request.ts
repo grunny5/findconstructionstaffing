@@ -33,11 +33,21 @@ export interface LaborRequest {
   updated_at: string; // ISO 8601 timestamp
 }
 
+export type ExperienceLevel =
+  | 'Helper'
+  | 'Apprentice'
+  | 'Journeyman'
+  | 'Foreman'
+  | 'General Foreman'
+  | 'Superintendent'
+  | 'Project Manager';
+
 export interface LaborRequestCraft {
   id: string;
   labor_request_id: string;
   trade_id: string;
   region_id: string;
+  experience_level: ExperienceLevel;
   worker_count: number;
   start_date: string; // YYYY-MM-DD format
   duration_days: number;
@@ -101,6 +111,7 @@ export interface LaborRequestNotificationWithRelations
 
 export interface CraftFormData {
   tradeId: string;
+  experienceLevel: ExperienceLevel;
   regionId: string;
   workerCount: number;
   startDate: string; // YYYY-MM-DD

@@ -79,6 +79,20 @@ export const craftNotesSchema = z
 export const craftFormDataSchema = z
   .object({
     tradeId: z.string().uuid('Invalid trade ID'),
+    experienceLevel: z.enum(
+      [
+        'Helper',
+        'Apprentice',
+        'Journeyman',
+        'Foreman',
+        'General Foreman',
+        'Superintendent',
+        'Project Manager',
+      ],
+      {
+        errorMap: () => ({ message: 'Invalid experience level' }),
+      }
+    ),
     regionId: z.string().uuid('Invalid region ID'),
     workerCount: z
       .number()
