@@ -30,8 +30,25 @@ import { toast } from 'sonner';
 import {
   laborRequestFormDataSchema,
   type LaborRequestFormData,
+  type ExperienceLevel,
 } from '@/lib/validations/labor-request';
 import type { Trade, Region } from '@/types/supabase';
+
+// Valid experience levels that match the ExperienceLevel type
+const EXPERIENCE_LEVELS: readonly ExperienceLevel[] = [
+  'Helper',
+  'Apprentice',
+  'Journeyman',
+  'Foreman',
+  'General Foreman',
+  'Superintendent',
+  'Project Manager',
+] as const;
+
+// Type guard to validate experience level
+function isExperienceLevel(value: string): value is ExperienceLevel {
+  return EXPERIENCE_LEVELS.includes(value as ExperienceLevel);
+}
 
 export default function RequestLaborPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -436,22 +453,22 @@ export default function RequestLaborPage() {
                             <span className="text-industrial-orange">*</span>
                           </Label>
                           <Select
-                            onValueChange={(value) =>
-                              setValue(`crafts.${index}.experienceLevel`, value as any)
-                            }
+                            onValueChange={(value) => {
+                              if (isExperienceLevel(value)) {
+                                setValue(`crafts.${index}.experienceLevel`, value);
+                              }
+                            }}
                             defaultValue={watch(`crafts.${index}.experienceLevel`)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select experience level" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Helper">Helper</SelectItem>
-                              <SelectItem value="Apprentice">Apprentice</SelectItem>
-                              <SelectItem value="Journeyman">Journeyman</SelectItem>
-                              <SelectItem value="Foreman">Foreman</SelectItem>
-                              <SelectItem value="General Foreman">General Foreman</SelectItem>
-                              <SelectItem value="Superintendent">Superintendent</SelectItem>
-                              <SelectItem value="Project Manager">Project Manager</SelectItem>
+                              {EXPERIENCE_LEVELS.map((level) => (
+                                <SelectItem key={level} value={level}>
+                                  {level}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           {errors.crafts?.[index]?.experienceLevel && (

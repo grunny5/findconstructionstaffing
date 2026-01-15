@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -10,27 +12,29 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function applyMigration() {
+async function applyMigration(): Promise<void> {
   console.log('Applying pay rates migration...');
 
   try {
     // Read the migration file
-    const fs = require('fs');
-    const path = require('path');
-    const migrationPath = path.join(
+    const migrationPath: string = path.join(
       __dirname,
-      '../supabase/migrations/20260115235900_add_pay_rates_to_crafts.sql'
+      '../supabase/migrations/applied_20260126_001_add_pay_rates_to_crafts.sql'
     );
-    const sql = fs.readFileSync(migrationPath, 'utf-8');
+    const sql: string = fs.readFileSync(migrationPath, 'utf-8');
 
     // Remove comments and split into statements
-    const statements = sql
+    const statements: string[] = sql
       .split('\n')
-      .filter((line) => !line.trim().startsWith('--'))
+      .filter((line: string) => !line.trim().startsWith('--'))
       .join('\n')
       .split(';')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+      .map((s: string) => s.trim())
+      .filter((s: string) => s.length > 0);
+
+    // Track execution failures
+    let hasErrors = false;
+    const errors: string[] = [];
 
     // Execute each statement
     for (const statement of statements) {
@@ -38,13 +42,26 @@ async function applyMigration() {
         console.log('Executing:', statement.substring(0, 50) + '...');
         const { error } = await supabase.rpc('exec_sql', { sql: statement });
         if (error) {
+          hasErrors = true;
+          const errorMsg = `Failed to execute statement: ${error.message}`;
+          errors.push(errorMsg);
           console.error('Error executing statement:', error);
-          // Try alternative method - direct connection needed
-          console.log(
-            'Note: exec_sql RPC may not exist. Use supabase CLI instead.'
-          );
         }
       }
+    }
+
+    // Check if any RPC calls failed
+    if (hasErrors) {
+      console.error('\n❌ Migration failed with the following errors:');
+      errors.forEach((err: string, idx: number) => {
+        console.error(`  ${idx + 1}. ${err}`);
+      });
+      console.log(
+        '\nNote: exec_sql RPC may not exist. Use supabase CLI instead.'
+      );
+      console.log('Alternative: supabase db push --include-all');
+      console.log('Or apply manually using Supabase dashboard SQL editor');
+      process.exit(1);
     }
 
     // Verify columns were added
@@ -64,7 +81,7 @@ async function applyMigration() {
       console.log('✅ Migration verified successfully!');
       console.log('Pay rate columns added to labor_request_crafts table');
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Migration failed:', error);
     console.log(
       '\nPlease apply migration manually using Supabase dashboard SQL editor'

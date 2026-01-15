@@ -133,17 +133,17 @@ export const craftFormDataSchema = z
     notes: craftNotesSchema,
     payRateMin: z
       .number()
-      .positive('Pay rate must be positive')
+      .nonnegative('Pay rate must be zero or greater')
       .max(1000, 'Pay rate cannot exceed $1000/hour')
       .optional(),
     payRateMax: z
       .number()
-      .positive('Pay rate must be positive')
+      .nonnegative('Pay rate must be zero or greater')
       .max(1000, 'Pay rate cannot exceed $1000/hour')
       .optional(),
     perDiemRate: z
       .number()
-      .positive('Per diem must be positive')
+      .nonnegative('Per diem must be zero or greater')
       .max(1000, 'Per diem cannot exceed $1000/day')
       .optional(),
   })
@@ -225,6 +225,7 @@ export const laborRequestFormDataSchema = z.object({
 
 export type CraftFormData = z.infer<typeof craftFormDataSchema>;
 export type LaborRequestFormData = z.infer<typeof laborRequestFormDataSchema>;
+export type ExperienceLevel = CraftFormData['experienceLevel'];
 
 // =============================================================================
 // VALIDATION HELPERS

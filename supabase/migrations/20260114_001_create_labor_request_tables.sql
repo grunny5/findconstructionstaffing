@@ -50,12 +50,32 @@ CREATE TABLE labor_request_crafts (
   duration_days INTEGER NOT NULL CHECK (duration_days BETWEEN 1 AND 365),
   hours_per_week INTEGER NOT NULL CHECK (hours_per_week BETWEEN 1 AND 168),
   notes TEXT CHECK (length(notes) <= 500),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  -- Ensure start date is not in the past and not more than 1 year in future
-  CONSTRAINT valid_start_date CHECK (start_date >= CURRENT_DATE),
-  CONSTRAINT valid_future_date CHECK (start_date <= CURRENT_DATE + INTERVAL '1 year')
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Trigger function to validate start_date only on INSERT
+CREATE OR REPLACE FUNCTION validate_start_date_on_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Only validate on INSERT, not UPDATE (allows legitimate corrections to past records)
+  IF (TG_OP = 'INSERT') THEN
+    IF (NEW.start_date < CURRENT_DATE) THEN
+      RAISE EXCEPTION 'start_date cannot be in the past';
+    END IF;
+
+    IF (NEW.start_date > CURRENT_DATE + INTERVAL '1 year') THEN
+      RAISE EXCEPTION 'start_date cannot be more than 1 year in the future';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER labor_request_crafts_validate_start_date
+BEFORE INSERT ON labor_request_crafts
+FOR EACH ROW
+EXECUTE FUNCTION validate_start_date_on_insert();
 
 -- =============================================================================
 -- LABOR_REQUEST_NOTIFICATIONS TABLE
