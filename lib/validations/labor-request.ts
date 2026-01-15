@@ -104,7 +104,9 @@ export const craftFormDataSchema = z
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format')
       .refine(
         (date) => {
-          const startDate = new Date(date);
+          // Parse as local date by splitting components to avoid timezone issues
+          const [year, month, day] = date.split('-').map(Number);
+          const startDate = new Date(year, month - 1, day);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           return startDate >= today;
@@ -113,7 +115,9 @@ export const craftFormDataSchema = z
       )
       .refine(
         (date) => {
-          const startDate = new Date(date);
+          // Parse as local date by splitting components to avoid timezone issues
+          const [year, month, day] = date.split('-').map(Number);
+          const startDate = new Date(year, month - 1, day);
           const oneYearFromNow = new Date();
           oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
           return startDate <= oneYearFromNow;
