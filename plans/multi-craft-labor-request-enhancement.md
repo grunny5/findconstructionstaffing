@@ -131,9 +131,18 @@ CREATE INDEX idx_request_status ON labor_requests(status, created_at DESC);
 CREATE INDEX idx_notifications_agency ON labor_request_notifications(agency_id, sent_at);
 CREATE INDEX idx_notifications_request ON labor_request_notifications(labor_request_id);
 
--- GIN indexes for array operations (if needed)
-CREATE INDEX idx_agency_trades_gin ON agency_trades USING GIN (trade_id);
-CREATE INDEX idx_agency_regions_gin ON agency_regions USING GIN (region_id);
+-- B-tree indexes for agency_trades junction table (supports EXISTS subqueries in matching RPC)
+-- Note: trade_id and region_id are scalar UUIDs, not arrays (GIN would be inappropriate)
+CREATE INDEX idx_agency_trades_trade ON agency_trades(trade_id, agency_id);
+CREATE INDEX idx_agency_trades_agency ON agency_trades(agency_id, trade_id);
+
+-- B-tree indexes for agency_regions junction table
+CREATE INDEX idx_agency_regions_region ON agency_regions(region_id, agency_id);
+CREATE INDEX idx_agency_regions_agency ON agency_regions(agency_id, region_id);
+
+-- These composite B-tree indexes efficiently serve the EXISTS subqueries:
+--   EXISTS (SELECT 1 FROM agency_trades WHERE agency_id = a.id AND trade_id = p_trade_id)
+--   EXISTS (SELECT 1 FROM agency_regions WHERE agency_id = a.id AND region_id = p_region_id)
 ```
 
 **1.3 Implement RLS Policies**
@@ -709,12 +718,16 @@ export async function notifyMatchedAgencies(
 
 **4.3 Consolidate Notifications for Multi-Craft Matches**
 ```typescript
+import { createClient } from '@/lib/supabase/server';
+
 // If same agency matches multiple crafts, send single consolidated email
 export async function sendConsolidatedNotifications(
   requestId: string,
   matchesByCraft: Map<string, AgencyMatch[]>
 ) {
-  // Group by agency ID
+  const supabase = createClient();
+
+  // Step 1: Group matches by agency ID
   const byAgency = new Map<string, CraftMatch[]>();
 
   for (const [craftId, matches] of matchesByCraft) {
@@ -726,15 +739,83 @@ export async function sendConsolidatedNotifications(
     }
   }
 
-  // Send one email per agency with all their matched crafts
+  // Step 2: Create notification records for ALL craft-agency pairs BEFORE sending
+  const notificationRecords = [];
+
   for (const [agencyId, crafts] of byAgency) {
-    await resend.emails.send({
-      from: 'requests@findconstructionstaffing.com',
-      to: crafts[0].agency.email,
-      subject: `New Multi-Craft Labor Request (${crafts.length} trades)`,
-      react: MultiCraftAgencyEmail({ crafts, request }),
-    });
+    for (const craft of crafts) {
+      notificationRecords.push({
+        labor_request_id: requestId,
+        labor_request_craft_id: craft.craftId,
+        agency_id: agencyId,
+        status: 'pending',
+        sent_at: null,
+        delivery_error: null,
+      });
+    }
   }
+
+  // Insert all notification records and get IDs back
+  const { data: insertedNotifications, error: insertError } = await supabase
+    .from('labor_request_notifications')
+    .insert(notificationRecords)
+    .select('id, labor_request_craft_id, agency_id');
+
+  if (insertError) {
+    console.error('Failed to create notification records:', insertError);
+    throw new Error('Failed to create notification records');
+  }
+
+  // Step 3: Map notification IDs by agency for batch updates
+  const notificationsByAgency = new Map<string, string[]>();
+
+  for (const notification of insertedNotifications) {
+    if (!notificationsByAgency.has(notification.agency_id)) {
+      notificationsByAgency.set(notification.agency_id, []);
+    }
+    notificationsByAgency.get(notification.agency_id)!.push(notification.id);
+  }
+
+  // Step 4: Send one consolidated email per agency and update records
+  for (const [agencyId, crafts] of byAgency) {
+    const notificationIds = notificationsByAgency.get(agencyId) || [];
+
+    try {
+      // Send consolidated email
+      await resend.emails.send({
+        from: 'requests@findconstructionstaffing.com',
+        to: crafts[0].agency.email,
+        subject: `New Multi-Craft Labor Request (${crafts.length} trades)`,
+        react: MultiCraftAgencyEmail({ crafts, request }),
+      });
+
+      // Update ALL notification records for this agency to 'sent'
+      await supabase
+        .from('labor_request_notifications')
+        .update({
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        })
+        .in('id', notificationIds);
+
+    } catch (error) {
+      console.error(`Failed to send email to agency ${agencyId}:`, error);
+
+      // Update ALL notification records for this agency to 'failed'
+      await supabase
+        .from('labor_request_notifications')
+        .update({
+          status: 'failed',
+          delivery_error: error instanceof Error ? error.message : 'Unknown error',
+        })
+        .in('id', notificationIds);
+    }
+  }
+
+  return {
+    totalAgencies: byAgency.size,
+    totalNotifications: notificationRecords.length,
+  };
 }
 ```
 
@@ -1045,18 +1126,18 @@ export default async function SuccessPage({
 
 **Security**: Use server-validated private channels and RLS policies to prevent unauthorized access.
 
-**Server-Side Channel Setup** (`app/api/agencies/[agencyId]/realtime-token/route.ts`):
+**Server-Side Channel Setup** (`app/api/agencies/[slug]/realtime-token/route.ts`):
 ```typescript
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Validate UUID format
-const uuidSchema = z.string().uuid();
+// Validate slug format (alphanumeric + hyphens)
+const slugSchema = z.string().regex(/^[a-z0-9-]+$/, 'Invalid slug format');
 
 export async function GET(
   request: Request,
-  { params }: { params: { agencyId: string } }
+  { params }: { params: { slug: string } }
 ) {
   const supabase = createClient();
 
@@ -1066,35 +1147,38 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Validate agencyId is valid UUID (prevent injection)
-  const validation = uuidSchema.safeParse(params.agencyId);
+  // Validate slug format (prevent injection)
+  const validation = slugSchema.safeParse(params.slug);
   if (!validation.success) {
     return NextResponse.json(
-      { error: 'Invalid agency ID format' },
+      { error: 'Invalid agency slug format' },
       { status: 400 }
     );
   }
 
-  const agencyId = validation.data;
+  const slug = validation.data;
 
-  // Verify user owns this agency
+  // Lookup agency by slug and verify ownership
   const { data: agency, error } = await supabase
     .from('agencies')
-    .select('id')
-    .eq('id', agencyId)
+    .select('id, slug')
+    .eq('slug', slug)
     .eq('claimed_by', user.id)
     .single();
 
   if (error || !agency) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json(
+      { error: 'Agency not found or access denied' },
+      { status: 403 }
+    );
   }
 
-  // Return validated channel name (server controls filter)
-  const channelName = `agency:${agencyId}:requests`;
+  // Return validated channel name using resolved agency UUID
+  const channelName = `agency:${agency.id}:requests`;
 
   return NextResponse.json({
     channelName,
-    agencyId, // Validated UUID
+    agencyId: agency.id, // Resolved UUID from slug lookup
   });
 }
 ```
@@ -1116,7 +1200,7 @@ export function RealtimeSubscription({ agencySlug }: { agencySlug: string }) {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     async function setupSubscription() {
-      // Get validated channel from server
+      // Get validated channel from server (server resolves slug to UUID)
       const response = await fetch(`/api/agencies/${agencySlug}/realtime-token`);
 
       if (!response.ok) {
@@ -1183,11 +1267,13 @@ USING (
 ```
 
 **Security Notes**:
-- ✅ AgencyId validated as UUID server-side (prevents injection)
-- ✅ Ownership verified before returning channel name
-- ✅ RLS policies enforce row-level filtering
+- ✅ Agency slug validated with regex server-side (prevents injection: `/^[a-z0-9-]+$/`)
+- ✅ Slug resolved to UUID via database lookup (single source of truth)
+- ✅ Ownership verified before returning channel name (`claimed_by = auth.uid()`)
+- ✅ Channel name uses resolved UUID (not client-provided slug)
+- ✅ RLS policies enforce row-level filtering on `labor_request_notifications`
 - ✅ Private channel names prevent cross-agency eavesdropping
-- ✅ Client cannot bypass server validation
+- ✅ Client cannot bypass server validation or forge agency IDs
 
 - Badge count on sidebar "Requests" link showing unread count
 - Browser notification permission prompt (optional)
