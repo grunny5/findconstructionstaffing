@@ -207,8 +207,14 @@ const craftSchema = z.object({
     .min(1, 'At least 1 worker required')
     .max(500, 'Maximum 500 workers per craft'),
   startDate: z.string().refine(
-    (date) => new Date(date) >= new Date(),
-    'Start date must be in the future'
+    (date) => {
+      const start = new Date(date);
+      const now = new Date();
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(now.getFullYear() + 1);
+      return start >= now && start <= oneYearFromNow;
+    },
+    'Start date must be between today and 1 year from now'
   ),
   durationDays: z.coerce.number()
     .int()
@@ -229,15 +235,8 @@ const laborRequestSchema = z.object({
   additionalDetails: z.string().max(2000).optional(),
   crafts: z.array(craftSchema)
     .min(1, 'Add at least one craft requirement')
-    .max(10, 'Maximum 10 crafts per request')
-    .refine(
-      (crafts) => {
-        // Prevent duplicate trade+region combinations
-        const keys = crafts.map(c => `${c.tradeId}-${c.regionId}`);
-        return keys.length === new Set(keys).size;
-      },
-      { message: 'Duplicate trade/location combinations not allowed' }
-    ),
+    .max(10, 'Maximum 10 crafts per request'),
+  // Note: Duplicate trade+region combinations ARE allowed (e.g., Electrician in TX + Electrician in CA)
 });
 ```
 
@@ -252,7 +251,7 @@ const laborRequestSchema = z.object({
 **Acceptance Criteria**:
 - [ ] Users can add up to 10 craft requirements
 - [ ] Each craft has all required fields (trade, location, workers, duration, hours/week)
-- [ ] Validation prevents duplicate trade/location combinations
+- [ ] Duplicate trade/location combinations ARE allowed (e.g., same trade in different states)
 - [ ] Remove button works correctly (keeps at least 1 craft)
 - [ ] Form is fully accessible (WCAG 2.2 Level AA)
 - [ ] Mobile layout is usable with multiple crafts
@@ -817,7 +816,7 @@ CREATE INDEX idx_labor_request_crafts_request_id
 
 - [ ] Users can add 1-10 craft requirements per request
 - [ ] Each craft specifies: trade, location, workers, duration, hours/week, optional notes
-- [ ] System validates duplicate trade/location combinations
+- [ ] System allows duplicate trade/location combinations (same trade in different states)
 - [ ] System validates all inputs (ranges, formats, future dates)
 - [ ] Matching algorithm finds top 5 verified agencies per craft based on trade + location
 - [ ] Matched agencies receive email notifications with full request details
@@ -891,94 +890,94 @@ CREATE INDEX idx_labor_request_crafts_request_id
 
 ---
 
-## Clarifying Questions
+## Clarifying Questions & Decisions
 
-Before starting implementation, these questions need answers from stakeholders:
+**Status**: ✅ All questions answered by stakeholder on 2026-01-14
+
+### Decisions Summary
+- **Max crafts**: 10 per request
+- **Authentication**: Contact info required, no login needed initially
+- **Matching**: Verified agencies only, no capacity checking
+- **Contact reveal**: Direct contact info in agency notification (simplified flow for MVP)
+- **Future**: Proposal/budget system deferred to Phase 7
+- **Notifications**: Immediate send, consolidated for multi-craft
+- **Data retention**: Indefinite
+- **Request expiration**: Auto-archive after 30 days
+- **Rate limiting**: 5 requests/hour per IP
+
+---
+
+## Clarifying Questions (ANSWERED)
+
+~~Before starting implementation, these questions need answers from stakeholders:~~
 
 ### Business Rules & Validation
 
-1. **Maximum crafts per request**: Is 10 crafts the right limit, or should it be higher/lower?
-2. **Duplicate combinations**: Should we allow same trade in different locations (e.g., Electrician in TX AND Electrician in CA)?
-3. **Future start dates**: How far in advance can users request labor? (30 days? 90 days? 1 year?)
-4. **Minimum duration**: What's the minimum project duration we should accept? (Currently set to 1 day)
-5. **Hours per week validation**: Should we validate that hours/week makes sense with duration? (e.g., 168 hours/week for 1 day is odd)
+1. **Maximum crafts per request**: ✅ **10 crafts is correct**
+2. **Duplicate combinations**: ✅ **Yes, allow same trade in different locations** (e.g., Electrician in TX AND Electrician in CA)
+3. **Future start dates**: ✅ **Up to 1 year in advance**
+4. **Minimum duration**: ✅ **Keep 1 day minimum** (no change needed)
+5. **Hours per week validation**: ✅ **No cross-field validation needed** (trust user input)
 
 ### Matching Algorithm
 
-6. **Verified agencies only**: Should we ONLY match verified agencies, or include unverified with lower ranking?
-7. **Zero matches scenario**: If no agencies match a craft (wrong location/trade combo), what should happen?
-   - Show error before submission?
-   - Allow submission but notify user no agencies available?
-   - Suggest nearby regions?
-8. **Matching criteria weights**: What's the priority order for scoring?
-   - Current plan: verified status > capacity match > certifications
-   - Should we consider: response rate, rating, past performance?
-9. **Agency capacity**: Do we check if agency is currently at capacity before matching? (Requires tracking active placements)
-10. **Regional preferences**: If an agency serves multiple regions, do they get priority for their "primary" regions?
+6. **Verified agencies only**: ✅ **Yes, ONLY verified agencies** (hard filter)
+7. **Zero matches scenario**: ✅ **Allow submission, show message "No agencies matched for [craft]"** (no suggestions)
+8. **Matching criteria weights**: ✅ **Keep current plan** (verified status > capacity match > certifications)
+9. **Agency capacity**: ✅ **No capacity checking** (send to all matching verified agencies)
+10. **Regional preferences**: ✅ **No regional priority** (all matching regions treated equally)
 
 ### Notifications
 
-11. **Notification timing**: Send immediately or batch (e.g., every 15 minutes)?
-12. **Notification consolidation**: If agency matches 3 crafts in same request, send 1 email or 3 emails?
-    - Current plan: 1 consolidated email
-13. **Email from address**: Should it be `requests@findconstructionstaffing.com` or `noreply@`?
-14. **Reply-to address**: Should agencies reply directly to requester's email or to platform?
-15. **Unsubscribe handling**: Can agencies opt-out of ALL labor requests or just specific trades/regions?
-16. **Failed delivery retry**: How many retry attempts for failed emails? (Current plan: 3 with exponential backoff)
-17. **Agency notification preferences**: Should agencies be able to set quiet hours or daily digest instead of instant?
+11. **Notification timing**: ✅ **Send immediately** (no batching)
+12. **Notification consolidation**: ✅ **Yes, 1 consolidated email** for multi-craft matches
+13. **Email from address**: ✅ **Use `requests@findconstructionstaffing.com`**
+14. **Reply-to address**: ✅ **Agencies reply directly to requester's email** (included in notification)
+15. **Unsubscribe handling**: 🔜 **Defer to future** (out of scope for Phase 1)
+16. **Failed delivery retry**: ✅ **Keep 3 retries with exponential backoff**
+17. **Agency notification preferences**: ✅ **No quiet hours or daily digest** (instant only for now)
 
 ### Privacy & Contact Information
 
-18. **Contact info visibility**: When should requester's email/phone be revealed to agencies?
-    - Immediately in email notification (current plan)
-    - Only after agency expresses interest
-19. **Data retention**: How long should we keep labor request data? (30 days? 1 year? Forever?)
-20. **GDPR/Privacy compliance**: Do we need consent checkboxes for sharing contact info with agencies?
-21. **Agency contact visibility**: Can requesters see which specific agencies were notified, or just the count?
+18. **Contact info visibility**: ✅ **Immediately in email notification** (simplified MVP flow)
+    - **Note**: Future Phase 7 will add proposal/budget system with conditional reveal
+19. **Data retention**: ✅ **Indefinite** (keep all labor request data permanently)
+20. **GDPR/Privacy compliance**: ✅ **No consent checkboxes needed** (US-focused platform)
+21. **Agency contact visibility**: ✅ **Just the count** (no specific agency names shown to requester)
 
 ### Agency Dashboard
 
-22. **Request expiration**: Do labor requests "expire" after a certain time? (e.g., auto-archive after 30 days)
-23. **Response tracking**: What counts as "responded"?
-    - Clicking "Mark as Responded" button
-    - Starting a conversation
-    - Either action
-24. **Multi-agency coordination**: If multiple agencies respond to same request, how does requester choose? (Outside scope, but affects UX)
-25. **Agency workload limits**: Should we stop sending requests to agencies after X pending requests? (Prevent overwhelming them)
+22. **Request expiration**: ✅ **Auto-archive after 30 days**
+23. **Response tracking**: ✅ **Responded = agency sends message through system** (trackable via messaging)
+24. **Multi-agency coordination**: ✅ **Out of scope** (requester handles via email, future: requester dashboard)
+25. **Agency workload limits**: ✅ **No limits** (send all matching requests)
 
 ### Form UX & User Flow
 
-26. **Authentication required**: Can anonymous users submit requests, or must they create account?
-    - Current plan: No auth required (just contact info)
-27. **Save draft functionality**: Should users be able to save incomplete requests and return later?
-28. **Edit after submission**: Can users edit/cancel requests after submission? (e.g., "oops, I need 10 workers not 100")
-29. **Request history**: Should authenticated users see their past requests? (Requires user accounts)
-30. **Pre-fill from previous**: Should form pre-fill based on user's last request?
+26. **Authentication required**: ✅ **No auth required, just contact info** (email + phone required for routing)
+27. **Save draft functionality**: ✅ **No draft saving** (out of scope for now)
+28. **Edit after submission**: ✅ **No edit/cancel initially** (add later with requester dashboard)
+29. **Request history**: 🔜 **Future: Requester dashboard** (Phase 7+)
+30. **Pre-fill from previous**: ✅ **No pre-fill** (no user accounts yet)
 
 ### Success Page & Follow-up
 
-31. **Zero-match messaging**: If no agencies matched, what alternative should we offer?
-    - "Try expanding your search radius"
-    - "Contact support for manual matching"
-    - "Post as public job instead"
-32. **Expected response time**: What should we tell users? (Currently: "24-48 hours")
-33. **Confirmation email**: Should requester get email confirmation with copy of their request?
-    - Current plan: Yes, with agency match counts
-34. **Status tracking**: Should requesters be able to check status later (e.g., "3 agencies viewed, 1 responded")?
+31. **Zero-match messaging**: ✅ **Just informational message** (no suggestions/alternatives)
+32. **Expected response time**: ✅ **Keep "24-48 hours" messaging**
+33. **Confirmation email**: ✅ **Yes, send confirmation email** with request summary and match counts
+34. **Status tracking**: 🔜 **Future with requester dashboard** (Phase 7+)
 
 ### Technical & Infrastructure
 
-35. **Rate limiting**: 5 requests/hour per IP sufficient, or too restrictive for large companies?
-36. **Webhook notifications**: Should we provide webhook callbacks when agencies respond (for integrations)?
-37. **API versioning**: Should this be `/api/labor-requests` or `/api/v1/labor-requests` for future compatibility?
+35. **Rate limiting**: ✅ **5 requests/hour per IP is correct**
+36. **Webhook notifications**: 🔜 **Defer to future** (out of scope)
+37. **API versioning**: ✅ **Follow site standard** (use consistent versioning across all API routes)
 
 ### Agency Dashboard Specific
 
-38. **Request visibility**: Can agencies see requests from their competitors (who else was notified)?
-39. **Conversation creation**: When agency starts conversation, who owns the thread?
-    - Agency can continue even if requester doesn't respond
-    - Platform mediates
-40. **Bulk actions**: Should agencies be able to bulk archive/respond to multiple requests?
+38. **Request visibility**: ✅ **No, agencies cannot see who else was notified**
+39. **Conversation creation**: ✅ **Platform mediates** (standard messaging system flow)
+40. **Bulk actions**: ✅ **No bulk actions** (individual request management only)
 
 ---
 
@@ -1074,23 +1073,64 @@ Before starting implementation, these questions need answers from stakeholders:
 
 ## Future Considerations
 
-### Phase 6: Advanced Features (Post-MVP)
+### Phase 7: Proposal/Budget System (Next Major Feature)
 
-**Request Management Dashboard**
+**Priority**: High - Deferred from Phase 1-6 to simplify MVP
+
+**Overview**: Instead of revealing requester contact info immediately, implement a proposal workflow where agencies submit non-binding price estimates before direct contact.
+
+**New Workflow**:
+1. Agency receives notification (NO contact info included)
+2. Agency views request in dashboard → Submits proposal
+   - Non-binding price estimate
+   - Message/questions for requester
+   - Timeline estimate
+3. Requester receives notification of proposals
+4. Requester reviews proposals in simplified inbox
+5. Requester replies to a proposal → **Contact info revealed to that agency only**
+6. Agency can now contact requester directly
+
+**Database Changes**:
+```sql
+CREATE TABLE labor_request_proposals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  labor_request_id UUID REFERENCES labor_requests(id),
+  labor_request_craft_id UUID REFERENCES labor_request_crafts(id),
+  agency_id UUID REFERENCES agencies(id),
+  price_estimate DECIMAL(10,2),
+  currency TEXT DEFAULT 'USD',
+  message TEXT,
+  timeline_estimate TEXT,
+  submitted_at TIMESTAMPTZ DEFAULT NOW(),
+  requester_viewed_at TIMESTAMPTZ,
+  requester_replied_at TIMESTAMPTZ,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'viewed', 'accepted', 'declined'))
+);
+```
+
+**Benefits**:
+- Requester privacy protected until they choose
+- Platform captures pricing data for analytics
+- Agencies write custom pitches (higher engagement)
+- Platform becomes marketplace vs just directory
+
+**Estimated Effort**: 2-3 weeks
+
+---
+
+### Phase 8+: Advanced Features (Post-MVP)
+
+**Requester Dashboard**
 - Authenticated users can view request history
 - Edit submitted requests (re-triggers matching)
 - Track agency responses in real-time
 - Mark requests as fulfilled/cancelled
+- Status tracking: "3 agencies viewed, 1 responded"
 
 **Agency Response Tracking**
-- Agencies click "Interested" in notification email
 - Track response rates per agency for quality scoring
 - Auto-reminder if no responses after 48 hours
-
-**Budget/Rate Information**
-- Add hourly rate range per craft
-- Better matching based on agency pricing tier
-- Filter agencies by budget constraints
+- Agency performance metrics in matching algorithm
 
 **Geographic Radius Matching**
 - Instead of exact state match, allow "within 50 miles of Houston"
@@ -1165,8 +1205,9 @@ Before starting implementation, these questions need answers from stakeholders:
 - Valid request passes
 - Missing required fields fails
 - Invalid worker counts fails
-- Duplicate craft combinations fails
+- Start date > 1 year in future fails
 - Hours per week > 168 fails
+- Duplicate craft combinations allowed (same trade, different locations)
 
 **Matching Algorithm** (`lib/matching/agency-matcher.test.ts`)
 - Returns top 5 agencies when >5 available
