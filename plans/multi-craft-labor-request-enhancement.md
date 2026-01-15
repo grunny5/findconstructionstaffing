@@ -71,6 +71,8 @@ erDiagram
         text contact_phone
         text additional_details
         text status
+        text confirmation_token
+        timestamptz confirmation_token_expires
         timestamptz created_at
         timestamptz updated_at
     }
@@ -135,20 +137,125 @@ CREATE INDEX idx_agency_regions_gin ON agency_regions USING GIN (region_id);
 ```
 
 **1.3 Implement RLS Policies**
+
+**Important**: Verify your Supabase anonymous role name. Common values are `anon`, `public`, or custom role. Update `TO anon` in policies below if different.
+
 ```sql
--- Allow anonymous inserts for labor requests (anyone can submit)
-CREATE POLICY "Anyone can create labor requests"
+-- =============================================================================
+-- LABOR_REQUESTS TABLE POLICIES
+-- =============================================================================
+
+-- Allow anonymous inserts (anyone can submit labor requests)
+CREATE POLICY "Anonymous users can create labor requests"
 ON labor_requests FOR INSERT
 TO anon
 WITH CHECK (true);
 
--- Admin-only access to read all requests
-CREATE POLICY "Admins can read all requests"
+-- Admins can read all requests
+CREATE POLICY "Admins can read all labor requests"
 ON labor_requests FOR SELECT
 TO authenticated
 USING (auth.jwt()->>'role' = 'admin');
 
--- Similar policies for crafts and notifications
+-- Token-based access for success page (see Phase 5 security notes)
+CREATE POLICY "Success page token access"
+ON labor_requests FOR SELECT
+TO anon
+USING (
+  confirmation_token IS NOT NULL
+  AND confirmation_token_expires > NOW()
+);
+
+-- =============================================================================
+-- LABOR_REQUEST_CRAFTS TABLE POLICIES
+-- =============================================================================
+
+-- Allow anonymous inserts (submitted with parent request)
+CREATE POLICY "Anonymous users can insert crafts with request"
+ON labor_request_crafts FOR INSERT
+TO anon
+WITH CHECK (true);
+
+-- Admins can read all crafts
+CREATE POLICY "Admins can read all labor request crafts"
+ON labor_request_crafts FOR SELECT
+TO authenticated
+USING (auth.jwt()->>'role' = 'admin');
+
+-- Agencies can read crafts for requests they were notified about
+CREATE POLICY "Agencies can read crafts for their notifications"
+ON labor_request_crafts FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM labor_request_notifications lrn
+    INNER JOIN agencies a ON lrn.agency_id = a.id
+    WHERE lrn.labor_request_craft_id = labor_request_crafts.id
+    AND a.claimed_by = auth.uid()
+  )
+);
+
+-- =============================================================================
+-- LABOR_REQUEST_NOTIFICATIONS TABLE POLICIES
+-- =============================================================================
+
+-- System/API can insert notifications (server-side only)
+CREATE POLICY "System can insert notifications"
+ON labor_request_notifications FOR INSERT
+TO authenticated
+WITH CHECK (
+  auth.jwt()->>'role' IN ('admin', 'service_role')
+);
+
+-- Admins can read all notifications
+CREATE POLICY "Admins can read all notifications"
+ON labor_request_notifications FOR SELECT
+TO authenticated
+USING (auth.jwt()->>'role' = 'admin');
+
+-- Agencies can read their own notifications
+CREATE POLICY "Agencies can read their notifications"
+ON labor_request_notifications FOR SELECT
+TO authenticated
+USING (
+  agency_id IN (
+    SELECT id FROM agencies WHERE claimed_by = auth.uid()
+  )
+);
+
+-- Agencies can update status of their notifications (viewed_at, responded_at, status)
+CREATE POLICY "Agencies can update their notification status"
+ON labor_request_notifications FOR UPDATE
+TO authenticated
+USING (
+  agency_id IN (
+    SELECT id FROM agencies WHERE claimed_by = auth.uid()
+  )
+)
+WITH CHECK (
+  agency_id IN (
+    SELECT id FROM agencies WHERE claimed_by = auth.uid()
+  )
+);
+```
+
+**Testing RLS Policies**:
+```sql
+-- Test anonymous can insert labor_requests
+SET ROLE anon;
+INSERT INTO labor_requests (project_name, company_name, contact_email, contact_phone)
+VALUES ('Test Project', 'Test Co', 'test@example.com', '555-1234');
+-- Should succeed
+
+-- Test anonymous CANNOT read labor_requests (without token)
+SELECT * FROM labor_requests;
+-- Should return 0 rows (no token in current_setting)
+
+-- Test admin can read all
+SET ROLE authenticated;
+SET request.jwt.claims = '{"role": "admin"}';
+SELECT * FROM labor_requests;
+-- Should return all rows
 ```
 
 **1.4 Update TypeScript Types**
@@ -275,53 +382,57 @@ const laborRequestSchema = z.object({
 - Return request ID and match counts per craft
 
 **3.2 Implement Matching Algorithm**
+
+**Decision**: Use SQL RPC as single source of truth for matching logic (avoid duplication)
+
 - File: `lib/matching/agency-matcher.ts`
-- Core matching logic:
+- Thin TypeScript wrapper that calls SQL RPC function:
   ```typescript
-  async function matchAgenciesToCraft(craft: CraftRequest): Promise<AgencyMatch[]> {
-    // 1. Hard filters (must match)
-    const candidates = await supabase
-      .from('agencies')
-      .select(`
-        id, name, slug, verified,
-        agency_trades!inner(trade_id),
-        agency_regions!inner(region_id)
-      `)
-      .eq('agency_trades.trade_id', craft.tradeId)
-      .eq('agency_regions.region_id', craft.regionId)
-      .eq('verified', true); // Only verified agencies
+  import { createClient } from '@/lib/supabase/server';
 
-    // 2. Score and rank
-    const scored = candidates.map(agency => ({
-      agency,
-      score: calculateMatchScore(agency, craft)
-    }));
-
-    // 3. Sort by score descending
-    scored.sort((a, b) => b.score - a.score);
-
-    // 4. Return top 5
-    return scored.slice(0, 5);
+  export interface CraftRequest {
+    tradeId: string;
+    regionId: string;
+    workerCount: number;
   }
 
-  function calculateMatchScore(agency: Agency, craft: CraftRequest): number {
-    let score = 100; // Base score
+  export interface AgencyMatch {
+    agency_id: string;
+    agency_name: string;
+    agency_slug: string;
+    match_score: number;
+  }
 
-    // Bonus for verification badges
-    if (agency.certifications?.length > 0) score += 20;
+  /**
+   * Match agencies to a craft requirement using database RPC function.
+   * Returns top 5 agencies ranked by match score.
+   */
+  export async function matchAgenciesToCraft(
+    craft: CraftRequest
+  ): Promise<AgencyMatch[]> {
+    const supabase = createClient();
 
-    // Bonus for capacity match
-    if (agency.min_project_size <= craft.workerCount &&
-        agency.max_project_size >= craft.workerCount) {
-      score += 10;
+    const { data, error } = await supabase.rpc('match_agencies_to_craft', {
+      p_trade_id: craft.tradeId,
+      p_region_id: craft.regionId,
+      p_worker_count: craft.workerCount,
+    });
+
+    if (error) {
+      console.error('Matching algorithm error:', error);
+      throw new Error(`Failed to match agencies: ${error.message}`);
     }
 
-    // Penalty if agency at capacity (future: check existing commitments)
-    // For now, just use static fields
-
-    return score;
+    return data || [];
   }
   ```
+
+**Why SQL RPC over TypeScript**:
+- ✅ Single source of truth (no duplicate logic)
+- ✅ Better performance (executes in database, less data transfer)
+- ✅ Easier to test and modify scoring algorithm
+- ✅ Can add more complex joins without N+1 queries
+- ✅ TypeScript layer stays thin (validation + orchestration only)
 
 **3.3 Create Matching RPC Function**
 ```sql
@@ -388,6 +499,87 @@ $$ LANGUAGE plpgsql;
 **Goal**: Send email notifications to matched agencies and requester
 
 #### Tasks
+
+**4.0 Configure Resend Email Infrastructure**
+
+**DNS Configuration** (Required before sending emails):
+
+1. **SPF Record**
+   - Add TXT record to your domain DNS:
+   ```
+   Host: @
+   Value: v=spf1 include:_spf.resend.com ~all
+   ```
+
+2. **DKIM Records**
+   - Log into Resend dashboard → Domains → Your Domain
+   - Copy DKIM selector and value provided by Resend
+   - Add TXT records:
+   ```
+   Host: resend._domainkey
+   Value: [DKIM value from Resend dashboard]
+   ```
+
+3. **DMARC Record** (Recommended after SPF/DKIM)
+   - Add TXT record:
+   ```
+   Host: _dmarc
+   Value: v=DMARC1; p=quarantine; rua=mailto:dmarc@findconstructionstaffing.com
+   ```
+
+4. **Domain Verification**
+   - In Resend dashboard, click "Verify Domain"
+   - DNS propagation can take up to 72 hours
+   - Test with `dig TXT findconstructionstaffing.com` to verify records
+
+5. **Sender Address**
+   - Use: `requests@findconstructionstaffing.com`
+   - Verify this address can receive email (for bounce handling)
+
+**Rate Limits & Quotas**:
+
+| Resend Tier | Daily Limit | Rate Limit | Cost |
+|-------------|-------------|------------|------|
+| Free | 100 emails/day | ~2 req/sec | $0 |
+| Pro | 50,000 emails/month | ~10 req/sec | $20/mo |
+| Scale | 1M+ emails/month | Custom | Custom |
+
+**Volume Estimation**:
+- Average request: 3 crafts × 5 agencies = 15 emails
+- 1 confirmation email to requester = 16 emails/request
+- 5 requests/hour max = 80 emails/hour
+- **Daily volume**: ~400-800 emails (depending on usage)
+
+**Recommendation**:
+- Start with **Pro tier** ($20/mo for 50k emails)
+- Free tier only supports ~6 labor requests/day (96 emails)
+
+**Rate Limiting Implementation**:
+```typescript
+// lib/notifications/rate-limiter.ts
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, '1 s'), // 10 req/sec
+  analytics: true,
+});
+
+export async function sendWithRateLimit(emailFn: () => Promise<void>) {
+  const { success } = await ratelimit.limit('resend-emails');
+  if (!success) {
+    await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms
+    return sendWithRateLimit(emailFn); // Retry
+  }
+  return emailFn();
+}
+```
+
+**Error Handling**:
+- Resend API errors: Log to Sentry, store in `delivery_error` field
+- Rate limit exceeded: Queue emails for retry (Inngest/Trigger.dev)
+- Bounces: Monitor bounce rate, implement suppression list
 
 **4.1 Create Email Templates**
 - File: `lib/emails/labor-request-agency-notification.tsx`
@@ -521,7 +713,10 @@ export async function sendConsolidatedNotifications(
 - Add "Submit Another Request" CTA
 - Include support contact information
 
-**5.2 Update Form Submission Flow**
+**5.2 Update Form Submission Flow with Token Generation**
+
+**Security Note**: Use short-lived confirmation tokens instead of exposing requestId in URL to prevent unauthorized access to contact information.
+
 ```typescript
 // app/request-labor/page.tsx
 const onSubmit = async (data: LaborRequestFormData) => {
@@ -541,8 +736,8 @@ const onSubmit = async (data: LaborRequestFormData) => {
 
     const result = await response.json();
 
-    // Redirect to success page with results
-    router.push(`/request-labor/success?requestId=${result.requestId}`);
+    // Redirect to success page with short-lived token (NOT requestId)
+    router.push(`/request-labor/success?token=${result.confirmationToken}`);
   } catch (error) {
     toast.error(error.message);
     setIsSubmitting(false);
@@ -550,38 +745,117 @@ const onSubmit = async (data: LaborRequestFormData) => {
 };
 ```
 
-**5.3 Display Match Results**
+**API Endpoint Token Generation** (`app/api/labor-requests/route.ts`):
+```typescript
+import crypto from 'crypto';
+
+// After inserting labor_requests row:
+const confirmationToken = crypto.randomBytes(32).toString('hex');
+const tokenExpires = new Date();
+tokenExpires.setHours(tokenExpires.getHours() + 2); // 2-hour expiry
+
+const { data: request, error } = await supabase
+  .from('labor_requests')
+  .insert({
+    project_name: data.projectName,
+    company_name: data.companyName,
+    contact_email: data.contactEmail,
+    contact_phone: data.contactPhone,
+    additional_details: data.additionalDetails,
+    status: 'pending',
+    confirmation_token: confirmationToken,
+    confirmation_token_expires: tokenExpires.toISOString(),
+  })
+  .select()
+  .single();
+
+// Return token to frontend
+return NextResponse.json({
+  requestId: request.id,
+  confirmationToken: confirmationToken,
+  matchCounts: matchResults,
+});
+```
+
+**5.3 Display Match Results with Token Validation**
+
+**Security**: Validate token and expiry before showing sensitive data. Mask contact info from query results.
+
 ```tsx
 // app/request-labor/success/page.tsx
-export default async function SuccessPage({ searchParams }) {
-  const { requestId } = searchParams;
+import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 
-  // Fetch match results
-  const { data: request } = await supabase
+export default async function SuccessPage({
+  searchParams
+}: {
+  searchParams: { token?: string }
+}) {
+  const { token } = searchParams;
+
+  if (!token) {
+    notFound();
+  }
+
+  const supabase = createClient();
+
+  // Fetch request by confirmation_token (NOT id)
+  const { data: request, error } = await supabase
     .from('labor_requests')
     .select(`
-      *,
+      id,
+      project_name,
+      company_name,
+      status,
+      confirmation_token_expires,
+      created_at,
       crafts:labor_request_crafts(
-        *,
+        id,
+        worker_count,
+        duration_days,
+        hours_per_week,
         trade:trades(name),
         region:regions(name),
         notifications:labor_request_notifications(count)
       )
     `)
-    .eq('id', requestId)
+    .eq('confirmation_token', token)
     .single();
+
+  // Validate token exists and hasn't expired
+  if (error || !request) {
+    notFound();
+  }
+
+  if (new Date(request.confirmation_token_expires) < new Date()) {
+    return (
+      <div className="error-container">
+        <h1>Confirmation Link Expired</h1>
+        <p>This confirmation link has expired (valid for 2 hours after submission).</p>
+        <p>Your request was successfully submitted. Agencies will contact you directly.</p>
+      </div>
+    );
+  }
+
+  // NOTE: We intentionally do NOT fetch contact_email or contact_phone
+  // to prevent token holders from accessing that sensitive data
 
   return (
     <div className="success-container">
       <CheckCircle className="text-green-600" size={64} />
       <h1>Request Submitted Successfully!</h1>
+      <p className="text-gray-600">Project: {request.project_name}</p>
 
       <div className="match-summary">
         {request.crafts.map(craft => (
           <div key={craft.id} className="craft-match-card">
             <h3>{craft.trade.name} - {craft.region.name}</h3>
-            <p>{craft.notifications.count} agencies notified</p>
-            <p>{craft.worker_count} workers for {craft.duration_days} days</p>
+            <p className="font-semibold">
+              {craft.notifications.count} agencies notified
+            </p>
+            <p className="text-sm text-gray-600">
+              {craft.worker_count} workers • {craft.duration_days} days • {craft.hours_per_week}hrs/week
+            </p>
           </div>
         ))}
       </div>
@@ -590,10 +864,14 @@ export default async function SuccessPage({ searchParams }) {
         <h2>What happens next?</h2>
         <ol>
           <li>Agencies will review your request</li>
-          <li>Interested agencies will contact you directly at {request.contact_email}</li>
-          <li>You'll receive responses within 24-48 hours</li>
+          <li>Interested agencies will contact you directly via the contact info you provided</li>
+          <li>You'll typically receive responses within 24-48 hours</li>
         </ol>
       </div>
+
+      <p className="text-sm text-gray-500 mt-6">
+        Confirmation #{request.id.slice(0, 8)}
+      </p>
     </div>
   );
 }
