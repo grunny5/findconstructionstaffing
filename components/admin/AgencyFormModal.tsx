@@ -815,7 +815,8 @@ export function AgencyFormModal({
                     type="submit"
                     disabled={
                       isSubmitting ||
-                      !form.formState.isValid ||
+                      Object.keys(form.formState.errors).length > 0 ||
+                      (!isEditMode && !form.formState.isValid) ||
                       (isEditMode && !form.formState.isDirty && !hasExternalChanges)
                     }
                     data-testid="submit-button"

@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { ERROR_CODES, HTTP_STATUS } from '@/types/api';
 import { z } from 'zod';
 
@@ -293,6 +293,9 @@ export async function PATCH(
       updatedAgency = agencyData;
     }
 
+    // Create admin client once for all junction table operations (bypasses RLS)
+    const adminClient = createAdminClient();
+
     // ========================================================================
     // 7. UPDATE TRADES (if trade_ids provided)
     // ========================================================================
@@ -359,7 +362,7 @@ export async function PATCH(
           trade_id,
         }));
 
-        const { error: upsertError } = await supabase
+        const { error: upsertError } = await adminClient
           .from('agency_trades')
           .upsert(newRelationships, {
             onConflict: 'agency_id,trade_id',
@@ -393,7 +396,7 @@ export async function PATCH(
         );
 
         if (orphanedIds.length > 0) {
-          const { error: deleteError } = await supabase
+          const { error: deleteError } = await adminClient
             .from('agency_trades')
             .delete()
             .eq('agency_id', id)
@@ -518,7 +521,7 @@ export async function PATCH(
           region_id,
         }));
 
-        const { error: upsertError } = await supabase
+        const { error: upsertError } = await adminClient
           .from('agency_regions')
           .upsert(newRelationships, {
             onConflict: 'agency_id,region_id',
@@ -552,7 +555,7 @@ export async function PATCH(
         );
 
         if (orphanedIds.length > 0) {
-          const { error: deleteError } = await supabase
+          const { error: deleteError } = await adminClient
             .from('agency_regions')
             .delete()
             .eq('agency_id', id)
