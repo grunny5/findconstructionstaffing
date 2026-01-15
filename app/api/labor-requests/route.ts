@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { laborRequestFormDataSchema } from '@/lib/validations/labor-request';
 import type { LaborRequestFormData } from '@/lib/validations/labor-request';
 import { randomBytes } from 'crypto';
@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Create notification records for matched agencies
+      // Note: Using supabaseAdmin because RLS policy requires authenticated admin role
       if (agencyMatches.length > 0) {
         const notifications = agencyMatches.map((match: any) => ({
           labor_request_id: laborRequest.id,
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
           status: 'pending',
         }));
 
-        const { error: notificationError } = await supabase
+        const { error: notificationError } = await supabaseAdmin
           .from('labor_request_notifications')
           .insert(notifications);
 
