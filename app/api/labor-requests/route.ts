@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
     ).toISOString(); // 24 hours from now
 
     // Insert main labor request
-    const { data: laborRequest, error: requestError } = await supabase
+    // Note: Using supabaseAdmin to bypass RLS (server-side only, input is validated)
+    const { data: laborRequest, error: requestError } = await supabaseAdmin
       .from('labor_requests')
       .insert({
         project_name: formData.projectName,
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       per_diem_rate: craft.perDiemRate || null,
     }));
 
-    const { data: crafts, error: craftsError } = await supabase
+    const { data: crafts, error: craftsError } = await supabaseAdmin
       .from('labor_request_crafts')
       .insert(craftInserts)
       .select();
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (craftsError || !crafts) {
       console.error('Error creating craft requirements:', craftsError);
       // Rollback: delete the labor request
-      await supabase.from('labor_requests').delete().eq('id', laborRequest.id);
+      await supabaseAdmin.from('labor_requests').delete().eq('id', laborRequest.id);
       return NextResponse.json(
         { error: 'Failed to create craft requirements' },
         { status: 500 }
@@ -96,7 +97,8 @@ export async function POST(request: NextRequest) {
 
     for (const craft of crafts) {
       // Call matching function
-      const { data: matches, error: matchError } = await supabase.rpc(
+      // Note: Using supabaseAdmin for consistency (RPC functions have SECURITY DEFINER)
+      const { data: matches, error: matchError } = await supabaseAdmin.rpc(
         'match_agencies_to_craft',
         {
           p_trade_id: craft.trade_id,
