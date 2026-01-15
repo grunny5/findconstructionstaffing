@@ -112,12 +112,95 @@ erDiagram
 #### Tasks
 
 **1.1 Create Migration for Core Tables**
-- File: `supabase/migrations/YYYYMMDDHHMMSS_create_labor_request_tables.sql`
-- Create `labor_requests` table with status enum
-- Create `labor_request_crafts` junction table with FK constraints
-- Create `labor_request_notifications` tracking table
-- Add composite indexes for common queries
-- Set up cascade delete policies
+
+**File: `supabase/migrations/YYYYMMDDHHMMSS_create_labor_request_tables.sql`**
+
+```sql
+-- =============================================================================
+-- LABOR_REQUESTS TABLE
+-- =============================================================================
+CREATE TABLE labor_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_name TEXT NOT NULL CHECK (length(project_name) BETWEEN 3 AND 200),
+  company_name TEXT NOT NULL CHECK (length(company_name) BETWEEN 2 AND 200),
+  contact_email TEXT NOT NULL CHECK (contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'),
+  contact_phone TEXT NOT NULL CHECK (length(contact_phone) BETWEEN 10 AND 20),
+  additional_details TEXT CHECK (length(additional_details) <= 2000),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'fulfilled', 'cancelled')),
+  confirmation_token TEXT UNIQUE,
+  confirmation_token_expires TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Trigger to auto-update updated_at
+CREATE OR REPLACE FUNCTION update_labor_request_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER labor_requests_updated_at
+BEFORE UPDATE ON labor_requests
+FOR EACH ROW
+EXECUTE FUNCTION update_labor_request_updated_at();
+
+-- =============================================================================
+-- LABOR_REQUEST_CRAFTS TABLE
+-- =============================================================================
+CREATE TABLE labor_request_crafts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  labor_request_id UUID NOT NULL REFERENCES labor_requests(id) ON DELETE CASCADE,
+  trade_id UUID NOT NULL REFERENCES trades(id) ON DELETE RESTRICT,
+  region_id UUID NOT NULL REFERENCES regions(id) ON DELETE RESTRICT,
+  worker_count INTEGER NOT NULL CHECK (worker_count BETWEEN 1 AND 500),
+  start_date DATE NOT NULL,
+  duration_days INTEGER NOT NULL CHECK (duration_days BETWEEN 1 AND 365),
+  hours_per_week INTEGER NOT NULL CHECK (hours_per_week BETWEEN 1 AND 168),
+  notes TEXT CHECK (length(notes) <= 500),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Ensure start date is not in the past and not more than 1 year in future
+  CONSTRAINT valid_start_date CHECK (start_date >= CURRENT_DATE),
+  CONSTRAINT valid_future_date CHECK (start_date <= CURRENT_DATE + INTERVAL '1 year')
+);
+
+-- =============================================================================
+-- LABOR_REQUEST_NOTIFICATIONS TABLE
+-- =============================================================================
+CREATE TABLE labor_request_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  labor_request_id UUID NOT NULL REFERENCES labor_requests(id) ON DELETE CASCADE,
+  labor_request_craft_id UUID NOT NULL REFERENCES labor_request_crafts(id) ON DELETE CASCADE,
+  agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+  sent_at TIMESTAMPTZ,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed', 'new', 'viewed', 'responded', 'archived')),
+  delivery_error TEXT,
+  responded_at TIMESTAMPTZ,
+  viewed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Ensure valid status transitions (pending must have null sent_at, others must have sent_at)
+  CONSTRAINT valid_status_transitions CHECK (
+    (status = 'pending' AND sent_at IS NULL) OR
+    (status IN ('sent', 'new', 'viewed', 'responded', 'archived') AND sent_at IS NOT NULL) OR
+    (status = 'failed')
+  )
+);
+
+-- Add comments for documentation
+COMMENT ON TABLE labor_requests IS 'Main table storing labor request submissions from companies';
+COMMENT ON TABLE labor_request_crafts IS 'Individual craft/trade requirements within a labor request (1:many)';
+COMMENT ON TABLE labor_request_notifications IS 'Tracks notifications sent to agencies for each craft requirement';
+
+COMMENT ON COLUMN labor_requests.confirmation_token IS 'Cryptographic token for success page access (64-char hex, 2-hour expiry)';
+COMMENT ON COLUMN labor_request_crafts.worker_count IS 'Number of workers needed (1-500)';
+COMMENT ON COLUMN labor_request_crafts.duration_days IS 'Project duration in days (1-365)';
+COMMENT ON COLUMN labor_request_crafts.hours_per_week IS 'Hours per week per worker (1-168)';
+COMMENT ON COLUMN labor_request_notifications.status IS 'pending → sent/failed → new → viewed → responded/archived';
+```
 
 **1.2 Add Database Indexes**
 ```sql
@@ -204,18 +287,10 @@ USING (
   )
 );
 
--- Success page token access for crafts (CRITICAL: allows nested query)
-CREATE POLICY "Success page token access for crafts"
-ON labor_request_crafts FOR SELECT
-TO anon
-USING (
-  EXISTS (
-    SELECT 1 FROM labor_requests lr
-    WHERE lr.id = labor_request_crafts.labor_request_id
-    AND lr.confirmation_token IS NOT NULL
-    AND lr.confirmation_token_expires > NOW()
-  )
-);
+-- NOTE: Success page does NOT use anonymous RLS access
+-- Token validation happens in API route using service role client
+-- This prevents security vulnerability where any non-null token could query all requests
+-- See app/api/labor-requests/success/route.ts for proper token validation
 
 -- =============================================================================
 -- LABOR_REQUEST_NOTIFICATIONS TABLE POLICIES
@@ -281,12 +356,158 @@ SELECT * FROM labor_requests;
 -- Should return all rows
 ```
 
-**1.4 Update TypeScript Types**
-- File: `types/labor-request.ts`
-- Generate types from new database schema
-- Create Zod validation schemas
-- Define form data types
-- Create DB-to-API transformation utilities
+**1.4 Create TypeScript Types**
+
+**File: `types/labor-request.ts`**
+```typescript
+// Database entity types (match Supabase schema exactly)
+export interface LaborRequest {
+  id: string;
+  project_name: string;
+  company_name: string;
+  contact_email: string;
+  contact_phone: string;
+  additional_details: string | null;
+  status: 'pending' | 'active' | 'fulfilled' | 'cancelled';
+  confirmation_token: string | null;
+  confirmation_token_expires: string | null; // ISO 8601 timestamp
+  created_at: string; // ISO 8601 timestamp
+  updated_at: string; // ISO 8601 timestamp
+}
+
+export interface LaborRequestCraft {
+  id: string;
+  labor_request_id: string;
+  trade_id: string;
+  region_id: string;
+  worker_count: number;
+  start_date: string; // YYYY-MM-DD format
+  duration_days: number;
+  hours_per_week: number;
+  notes: string | null;
+  created_at: string; // ISO 8601 timestamp
+}
+
+export interface LaborRequestNotification {
+  id: string;
+  labor_request_id: string;
+  labor_request_craft_id: string;
+  agency_id: string;
+  sent_at: string | null; // ISO 8601 timestamp
+  status: 'pending' | 'sent' | 'failed' | 'new' | 'viewed' | 'responded' | 'archived';
+  delivery_error: string | null;
+  responded_at: string | null; // ISO 8601 timestamp
+  viewed_at: string | null; // ISO 8601 timestamp
+  created_at: string; // ISO 8601 timestamp
+}
+
+// Extended types with relations (for API responses)
+export interface LaborRequestCraftWithRelations extends LaborRequestCraft {
+  trade?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  region?: {
+    id: string;
+    name: string;
+    state_code: string;
+  };
+}
+
+export interface LaborRequestWithCrafts extends LaborRequest {
+  crafts: LaborRequestCraftWithRelations[];
+}
+
+export interface LaborRequestNotificationWithRelations extends LaborRequestNotification {
+  agency?: {
+    id: string;
+    name: string;
+    slug: string;
+    email: string;
+  };
+  craft?: LaborRequestCraftWithRelations;
+  labor_request?: LaborRequest;
+}
+
+// Form-specific types (derived from Zod schemas)
+export interface CraftFormData {
+  tradeId: string;
+  regionId: string;
+  workerCount: number;
+  startDate: string; // YYYY-MM-DD
+  durationDays: number;
+  hoursPerWeek: number;
+  notes?: string;
+}
+
+export interface LaborRequestFormData {
+  projectName: string;
+  companyName: string;
+  contactEmail: string;
+  contactPhone: string;
+  additionalDetails?: string;
+  crafts: CraftFormData[];
+}
+
+// API response types
+export interface SubmitLaborRequestResponse {
+  success: boolean;
+  requestId: string;
+  matchCount: number;
+  confirmationToken: string;
+}
+
+export interface AgencyMatch {
+  agencyId: string;
+  agencyName: string;
+  agencySlug: string;
+  matchScore: number;
+}
+
+export interface NotificationResult {
+  sent: number;
+  failed: number;
+  errors: string[];
+}
+```
+
+**File: `types/database.ts`** (add to existing file)
+```typescript
+// Add to existing Database interface
+export interface Database {
+  public: {
+    Tables: {
+      // ... existing tables
+      labor_requests: {
+        Row: LaborRequest;
+        Insert: Omit<LaborRequest, 'id' | 'created_at' | 'updated_at' | 'confirmation_token' | 'confirmation_token_expires'>;
+        Update: Partial<Omit<LaborRequest, 'id' | 'created_at'>>;
+      };
+      labor_request_crafts: {
+        Row: LaborRequestCraft;
+        Insert: Omit<LaborRequestCraft, 'id' | 'created_at'>;
+        Update: Partial<Omit<LaborRequestCraft, 'id' | 'created_at' | 'labor_request_id'>>;
+      };
+      labor_request_notifications: {
+        Row: LaborRequestNotification;
+        Insert: Omit<LaborRequestNotification, 'id' | 'created_at' | 'sent_at' | 'responded_at' | 'viewed_at'>;
+        Update: Partial<Omit<LaborRequestNotification, 'id' | 'created_at' | 'labor_request_id' | 'labor_request_craft_id' | 'agency_id'>>;
+      };
+    };
+    Functions: {
+      match_agencies_to_craft: {
+        Args: {
+          p_trade_id: string;
+          p_region_id: string;
+          p_worker_count: number;
+        };
+        Returns: AgencyMatch[];
+      };
+    };
+  };
+}
+```
 
 **Acceptance Criteria**:
 - [ ] Migration runs successfully in Supabase
@@ -532,6 +753,95 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
+**Performance Baseline Testing:**
+```sql
+-- Test with realistic trade/region combinations
+-- Assumes database has ~100 agencies, ~48 trades, ~35 regions
+
+EXPLAIN ANALYZE
+SELECT
+  a.id,
+  a.name,
+  a.slug,
+  (
+    100 +
+    CASE
+      WHEN a.min_project_size <= 50
+       AND a.max_project_size >= 50
+      THEN 10 ELSE 0
+    END
+  )::INTEGER AS match_score
+FROM agencies a
+WHERE
+  a.verified = TRUE
+  AND EXISTS (
+    SELECT 1 FROM agency_trades
+    WHERE agency_id = a.id AND trade_id = 'e7b3c9a0-1234-5678-9abc-def012345678' -- Example trade UUID
+  )
+  AND EXISTS (
+    SELECT 1 FROM agency_regions
+    WHERE agency_id = a.id AND region_id = 'f8c4d1b2-2345-6789-abcd-ef0123456789' -- Example region UUID
+  )
+ORDER BY match_score DESC
+LIMIT 5;
+
+-- Expected performance with proper indexes:
+-- Planning time: < 5ms
+-- Execution time: < 50ms (P95)
+-- Rows scanned: < 1000
+-- Index usage: Should use idx_agency_trades_trade and idx_agency_regions_region
+
+-- Sample output to verify:
+-- Planning Time: 2.341 ms
+-- Execution Time: 18.726 ms
+-- Rows Removed by Filter: 0
+-- Index Cond: (trade_id = 'e7b3c9a0-1234-5678-9abc-def012345678'::uuid)
+```
+
+**Performance Monitoring:**
+```typescript
+// Add to matching function wrapper for production monitoring
+const startTime = performance.now();
+
+const { data, error } = await supabase.rpc('match_agencies_to_craft', {
+  p_trade_id: craft.tradeId,
+  p_region_id: craft.regionId,
+  p_worker_count: craft.workerCount,
+});
+
+const duration = performance.now() - startTime;
+
+if (duration > 100) {
+  logWarn('Slow matching query detected', {
+    duration: `${duration.toFixed(2)}ms`,
+    tradeId: craft.tradeId,
+    regionId: craft.regionId,
+  });
+}
+
+metrics.gauge('labor_request.matching.duration_ms', duration, {
+  tradeId: craft.tradeId,
+  regionId: craft.regionId,
+});
+```
+
+**Index Verification:**
+```sql
+-- Verify indexes are being used
+SELECT
+  schemaname,
+  tablename,
+  indexname,
+  idx_scan,
+  idx_tup_read,
+  idx_tup_fetch
+FROM pg_stat_user_indexes
+WHERE tablename IN ('agency_trades', 'agency_regions', 'agencies')
+ORDER BY idx_scan DESC;
+
+-- Expected: idx_agency_trades_trade and idx_agency_regions_region should show high idx_scan counts
+```
+
 **3.4 Handle Edge Cases**
 - Zero matches for a craft: Log warning, continue with other crafts
 - Fewer than 5 matches: Return all available (1-4)
@@ -655,21 +965,277 @@ export async function sendWithRateLimit(
 - Bounces: Monitor bounce rate, implement suppression list
 
 **4.1 Create Email Templates**
-- File: `lib/emails/labor-request-agency-notification.tsx`
-- React Email template for agencies:
-  - Project name and company
-  - Craft details (trade, location, workers, duration, hours/week)
-  - Contact information
-  - "View Full Request" CTA button
-  - Footer with unsubscribe link
 
-- File: `lib/emails/labor-request-confirmation.tsx`
-- React Email template for requester:
-  - Thank you message
-  - Summary of submitted crafts
-  - "We've notified X agencies" with breakdown per craft
-  - What to expect next (agencies will contact you)
-  - Support contact info
+**File: `lib/emails/labor-request-agency-notification.ts`**
+```typescript
+// HTML template functions (matching existing codebase pattern from claim-confirmation.ts)
+
+export function generateAgencyNotificationHTML(params: {
+  request: LaborRequest;
+  craft: LaborRequestCraftWithRelations;
+  agency: Agency;
+}): string {
+  const { request, craft, agency } = params;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Labor Request</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" style="width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 2px solid #f97316;">
+              <h1 style="margin: 0; color: #1f2937; font-size: 24px; font-weight: 600;">
+                New Labor Request
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 30px 40px;">
+              <p style="margin: 0 0 20px; color: #4b5563; font-size: 16px;">
+                Hello ${agency.name},
+              </p>
+
+              <p style="margin: 0 0 20px; color: #4b5563; font-size: 16px;">
+                You've received a new labor request that matches your services.
+              </p>
+
+              <!-- Project Details -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <tr>
+                  <td style="padding: 15px; background-color: #f9fafb; border-radius: 6px;">
+                    <h2 style="margin: 0 0 15px; color: #1f2937; font-size: 18px; font-weight: 600;">
+                      ${request.project_name}
+                    </h2>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                      <strong>Company:</strong> ${request.company_name}
+                    </p>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                      <strong>Trade:</strong> ${craft.trade?.name}
+                    </p>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                      <strong>Location:</strong> ${craft.region?.name}, ${craft.region?.state_code}
+                    </p>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                      <strong>Workers Needed:</strong> ${craft.worker_count}
+                    </p>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                      <strong>Start Date:</strong> ${craft.start_date}
+                    </p>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                      <strong>Duration:</strong> ${craft.duration_days} days
+                    </p>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                      <strong>Hours/Week:</strong> ${craft.hours_per_week}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Contact Information -->
+              <div style="margin: 20px 0; padding: 15px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                <p style="margin: 0 0 10px; color: #92400e; font-size: 14px; font-weight: 600;">
+                  Contact Information
+                </p>
+                <p style="margin: 0 0 5px; color: #78350f; font-size: 14px;">
+                  <strong>Email:</strong> ${request.contact_email}
+                </p>
+                <p style="margin: 0; color: #78350f; font-size: 14px;">
+                  <strong>Phone:</strong> ${request.contact_phone}
+                </p>
+              </div>
+
+              ${request.additional_details ? `
+              <div style="margin: 20px 0;">
+                <p style="margin: 0 0 10px; color: #1f2937; font-size: 14px; font-weight: 600;">
+                  Additional Details:
+                </p>
+                <p style="margin: 0; color: #4b5563; font-size: 14px;">
+                  ${request.additional_details}
+                </p>
+              </div>
+              ` : ''}
+
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://www.findconstructionstaffing.com/dashboard/agency/${agency.slug}"
+                   style="display: inline-block; padding: 12px 30px; background-color: #f97316; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                  View in Dashboard
+                </a>
+              </div>
+
+              <p style="margin: 20px 0 0; color: #6b7280; font-size: 14px;">
+                Respond quickly to increase your chances of winning this project.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0 0 10px; color: #9ca3af; font-size: 12px;">
+                FindConstructionStaffing - Connecting Construction Companies with Top Staffing Agencies
+              </p>
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                © ${new Date().getFullYear()} FindConstructionStaffing. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+export function generateAgencyNotificationText(params: {
+  request: LaborRequest;
+  craft: LaborRequestCraftWithRelations;
+  agency: Agency;
+}): string {
+  const { request, craft } = params;
+
+  return `
+FINDCONSTRUCTIONSTAFFING
+New Labor Request
+
+Hello,
+
+You've received a new labor request that matches your services.
+
+PROJECT DETAILS
+${request.project_name}
+Company: ${request.company_name}
+
+REQUIREMENTS
+Trade: ${craft.trade?.name}
+Location: ${craft.region?.name}, ${craft.region?.state_code}
+Workers Needed: ${craft.worker_count}
+Start Date: ${craft.start_date}
+Duration: ${craft.duration_days} days
+Hours/Week: ${craft.hours_per_week}
+
+CONTACT INFORMATION
+Email: ${request.contact_email}
+Phone: ${request.contact_phone}
+
+${request.additional_details ? `ADDITIONAL DETAILS\n${request.additional_details}\n\n` : ''}
+Respond quickly to increase your chances of winning this project.
+
+---
+© ${new Date().getFullYear()} FindConstructionStaffing
+  `.trim();
+}
+```
+
+**File: `lib/emails/multi-craft-agency-notification.ts`**
+```typescript
+// For consolidated multi-craft emails (when agency matches multiple trades)
+
+export function generateMultiCraftAgencyEmail(params: {
+  crafts: CraftMatch[];
+  request: LaborRequest;
+}): string {
+  const { crafts, request } = params;
+  const craftRows = crafts.map(craft => `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+        <strong>${craft.trade?.name}</strong> - ${craft.region?.name}, ${craft.region?.state_code}
+        <br/>
+        <span style="color: #6b7280; font-size: 13px;">
+          ${craft.worker_count} workers • ${craft.duration_days} days • ${craft.hours_per_week} hrs/week
+        </span>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Multi-Craft Labor Request</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" style="width: 600px; background-color: #ffffff; border-radius: 8px;">
+          <tr>
+            <td style="padding: 40px;">
+              <h1 style="margin: 0 0 20px; color: #1f2937; font-size: 24px;">
+                New Multi-Craft Labor Request (${crafts.length} Trades)
+              </h1>
+
+              <p style="color: #4b5563; font-size: 16px;">
+                ${request.project_name} - ${request.company_name}
+              </p>
+
+              <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                ${craftRows}
+              </table>
+
+              <div style="margin: 20px 0; padding: 15px; background-color: #fef3c7; border-radius: 4px;">
+                <p style="margin: 0 0 5px; color: #78350f; font-size: 14px;">
+                  <strong>Email:</strong> ${request.contact_email}
+                </p>
+                <p style="margin: 0; color: #78350f; font-size: 14px;">
+                  <strong>Phone:</strong> ${request.contact_phone}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+export function generateMultiCraftAgencyEmailText(params: {
+  crafts: CraftMatch[];
+  request: LaborRequest;
+}): string {
+  const { crafts, request } = params;
+  const craftList = crafts.map((craft, idx) =>
+    `${idx + 1}. ${craft.trade?.name} - ${craft.region?.name}, ${craft.region?.state_code}\n   ${craft.worker_count} workers • ${craft.duration_days} days • ${craft.hours_per_week} hrs/week`
+  ).join('\n\n');
+
+  return `
+FINDCONSTRUCTIONSTAFFING
+New Multi-Craft Labor Request (${crafts.length} Trades)
+
+${request.project_name}
+Company: ${request.company_name}
+
+REQUIREMENTS
+
+${craftList}
+
+CONTACT
+Email: ${request.contact_email}
+Phone: ${request.contact_phone}
+
+---
+© ${new Date().getFullYear()} FindConstructionStaffing
+  `.trim();
+}
+```
 
 **4.2 Implement Notification Service**
 
@@ -699,12 +1265,13 @@ export async function notifyMatchedAgencies(
 
   for (const agency of agencies) {
     try {
-      // Send email via Resend
+      // Send email via Resend using HTML templates
       await resend.emails.send({
         from: 'requests@findconstructionstaffing.com',
         to: agency.email,
         subject: `New Labor Request: ${craft.tradeName} in ${craft.regionName}`,
-        react: AgencyNotificationEmail({ request, craft, agency }),
+        html: generateAgencyNotificationHTML({ request, craft, agency }),
+        text: generateAgencyNotificationText({ request, craft, agency }),
       });
 
       // Record successful notification
@@ -736,16 +1303,143 @@ export async function notifyMatchedAgencies(
 }
 ```
 
-**4.3 Consolidate Notifications for Multi-Craft Matches**
+**4.3 Create Observability Infrastructure**
+
+**File: `lib/observability/logger.ts`**
+```typescript
+import pino from 'pino';
+
+export const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  formatters: {
+    level: (label) => ({ level: label }),
+  },
+  base: {
+    env: process.env.NODE_ENV,
+  },
+});
+
+// Structured logging helpers
+export const logError = (message: string, error: unknown, context?: Record<string, any>) => {
+  logger.error({
+    message,
+    error: error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    } : String(error),
+    ...context,
+  });
+};
+
+export const logInfo = (message: string, context?: Record<string, any>) => {
+  logger.info({ message, ...context });
+};
+
+export const logWarn = (message: string, context?: Record<string, any>) => {
+  logger.warn({ message, ...context });
+};
+```
+
+**File: `lib/observability/metrics.ts`**
+```typescript
+// Simple metrics interface (can be replaced with Prometheus/Datadog later)
+class MetricsCollector {
+  private counters = new Map<string, number>();
+  private gauges = new Map<string, number>();
+
+  increment(name: string, value: number = 1, tags?: Record<string, string>) {
+    const key = this.buildKey(name, tags);
+    this.counters.set(key, (this.counters.get(key) || 0) + value);
+
+    // Log metrics for now (replace with actual metrics backend)
+    if (process.env.NODE_ENV === 'production') {
+      console.log(JSON.stringify({
+        type: 'counter',
+        name,
+        value: this.counters.get(key),
+        tags,
+        timestamp: new Date().toISOString(),
+      }));
+    }
+  }
+
+  gauge(name: string, value: number, tags?: Record<string, string>) {
+    const key = this.buildKey(name, tags);
+    this.gauges.set(key, value);
+
+    if (process.env.NODE_ENV === 'production') {
+      console.log(JSON.stringify({
+        type: 'gauge',
+        name,
+        value,
+        tags,
+        timestamp: new Date().toISOString(),
+      }));
+    }
+  }
+
+  private buildKey(name: string, tags?: Record<string, string>): string {
+    if (!tags) return name;
+    const tagString = Object.entries(tags)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}:${v}`)
+      .join(',');
+    return `${name}{${tagString}}`;
+  }
+}
+
+export const metrics = new MetricsCollector();
+```
+
+**Install dependencies:**
+```bash
+npm install pino@9.5.0
+npm install --save-dev @types/pino@7.0.5
+```
+
+**4.4 Consolidate Notifications for Multi-Craft Matches**
 ```typescript
 import { createClient } from '@/lib/supabase/server';
+import { logError, logInfo, logWarn } from '@/lib/observability/logger';
+import { metrics } from '@/lib/observability/metrics';
 
 // If same agency matches multiple crafts, send single consolidated email
 export async function sendConsolidatedNotifications(
   requestId: string,
   matchesByCraft: Map<string, AgencyMatch[]>
-) {
+): Promise<NotificationResult> {
   const supabase = createClient();
+  const results: NotificationResult = { sent: 0, failed: 0, errors: [] };
+
+  // Idempotency check: Verify no notifications exist for this request
+  const { data: existingNotifications, error: checkError } = await supabase
+    .from('labor_request_notifications')
+    .select('id, agency_id, status')
+    .eq('labor_request_id', requestId);
+
+  if (checkError) {
+    logError('Failed to check existing notifications', checkError, { requestId });
+    throw new Error('Failed to check existing notifications');
+  }
+
+  if (existingNotifications && existingNotifications.length > 0) {
+    logWarn('Notifications already exist for request (idempotency check)', {
+      requestId,
+      existingCount: existingNotifications.length,
+      statuses: existingNotifications.map(n => n.status),
+    });
+
+    // Return existing results instead of duplicating
+    const sentCount = existingNotifications.filter(n => n.status === 'sent').length;
+    const failedCount = existingNotifications.filter(n => n.status === 'failed').length;
+
+    return {
+      sent: sentCount,
+      failed: failedCount,
+      errors: ['Notifications already processed (duplicate call prevented)'],
+    };
+  }
 
   // Step 1: Group matches by agency ID
   const byAgency = new Map<string, CraftMatch[]>();
@@ -758,6 +1452,12 @@ export async function sendConsolidatedNotifications(
       byAgency.get(match.agency.id)!.push({ craftId, ...match });
     }
   }
+
+  logInfo('Grouped matches by agency', {
+    requestId,
+    totalAgencies: byAgency.size,
+    totalMatches: Array.from(matchesByCraft.values()).flat().length,
+  });
 
   // Step 2: Create notification records for ALL craft-agency pairs BEFORE sending
   const notificationRecords = [];
@@ -782,9 +1482,15 @@ export async function sendConsolidatedNotifications(
     .select('id, labor_request_craft_id, agency_id');
 
   if (insertError) {
-    console.error('Failed to create notification records:', insertError);
+    logError('Failed to create notification records', insertError, { requestId });
+    metrics.increment('labor_request.notifications.insert_failed');
     throw new Error('Failed to create notification records');
   }
+
+  logInfo('Created notification records', {
+    requestId,
+    recordCount: insertedNotifications.length,
+  });
 
   // Step 3: Map notification IDs by agency for batch updates
   const notificationsByAgency = new Map<string, string[]>();
@@ -806,7 +1512,8 @@ export async function sendConsolidatedNotifications(
         from: 'requests@findconstructionstaffing.com',
         to: crafts[0].agency.email,
         subject: `New Multi-Craft Labor Request (${crafts.length} trades)`,
-        react: MultiCraftAgencyEmail({ crafts, request }),
+        html: generateMultiCraftAgencyEmail({ crafts, request }),
+        text: generateMultiCraftAgencyEmailText({ crafts, request }),
       });
 
       // Update ALL notification records for this agency to 'sent'
@@ -818,25 +1525,69 @@ export async function sendConsolidatedNotifications(
         })
         .in('id', notificationIds);
 
+      results.sent++;
+      metrics.increment('labor_request.notifications.sent', 1, {
+        craftCount: String(crafts.length),
+      });
+
+      logInfo('Sent consolidated notification', {
+        requestId,
+        agencyId,
+        craftCount: crafts.length,
+        notificationCount: notificationIds.length,
+      });
+
     } catch (error) {
-      console.error(`Failed to send email to agency ${agencyId}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      logError(`Failed to send email to agency`, error, {
+        requestId,
+        agencyId,
+        craftCount: crafts.length,
+      });
 
       // Update ALL notification records for this agency to 'failed'
       await supabase
         .from('labor_request_notifications')
         .update({
           status: 'failed',
-          delivery_error: error instanceof Error ? error.message : 'Unknown error',
+          delivery_error: errorMessage,
         })
         .in('id', notificationIds);
+
+      results.failed++;
+      results.errors.push(errorMessage);
+      metrics.increment('labor_request.notifications.failed', 1, {
+        errorType: error instanceof Error ? error.name : 'unknown',
+      });
     }
   }
 
-  return {
+  // Alert if failure rate exceeds threshold
+  const failureRate = results.failed / byAgency.size;
+  if (failureRate > 0.5) {
+    logWarn('High notification failure rate detected', {
+      requestId,
+      failureRate: `${(failureRate * 100).toFixed(1)}%`,
+      sent: results.sent,
+      failed: results.failed,
+      totalAgencies: byAgency.size,
+    });
+    metrics.gauge('labor_request.notifications.failure_rate', failureRate);
+  }
+
+  metrics.gauge('labor_request.notifications.batch_size', byAgency.size);
+
+  logInfo('Completed notification batch', {
+    requestId,
+    sent: results.sent,
+    failed: results.failed,
     totalAgencies: byAgency.size,
-    totalNotifications: notificationRecords.length,
-  };
+  });
+
+  return results;
 }
+```
 ```
 
 **4.4 Add Background Job Queue (Optional Enhancement)**
@@ -939,52 +1690,186 @@ return NextResponse.json({
 **Security**: Validate token and expiry before showing sensitive data. Mask contact info from query results.
 
 ```tsx
-// app/request-labor/success/page.tsx
-import { notFound } from 'next/navigation';
+**File: `app/api/labor-requests/success/route.ts`**
+```typescript
+// API route for secure token validation using service role
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { z } from 'zod';
 
-export default async function SuccessPage({
-  searchParams
-}: {
-  searchParams: { token?: string }
-}) {
-  const { token } = searchParams;
+const tokenSchema = z.string().length(64).regex(/^[a-f0-9]{64}$/);
 
-  if (!token) {
-    notFound();
+export async function GET(request: NextRequest) {
+  const token = request.nextUrl.searchParams.get('token');
+
+  // Validate token format
+  if (!token || !tokenSchema.safeParse(token).success) {
+    return NextResponse.json(
+      { error: 'Invalid token format' },
+      { status: 400 }
+    );
   }
 
+  // Use service role client to bypass RLS
   const supabase = createClient();
 
-  // Fetch request by confirmation_token (NOT id)
-  const { data: request, error } = await supabase
+  // STEP 1: Validate token and expiry
+  const { data: laborRequest, error: requestError } = await supabase
     .from('labor_requests')
-    .select(`
-      id,
-      project_name,
-      company_name,
-      status,
-      confirmation_token_expires,
-      created_at,
-      crafts:labor_request_crafts(
-        id,
-        worker_count,
-        duration_days,
-        hours_per_week,
-        trade:trades(name),
-        region:regions(name),
-        notifications:labor_request_notifications(count)
-      )
-    `)
+    .select('id, project_name, company_name, status, confirmation_token_expires, created_at')
     .eq('confirmation_token', token)
     .single();
 
-  // Validate token exists and hasn't expired
-  if (error || !request) {
-    notFound();
+  if (requestError || !laborRequest) {
+    return NextResponse.json(
+      { error: 'Invalid or expired token' },
+      { status: 404 }
+    );
   }
 
-  if (new Date(request.confirmation_token_expires) < new Date()) {
+  // Check token expiration
+  if (new Date(laborRequest.confirmation_token_expires!) < new Date()) {
+    return NextResponse.json(
+      {
+        error: 'Token expired',
+        message: 'This confirmation link has expired (valid for 2 hours after submission).',
+        expired: true,
+      },
+      { status: 410 }
+    );
+  }
+
+  // STEP 2: Fetch crafts with related data (only after token validated)
+  const { data: crafts, error: craftsError } = await supabase
+    .from('labor_request_crafts')
+    .select(`
+      id,
+      worker_count,
+      duration_days,
+      hours_per_week,
+      trade:trades(name),
+      region:regions(name, state_code)
+    `)
+    .eq('labor_request_id', laborRequest.id);
+
+  if (craftsError) {
+    console.error('Failed to fetch crafts:', craftsError);
+    return NextResponse.json(
+      { error: 'Failed to load request details' },
+      { status: 500 }
+    );
+  }
+
+  // STEP 3: Count notifications per craft
+  const craftsWithCounts = await Promise.all(
+    crafts.map(async (craft) => {
+      const { count } = await supabase
+        .from('labor_request_notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('labor_request_craft_id', craft.id)
+        .eq('status', 'sent');
+
+      return {
+        ...craft,
+        notificationCount: count || 0,
+      };
+    })
+  );
+
+  // STEP 4: Return sanitized data (NO contact info)
+  return NextResponse.json({
+    success: true,
+    request: {
+      id: laborRequest.id,
+      projectName: laborRequest.project_name,
+      companyName: laborRequest.company_name,
+      status: laborRequest.status,
+      createdAt: laborRequest.created_at,
+    },
+    crafts: craftsWithCounts,
+  });
+}
+```
+
+**File: `app/request-labor/success/page.tsx`**
+```typescript
+// Client component fetches from secure API route
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { CheckCircle } from 'lucide-react';
+import { notFound } from 'next/navigation';
+
+interface SuccessData {
+  request: {
+    id: string;
+    projectName: string;
+    companyName: string;
+    status: string;
+    createdAt: string;
+  };
+  crafts: Array<{
+    id: string;
+    worker_count: number;
+    duration_days: number;
+    hours_per_week: number;
+    trade: { name: string };
+    region: { name: string; state_code: string };
+    notificationCount: number;
+  }>;
+}
+
+export default function SuccessPage() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+  const [data, setData] = useState<SuccessData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expired, setExpired] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      notFound();
+      return;
+    }
+
+    async function fetchData() {
+      try {
+        const response = await fetch(`/api/labor-requests/success?token=${token}`);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          if (errorData.expired) {
+            setExpired(true);
+          } else {
+            setError(errorData.error || 'Failed to load request details');
+          }
+          return;
+        }
+
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        setError('Failed to load request details');
+        console.error('Error fetching success data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="success-container">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (expired) {
     return (
       <div className="error-container">
         <h1>Confirmation Link Expired</h1>
@@ -994,21 +1879,22 @@ export default async function SuccessPage({
     );
   }
 
-  // NOTE: We intentionally do NOT fetch contact_email or contact_phone
-  // to prevent token holders from accessing that sensitive data
+  if (error || !data) {
+    notFound();
+  }
 
   return (
     <div className="success-container">
       <CheckCircle className="text-green-600" size={64} />
       <h1>Request Submitted Successfully!</h1>
-      <p className="text-gray-600">Project: {request.project_name}</p>
+      <p className="text-gray-600">Project: {data.request.projectName}</p>
 
       <div className="match-summary">
-        {request.crafts.map(craft => (
+        {data.crafts.map(craft => (
           <div key={craft.id} className="craft-match-card">
             <h3>{craft.trade.name} - {craft.region.name}</h3>
             <p className="font-semibold">
-              {craft.notifications.count} agencies notified
+              {craft.notificationCount} agencies notified
             </p>
             <p className="text-sm text-gray-600">
               {craft.worker_count} workers • {craft.duration_days} days • {craft.hours_per_week}hrs/week
@@ -1554,6 +2440,25 @@ CREATE INDEX idx_labor_request_crafts_request_id
 - **Supabase**: Database and authentication (already integrated)
 - **React Hook Form**: Form state management (already installed v7.69.0)
 - **Zod**: Validation schema (already installed v3.25.76)
+- **libphonenumber-js**: Phone number validation (need to install v1.11.14)
+
+**Installation Required:**
+```bash
+npm install libphonenumber-js@1.11.14
+npm install --save-dev @types/libphonenumber-js@3.1.0
+```
+
+**package.json additions:**
+```json
+{
+  "dependencies": {
+    "libphonenumber-js": "^1.11.14"
+  },
+  "devDependencies": {
+    "@types/libphonenumber-js": "^3.1.0"
+  }
+}
+```
 
 ### Internal Dependencies
 - **Existing tables**: `trades`, `regions`, `agencies`, `agency_trades`, `agency_regions`
