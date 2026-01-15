@@ -222,11 +222,12 @@ USING (
 -- =============================================================================
 
 -- System/API can insert notifications (server-side only)
+-- Note: service_role bypasses RLS entirely via service-role API keys
 CREATE POLICY "System can insert notifications"
 ON labor_request_notifications FOR INSERT
 TO authenticated
 WITH CHECK (
-  auth.jwt()->>'role' IN ('admin', 'service_role')
+  auth.jwt()->>'role' = 'admin'
 );
 
 -- Admins can read all notifications
@@ -507,7 +508,7 @@ BEGIN
     a.name,
     a.slug,
     (
-      CASE WHEN a.verified THEN 120 ELSE 100 END +
+      100 +
       CASE
         WHEN a.min_project_size <= p_worker_count
          AND a.max_project_size >= p_worker_count
@@ -516,7 +517,8 @@ BEGIN
     )::INTEGER AS match_score
   FROM agencies a
   WHERE
-    EXISTS (
+    a.verified = TRUE
+    AND EXISTS (
       SELECT 1 FROM agency_trades
       WHERE agency_id = a.id AND trade_id = p_trade_id
     )
@@ -591,11 +593,13 @@ $$ LANGUAGE plpgsql;
 
 **Rate Limits & Quotas**:
 
-| Resend Tier | Daily Limit | Rate Limit | Cost |
-|-------------|-------------|------------|------|
-| Free | 100 emails/day | ~2 req/sec | $0 |
-| Pro | 50,000 emails/month | ~10 req/sec | $20/mo |
-| Scale | 1M+ emails/month | Custom | Custom |
+| Resend Tier | Monthly Limit | Rate Limit | Cost |
+|-------------|---------------|------------|------|
+| Free | 3,000 emails/month | ~2 req/sec | $0 |
+| Pro | 50,000 emails/month | ~2 req/sec | $20/mo |
+| Scale | 100,000 emails/month | ~2 req/sec | $90/mo |
+
+**Note**: Rate limits are approximate. Verify current pricing and limits with Resend support before production deployment.
 
 **Volume Estimation**:
 - Average request: 3 crafts × 5 agencies = 15 emails
@@ -619,13 +623,29 @@ const ratelimit = new Ratelimit({
   analytics: true,
 });
 
-export async function sendWithRateLimit(emailFn: () => Promise<void>) {
-  const { success } = await ratelimit.limit('resend-emails');
-  if (!success) {
-    await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms
-    return sendWithRateLimit(emailFn); // Retry
+export async function sendWithRateLimit(
+  emailFn: () => Promise<void>,
+  maxRetries = 5
+): Promise<void> {
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    const { success } = await ratelimit.limit('resend-emails');
+
+    if (success) {
+      return emailFn();
+    }
+
+    // Exponential backoff with jitter: 2^attempt * 100ms ± 25%
+    const baseDelay = Math.pow(2, attempt) * 100;
+    const jitter = baseDelay * 0.25 * (Math.random() - 0.5);
+    const delay = baseDelay + jitter;
+
+    await new Promise(resolve => setTimeout(resolve, delay));
+    attempt++;
   }
-  return emailFn();
+
+  throw new Error(`Rate limit exceeded after ${maxRetries} retries`);
 }
 ```
 
