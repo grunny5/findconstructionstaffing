@@ -3,14 +3,12 @@
 -- Created: 2026-01-14
 -- Feature: 062-request-labor
 -- Description: SQL RPC function to match agencies to craft requirements based on
---              trade, region, and capacity. Returns top 5 verified agencies ranked
---              by match score.
+--              trade and region. Returns top 5 active agencies ranked by match score.
 -- =============================================================================
 
 CREATE OR REPLACE FUNCTION match_agencies_to_craft(
   p_trade_id UUID,
-  p_region_id UUID,
-  p_worker_count INTEGER
+  p_region_id UUID
 ) RETURNS TABLE(
   agency_id UUID,
   agency_name TEXT,
@@ -44,4 +42,4 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Add function comment
-COMMENT ON FUNCTION match_agencies_to_craft IS 'Matches top 5 verified agencies to a craft requirement based on trade, region, and project size capacity. Returns agencies ranked by match score (100 base + 10 for capacity match).';
+COMMENT ON FUNCTION match_agencies_to_craft IS 'Matches top 5 verified agencies to a craft requirement based on trade and region. Returns agencies ranked by match score (static score of 100 for all matches).';

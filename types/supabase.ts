@@ -139,7 +139,6 @@ export interface Database {
         Args: {
           p_trade_id: string;
           p_region_id: string;
-          p_worker_count: number;
         };
         Returns: AgencyMatch[];
       };
