@@ -141,7 +141,6 @@ export default function RequestLaborPage() {
         throw new Error(result.error || 'Failed to submit request');
       }
 
-      console.log('Labor request submitted:', result);
       setIsSubmitted(true);
 
       const matchMessage = result.totalMatches > 0

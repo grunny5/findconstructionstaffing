@@ -73,7 +73,7 @@ $$ LANGUAGE plpgsql;
 **Status:** ✅ Applied successfully (tested by submitting form and receiving `totalMatches: 1`)
 
 **Error Before Fix:**
-```
+```text
 PGRST202: Could not find the function public.match_agencies_to_craft(p_region_id, p_trade_id) in the schema cache
 Hint: Perhaps you meant to call the function public.match_agencies_to_craft(p_region_id, p_trade_id, p_worker_count)
 ```

@@ -51,6 +51,10 @@ ON labor_request_crafts FOR SELECT
 TO authenticated
 USING (auth.jwt()->>'role' = 'admin');
 
+-- Create index for efficient notification lookups in RLS policies
+CREATE INDEX IF NOT EXISTS idx_notifications_craft
+ON labor_request_notifications(labor_request_craft_id);
+
 -- Agencies can read crafts for requests where they received notifications
 CREATE POLICY "Agencies can read crafts for their notifications"
 ON labor_request_crafts FOR SELECT

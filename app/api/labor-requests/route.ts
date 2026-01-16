@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { laborRequestFormDataSchema } from '@/lib/validations/labor-request';
 import type { LaborRequestFormData } from '@/lib/validations/labor-request';
+import type { AgencyMatch } from '@/types/labor-request';
 import { randomBytes } from 'crypto';
 
 /**
@@ -10,8 +11,21 @@ import { randomBytes } from 'crypto';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Parse and validate request body
-    const body = await request.json();
+    // Parse request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: 'Invalid JSON',
+          details: 'Request body must be valid JSON',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate request body
     const validationResult = laborRequestFormDataSchema.safeParse(body);
 
     if (!validationResult.success) {
@@ -81,7 +95,18 @@ export async function POST(request: NextRequest) {
     if (craftsError || !crafts) {
       console.error('Error creating craft requirements:', craftsError);
       // Rollback: delete the labor request
-      await supabaseAdmin.from('labor_requests').delete().eq('id', laborRequest.id);
+      const { error: rollbackError } = await supabaseAdmin
+        .from('labor_requests')
+        .delete()
+        .eq('id', laborRequest.id);
+
+      if (rollbackError) {
+        console.error(
+          `Failed to rollback labor request ${laborRequest.id}:`,
+          rollbackError
+        );
+      }
+
       return NextResponse.json(
         { error: 'Failed to create craft requirements' },
         { status: 500 }
@@ -93,6 +118,10 @@ export async function POST(request: NextRequest) {
     const matchesByCraft: Array<{
       craftId: string;
       matches: number;
+    }> = [];
+    const notificationFailures: Array<{
+      craftId: string;
+      error: string;
     }> = [];
 
     for (const craft of crafts) {
@@ -111,7 +140,7 @@ export async function POST(request: NextRequest) {
         continue; // Continue with other crafts even if one fails
       }
 
-      const agencyMatches = matches || [];
+      const agencyMatches = (matches || []) as AgencyMatch[];
       totalMatches += agencyMatches.length;
 
       matchesByCraft.push({
@@ -122,7 +151,7 @@ export async function POST(request: NextRequest) {
       // Create notification records for matched agencies
       // Note: Using supabaseAdmin because RLS policy requires authenticated admin role
       if (agencyMatches.length > 0) {
-        const notifications = agencyMatches.map((match: any) => ({
+        const notifications = agencyMatches.map((match: AgencyMatch) => ({
           labor_request_id: laborRequest.id,
           labor_request_craft_id: craft.id,
           agency_id: match.agency_id,
@@ -135,25 +164,36 @@ export async function POST(request: NextRequest) {
 
         if (notificationError) {
           console.error('Error creating notifications:', notificationError);
+          notificationFailures.push({
+            craftId: craft.id,
+            error: notificationError.message || 'Unknown error',
+          });
         }
       }
     }
 
+    // Build response with notification failure warnings if any
+    const hasNotificationFailures = notificationFailures.length > 0;
+    const response: any = {
+      success: true,
+      requestId: laborRequest.id,
+      confirmationToken,
+      totalMatches,
+      matchesByCraft,
+      message:
+        totalMatches > 0
+          ? `Successfully matched ${totalMatches} agencies across ${crafts.length} craft requirements`
+          : 'Labor request created, but no agencies matched the requirements',
+    };
+
+    if (hasNotificationFailures) {
+      response.notificationWarning =
+        'Some agencies could not be notified. Please contact support.';
+      response.notificationErrors = notificationFailures;
+    }
+
     // Return success response
-    return NextResponse.json(
-      {
-        success: true,
-        requestId: laborRequest.id,
-        confirmationToken,
-        totalMatches,
-        matchesByCraft,
-        message:
-          totalMatches > 0
-            ? `Successfully matched ${totalMatches} agencies across ${crafts.length} craft requirements`
-            : 'Labor request created, but no agencies matched the requirements',
-      },
-      { status: 201 }
-    );
+    return NextResponse.json(response, { status: 201 });
   } catch (error) {
     console.error('Unexpected error in labor request submission:', error);
     return NextResponse.json(
