@@ -145,7 +145,7 @@ export default function RequestLaborPage() {
 
       // Build success message based on matches and warnings
       const hasWarnings =
-        result.matchWarning || result.notificationWarning;
+        result.matchWarning || result.notificationWarning || result.emailWarning;
 
       let matchMessage;
       if (result.totalMatches > 0) {
@@ -166,6 +166,9 @@ export default function RequestLaborPage() {
       }
       if (result.notificationWarning) {
         toast.error(result.notificationWarning);
+      }
+      if (result.emailWarning) {
+        toast.error(result.emailWarning);
       }
     } catch (error) {
       console.error('Submission error:', error);
