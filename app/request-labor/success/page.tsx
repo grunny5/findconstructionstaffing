@@ -6,27 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Clock, Users, Briefcase } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-interface LaborRequestSuccess {
-  success: boolean;
-  request: {
-    id: string;
-    projectName: string;
-    companyName: string;
-    contactEmail: string;
-    contactPhone: string;
-    submittedAt: string;
-    craftCount: number;
-  };
-  matches: {
-    total: number;
-    byCraft: Array<{
-      craftName: string;
-      matches: number;
-    }>;
-  };
-  expiresAt: string;
-}
+import type { LaborRequestSuccess } from '@/types/labor-request';
 
 export default function LaborRequestSuccessPage() {
   const searchParams = useSearchParams();
@@ -43,6 +23,11 @@ export default function LaborRequestSuccessPage() {
       setLoading(false);
       return;
     }
+
+    // Reset state before fetching
+    setError(null);
+    setData(null);
+    setLoading(true);
 
     fetchRequestDetails();
   }, [token]);

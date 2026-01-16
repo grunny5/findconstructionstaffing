@@ -61,8 +61,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Check token expiration
+    // Guard against null or invalid expiration date
+    if (!laborRequest.confirmation_token_expires) {
+      return NextResponse.json(
+        { error: 'Token has expired' },
+        { status: 410 } // 410 Gone
+      );
+    }
+
     const now = new Date();
     const expiresAt = new Date(laborRequest.confirmation_token_expires);
+
+    // Verify the date is valid (not NaN)
+    if (isNaN(expiresAt.getTime())) {
+      return NextResponse.json(
+        { error: 'Token has expired' },
+        { status: 410 } // 410 Gone
+      );
+    }
 
     if (now > expiresAt) {
       return NextResponse.json(
