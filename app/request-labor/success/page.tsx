@@ -80,7 +80,7 @@ export default function LaborRequestSuccessPage() {
   };
 
   const formatDate = (isoDate: string) => {
-    return new Date(isoDate).toLocaleDateString('en-US', {
+    return new Date(isoDate).toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

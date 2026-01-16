@@ -120,6 +120,17 @@ export async function GET(request: NextRequest) {
       return `${local[0]}***@${domain}`;
     };
 
+    // Mask phone (show only last 4 digits)
+    const maskPhone = (phone: string | null | undefined): string => {
+      if (!phone) return '***-***-****';
+      // Extract only digits
+      const digits = phone.replace(/\D/g, '');
+      if (digits.length < 4) return '***-***-****';
+      // Show last 4 digits only
+      const lastFour = digits.slice(-4);
+      return `***-***-${lastFour}`;
+    };
+
     // Return sanitized data
     return NextResponse.json({
       success: true,
@@ -128,7 +139,7 @@ export async function GET(request: NextRequest) {
         projectName: laborRequest.project_name,
         companyName: laborRequest.company_name,
         contactEmail: maskEmail(laborRequest.contact_email),
-        contactPhone: laborRequest.contact_phone,
+        contactPhone: maskPhone(laborRequest.contact_phone),
         submittedAt: laborRequest.created_at,
         craftCount: craftCount || 0,
       },
