@@ -27,20 +27,29 @@ export async function getAuthenticatedUser(
   request: NextRequest
 ): Promise<AuthenticatedUser | null> {
   // TODO: Implement actual authentication
-  // For now, return mock user for testing
   // In production, this should:
   // 1. Extract session/token from request
-  // 2. Validate token
+  // 2. Validate JWT token
   // 3. Return user details or null
 
-  // Mock implementation for development
-  const mockAgencyId = request.headers.get('x-mock-agency-id') || 'agency-1';
+  // SECURITY: Fail closed - only allow mock auth in development
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const allowMockAuth = isDevelopment && process.env.ALLOW_MOCK_AUTH !== 'false';
 
-  return {
-    id: 'user-1',
-    agencyId: mockAgencyId,
-    email: 'mock@agency.com',
-  };
+  if (allowMockAuth) {
+    // Mock implementation for development only
+    const mockAgencyId = request.headers.get('x-mock-agency-id') || 'agency-1';
+
+    return {
+      id: 'user-1',
+      agencyId: mockAgencyId,
+      email: 'mock@agency.com',
+    };
+  }
+
+  // In production or when mock auth is disabled, fail closed
+  // Return null to require proper authentication
+  return null;
 }
 
 /**

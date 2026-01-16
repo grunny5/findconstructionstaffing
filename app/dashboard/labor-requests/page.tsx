@@ -24,8 +24,8 @@ export default function LaborRequestsInboxPage() {
   const [notifications, setNotifications] = useState<InboxNotification[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
-  // TODO: Get agency ID from authenticated session/context
-  const [agencyId] = useState('agency-1'); // Placeholder until auth is implemented
+  // TODO: Get agency slug from authenticated session/context
+  const [agencySlug] = useState('agency-slug'); // Placeholder until auth is implemented
 
   useEffect(() => {
     fetchNotifications();
@@ -43,7 +43,7 @@ export default function LaborRequestsInboxPage() {
       }
 
       const response = await fetch(
-        `/api/agencies/${agencyId}/labor-requests?${params.toString()}`
+        `/api/agencies/${agencySlug}/labor-requests?${params.toString()}`
       );
 
       if (!response.ok) {

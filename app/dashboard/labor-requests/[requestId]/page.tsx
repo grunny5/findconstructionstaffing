@@ -22,9 +22,6 @@ import {
 } from 'lucide-react';
 import type { InboxNotification } from '@/types/labor-request';
 
-// TODO: Replace with actual agency ID from authentication
-const MOCK_AGENCY_ID = 'agency-1';
-
 export default function LaborRequestDetailPage({
   params,
 }: {
@@ -38,6 +35,8 @@ export default function LaborRequestDetailPage({
   const [notification, setNotification] = useState<InboxNotification | null>(null);
   const [responding, setResponding] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
+  // TODO: Get agency slug from authenticated session/context
+  const [agencySlug] = useState('agency-slug'); // Placeholder until auth is implemented
 
   useEffect(() => {
     if (!notificationId) {
@@ -45,15 +44,25 @@ export default function LaborRequestDetailPage({
       return;
     }
 
-    fetchNotificationDetails();
-    markAsViewed();
+    // Sequence the calls to avoid race condition
+    // markAsViewed first, then fetch to get updated status
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await markAsViewed();
+        await fetchNotificationDetails();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [notificationId]);
 
   const fetchNotificationDetails = async () => {
-    setLoading(true);
     try {
       const response = await fetch(
-        `/api/agencies/${MOCK_AGENCY_ID}/labor-requests`
+        `/api/agencies/${agencySlug}/labor-requests`
       );
 
       if (!response.ok) {
@@ -70,8 +79,6 @@ export default function LaborRequestDetailPage({
       }
     } catch (error) {
       console.error('Error fetching notification details:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -144,10 +151,11 @@ export default function LaborRequestDetailPage({
 
   const getPayRateDisplay = (notification: InboxNotification) => {
     const { pay_rate_min, pay_rate_max } = notification.craft;
-    if (pay_rate_min && pay_rate_max) {
+    // Use nullish checks to handle 0 values correctly
+    if (pay_rate_min != null && pay_rate_max != null) {
       return `$${pay_rate_min}-$${pay_rate_max}/hr`;
     }
-    if (pay_rate_min) {
+    if (pay_rate_min != null) {
       return `$${pay_rate_min}+/hr`;
     }
     return 'Rate negotiable';

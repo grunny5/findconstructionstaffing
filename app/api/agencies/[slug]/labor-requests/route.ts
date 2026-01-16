@@ -12,25 +12,27 @@ import { maskEmail, maskPhone } from '@/lib/utils/masking';
 import type { InboxNotification } from '@/types/labor-request';
 
 /**
- * GET /api/agencies/[agencyId]/labor-requests
+ * GET /api/agencies/[slug]/labor-requests
  *
  * Returns all labor request notifications for an agency with filters.
  *
  * Query params:
  * - status: Filter by notification status (new, viewed, responded, archived)
  * - search: Search in project name or company name
+ * - trade: Filter by trade name (e.g., "Electrician")
+ * - state: Filter by state code (e.g., "TX")
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { agencyId: string } }
+  { params }: { params: { slug: string } }
 ) {
   try {
-    const { agencyId } = params;
+    const { slug } = params;
 
-    // Validate agency ID
-    if (!agencyId) {
+    // Validate slug
+    if (!slug) {
       return NextResponse.json(
-        { error: 'Agency ID is required' },
+        { error: 'Agency slug is required' },
         { status: 400 }
       );
     }
@@ -45,7 +47,7 @@ export async function GET(
     }
 
     // Authorize agency access
-    if (!verifyAgencyAccess(user, agencyId)) {
+    if (!verifyAgencyAccess(user, slug)) {
       return NextResponse.json(
         { error: 'Access denied', details: 'You do not have permission to view this agency\'s labor requests' },
         { status: 403 }
@@ -55,6 +57,22 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const statusFilter = searchParams.get('status');
     const searchQuery = searchParams.get('search');
+    const tradeFilter = searchParams.get('trade');
+    const stateFilter = searchParams.get('state');
+
+    // First, get agency ID from slug
+    const { data: agency, error: agencyError } = await supabaseAdmin
+      .from('agencies')
+      .select('id')
+      .eq('slug', slug)
+      .single();
+
+    if (agencyError || !agency) {
+      return NextResponse.json(
+        { error: 'Agency not found' },
+        { status: 404 }
+      );
+    }
 
     // Build query
     let query = supabaseAdmin
@@ -94,12 +112,22 @@ export async function GET(
           )
         )
       `)
-      .eq('agency_id', agencyId)
+      .eq('agency_id', agency.id)
       .order('created_at', { ascending: false });
 
     // Apply status filter
     if (statusFilter) {
       query = query.eq('status', statusFilter);
+    }
+
+    // Apply trade filter (nested relation)
+    if (tradeFilter) {
+      query = query.eq('craft.trade.name', tradeFilter);
+    }
+
+    // Apply state filter (nested relation)
+    if (stateFilter) {
+      query = query.eq('craft.region.state_code', stateFilter);
     }
 
     // Execute query

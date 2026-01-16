@@ -37,10 +37,10 @@ export async function POST(
       );
     }
 
-    // Fetch notification to verify ownership
+    // Fetch notification to verify ownership and get current status
     const { data: notification, error: fetchError } = await supabaseAdmin
       .from('labor_request_notifications')
-      .select('agency_id')
+      .select('agency_id, status, viewed_at')
       .eq('id', notificationId)
       .single();
 
@@ -59,13 +59,20 @@ export async function POST(
       );
     }
 
-    // Update notification status
+    // Only update status to 'viewed' if currently 'new'
+    // Don't regress status from 'responded' or 'archived' back to 'viewed'
+    const updateData: { status?: string; viewed_at: string } = {
+      viewed_at: new Date().toISOString(),
+    };
+
+    if (notification.status === 'new') {
+      updateData.status = 'viewed';
+    }
+
+    // Update notification
     const { data: updatedNotification, error: updateError } = await supabaseAdmin
       .from('labor_request_notifications')
-      .update({
-        status: 'viewed',
-        viewed_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', notificationId)
       .select()
       .single();

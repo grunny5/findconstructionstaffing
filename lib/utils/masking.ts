@@ -14,7 +14,10 @@
 export function maskEmail(email: string | null | undefined): string {
   if (!email) return '***@***.com';
   const [local, domain] = email.split('@');
-  if (!local || !domain) return email;
+  // Don't leak PII - return masked format even for invalid emails
+  if (!local || !domain) {
+    return `${local?.[0] ?? '*'}***@***`;
+  }
   return `${local[0]}***@${domain}`;
 }
 
