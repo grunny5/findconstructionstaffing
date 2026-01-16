@@ -401,7 +401,7 @@ const onSubmit = async (data: LaborRequestFormData) => {
 
 **File:** `supabase/MANUAL_MIGRATIONS.md`
 
-```markdown
+````markdown
 # Manual Migration Tracking
 
 ## Manually Applied Migrations
@@ -420,7 +420,7 @@ const onSubmit = async (data: LaborRequestFormData) => {
 ```text
 PGRST202: Could not find the function public.match_agencies_to_craft(p_region_id, p_trade_id) in the schema cache
 ```
-```
+````
 
 ## Testing & Verification
 

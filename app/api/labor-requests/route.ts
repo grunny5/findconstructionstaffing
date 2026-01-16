@@ -252,6 +252,10 @@ export async function POST(request: NextRequest) {
 
           if (!agencyCrafts || agencyCrafts.length === 0) {
             console.warn(`No craft details found for agency ${agencyId}`);
+            emailFailures.push({
+              agencyId,
+              error: 'No craft details found',
+            });
             continue;
           }
 
