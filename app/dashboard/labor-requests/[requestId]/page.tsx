@@ -40,10 +40,13 @@ export default function LaborRequestDetailPage({
   const [responseMessage, setResponseMessage] = useState('');
 
   useEffect(() => {
-    if (notificationId) {
-      fetchNotificationDetails();
-      markAsViewed();
+    if (!notificationId) {
+      setLoading(false);
+      return;
     }
+
+    fetchNotificationDetails();
+    markAsViewed();
   }, [notificationId]);
 
   const fetchNotificationDetails = async () => {
@@ -120,6 +123,18 @@ export default function LaborRequestDetailPage({
   };
 
   const formatDate = (isoDate: string) => {
+    // Handle date-only strings (YYYY-MM-DD) to avoid timezone shifts
+    if (/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+      const [year, month, day] = isoDate.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+
+    // Handle full ISO timestamps
     return new Date(isoDate).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',

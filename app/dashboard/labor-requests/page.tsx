@@ -17,9 +17,6 @@ import {
 import { Briefcase, Calendar, MapPin, Users, Search, Filter } from 'lucide-react';
 import type { InboxNotification } from '@/types/labor-request';
 
-// TODO: Replace with actual agency ID from authentication
-const MOCK_AGENCY_ID = 'agency-1';
-
 export default function LaborRequestsInboxPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,6 +24,8 @@ export default function LaborRequestsInboxPage() {
   const [notifications, setNotifications] = useState<InboxNotification[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
+  // TODO: Get agency ID from authenticated session/context
+  const [agencyId] = useState('agency-1'); // Placeholder until auth is implemented
 
   useEffect(() => {
     fetchNotifications();
@@ -44,7 +43,7 @@ export default function LaborRequestsInboxPage() {
       }
 
       const response = await fetch(
-        `/api/agencies/${MOCK_AGENCY_ID}/labor-requests?${params.toString()}`
+        `/api/agencies/${agencyId}/labor-requests?${params.toString()}`
       );
 
       if (!response.ok) {
@@ -65,6 +64,18 @@ export default function LaborRequestsInboxPage() {
   };
 
   const formatDate = (isoDate: string) => {
+    // Handle date-only strings (YYYY-MM-DD) to avoid timezone shifts
+    if (/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+      const [year, month, day] = isoDate.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    }
+
+    // Handle full ISO timestamps
     return new Date(isoDate).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -89,10 +100,11 @@ export default function LaborRequestsInboxPage() {
 
   const getPayRateDisplay = (notification: InboxNotification) => {
     const { pay_rate_min, pay_rate_max } = notification.craft;
-    if (pay_rate_min && pay_rate_max) {
+    // Use nullish checks to handle 0 values correctly
+    if (pay_rate_min != null && pay_rate_max != null) {
       return `$${pay_rate_min}-$${pay_rate_max}/hr`;
     }
-    if (pay_rate_min) {
+    if (pay_rate_min != null) {
       return `$${pay_rate_min}+/hr`;
     }
     return 'Rate negotiable';
@@ -185,12 +197,28 @@ export default function LaborRequestsInboxPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {notifications.map((notification) => (
-            <Card
-              key={notification.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => router.push(`/dashboard/labor-requests/${notification.labor_request.id}?notificationId=${notification.id}`)}
-            >
+          {notifications.map((notification) => {
+            const handleNavigate = () => {
+              router.push(`/dashboard/labor-requests/${notification.labor_request.id}?notificationId=${notification.id}`);
+            };
+
+            const handleKeyDown = (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleNavigate();
+              }
+            };
+
+            return (
+              <Card
+                key={notification.id}
+                className="hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onClick={handleNavigate}
+                onKeyDown={handleKeyDown}
+                tabIndex={0}
+                role="button"
+                aria-label={`View labor request for ${notification.labor_request.project_name} from ${notification.labor_request.company_name}`}
+              >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -274,7 +302,8 @@ export default function LaborRequestsInboxPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

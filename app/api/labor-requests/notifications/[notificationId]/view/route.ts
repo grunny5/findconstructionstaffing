@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUser } from '@/lib/auth/session';
 
 /**
  * POST /api/labor-requests/notifications/[notificationId]/view
@@ -27,8 +28,39 @@ export async function POST(
       );
     }
 
+    // Authenticate user
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Fetch notification to verify ownership
+    const { data: notification, error: fetchError } = await supabaseAdmin
+      .from('labor_request_notifications')
+      .select('agency_id')
+      .eq('id', notificationId)
+      .single();
+
+    if (fetchError || !notification) {
+      return NextResponse.json(
+        { error: 'Notification not found' },
+        { status: 404 }
+      );
+    }
+
+    // Verify agency ownership
+    if (notification.agency_id !== user.agencyId) {
+      return NextResponse.json(
+        { error: 'Access denied', details: 'You do not have permission to view this notification' },
+        { status: 403 }
+      );
+    }
+
     // Update notification status
-    const { data: notification, error: updateError } = await supabaseAdmin
+    const { data: updatedNotification, error: updateError } = await supabaseAdmin
       .from('labor_request_notifications')
       .update({
         status: 'viewed',
@@ -38,7 +70,7 @@ export async function POST(
       .select()
       .single();
 
-    if (updateError || !notification) {
+    if (updateError || !updatedNotification) {
       console.error('Error updating notification:', updateError);
       return NextResponse.json(
         { error: 'Failed to update notification' },
@@ -49,9 +81,9 @@ export async function POST(
     return NextResponse.json({
       success: true,
       notification: {
-        id: notification.id,
-        status: notification.status,
-        viewed_at: notification.viewed_at,
+        id: updatedNotification.id,
+        status: updatedNotification.status,
+        viewed_at: updatedNotification.viewed_at,
       },
     });
   } catch (error) {

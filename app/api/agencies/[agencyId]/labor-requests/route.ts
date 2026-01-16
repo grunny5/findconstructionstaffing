@@ -7,6 +7,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUser, verifyAgencyAccess } from '@/lib/auth/session';
+import { maskEmail, maskPhone } from '@/lib/utils/masking';
 import type { InboxNotification } from '@/types/labor-request';
 
 /**
@@ -24,9 +26,6 @@ export async function GET(
 ) {
   try {
     const { agencyId } = params;
-    const searchParams = request.nextUrl.searchParams;
-    const statusFilter = searchParams.get('status');
-    const searchQuery = searchParams.get('search');
 
     // Validate agency ID
     if (!agencyId) {
@@ -35,6 +34,27 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // Authenticate user
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Authorize agency access
+    if (!verifyAgencyAccess(user, agencyId)) {
+      return NextResponse.json(
+        { error: 'Access denied', details: 'You do not have permission to view this agency\'s labor requests' },
+        { status: 403 }
+      );
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+    const statusFilter = searchParams.get('status');
+    const searchQuery = searchParams.get('search');
 
     // Build query
     let query = supabaseAdmin
@@ -107,8 +127,8 @@ export async function GET(
           id: n.labor_request.id,
           project_name: n.labor_request.project_name,
           company_name: n.labor_request.company_name,
-          contact_email: n.labor_request.contact_email,
-          contact_phone: n.labor_request.contact_phone,
+          contact_email: maskEmail(n.labor_request.contact_email),
+          contact_phone: maskPhone(n.labor_request.contact_phone),
           additional_details: n.labor_request.additional_details,
         },
         craft: {
