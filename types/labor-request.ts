@@ -158,6 +158,27 @@ export interface CraftMatch {
 // SUCCESS PAGE TYPES
 // =============================================================================
 
+export interface LaborRequestSuccess {
+  success: boolean;
+  request: {
+    id: string;
+    projectName: string;
+    companyName: string;
+    contactEmail: string;
+    contactPhone: string;
+    submittedAt: string;
+    craftCount: number;
+  };
+  matches: {
+    total: number;
+    byCraft: Array<{
+      craftName: string;
+      matches: number;
+    }>;
+  };
+  expiresAt: string;
+}
+
 export interface SuccessPageData {
   request: {
     id: string;
