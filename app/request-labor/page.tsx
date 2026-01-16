@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Header from '@/components/Header';
@@ -51,6 +52,7 @@ function isExperienceLevel(value: string): value is ExperienceLevel {
 }
 
 export default function RequestLaborPage() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -143,24 +145,7 @@ export default function RequestLaborPage() {
 
       setIsSubmitted(true);
 
-      // Build success message based on matches and warnings
-      const hasWarnings =
-        result.matchWarning || result.notificationWarning || result.emailWarning;
-
-      let matchMessage;
-      if (result.totalMatches > 0) {
-        if (hasWarnings) {
-          matchMessage = `Successfully matched with ${result.totalMatches} agencies, but some issues occurred. Please check your email for details.`;
-        } else {
-          matchMessage = `Successfully matched with ${result.totalMatches} agencies! They will be notified within 24 hours.`;
-        }
-      } else {
-        matchMessage = 'Request submitted successfully. We\'ll notify you when agencies are matched.';
-      }
-
-      toast.success(matchMessage);
-
-      // Show warnings if present
+      // Show warnings if present (before redirect)
       if (result.matchWarning) {
         toast.error(result.matchWarning);
       }
@@ -170,6 +155,9 @@ export default function RequestLaborPage() {
       if (result.emailWarning) {
         toast.error(result.emailWarning);
       }
+
+      // Redirect to success page with confirmation token
+      router.push(`/request-labor/success?token=${result.confirmationToken}`);
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(
