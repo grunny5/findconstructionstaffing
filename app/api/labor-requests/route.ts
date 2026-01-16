@@ -4,6 +4,7 @@ import { laborRequestFormDataSchema } from '@/lib/validations/labor-request';
 import type { LaborRequestFormData } from '@/lib/validations/labor-request';
 import type { AgencyMatch } from '@/types/labor-request';
 import { randomBytes } from 'crypto';
+import { sendLaborRequestNotificationEmail } from '@/lib/emails/send-labor-request-notification';
 
 /**
  * POST /api/labor-requests
@@ -180,10 +181,140 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Send email notifications to matched agencies
+    // Consolidate by agency (one email per agency with all matched crafts)
+    const emailFailures: Array<{
+      agencyId: string;
+      error: string;
+    }> = [];
+
+    if (totalMatches > 0) {
+      // Group notifications by agency
+      const agencyNotifications = new Map<string, string[]>();
+
+      for (const craft of crafts) {
+        const { data: notifications } = await supabaseAdmin
+          .from('labor_request_notifications')
+          .select('agency_id')
+          .eq('labor_request_craft_id', craft.id);
+
+        if (notifications) {
+          for (const notif of notifications) {
+            if (!agencyNotifications.has(notif.agency_id)) {
+              agencyNotifications.set(notif.agency_id, []);
+            }
+            agencyNotifications.get(notif.agency_id)!.push(craft.id);
+          }
+        }
+      }
+
+      // Send one email per agency
+      for (const [agencyId, craftIds] of Array.from(agencyNotifications)) {
+        try {
+          // Fetch agency details
+          const { data: agency } = await supabaseAdmin
+            .from('agencies')
+            .select('id, name, email')
+            .eq('id', agencyId)
+            .single();
+
+          if (!agency || !agency.email) {
+            console.warn(`No email for agency ${agencyId}, skipping notification`);
+            emailFailures.push({
+              agencyId,
+              error: 'No email address configured',
+            });
+            continue;
+          }
+
+          // Fetch craft details for this agency
+          const { data: agencyCrafts } = await supabaseAdmin
+            .from('labor_request_crafts')
+            .select(
+              `
+              id,
+              trade_id,
+              region_id,
+              experience_level,
+              worker_count,
+              start_date,
+              duration_days,
+              hours_per_week,
+              notes,
+              pay_rate_min,
+              pay_rate_max,
+              per_diem_rate,
+              trades:trade_id(name),
+              regions:region_id(name)
+            `
+            )
+            .in('id', craftIds);
+
+          if (!agencyCrafts || agencyCrafts.length === 0) {
+            console.warn(`No craft details found for agency ${agencyId}`);
+            emailFailures.push({
+              agencyId,
+              error: 'No craft details found',
+            });
+            continue;
+          }
+
+          // Transform craft data for email
+          const craftRequirements = agencyCrafts.map((craft: any) => ({
+            tradeId: craft.trade_id,
+            tradeName: craft.trades?.name || 'Unknown Trade',
+            regionName: craft.regions?.name || 'Unknown Region',
+            experienceLevel: craft.experience_level,
+            workerCount: craft.worker_count,
+            startDate: craft.start_date,
+            durationDays: craft.duration_days,
+            hoursPerWeek: craft.hours_per_week,
+            notes: craft.notes,
+            payRateMin: craft.pay_rate_min,
+            payRateMax: craft.pay_rate_max,
+            perDiemRate: craft.per_diem_rate,
+          }));
+
+          // Send email
+          const emailResult = await sendLaborRequestNotificationEmail({
+            agencyId: agency.id,
+            agencyEmail: agency.email,
+            agencyName: agency.name,
+            projectName: laborRequest.project_name,
+            companyName: laborRequest.company_name,
+            contactEmail: laborRequest.contact_email,
+            contactPhone: laborRequest.contact_phone,
+            additionalDetails: laborRequest.additional_details || undefined,
+            crafts: craftRequirements,
+            laborRequestId: laborRequest.id,
+          });
+
+          if (!emailResult.sent) {
+            console.error(
+              `Failed to send email to agency ${agencyId}:`,
+              emailResult.reason
+            );
+            emailFailures.push({
+              agencyId,
+              error: emailResult.reason || 'Unknown error',
+            });
+          }
+        } catch (error) {
+          console.error(`Error sending email to agency ${agencyId}:`, error);
+          emailFailures.push({
+            agencyId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      }
+    }
+
     // Build response with match and notification failure warnings if any
     const hasMatchFailures = matchFailures.length > 0;
     const hasNotificationFailures = notificationFailures.length > 0;
-    const hasAnyFailures = hasMatchFailures || hasNotificationFailures;
+    const hasEmailFailures = emailFailures.length > 0;
+    const hasAnyFailures =
+      hasMatchFailures || hasNotificationFailures || hasEmailFailures;
 
     const response: any = {
       success: true,
@@ -211,10 +342,19 @@ export async function POST(request: NextRequest) {
       response.notificationErrors = notificationFailures;
     }
 
+    // Add email failure warnings
+    if (hasEmailFailures) {
+      response.emailWarning =
+        'Some notification emails could not be sent. Please contact support.';
+      response.emailErrors = emailFailures;
+    }
+
     // Update message if there are any failures
     if (hasAnyFailures) {
       const failureCount =
-        matchFailures.length + notificationFailures.length;
+        matchFailures.length +
+        notificationFailures.length +
+        emailFailures.length;
       response.message += ` However, ${failureCount} issue(s) occurred during processing.`;
     }
 
