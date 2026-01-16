@@ -143,11 +143,30 @@ export default function RequestLaborPage() {
 
       setIsSubmitted(true);
 
-      const matchMessage = result.totalMatches > 0
-        ? `Successfully matched with ${result.totalMatches} agencies! They will be notified within 24 hours.`
-        : 'Request submitted successfully. We\'ll notify you when agencies are matched.';
+      // Build success message based on matches and warnings
+      const hasWarnings =
+        result.matchWarning || result.notificationWarning;
+
+      let matchMessage;
+      if (result.totalMatches > 0) {
+        if (hasWarnings) {
+          matchMessage = `Successfully matched with ${result.totalMatches} agencies, but some issues occurred. Please check your email for details.`;
+        } else {
+          matchMessage = `Successfully matched with ${result.totalMatches} agencies! They will be notified within 24 hours.`;
+        }
+      } else {
+        matchMessage = 'Request submitted successfully. We\'ll notify you when agencies are matched.';
+      }
 
       toast.success(matchMessage);
+
+      // Show warnings if present
+      if (result.matchWarning) {
+        toast.error(result.matchWarning);
+      }
+      if (result.notificationWarning) {
+        toast.error(result.notificationWarning);
+      }
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(

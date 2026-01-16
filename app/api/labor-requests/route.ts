@@ -119,6 +119,10 @@ export async function POST(request: NextRequest) {
       craftId: string;
       matches: number;
     }> = [];
+    const matchFailures: Array<{
+      craftId: string;
+      error: string;
+    }> = [];
     const notificationFailures: Array<{
       craftId: string;
       error: string;
@@ -137,6 +141,10 @@ export async function POST(request: NextRequest) {
 
       if (matchError) {
         console.error('Error matching agencies for craft:', matchError);
+        matchFailures.push({
+          craftId: craft.id,
+          error: matchError.message || 'Failed to match agencies',
+        });
         continue; // Continue with other crafts even if one fails
       }
 
@@ -172,8 +180,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Build response with notification failure warnings if any
+    // Build response with match and notification failure warnings if any
+    const hasMatchFailures = matchFailures.length > 0;
     const hasNotificationFailures = notificationFailures.length > 0;
+    const hasAnyFailures = hasMatchFailures || hasNotificationFailures;
+
     const response: any = {
       success: true,
       requestId: laborRequest.id,
@@ -186,10 +197,25 @@ export async function POST(request: NextRequest) {
           : 'Labor request created, but no agencies matched the requirements',
     };
 
+    // Add match failure warnings
+    if (hasMatchFailures) {
+      response.matchWarning =
+        'Some craft requirements could not be matched. Please contact support.';
+      response.matchErrors = matchFailures;
+    }
+
+    // Add notification failure warnings
     if (hasNotificationFailures) {
       response.notificationWarning =
         'Some agencies could not be notified. Please contact support.';
       response.notificationErrors = notificationFailures;
+    }
+
+    // Update message if there are any failures
+    if (hasAnyFailures) {
+      const failureCount =
+        matchFailures.length + notificationFailures.length;
+      response.message += ` However, ${failureCount} issue(s) occurred during processing.`;
     }
 
     // Return success response
