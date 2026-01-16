@@ -1072,7 +1072,7 @@ test('displays masked contact information', async ({ page }) => {
 
 ## Related Documentation
 
-- [Phase 5: PII Masking and Validation Best Practices](./pii-masking-success-page.md)
+- [Phase 5: PII Masking and Validation Best Practices](../security-issues/pii-masking-success-page.md)
 - [Secure Logging in Production](../security-issues/secure-logging-in-production.md)
 - [Multi-Tier RLS Policies](../security-issues/multi-tier-rls-policies-public-owner-admin.md)
 - [Supabase RLS Service Role Authentication](../database-issues/supabase-rls-service-role-authentication.md)
