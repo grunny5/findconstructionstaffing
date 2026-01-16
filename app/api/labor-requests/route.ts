@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Send one email per agency
-      for (const [agencyId, craftIds] of agencyNotifications) {
+      for (const [agencyId, craftIds] of Array.from(agencyNotifications)) {
         try {
           // Fetch agency details
           const { data: agency } = await supabaseAdmin

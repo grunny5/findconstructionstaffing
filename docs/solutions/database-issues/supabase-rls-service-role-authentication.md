@@ -39,7 +39,7 @@ When implementing a public labor request submission API endpoint, anonymous inse
 ## Symptoms
 
 ### 1. RLS Policy Violation (42501)
-```
+```text
 POST http://localhost:3000/api/labor-requests 500 (Internal Server Error)
 
 Error creating labor request: {
@@ -57,7 +57,7 @@ Error creating labor request: {
 - Policy exists in database but still blocks anonymous inserts
 
 ### 2. Function Signature Mismatch (PGRST202)
-```
+```text
 Error matching agencies for craft: {
   code: 'PGRST202',
   details: 'Searched for the function public.match_agencies_to_craft with parameters p_region_id, p_trade_id...',
