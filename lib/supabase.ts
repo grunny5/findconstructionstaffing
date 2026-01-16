@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Skip validation in test environment or during build
 const isTestEnvironment = process.env.NODE_ENV === 'test';
@@ -33,6 +34,19 @@ if (!isTestEnvironment && !isBuildEnvironment) {
 export const supabase = createClient(
   supabaseUrl || 'https://dummy.supabase.co',
   supabaseAnonKey || 'dummy-anon-key'
+);
+
+// Create and export Supabase service role client (server-side only)
+// This client bypasses RLS and should only be used in API routes
+export const supabaseAdmin = createClient(
+  supabaseUrl || 'https://dummy.supabase.co',
+  supabaseServiceKey || 'dummy-service-key',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
 );
 
 // Re-export types from shared location
