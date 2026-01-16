@@ -225,6 +225,10 @@ export interface InboxNotification {
     start_date: string;
     duration_days: number;
     hours_per_week: number;
+    experience_level: ExperienceLevel;
+    pay_rate_min: number | null;
+    pay_rate_max: number | null;
+    per_diem_rate: number | null;
     notes: string | null;
   };
 }
