@@ -361,10 +361,14 @@ export function RequestDetail({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="font-body text-sm font-medium text-industrial-graphite-600 mb-2 block">
+              <label
+                htmlFor="responseMessage"
+                className="font-body text-sm font-medium text-industrial-graphite-600 mb-2 block"
+              >
                 Message to Contractor (optional)
               </label>
               <Textarea
+                id="responseMessage"
                 placeholder="Include any questions or additional information..."
                 value={responseMessage}
                 onChange={(e) => setResponseMessage(e.target.value)}

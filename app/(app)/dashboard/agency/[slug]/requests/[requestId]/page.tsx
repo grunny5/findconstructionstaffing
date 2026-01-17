@@ -88,7 +88,7 @@ export default async function RequestDetailPage({
   }
 
   // Fetch the complete notification with all related data
-  const { data: notification, error: notificationError } = await supabase
+  const { data: rawNotification, error: notificationError } = await supabase
     .from('labor_request_notifications')
     .select(`
       id,
@@ -126,7 +126,7 @@ export default async function RequestDetailPage({
     .eq('agency_id', agency.id)
     .single();
 
-  if (notificationError || !notification) {
+  if (notificationError || !rawNotification) {
     console.error(
       `Failed to fetch notification ${finalNotificationId} for agency ${agency.id}:`,
       notificationError
@@ -135,10 +135,43 @@ export default async function RequestDetailPage({
     notFound();
   }
 
-  // Verify the labor request ID matches (double-check ownership)
-  if (notification.labor_request?.id !== requestId) {
+  // Normalize nested arrays to single objects
+  const craftArray = rawNotification.craft as any[];
+  const laborRequestArray = rawNotification.labor_request as any[];
+
+  if (!craftArray || craftArray.length === 0) {
+    console.error(`No craft data for notification ${finalNotificationId}`);
     notFound();
   }
+
+  if (!laborRequestArray || laborRequestArray.length === 0) {
+    console.error(`No labor request data for notification ${finalNotificationId}`);
+    notFound();
+  }
+
+  // Verify the labor request ID matches (double-check ownership)
+  const laborRequest = laborRequestArray[0];
+  if (laborRequest.id !== requestId) {
+    notFound();
+  }
+
+  // Normalize craft nested arrays
+  const craft = craftArray[0];
+  const normalizedCraft = {
+    ...craft,
+    trade: Array.isArray(craft.trade) ? craft.trade[0] : craft.trade,
+    region: Array.isArray(craft.region) ? craft.region[0] : craft.region,
+  };
+
+  // Build normalized notification
+  const notification = {
+    ...rawNotification,
+    craft: normalizedCraft,
+    labor_request: laborRequest,
+  };
+
+  // TypeScript now knows finalNotificationId is non-null after all the guards above
+  const resolvedNotificationId = finalNotificationId!;
 
   return (
     <div className="space-y-6">
@@ -156,7 +189,7 @@ export default async function RequestDetailPage({
       <RequestDetail
         notification={notification}
         agencySlug={slug}
-        notificationId={finalNotificationId}
+        notificationId={resolvedNotificationId}
       />
     </div>
   );

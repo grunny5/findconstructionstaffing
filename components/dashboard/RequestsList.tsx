@@ -309,9 +309,9 @@ export function RequestsList({
                     <p className="font-body text-sm text-industrial-graphite-400">
                       Received {formatDate(notification.created_at)}
                     </p>
-                    <Button variant="outline" size="sm" className="font-body">
+                    <p className="font-body text-sm text-industrial-burnt-500 font-medium">
                       View Details →
-                    </Button>
+                    </p>
                   </div>
                 </CardContent>
               </Card>

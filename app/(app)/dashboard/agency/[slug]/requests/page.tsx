@@ -110,11 +110,20 @@ export default async function RequestsPage({
   }
 
   if (search) {
-    // Search in project name or company name
-    query = query.or(`labor_request.project_name.ilike.%${search}%,labor_request.company_name.ilike.%${search}%`);
+    // Escape search query to prevent PostgREST injection
+    // First escape backslashes, then percent signs and underscores
+    const escapedSearch = search
+      .replace(/\\/g, '\\\\')
+      .replace(/%/g, '\\%')
+      .replace(/_/g, '\\_');
+
+    // Search in project name or company name (wildcards now treated literally)
+    query = query.or(
+      `labor_request.project_name.ilike.%${escapedSearch}%,labor_request.company_name.ilike.%${escapedSearch}%`
+    );
   }
 
-  const { data: notifications, error: notificationsError } = await query;
+  const { data: rawNotifications, error: notificationsError } = await query;
 
   if (notificationsError) {
     console.error(
@@ -123,6 +132,30 @@ export default async function RequestsPage({
     );
     throw new Error('Failed to load labor requests');
   }
+
+  // Normalize nested arrays to single objects for RequestsList component
+  const notifications = (rawNotifications || []).map((notification: any) => {
+    const craftArray = notification.craft || [];
+    const laborRequestArray = notification.labor_request || [];
+
+    // Skip if missing required data
+    if (craftArray.length === 0 || laborRequestArray.length === 0) {
+      return null;
+    }
+
+    const craft = craftArray[0];
+    const laborRequest = laborRequestArray[0];
+
+    return {
+      ...notification,
+      craft: {
+        ...craft,
+        trade: Array.isArray(craft.trade) ? craft.trade[0] : craft.trade,
+        region: Array.isArray(craft.region) ? craft.region[0] : craft.region,
+      },
+      labor_request: laborRequest,
+    };
+  }).filter(Boolean); // Remove any null entries
 
   return (
     <div className="space-y-6">
