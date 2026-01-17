@@ -26,7 +26,7 @@ The Supabase CLI is currently non-functional due to:
 **Problem**: Remote database has migration entries that don't match local files.
 
 **Evidence**:
-```
+```text
 Local          | Remote         | Time (UTC)
 ---------------|----------------|---------------------
                | 20260114       | 20260114       ← Remote only
@@ -72,7 +72,7 @@ Local          | Remote         | Time (UTC)
 **Problem**: No `.supabase/` directory exists
 
 **Expected**:
-```
+```text
 .supabase/
   ├── project-ref
   ├── config.toml
@@ -92,7 +92,7 @@ Local          | Remote         | Time (UTC)
 ### Issue 4: Migration Naming Inconsistency ⚠️
 
 **Applied Migration Pattern**:
-```
+```text
 applied_20260114_001_optimize_rls_policies.sql
 applied_20260116_001_fix_messages_delete_policy.sql
 applied_20260116_003_fix_function_search_path.sql
@@ -152,7 +152,7 @@ supabase migration repair --status applied 20260114
 ## Migration History Analysis
 
 ### ✅ Synchronized Migrations (39 total)
-```
+```text
 001            | 001            | 001
 20250624       | 20250624       | 20250624
 20250625       | 20250625       | 20250625
@@ -167,14 +167,14 @@ supabase migration repair --status applied 20260114
 ```
 
 ### ⚠️ Desynchronized Migrations (3 problematic)
-```
+```text
                | 20260114       | 20260114       ← Remote only (generic)
 20260114       |                | 20260114       ← Local only (specific file)
                | 20260116       | 20260116       ← Remote only (generic)
 ```
 
 ### 📝 Applied Migrations (8 files with `applied_` prefix)
-```
+```text
 applied_20250624_003_add_performance_indexes.sql
 applied_20250625_005_create_public_read_policies.sql
 applied_20260114_001_optimize_rls_policies.sql
@@ -251,7 +251,7 @@ applied_20260126_002_add_experience_level_to_crafts.sql
    - NOT for `supabase db push` (broken)
 
 **Pros**:
-- Low risk
+- Low-risk
 - Works immediately
 - Leverages CLI for non-push commands
 - Manual control retained
@@ -433,10 +433,10 @@ supabase db diff
 ## Prevention for Future
 
 1. **Always use CLI for migrations** (once fixed)
-   - Don't manually apply via SQL Editor
+   - Don't apply via SQL Editor
    - Don't manually edit migration history table
 
-2. **Keep CLI up to date**
+2. **Keep CLI up-to-date**
    - Check for updates monthly
    - Update before major changes
 
