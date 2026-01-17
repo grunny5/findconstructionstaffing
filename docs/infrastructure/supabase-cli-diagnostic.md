@@ -29,17 +29,17 @@ The Supabase CLI was non-functional due to:
 
 **Evidence**:
 ```text
-Local          | Remote         | Time (UTC)
----------------|----------------|---------------------
-               | 20260114       | 20260114       ← Remote only
-20260114225504 | 20260114225504 | 2026-01-14 22:55:04
-20260114       |                | 20260114       ← Local only
-               | 20260116       | 20260116       ← Remote only
+Local              | Remote         | Time (UTC)
+-------------------|----------------|---------------------
+                   | 20260114       | 20260114       ← Remote only (generic timestamp)
+20260114225504     | 20260114225504 | 2026-01-14 22:55:04
+20260114_001       |                | 20260114       ← Local only (specific migration)
+                   | 20260116       | 20260116       ← Remote only (generic timestamp)
 ```
 
 **Analysis**:
 - Remote has generic `20260114` timestamp - no matching local file
-- Local has `20260114_001_create_labor_request_tables.sql`
+- Local has `20260114_001_create_labor_request_tables.sql` - no matching remote entry
 - Local has `20260114225504_create_matching_function.sql` (matches remote ✓)
 - Remote has `20260116` but local has `applied_20260116_*` files (skipped by CLI)
 
