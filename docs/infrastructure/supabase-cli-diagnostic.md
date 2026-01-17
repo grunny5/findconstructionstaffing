@@ -533,7 +533,7 @@ Remote database is up to date. ✓
 **Configuration:**
 - `supabase/config.toml` - Updated `major_version` from 17 to 15
 
-**Migrations Renamed (24 total):**
+**Migrations Renamed (10 total):**
 - 1 migration from 20260114
 - 9 migrations from 20260117-20260125
 - All prefixed with `applied_` to mark as manually executed
