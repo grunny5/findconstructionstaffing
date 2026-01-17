@@ -15,6 +15,7 @@ import {
   Settings,
   BarChart3,
   ShieldCheck,
+  Briefcase,
   Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -66,6 +67,11 @@ export function DashboardSidebar({
       name: 'Compliance',
       href: `/dashboard/agency/${agencySlug}/compliance`,
       icon: ShieldCheck,
+    },
+    {
+      name: 'Requests',
+      href: `/dashboard/agency/${agencySlug}/requests`,
+      icon: Briefcase,
     },
     {
       name: 'Analytics',
