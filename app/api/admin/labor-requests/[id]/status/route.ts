@@ -25,8 +25,14 @@ export async function POST(
   }
 
   // Parse request body
-  const body = await request.json();
-  const { status } = body;
+  let body;
+  let status;
+  try {
+    body = await request.json();
+    status = body.status;
+  } catch (error) {
+    return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+  }
 
   // Validate status
   const validStatuses = ['pending', 'active', 'fulfilled', 'cancelled'];
@@ -48,6 +54,11 @@ export async function POST(
   if (error) {
     console.error('[Admin Labor Request Status] Update error:', error);
     return NextResponse.json({ error: 'UPDATE_FAILED' }, { status: 500 });
+  }
+
+  // Check if record was found and updated
+  if (!data) {
+    return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
   }
 
   return NextResponse.json({ data }, { status: 200 });

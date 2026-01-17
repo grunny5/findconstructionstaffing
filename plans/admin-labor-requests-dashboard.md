@@ -43,7 +43,7 @@ Build an admin dashboard at `/admin/labor-requests` following existing admin pat
 
 ### Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  app/(app)/admin/labor-requests/page.tsx            │
 │  (Server Component - Auth Check)                    │

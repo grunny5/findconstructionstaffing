@@ -12,7 +12,53 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
+
+// Type definitions
+interface Notification {
+  id: string;
+  agency: {
+    id: string;
+    agency_name: string;
+    slug: string;
+  };
+  status: 'pending' | 'sent' | 'failed' | 'new' | 'viewed' | 'responded' | 'archived';
+  sent_at: string | null;
+  viewed_at: string | null;
+  responded_at: string | null;
+  delivery_error: string | null;
+}
+
+interface Craft {
+  id: string;
+  trade: {
+    id: string;
+    name: string;
+  };
+  region: {
+    id: string;
+    name: string;
+    state_code: string;
+  };
+  worker_count: number;
+  start_date: string;
+  duration_days: number;
+  hours_per_week: number;
+  notes: string | null;
+  notifications: Notification[];
+}
+
+interface LaborRequestDetail {
+  id: string;
+  project_name: string;
+  company_name: string;
+  contact_email: string;
+  contact_phone: string;
+  status: 'pending' | 'active' | 'fulfilled' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  crafts: Craft[];
+}
 
 interface LaborRequestDetailModalProps {
   requestId: string;
@@ -25,7 +71,8 @@ export function LaborRequestDetailModal({
   onClose,
   onRefresh,
 }: LaborRequestDetailModalProps) {
-  const [request, setRequest] = useState<any>(null);
+  const { toast } = useToast();
+  const [request, setRequest] = useState<LaborRequestDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [newStatus, setNewStatus] = useState<string>('');
@@ -40,11 +87,15 @@ export function LaborRequestDetailModal({
       setRequest(data.data);
       setNewStatus(data.data.status);
     } catch (error) {
-      toast.error('Failed to load request details');
+      toast({
+        title: 'Error',
+        description: 'Failed to load request details',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [requestId]);
+  }, [requestId, toast]);
 
   useEffect(() => {
     fetchRequestDetails();
@@ -61,11 +112,18 @@ export function LaborRequestDetailModal({
 
       if (!response.ok) throw new Error('Failed to update status');
 
-      toast.success('Status updated successfully');
+      toast({
+        title: 'Success',
+        description: 'Status updated successfully',
+      });
       onRefresh();
       fetchRequestDetails();
     } catch (error) {
-      toast.error('Failed to update status');
+      toast({
+        title: 'Error',
+        description: 'Failed to update status',
+        variant: 'destructive',
+      });
     } finally {
       setIsUpdating(false);
     }

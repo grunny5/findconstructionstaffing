@@ -94,7 +94,6 @@ export function LaborRequestsTable() {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchRequests();
   };
 
   const getStatusBadge = (status: string) => {
@@ -165,7 +164,13 @@ export function LaborRequestsTable() {
           </div>
 
           <div className="w-full md:w-48">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => {
+                setStatusFilter(value);
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger>
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Status" />
@@ -243,7 +248,13 @@ export function LaborRequestsTable() {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {pagination.offset + 1} to {Math.min(pagination.offset + pagination.limit, pagination.total)} of {pagination.total} requests
+          {pagination.total === 0 ? (
+            'No requests'
+          ) : (
+            <>
+              Showing {pagination.offset + 1} to {Math.min(pagination.offset + pagination.limit, pagination.total)} of {pagination.total} requests
+            </>
+          )}
         </p>
         <div className="flex gap-2">
           <Button
