@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,25 +15,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Briefcase, Calendar, MapPin, Users, Search, Filter } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, Users, Search, Filter, AlertCircle } from 'lucide-react';
 import type { InboxNotification } from '@/types/labor-request';
 
 export default function LaborRequestsInboxPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
+  const { user, agencySlug, loading: authLoading, isAgencyOwner } = useAuth();
+  const [dataLoading, setDataLoading] = useState(true);
   const [notifications, setNotifications] = useState<InboxNotification[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
-  // TODO: Get agency slug from authenticated session/context
-  const [agencySlug] = useState('agency-slug'); // Placeholder until auth is implemented
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login?redirect=/dashboard/labor-requests');
+    }
+  }, [authLoading, user, router]);
 
   useEffect(() => {
-    fetchNotifications();
-  }, [statusFilter]);
+    if (agencySlug) {
+      fetchNotifications();
+    }
+  }, [agencySlug, statusFilter]);
 
   const fetchNotifications = async () => {
-    setLoading(true);
+    if (!agencySlug) return;
+
+    setDataLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter && statusFilter !== 'all') {
@@ -55,7 +66,7 @@ export default function LaborRequestsInboxPage() {
     } catch (error) {
       console.error('Error fetching labor requests:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -110,8 +121,51 @@ export default function LaborRequestsInboxPage() {
     return 'Rate negotiable';
   };
 
-  // Loading state
-  if (loading) {
+  // Auth loading state
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <Skeleton className="h-10 w-64 mb-6" />
+        <div className="space-y-4">
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated - will redirect
+  if (!user) {
+    return null;
+  }
+
+  // Not an agency owner
+  if (!isAgencyOwner || !agencySlug) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <CardTitle className="text-orange-900">Access Restricted</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-orange-800 mb-4">
+              This page is only available to agency owners who have claimed an agency profile.
+            </p>
+            <Button onClick={() => router.push('/')} variant="outline">
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Data loading state
+  if (dataLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Skeleton className="h-10 w-64 mb-6" />

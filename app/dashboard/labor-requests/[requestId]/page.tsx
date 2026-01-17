@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  AlertCircle,
 } from 'lucide-react';
 import type { InboxNotification } from '@/types/labor-request';
 
@@ -30,36 +32,44 @@ export default function LaborRequestDetailPage({
   const router = useRouter();
   const searchParams = useSearchParams();
   const notificationId = searchParams.get('notificationId');
+  const { user, agencySlug, loading: authLoading, isAgencyOwner } = useAuth();
 
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [notification, setNotification] = useState<InboxNotification | null>(null);
   const [responding, setResponding] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
-  // TODO: Get agency slug from authenticated session/context
-  const [agencySlug] = useState('agency-slug'); // Placeholder until auth is implemented
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push(`/login?redirect=/dashboard/labor-requests/${params.requestId}`);
+    }
+  }, [authLoading, user, router, params.requestId]);
 
   useEffect(() => {
-    if (!notificationId) {
-      setLoading(false);
+    if (!agencySlug || !notificationId) {
+      setDataLoading(false);
       return;
     }
 
     // Sequence the calls to avoid race condition
     // markAsViewed first, then fetch to get updated status
     const loadData = async () => {
-      setLoading(true);
+      setDataLoading(true);
       try {
         await markAsViewed();
         await fetchNotificationDetails();
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     };
 
     loadData();
-  }, [notificationId]);
+  }, [agencySlug, notificationId]);
 
   const fetchNotificationDetails = async () => {
+    if (!agencySlug) return;
+
     try {
       const response = await fetch(
         `/api/agencies/${agencySlug}/labor-requests`
@@ -161,8 +171,56 @@ export default function LaborRequestDetailPage({
     return 'Rate negotiable';
   };
 
-  // Loading state
-  if (loading) {
+  // Auth loading state
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Skeleton className="h-8 w-32 mb-6" />
+        <Skeleton className="h-64 w-full mb-4" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
+
+  // Not authenticated - will redirect
+  if (!user) {
+    return null;
+  }
+
+  // Not an agency owner
+  if (!isAgencyOwner || !agencySlug) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/labor-requests')}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Inbox
+        </Button>
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <CardTitle className="text-orange-900">Access Restricted</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-orange-800 mb-4">
+              This page is only available to agency owners who have claimed an agency profile.
+            </p>
+            <Button onClick={() => router.push('/')} variant="outline">
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Data loading state
+  if (dataLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Skeleton className="h-8 w-32 mb-6" />
@@ -380,7 +438,7 @@ export default function LaborRequestDetailPage({
           <CardHeader>
             <CardTitle>Respond to Request</CardTitle>
             <CardDescription>
-              Let the contractor know if you're interested in this opportunity
+              Let the contractor know if you&apos;re interested in this opportunity
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -404,7 +462,7 @@ export default function LaborRequestDetailPage({
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                I'm Interested
+                I&apos;m Interested
               </Button>
 
               <Button
