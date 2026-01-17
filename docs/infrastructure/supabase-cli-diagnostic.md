@@ -347,27 +347,29 @@ applied_20260126_002_add_experience_level_to_crafts.sql
 
 ### Phase 2: Long-term Solution (Option D - CI/CD) 🚀
 
+**Status**: 📋 Planned (Not yet implemented)
+
 **Goal**: Automate migration deployment without CLI dependency
 
 **Steps**:
-1. ✅ **Create migration deployment script**
+1. ⬜ **Create migration deployment script**
    - Bash script or Node.js
    - Connects with service role key
    - Applies migrations in order
    - Updates history table
 
-2. ✅ **Add GitHub Action workflow**
+2. ⬜ **Add GitHub Action workflow**
    - Triggers on merge to main
    - Runs deployment script
    - Posts summary comment on PR
 
-3. ✅ **Update development workflow**
+3. ⬜ **Update development workflow**
    - Create migrations locally
    - Test with `supabase db reset` (local dev)
    - Push to branch
    - Merge triggers auto-deploy
 
-4. ✅ **Documentation**
+4. ⬜ **Documentation**
    - Update README with new workflow
    - Document manual override process
    - Add troubleshooting guide
