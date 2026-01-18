@@ -57,6 +57,7 @@ interface Notification {
     contact_phone: string;
     additional_details?: string | null;
     created_at: string;
+    user_id?: string | null;
   };
 }
 
@@ -414,6 +415,46 @@ export function RequestDetail({
                   {notification.responded_at && formatDate(notification.responded_at)}
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Contact Contractor - shown after responding */}
+      {hasResponded && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="font-display uppercase tracking-wide">
+              Start a Conversation
+            </CardTitle>
+            <CardDescription className="font-body">
+              Reach out to the contractor to discuss this opportunity
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="default"
+                className="flex-1 bg-industrial-orange hover:bg-industrial-orange/90 font-body"
+                asChild
+              >
+                <a
+                  href={`mailto:${notification.labor_request.contact_email}?subject=${encodeURIComponent(`Re: ${notification.labor_request.project_name} - Labor Request`)}&body=${encodeURIComponent(`Hello,\n\nThank you for your labor request for ${notification.craft.trade.name}s for the ${notification.labor_request.project_name} project.\n\nWe are interested in discussing this opportunity further.\n\nBest regards`)}`}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email Contractor
+                </a>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 font-body"
+                asChild
+              >
+                <a href={`tel:${notification.labor_request.contact_phone}`}>
+                  <Phone className="h-4 w-4 mr-2" />
+                  Call Contractor
+                </a>
+              </Button>
             </div>
           </CardContent>
         </Card>

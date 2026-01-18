@@ -4,9 +4,11 @@
  * DashboardSidebar Component - Industrial Design System
  * Feature: 010-industrial-design-system
  * Task: 6.2 - Update Dashboard Pages
+ *
+ * Updated in Phase 6.3 to include real-time notifications for new labor requests.
  */
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -18,6 +20,7 @@ import {
   Briefcase,
   Menu,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
   Sheet,
@@ -27,8 +30,11 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { UnreadBadge } from '@/components/messages/UnreadBadge';
+import { useNewRequestsRealtime } from '@/hooks/useNewRequestsRealtime';
 
 interface DashboardSidebarProps {
+  agencyId: string;
   agencySlug: string;
   agencyName: string;
 }
@@ -41,11 +47,37 @@ interface NavItem {
 }
 
 export function DashboardSidebar({
+  agencyId,
   agencySlug,
   agencyName,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [newRequestCount, setNewRequestCount] = useState(0);
+
+  // Subscribe to real-time notifications for new labor requests
+  const handleNewRequest = useCallback(() => {
+    setNewRequestCount((prev) => prev + 1);
+    toast.success('New labor request received!', {
+      description: 'Check your inbox to view the details.',
+      action: {
+        label: 'View',
+        onClick: () => {
+          window.location.href = `/dashboard/agency/${agencySlug}/requests`;
+        },
+      },
+    });
+  }, [agencySlug]);
+
+  useNewRequestsRealtime(agencyId, handleNewRequest);
+
+  // Reset badge count when navigating to requests page
+  useEffect(() => {
+    const isOnRequestsPage = pathname?.startsWith(`/dashboard/agency/${agencySlug}/requests`);
+    if (isOnRequestsPage && newRequestCount > 0) {
+      setNewRequestCount(0);
+    }
+  }, [pathname, agencySlug, newRequestCount]);
 
   const navigation: NavItem[] = [
     {
@@ -124,6 +156,9 @@ export function DashboardSidebar({
           >
             <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
             <span>{item.name}</span>
+            {item.name === 'Requests' && newRequestCount > 0 && (
+              <UnreadBadge count={newRequestCount} />
+            )}
             {item.disabled && (
               <span className="ml-auto text-xs normal-case">(Coming Soon)</span>
             )}

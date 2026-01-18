@@ -32,7 +32,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-industrial-bg">
-      <DashboardSidebar agencySlug={agency.slug} agencyName={agency.name} />
+      <DashboardSidebar agencyId={agency.id} agencySlug={agency.slug} agencyName={agency.name} />
       <main className="lg:pl-64">
         <div className="p-6 lg:p-8">{children}</div>
       </main>

@@ -8,10 +8,23 @@ jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
 }));
 
+// Mock the realtime hook
+jest.mock('@/hooks/useNewRequestsRealtime', () => ({
+  useNewRequestsRealtime: jest.fn(),
+}));
+
+// Mock sonner toast
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+  },
+}));
+
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 
 describe('DashboardSidebar', () => {
   const defaultProps = {
+    agencyId: 'agency-123',
     agencySlug: 'test-agency',
     agencyName: 'Test Agency',
   };
