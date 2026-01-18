@@ -7,13 +7,14 @@
 import Link from 'next/link';
 import {
   Eye,
-  Mail,
+  Briefcase,
   CheckCircle,
   Image as ImageIcon,
   MapPin,
   HelpCircle,
   ExternalLink,
   ArrowRight,
+  Mail,
 } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { ProfileCompletionWidget } from './ProfileCompletionWidget';
@@ -35,11 +36,16 @@ interface Agency {
 interface DashboardOverviewProps {
   agency: Agency;
   isLoading?: boolean;
+  laborRequestStats?: {
+    total: number;
+    new: number;
+  };
 }
 
 export function DashboardOverview({
   agency,
   isLoading = false,
+  laborRequestStats,
 }: DashboardOverviewProps) {
   // Generate checklist items for profile completion
   const checklistItems = generateChecklistItems(agency);
@@ -59,10 +65,14 @@ export function DashboardOverview({
           icon={Eye}
         />
         <StatsCard
-          title="Lead Requests"
-          value={0}
-          description="Coming soon"
-          icon={Mail}
+          title="Labor Requests"
+          value={laborRequestStats?.total || 0}
+          description={
+            laborRequestStats?.new
+              ? `${laborRequestStats.new} new`
+              : 'No new requests'
+          }
+          icon={Briefcase}
         />
         <StatsCard
           title="Profile Completion"

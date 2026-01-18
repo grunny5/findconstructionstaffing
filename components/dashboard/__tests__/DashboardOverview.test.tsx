@@ -44,7 +44,7 @@ describe('DashboardOverview', () => {
       render(<DashboardOverview agency={mockAgency} />);
 
       expect(screen.getByText('Profile Views')).toBeInTheDocument();
-      expect(screen.getByText('Lead Requests')).toBeInTheDocument();
+      expect(screen.getByText('Labor Requests')).toBeInTheDocument();
       expect(screen.getAllByText('Profile Completion').length).toBeGreaterThan(
         0
       );
@@ -61,14 +61,14 @@ describe('DashboardOverview', () => {
       expect(profileViewsCard).toHaveTextContent('Last 30 days');
     });
 
-    it('should show 0 for lead requests with coming soon', () => {
+    it('should show 0 for labor requests with no new requests when stats not provided', () => {
       render(<DashboardOverview agency={mockAgency} />);
 
-      const leadRequestsCard = screen
-        .getByText('Lead Requests')
+      const laborRequestsCard = screen
+        .getByText('Labor Requests')
         .closest('.rounded-industrial-sharp');
-      expect(leadRequestsCard).toHaveTextContent('0');
-      expect(leadRequestsCard).toHaveTextContent('Coming soon');
+      expect(laborRequestsCard).toHaveTextContent('0');
+      expect(laborRequestsCard).toHaveTextContent('No new requests');
     });
 
     it('should show profile completion percentage in stats card', () => {
@@ -92,6 +92,55 @@ describe('DashboardOverview', () => {
       render(<DashboardOverview agency={mockAgency} />);
 
       expect(screen.getByText('Improve visibility')).toBeInTheDocument();
+    });
+
+    it('should display total labor requests when stats provided', () => {
+      const laborStats = { total: 25, new: 5 };
+      render(
+        <DashboardOverview agency={mockAgency} laborRequestStats={laborStats} />
+      );
+
+      const laborRequestsCard = screen
+        .getByText('Labor Requests')
+        .closest('.rounded-industrial-sharp');
+      expect(laborRequestsCard).toHaveTextContent('25');
+      expect(laborRequestsCard).toHaveTextContent('5 new');
+    });
+
+    it('should display "No new requests" when new count is 0', () => {
+      const laborStats = { total: 10, new: 0 };
+      render(
+        <DashboardOverview agency={mockAgency} laborRequestStats={laborStats} />
+      );
+
+      const laborRequestsCard = screen
+        .getByText('Labor Requests')
+        .closest('.rounded-industrial-sharp');
+      expect(laborRequestsCard).toHaveTextContent('10');
+      expect(laborRequestsCard).toHaveTextContent('No new requests');
+    });
+
+    it('should handle single new request without plural', () => {
+      const laborStats = { total: 15, new: 1 };
+      render(
+        <DashboardOverview agency={mockAgency} laborRequestStats={laborStats} />
+      );
+
+      const laborRequestsCard = screen
+        .getByText('Labor Requests')
+        .closest('.rounded-industrial-sharp');
+      expect(laborRequestsCard).toHaveTextContent('15');
+      expect(laborRequestsCard).toHaveTextContent('1 new');
+    });
+
+    it('should fallback to zeros when stats not provided', () => {
+      render(<DashboardOverview agency={mockAgency} />);
+
+      const laborRequestsCard = screen
+        .getByText('Labor Requests')
+        .closest('.rounded-industrial-sharp');
+      expect(laborRequestsCard).toHaveTextContent('0');
+      expect(laborRequestsCard).toHaveTextContent('No new requests');
     });
   });
 
