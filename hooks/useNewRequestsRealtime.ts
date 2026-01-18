@@ -30,7 +30,17 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
+
+// Module-level singleton for Supabase client to avoid multiple connections
+let supabaseClientSingleton: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient {
+  if (!supabaseClientSingleton) {
+    supabaseClientSingleton = createClient();
+  }
+  return supabaseClientSingleton;
+}
 
 /**
  * Notification payload from Supabase Realtime
@@ -77,17 +87,6 @@ export function useNewRequestsRealtime(
   // Store callback in ref to avoid re-subscriptions when it changes
   const onNewRequestRef = useRef(onNewRequest);
 
-  // Store Supabase client in ref to avoid creating multiple connections
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
-
-  // Lazily initialize the Supabase client (singleton per component instance)
-  const getSupabaseClient = useCallback(() => {
-    if (!supabaseRef.current) {
-      supabaseRef.current = createClient();
-    }
-    return supabaseRef.current;
-  }, []);
-
   // Update ref when callback changes
   useEffect(() => {
     onNewRequestRef.current = onNewRequest;
@@ -104,6 +103,7 @@ export function useNewRequestsRealtime(
       return;
     }
 
+    // Use module-level singleton client
     const supabase = getSupabaseClient();
     let channel: RealtimeChannel;
 
@@ -156,7 +156,7 @@ export function useNewRequestsRealtime(
           });
       }
     };
-  }, [agencyId, handleNewRequest, getSupabaseClient]);
+  }, [agencyId, handleNewRequest]);
 
   // Hook has side effects only, no return value
 }
