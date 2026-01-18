@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth/session';
 import { secureLog } from '@/lib/utils/secure-logging';
@@ -114,6 +115,10 @@ export async function POST(
 
     // TODO: Store response details (interested/message) in a separate table
     // TODO: Send email to contractor with agency response
+
+    // Invalidate cache so dashboard stats update
+    revalidateTag('notifications');
+    revalidateTag('stats');
 
     // Secure logging (redacts message content)
     secureLog.info(

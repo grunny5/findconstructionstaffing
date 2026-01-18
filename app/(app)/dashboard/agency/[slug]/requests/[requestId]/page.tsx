@@ -119,7 +119,8 @@ export default async function RequestDetailPage({
         contact_email,
         contact_phone,
         additional_details,
-        created_at
+        created_at,
+        user_id
       )
     `)
     .eq('id', finalNotificationId)
