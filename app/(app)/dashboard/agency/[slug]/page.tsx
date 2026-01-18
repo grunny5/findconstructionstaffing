@@ -6,6 +6,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
+import { unstable_cache } from 'next/cache';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
@@ -15,6 +16,48 @@ import { toComplianceItemFull } from '@/types/api';
 interface DashboardPageProps {
   params: { slug: string };
 }
+
+/**
+ * Fetch labor request statistics for an agency with caching
+ * Cached for 5 minutes to reduce database load
+ */
+const getLaborRequestStats = unstable_cache(
+  async (agencyId: string) => {
+    const supabase = await createClient();
+
+    // Fetch total and new counts in parallel
+    const [totalResult, newResult] = await Promise.all([
+      supabase
+        .from('labor_request_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('agency_id', agencyId),
+      supabase
+        .from('labor_request_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('agency_id', agencyId)
+        .eq('status', 'new'),
+    ]);
+
+    // Handle errors gracefully - return zeros if queries fail
+    if (totalResult.error || newResult.error) {
+      console.error('Failed to fetch labor request stats:', {
+        totalError: totalResult.error,
+        newError: newResult.error,
+      });
+      return { total: 0, new: 0 };
+    }
+
+    return {
+      total: totalResult.count || 0,
+      new: newResult.count || 0,
+    };
+  },
+  ['labor-request-stats'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['notifications', 'stats'],
+  }
+);
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const supabase = await createClient();
@@ -108,6 +151,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       ? complianceData.map(toComplianceItemFull)
       : [];
 
+  // Fetch labor request stats
+  const laborRequestStats = await getLaborRequestStats(agency.id);
+
   return (
     <div className="space-y-6">
       {/* Compliance Expiration Alert */}
@@ -154,7 +200,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       </div>
 
       {/* Dashboard Overview */}
-      <DashboardOverview agency={agency} />
+      <DashboardOverview agency={agency} laborRequestStats={laborRequestStats} />
     </div>
   );
 }
